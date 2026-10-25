@@ -7,6 +7,8 @@ signal ziel_gewechselt(ziel: Node)
 @export var rennen: float = 7.0
 @export var sprungkraft: float = 4.5
 @export var maus_empfindlichkeit: float = 0.003
+## Wie nah man an Personen und Dinge herangehen muss, um sie mit E anzusprechen (Meter).
+@export var reichweite: float = 2.5
 
 const KORDELFARBEN := {
 	"schwarz": Color(0.05, 0.05, 0.05),
@@ -23,7 +25,6 @@ var _schwerkraft: float = ProjectSettings.get_setting("physics/3d/default_gravit
 @onready var _kamera_drehpunkt: Node3D = $KameraDrehpunkt
 @onready var _koerper: Node3D = $Koerper
 @onready var _kordel: MeshInstance3D = $Koerper/Kordel
-@onready var _interaktionsbereich: Area3D = $Interaktionsbereich
 
 
 func _ready() -> void:
@@ -116,17 +117,17 @@ func _zeige_kordel() -> void:
 		_kordel.material_override = material
 
 
-## Sucht das nächste ansprechbare Objekt im Interaktionsbereich.
+## Sucht das nächste ansprechbare Objekt in Reichweite.
+## Bewusst über den Abstand statt über einen Area3D-Bereich: Die Physik-Engine Jolt
+## (Standard seit Godot 4.6) meldet StaticBody3D in Bereichen nicht.
 func _aktualisiere_ziel() -> void:
 	var naechstes: Node3D = null
-	var beste_distanz := INF
-	for koerper in _interaktionsbereich.get_overlapping_bodies():
-		if not koerper.is_in_group("interagierbar"):
-			continue
-		var distanz := global_position.distance_squared_to(koerper.global_position)
+	var beste_distanz := reichweite * reichweite
+	for kandidat: Node3D in get_tree().get_nodes_in_group("interagierbar"):
+		var distanz := global_position.distance_squared_to(kandidat.global_position)
 		if distanz < beste_distanz:
 			beste_distanz = distanz
-			naechstes = koerper
+			naechstes = kandidat
 	if naechstes != ziel:
 		ziel = naechstes
 		ziel_gewechselt.emit(ziel)
