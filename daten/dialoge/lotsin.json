@@ -1,0 +1,44 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Lotsin Wenna Kroll, aus Riverlock. Ich bringe die Flussboote aus Valdrenn über das Wächtermeer bis hierher, Wächter. Weiter nicht, und nur unbewaffnet.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du wissen?",
+			"optionen": [
+				{
+					"text": "Wie lange dauert die Fahrt nach Riverlock?",
+					"weiter": "fahrt"
+				},
+				{
+					"text": "Was bringen die Boote?",
+					"weiter": "waren"
+				},
+				{
+					"text": "Wie steht es in Riverlock?",
+					"weiter": "riverlock"
+				},
+				{
+					"text": "Gute Fahrt.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fahrt": {
+			"text": "Zwei bis drei Tage, je nach Wind. Die Schiffe des Ordens sind schneller. Die müssen keine Zollpapiere prüfen lassen.",
+			"weiter": "fragen"
+		},
+		"waren": {
+			"text": "Erz aus den Eisenhöhen, Salz aus Salzhain, Holz aus dem Karvenforst, Pelze aus den Rauhen Bergen. Zurück gehen Fisch, Getreide und Torf. Waffen, Pulver, Rüstungen und Pferde nie. Das sind Kriegsgüter, die kommen nicht über die Kette.",
+			"weiter": "fragen"
+		},
+		"riverlock": {
+			"text": "Der Zollherr Falk ist neutral, wie alle Zollherren vor ihm. Aber in letzter Zeit kommen viele Gesandte aus Valdrenn, und sie bleiben länger als früher. Mehr sage ich nicht. Ich bin nur Lotsin.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Gute Wache, Wächter."
+		}
+	}
+}

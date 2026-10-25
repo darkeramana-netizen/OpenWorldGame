@@ -1,0 +1,67 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "eid_waechter",
+			"knoten": "waechter"
+		}
+	],
+	"knoten": {
+		"start": {
+			"text": "Halt. Kein Fremder betritt den Bergfried ohne mein Wissen, kein Mitglied ohne mein Urteil.",
+			"weiter": "fragen"
+		},
+		"waechter": {
+			"text": "Wächter {name}. Dein Name steht jetzt im Namensbuch, dort drinnen, auf Ebene vier. Hinein darfst du trotzdem nicht. Der Bergfried ist kein Ort für Neugier.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du?",
+			"optionen": [
+				{
+					"text": "Was ist im Bergfried?",
+					"weiter": "inhalt"
+				},
+				{
+					"text": "Warum stehst du hier?",
+					"weiter": "eid"
+				},
+				{
+					"text": "Darf ich hinein?",
+					"weiter": "hinein"
+				},
+				{
+					"text": "Wach gut.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"inhalt": {
+			"text": "Das Gedächtnis des Ordens. Das Archiv, die Eidprotokolle, das Namensbuch, dreißigtausend Bände. Darüber eine Ebene, die vollständig leer ist. Die Stillebene.",
+			"optionen": [
+				{
+					"text": "Warum leer?",
+					"weiter": "stillebene"
+				},
+				{
+					"text": "Verstehe.",
+					"weiter": "fragen"
+				}
+			]
+		},
+		"stillebene": {
+			"text": "Weil man durch die Stille gehen muss, bevor man oben ankommt. Bruder Seren hat sie so gebaut. Wenn die Stille endet, steigt der Hüter der Stille dort hindurch und entzündet das erste Feuer.",
+			"weiter": "fragen"
+		},
+		"eid": {
+			"text": "„Ich wache über das, was der Orden ist, nicht über das, was er besitzt.“ Das habe ich geschworen. Gold liegt hier keines. Nur Namen.",
+			"weiter": "fragen"
+		},
+		"hinein": {
+			"text": "Nein. Wer hier nichts zu tun hat, sieht vom Bergfried nur die Brücke. Und die Brücke ist schon mehr, als die meisten sehen.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Wach gut."
+		}
+	}
+}

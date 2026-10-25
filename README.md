@@ -8,11 +8,39 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 - Spielkonzept und Fahrplan: [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md)
 - Karten: [`docs/bilder/`](docs/bilder/)
 
-![Nachtwache auf dem Wehrgang](docs/bilder/akt1-nachtwache.png)
+![Die Region Drachenstein](docs/bilder/region-uebersicht.png)
 
-## Stand: Akt I – „Die Schwelle“ ist durchspielbar
+## Stand
 
-Der Hof der Burgfeste Drachenstein als Graybox (Platzhalter aus einfachen Formen). Akt I führt in etwa drei Spieljahren (1750 bis 1753) vom Bewerber bis zum Haupteid:
+### Die Region Drachenstein
+
+Die erste begehbare Region, gebaut nach deiner Karte im Maßstab **1:50** (1 km = 20 m). Gebäude sind noch Platzhalter aus einfachen Formen.
+
+| Ort | Was dort steht |
+|---|---|
+| **Burgfeste Drachenstein** | der Hof aus Akt I, darüber der **Drachenhorst** mit dem Urkern, darunter das **Marktviertel** mit Rathaus und Kirchturm, die **Löwenward** mit Tortürmen, Ölturm und Kanonen |
+| **Drachenkai** | Kai, Zollhaus, zwei Schiffe, Lotsin aus Riverlock |
+| **Brücken zum Bergfried** | drei Brücken über zwei Inseln |
+| **Schwarzer Bergfried** | 100 m hoher achteckiger Turm mit Krone und äußerer Mauer, Bergwächter am Tor |
+| **Gravemarch** | im Sumpftal unter dem Felssporn, drei Mauerringe mit versetzten Toren, Scheintore, Kapelle St. Alriks, Donjon |
+| **Gravecrest** | auf dem eisigen Felssporn (Höhe 70), Weg hinauf, Zugbrücke über den Abgrund, Torhaus, achteckiger Donjon, Palas |
+| **Eisgrat** | Gebirge ringsum, Signaltürme an der Küste |
+
+Dazu kommen:
+- **Ortsnamen**, die beim Betreten groß eingeblendet werden.
+- **Karte auf M** (deine Sorrowland-Karte, mit Pfeil für Position und Blickrichtung).
+- **Schutz vor Meer und Rand:** Wer ins Wächtermeer fällt oder über den Rand will, wird zurückgesetzt.
+- Fünf neue Personen in der Region.
+
+| Drachenstein und Hafen | Gravecrest auf dem Felssporn |
+|---|---|
+| ![Drachenstein](docs/bilder/region-drachenstein.png) | ![Gravecrest](docs/bilder/region-gravecrest.png) |
+| **Brücken zum Schwarzen Bergfried** | **Karte (M)** |
+| ![Bergfried](docs/bilder/region-bergfried.png) | ![Karte](docs/bilder/region-karte.png) |
+
+### Akt I – „Die Schwelle“ ist durchspielbar
+
+Akt I spielt im Hof der Burgfeste Drachenstein und führt in etwa drei Spieljahren (1750 bis 1753) vom Bewerber bis zum Haupteid:
 
 | Rang | Was du tust | Bei wem |
 |---|---|---|
@@ -59,11 +87,14 @@ Dazu kommen diese Systeme:
 | E | sprechen, aufheben, arbeiten, im Gespräch weiter |
 | 1–9 | Antwort wählen (oder mit der Maus klicken) |
 | Tab | Dienstakte ein/aus |
+| M | Karte ein/aus |
 | T | eine Stunde vorspulen (praktisch für Nachtwachen) |
 | Esc | Pausemenü: Speichern, Laden, Hauptmenü |
 | F5 / F9 | schnell speichern / schnell laden (im laufenden Spiel) |
 
 Den Wehrgang erreichst du über die Holzrampe an der Südmauer, westlich vom Tor. Von dort führt die Westmauer zur zweiten Rampe hinauf auf den Wachturm in der Nordwestecke.
+
+Wege durch die Region: Vom Tor des Hofs führt der Weg nach Osten durch das Marktviertel zum Drachenkai und von dort über die Brücken zum Bergfried. Nach Westen führt er ins Tal nach Gravemarch. Kurz vor Gravemarch zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
 
 ## Speichern und Laden
 
@@ -87,7 +118,14 @@ szenen/
   oberflaeche/hauptmenue.tscn  Startszene
   oberflaeche/pausemenue.tscn  Esc-Menü
   oberflaeche/hud.tscn     Uhr, Ziel, Hinweise, Gesprächsfenster, Akte, Blenden
-  welt/hof.tscn            der Hof mit allen Personen und Posten
+  welt/region_drachenstein.tscn  die Region: Gelände, Meer, Burgen, Brücken, Orte, Personen
+  welt/burg_hof.tscn       der Hof aus Akt I mit seinen Personen und Posten
+  welt/gelaende.gd         baut Gelände und Kollision aus daten/gelaende/
+  welt/gelaende.gdshader   Farben des Geländes: Strand, Gras, Fels, Schnee, Wege, Sumpf
+  welt/wasser.gdshader     das Wächtermeer
+  welt/auf_gelaende.gd     setzt Häuser und Personen auf die Geländehöhe
+  welt/ort.gd              benannter Ort, zeigt beim Betreten den Namen
+  welt/haus.tscn           Haus für das Marktviertel
   welt/tageslicht.gd       Sonne, Mond, Himmel und Nebel nach Uhrzeit
   welt/ordenswand.gd       Namenssteine, nach dem Haupteid auch deiner
   welt/posten.gd           Wachposten (Torwache, Nachtwachen)
@@ -96,14 +134,17 @@ szenen/
   figuren/bruchstein.tscn  Gegenstand zum Aufheben
   figuren/werkbank.tscn    Arbeitsstelle (kostet Spielzeit)
 daten/dialoge/             Gespräche als JSON-Dateien
-tests/test_akt1.gd         spielt Akt I automatisch durch
+daten/gelaende/            Höhen (hoehen.r32), Wege und Sumpf (maske.png), Vorschau
+daten/karten/              die Karte von Sorrowland für die Taste M
+werkzeuge/                 Gelände-Generator (in Godot ausführbar)
+tests/                     automatische Tests
 docs/                      Lore-Bibel, Spielkonzept, Karten, Bilder (von Godot ignoriert)
 ```
 
 ## Eine neue Person hinzufügen
 
-1. `szenen/welt/hof.tscn` öffnen.
-2. `szenen/figuren/person.tscn` aus dem Dateisystem-Dock in die Szene unter **Personen** ziehen.
+1. `szenen/welt/region_drachenstein.tscn` öffnen (für den Hof: `szenen/welt/burg_hof.tscn`).
+2. `szenen/figuren/person.tscn` aus dem Dateisystem-Dock in die Szene ziehen. In der Region unter **Personen/PersonenAmBoden** setzt sie sich von selbst auf die Geländehöhe.
 3. Im Inspektor ausfüllen:
    - **Anzeige Name**
    - **Dialog Id** (Dateiname ohne `.json`)
@@ -111,6 +152,16 @@ docs/                      Lore-Bibel, Spielkonzept, Karten, Bilder (von Godot i
    - **Tracht** (Farbe)
    - optional **Sichtbar Wenn**, eine Bedingung, solange die Person da ist
 4. Eine Datei `daten/dialoge/<dialog_id>.json` anlegen (siehe unten).
+
+## Das Gelände verändern
+
+Das Gelände wird aus `werkzeuge/gelaende_erzeuger.gd` erzeugt. Dort stehen die Lage der Orte, die Wege, das Gebirge, der Felssporn, die Küste und die Inseln, jeweils mit Kommentar.
+
+1. Werte im Erzeuger ändern, z. B. einen Weg oder die Höhe des Felssporns.
+2. `werkzeuge/gelaende_erzeugen.gd` öffnen und **Datei → Ausführen** wählen (Strg+Umschalt+X).
+3. Die Szene `region_drachenstein.tscn` neu öffnen.
+
+`daten/gelaende/vorschau.png` zeigt das Ergebnis von oben. Häuser und Personen unter einem Knoten mit `auf_gelaende.gd` (Marktviertel, Löwenward, Signaltürme, PersonenAmBoden) folgen der neuen Geländehöhe von selbst.
 
 ## Einen Wachposten hinzufügen
 
@@ -173,14 +224,22 @@ Jede Datei hat Knoten. Begonnen wird beim Knoten `start`, außer ein Eintrag in 
 
 ## Testen
 
-`tests/test_akt1.gd` spielt Akt I komplett durch. Dabei prüft der Test 42 Punkte, unter anderem falsche Antworten, einen zu früh verlassenen Posten, Speichern und Laden sowie alle drei Ausgänge des Fenn-Strangs. Er benutzt einen eigenen Speicherordner, deine Spielstände bleiben unberührt.
+Drei automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
+
+| Test | Prüft |
+|---|---|
+| `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
+| `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
+| `tests/test_region.gd` | die Region, 25 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
 
 ```
 godot --headless --path . --script res://tests/test_akt1.gd
+godot --headless --path . --script res://tests/test_eingabe.gd
+godot --headless --path . --script res://tests/test_region.gd
 ```
 
-Am Ende steht `Fehler: 0`, wenn alles stimmt.
+Am Ende steht jeweils `Fehler: 0`, wenn alles stimmt.
 
 ## Nächste Schritte
 
-Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Als Nächstes käme die erste echte Region (Stufe 3): Drachenstein mit Brücken zum Schwarzen Bergfried und der Weg nach Gravecrest und Gravemarch, mit Gelände statt Klötzen.
+Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Offen in Stufe 3 sind die Innenräume (Bergfried mit Stillebene, Gravemarch als echtes Labyrinth) und echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.

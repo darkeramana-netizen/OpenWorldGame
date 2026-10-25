@@ -114,7 +114,7 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 | **0 – Lernen** | Godot installieren, ein offizielles 3D-Einsteigertutorial durcharbeiten | 2–4 Wochen |
 | **1 – Graubox „Die Schwelle“** ✅ | Spielfigur, Kamera, ein Hof aus Klötzen, Tageszyklus mit Stille-Stunde, drei NPCs mit Dialog | 1–2 Monate |
 | **2 – Akt I spielbar** ✅ | Haus der Schwelle in Drachenstein, Knappenprüfung, Nachtwache, Eid, Namensstein auf der Ordenswand, Speichern und Laden | 3–6 Monate |
-| **3 – Die erste Region** | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände mit Terrain3D | 6+ Monate |
+| **3 – Die erste Region** 🔶 | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände. Begehbar als Graybox, offen: Innenräume, Modelle | 6+ Monate |
 | **4 – Systeme** | Kampf, Ansehen, Akte und Verfahren, Alarmstufen | laufend |
 | **5 – Das ganze Becken** | Ashenveil, Nord- und Südstraße, Riverlock, Akt II | später |
 | **6 – Akt III** | Ende der Stille, Kriegszustand, Enden | später |
@@ -122,6 +122,12 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 **Bewusst weggelassen, mindestens bis Stufe 5:** Reiten, selbst Segeln, Sprachausgabe, große Schlachten, begehbares Valdrenn.
 
 ## 9. Stand
+
+**Stufe 3 (die erste Region) ist begehbar.** Entscheidungen:
+- **Gelände ohne Plugin:** Statt Terrain3D erzeugt ein eigener GDScript-Generator (`werkzeuge/gelaende_erzeuger.gd`) die Höhen aus der Karte. Das braucht keine Zusatzprogramme und läuft mit jeder Godot-Version. Ein Plugin wie Terrain3D lohnt sich erst, wenn das Gelände von Hand bemalt werden soll.
+- **Koordinaten:** Der Hof von Drachenstein liegt bei (0, 0) auf Höhe 0, das Meer bei -20. Die Lage aller Orte entspricht der Karte im Maßstab 1:50, das prüft die Karte auf Taste M.
+- **Burgen kleiner verkleinert als Wege:** Der Bergfried behält seine 100 m Höhe und 40 m Durchmesser, die Wege dazwischen schrumpfen auf 1:50.
+
 
 **Stufe 1 und Stufe 2 sind fertig: Akt I ist durchspielbar**, mit Speichern und Laden (Ablauf siehe README.md).
 
@@ -144,5 +150,10 @@ Entscheidungen beim Bau von Akt I:
 | Anselm Kray | Hüter, Nachtwache auf dem Wehrgang |
 | Ivo Grend | Wachführer, teilt die Wachen ein |
 | Aldric Hayn | Komtur der Burgfeste Drachenstein |
+| Tjark Halm | Bergwächter am Tor des Schwarzen Bergfrieds |
+| Wenna Kroll | Lotsin aus Riverlock, im Drachenkai |
+| Grete Lohm | Händlerin im Marktviertel (Bürgerin, kein Ordensmitglied) |
+| Esme Rauh | Wächterin am Osttor von Gravemarch |
+| Ulf Haskel | Kammbrecher an der Zugbrücke von Gravecrest |
 | Hollmoor | Bezirksfestung |
 | Kellbrück | abgebranntes Heimatdorf (Herkunftsoption) |

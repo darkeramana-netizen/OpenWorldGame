@@ -17,8 +17,14 @@ const KORDELFARBEN := {
 	"doppelt golden": Color(1.0, 0.8, 0.3),
 }
 
+## Wasser und Rand der Region: Wer hineingerät, wird zur letzten sicheren Stelle zurückgesetzt.
+const MEERESSPIEGEL := -20.0
+const GRENZE_MIN := Vector2(-880.0, -630.0)
+const GRENZE_MAX := Vector2(430.0, 330.0)
+
 ## Das Objekt, das mit E angesprochen wird (Person oder Gegenstand).
 var ziel: Node = null
+var _sichere_position := Vector3.ZERO
 
 var _schwerkraft: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -37,6 +43,13 @@ func _ready() -> void:
 	if not Speicher.ausstehender_spieler.is_empty():
 		aus_dict(Speicher.ausstehender_spieler)
 		Speicher.ausstehender_spieler = {}
+	# Nie unter der Geländeoberfläche beginnen, sonst kann die Figur durchfallen.
+	var gelaende := get_tree().get_first_node_in_group("gelaende")
+	if gelaende != null:
+		var boden: float = gelaende.hoehe_bei(global_position.x, global_position.z)
+		if global_position.y < boden + 0.05:
+			global_position.y = boden + 0.05
+	_sichere_position = global_position
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -78,7 +91,22 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0.0, tempo * 10.0 * delta)
 
 	move_and_slide()
+	_pruefe_grenzen()
 	_aktualisiere_ziel()
+
+
+func _pruefe_grenzen() -> void:
+	var p := global_position
+	var draussen := p.x < GRENZE_MIN.x or p.z < GRENZE_MIN.y or p.x > GRENZE_MAX.x or p.z > GRENZE_MAX.y
+	if p.y < MEERESSPIEGEL - 1.0 or draussen:
+		global_position = _sichere_position
+		velocity = Vector3.ZERO
+		if draussen:
+			Spielstand.meldung.emit("Hier endet die Region. Dahinter liegt nur Fels.")
+		else:
+			Spielstand.meldung.emit("Das Wächtermeer ist zu kalt zum Schwimmen.")
+	elif is_on_floor() and p.y > MEERESSPIEGEL + 0.3:
+		_sichere_position = p
 
 
 func als_dict() -> Dictionary:

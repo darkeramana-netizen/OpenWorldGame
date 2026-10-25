@@ -11,6 +11,8 @@ signal meldung(text: String)
 ## Schwarze Blende mit Text, z. B. bei Zeitsprüngen.
 ## art: "zwischen" (blendet wieder auf), "akt_ende" (dauert länger), "spielende" (zurück ins Hauptmenü).
 signal blende(text: String, art: String)
+## Der Spieler hat einen benannten Ort betreten.
+signal ort_betreten(name: String, untertitel: String)
 
 ## Index = Stufe der Waffenlinie. Stufe 0 ist der Bewerber vor dem Gelöbnis.
 const RAENGE: Array[String] = [

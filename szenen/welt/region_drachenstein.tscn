@@ -1,0 +1,844 @@
+[gd_scene load_steps=32 format=3]
+
+[ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
+[ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
+[ext_resource type="PackedScene" path="res://szenen/welt/burg_hof.tscn" id="3_hof"]
+[ext_resource type="PackedScene" path="res://szenen/figuren/person.tscn" id="4_person"]
+[ext_resource type="PackedScene" path="res://szenen/spieler/spieler.tscn" id="5_spieler"]
+[ext_resource type="PackedScene" path="res://szenen/oberflaeche/hud.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://szenen/oberflaeche/pausemenue.tscn" id="7_pause"]
+[ext_resource type="Shader" path="res://szenen/welt/gelaende.gdshader" id="8_gelaende_shader"]
+[ext_resource type="Texture2D" path="res://daten/gelaende/maske.png" id="9_maske"]
+[ext_resource type="Shader" path="res://szenen/welt/wasser.gdshader" id="10_wasser"]
+[ext_resource type="Script" path="res://szenen/welt/auf_gelaende.gd" id="11_auf_gelaende"]
+[ext_resource type="PackedScene" path="res://szenen/welt/haus.tscn" id="12_haus"]
+[ext_resource type="Script" path="res://szenen/welt/ort.gd" id="13_ort"]
+
+[sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
+sky_top_color = Color(0.32, 0.42, 0.56, 1)
+sky_horizon_color = Color(0.68, 0.68, 0.66, 1)
+ground_bottom_color = Color(0.12, 0.11, 0.1, 1)
+ground_horizon_color = Color(0.68, 0.68, 0.66, 1)
+
+[sub_resource type="Sky" id="Himmel"]
+sky_material = SubResource("Himmel_material")
+
+[sub_resource type="Environment" id="Umgebung"]
+background_mode = 2
+sky = SubResource("Himmel")
+ambient_light_source = 3
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.62, 0.64, 0.68, 1)
+fog_density = 0.0015
+
+[sub_resource type="ShaderMaterial" id="Material_gelaende"]
+shader = ExtResource("8_gelaende_shader")
+shader_parameter/maske = ExtResource("9_maske")
+
+[sub_resource type="ShaderMaterial" id="Material_wasser"]
+shader = ExtResource("10_wasser")
+
+[sub_resource type="PlaneMesh" id="Mesh_meer"]
+material = SubResource("Material_wasser")
+size = Vector2(2600, 2200)
+subdivide_width = 120
+subdivide_depth = 100
+
+[sub_resource type="StandardMaterial3D" id="Material_mauer"]
+albedo_color = Color(0.3, 0.29, 0.28, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_basalt"]
+albedo_color = Color(0.12, 0.12, 0.14, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Material_holz"]
+albedo_color = Color(0.36, 0.25, 0.16, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Material_eis"]
+albedo_color = Color(0.62, 0.66, 0.7, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="Material_hell"]
+albedo_color = Color(0.55, 0.52, 0.47, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_feuer"]
+albedo_color = Color(0.85, 0.45, 0.15, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Material_kai"]
+albedo_color = Color(0.38, 0.36, 0.33, 1)
+roughness = 1.0
+
+[sub_resource type="BoxShape3D" id="Form_ort1"]
+size = Vector3(260, 120, 220)
+
+[sub_resource type="BoxShape3D" id="Form_ort2"]
+size = Vector3(50, 20, 50)
+
+[sub_resource type="BoxShape3D" id="Form_ort3"]
+size = Vector3(110, 80, 80)
+
+[sub_resource type="BoxShape3D" id="Form_ort4"]
+size = Vector3(240, 60, 240)
+
+[sub_resource type="BoxShape3D" id="Form_ort5"]
+size = Vector3(130, 50, 50)
+
+[node name="Region" type="Node3D"]
+
+[node name="Umgebung" type="WorldEnvironment" parent="."]
+environment = SubResource("Umgebung")
+
+[node name="Mond" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, 0, -0.5, 0.35, 0.714, 0.606, 0.357, -0.7, 0.618, 0, 60, 0)
+light_color = Color(0.55, 0.65, 0.95, 1)
+light_energy = 0.0
+
+[node name="Sonne" type="DirectionalLight3D" parent="." node_paths=PackedStringArray("umgebung", "mond")]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.8660254, 0, -0.8660254, 0.5, 0, 60, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 250.0
+script = ExtResource("1_tageslicht")
+umgebung = NodePath("../Umgebung")
+mond = NodePath("../Mond")
+
+[node name="Gelaende" type="Node3D" parent="."]
+script = ExtResource("2_gelaende")
+material = SubResource("Material_gelaende")
+
+[node name="Meer" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -20, 0)
+mesh = SubResource("Mesh_meer")
+
+[node name="BurgHof" parent="." instance=ExtResource("3_hof")]
+
+[node name="Drachenstein" type="Node3D" parent="."]
+
+[node name="Drachenhorst" type="Node3D" parent="Drachenstein"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -75, 12, 0)
+
+[node name="Urkern" type="CSGBox3D" parent="Drachenstein/Drachenhorst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 14, 0)
+use_collision = true
+size = Vector3(12, 28, 12)
+material = SubResource("Material_basalt")
+
+[node name="MauerNord" type="CSGBox3D" parent="Drachenstein/Drachenhorst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3, -22)
+use_collision = true
+size = Vector3(46, 6, 2)
+material = SubResource("Material_mauer")
+
+[node name="MauerWest" type="CSGBox3D" parent="Drachenstein/Drachenhorst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -22, 3, 0)
+use_collision = true
+size = Vector3(2, 6, 46)
+material = SubResource("Material_mauer")
+
+[node name="MauerOst" type="CSGBox3D" parent="Drachenstein/Drachenhorst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 22, 3, 0)
+use_collision = true
+size = Vector3(2, 6, 46)
+material = SubResource("Material_mauer")
+
+[node name="MauerSuedWest" type="CSGBox3D" parent="Drachenstein/Drachenhorst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -13.5, 3, 22)
+use_collision = true
+size = Vector3(19, 6, 2)
+material = SubResource("Material_mauer")
+
+[node name="MauerSuedOst" type="CSGBox3D" parent="Drachenstein/Drachenhorst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 13.5, 3, 22)
+use_collision = true
+size = Vector3(19, 6, 2)
+material = SubResource("Material_mauer")
+
+[node name="Schild" type="Label3D" parent="Drachenstein/Drachenhorst"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 31, 0)
+billboard = 1
+pixel_size = 0.02
+text = "Drachenhorst"
+font_size = 64
+outline_size = 14
+
+[node name="Marktviertel" type="Node3D" parent="Drachenstein" node_paths=PackedStringArray("gelaende")]
+script = ExtResource("11_auf_gelaende")
+gelaende = NodePath("../../Gelaende")
+
+[node name="Haus1" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 30, 0, 70)
+
+[node name="Haus2" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(1, 0, 0, 0, 1.15, 0, -0, 0, 1, 45, 0, 69)
+
+[node name="Haus3" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(1, 0, 0, 0, 1.3, 0, -0, 0, 1, 60, 0, 71)
+
+[node name="Haus4" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 75, 0, 67)
+
+[node name="Haus5" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(1, 0, 0, 0, 1.15, 0, -0, 0, 1, 90, 0, 64)
+
+[node name="Haus6" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1.3, 0, -1.2246e-16, 0, -1, 32, 0, 106)
+
+[node name="Haus7" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, 48, 0, 104)
+
+[node name="Haus8" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1.15, 0, -1.2246e-16, 0, -1, 64, 0, 101)
+
+[node name="Haus9" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1.3, 0, -1.2246e-16, 0, -1, 80, 0, 99)
+
+[node name="Haus10" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, 94, 0, 96)
+
+[node name="Haus11" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(6.1232e-17, 0, 1, 0, 1.15, 0, -1, 0, 6.1232e-17, 20, 0, 124)
+
+[node name="Haus12" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1.3, 0, -1.2246e-16, 0, -1, 38, 0, 124)
+
+[node name="Haus13" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, 56, 0, 120)
+
+[node name="Rathaus" parent="Drachenstein/Marktviertel" instance=ExtResource("12_haus")]
+transform = Transform3D(-1.6, 0, 1.7145e-16, 0, 1.3, 0, -1.9594e-16, 0, -1.4, 72, 0, 121)
+
+[node name="Kirchturm" type="CSGBox3D" parent="Drachenstein/Marktviertel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 6, 8, 104)
+use_collision = true
+size = Vector3(6, 22, 6)
+material = SubResource("Material_hell")
+
+[node name="SchildMarkt" type="Label3D" parent="Drachenstein/Marktviertel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 55, 9, 86)
+billboard = 1
+pixel_size = 0.02
+text = "Marktviertel"
+font_size = 64
+outline_size = 14
+
+[node name="Loewenward" type="Node3D" parent="Drachenstein" node_paths=PackedStringArray("gelaende")]
+script = ExtResource("11_auf_gelaende")
+gelaende = NodePath("../../Gelaende")
+
+[node name="Mauer1" type="CSGBox3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 102, 2, 45)
+use_collision = true
+size = Vector3(3, 12, 20)
+material = SubResource("Material_mauer")
+
+[node name="Mauer2" type="CSGBox3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 102, 2, 60)
+use_collision = true
+size = Vector3(3, 12, 22)
+material = SubResource("Material_mauer")
+
+[node name="Mauer3" type="CSGBox3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 102, 2, 95)
+use_collision = true
+size = Vector3(3, 12, 20)
+material = SubResource("Material_mauer")
+
+[node name="Mauer4" type="CSGBox3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 102, 2, 113)
+use_collision = true
+size = Vector3(3, 12, 18)
+material = SubResource("Material_mauer")
+
+[node name="Mauer5" type="CSGBox3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 102, 2, 130)
+use_collision = true
+size = Vector3(3, 12, 16)
+material = SubResource("Material_mauer")
+
+[node name="TorturmNord" type="CSGBox3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 102, 5, 70.5)
+use_collision = true
+size = Vector3(6, 16, 5)
+material = SubResource("Material_mauer")
+
+[node name="TorturmSued" type="CSGBox3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 102, 5, 84.5)
+use_collision = true
+size = Vector3(6, 16, 5)
+material = SubResource("Material_mauer")
+
+[node name="Oelturm" type="CSGCylinder3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 102, 6, 138)
+use_collision = true
+radius = 4.5
+height = 18
+sides = 8
+material = SubResource("Material_mauer")
+
+[node name="Kanone1" type="CSGCylinder3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 103, 8.6, 52)
+use_collision = true
+radius = 0.35
+height = 3.0
+sides = 10
+material = SubResource("Material_basalt")
+
+[node name="Kanone2" type="CSGCylinder3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 103, 8.6, 102)
+use_collision = true
+radius = 0.35
+height = 3.0
+sides = 10
+material = SubResource("Material_basalt")
+
+[node name="SchildLoewenward" type="Label3D" parent="Drachenstein/Loewenward"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 102, 15, 77.5)
+billboard = 1
+pixel_size = 0.02
+text = "Löwenward"
+font_size = 64
+outline_size = 14
+
+[node name="Drachenkai" type="Node3D" parent="Drachenstein"]
+
+[node name="Kai" type="CSGBox3D" parent="Drachenstein/Drachenkai"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 121, -19.8, 75)
+use_collision = true
+size = Vector3(30, 4, 34)
+material = SubResource("Material_kai")
+
+[node name="Zollhaus" type="CSGBox3D" parent="Drachenstein/Drachenkai"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 113, -14.8, 63)
+use_collision = true
+size = Vector3(10, 6, 8)
+material = SubResource("Material_hell")
+
+[node name="Schiff1" type="CSGBox3D" parent="Drachenstein/Drachenkai"]
+transform = Transform3D(0.99027, 0, 0.13917, 0, 1, 0, -0.13917, 0, 0.99027, 146, -19.6, 52)
+use_collision = true
+size = Vector3(16, 3, 5)
+material = SubResource("Material_holz")
+
+[node name="Mast1" type="CSGCylinder3D" parent="Drachenstein/Drachenkai"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 146, -10, 52)
+
+radius = 0.3
+height = 16
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="Schiff2" type="CSGBox3D" parent="Drachenstein/Drachenkai"]
+transform = Transform3D(0.99027, 0, 0.13917, 0, 1, 0, -0.13917, 0, 0.99027, 141, -19.6, 64)
+use_collision = true
+size = Vector3(16, 3, 5)
+material = SubResource("Material_holz")
+
+[node name="Mast2" type="CSGCylinder3D" parent="Drachenstein/Drachenkai"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 141, -10, 64)
+
+radius = 0.3
+height = 16
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="SchildKai" type="Label3D" parent="Drachenstein/Drachenkai"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 121, -11, 70)
+billboard = 1
+pixel_size = 0.02
+text = "Drachenkai"
+font_size = 64
+outline_size = 14
+
+[node name="Bruecken" type="Node3D" parent="."]
+
+[node name="Bruecke1" type="Node3D" parent="Bruecken"]
+transform = Transform3D(0.86824, 0, -0.49614, 0, 1, 0, 0.49614, 0, 0.86824, 147.5, -18.1, 90)
+
+[node name="Deck" type="CSGBox3D" parent="Bruecken/Bruecke1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0, 0)
+use_collision = true
+size = Vector3(46.31, 0.6, 5)
+material = SubResource("Material_holz")
+
+[node name="GelaenderNord" type="CSGBox3D" parent="Bruecken/Bruecke1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.8, -2.4)
+use_collision = true
+size = Vector3(46.31, 1.0, 0.25)
+material = SubResource("Material_holz")
+
+[node name="GelaenderSued" type="CSGBox3D" parent="Bruecken/Bruecke1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.8, 2.4)
+use_collision = true
+size = Vector3(46.31, 1.0, 0.25)
+material = SubResource("Material_holz")
+
+[node name="Pfeiler" type="CSGBox3D" parent="Bruecken/Bruecke1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -7, 0)
+use_collision = true
+size = Vector3(3, 14, 4)
+material = SubResource("Material_mauer")
+
+[node name="Bruecke2" type="Node3D" parent="Bruecken"]
+transform = Transform3D(0.85749, 0, -0.5145, 0, 1, 0, 0.5145, 0, 0.85749, 180, -18.1, 109)
+
+[node name="Deck" type="CSGBox3D" parent="Bruecken/Bruecke2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0, 0)
+use_collision = true
+size = Vector3(40.99, 0.6, 5)
+material = SubResource("Material_holz")
+
+[node name="GelaenderNord" type="CSGBox3D" parent="Bruecken/Bruecke2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.8, -2.4)
+use_collision = true
+size = Vector3(40.99, 1.0, 0.25)
+material = SubResource("Material_holz")
+
+[node name="GelaenderSued" type="CSGBox3D" parent="Bruecken/Bruecke2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.8, 2.4)
+use_collision = true
+size = Vector3(40.99, 1.0, 0.25)
+material = SubResource("Material_holz")
+
+[node name="Pfeiler" type="CSGBox3D" parent="Bruecken/Bruecke2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -7, 0)
+use_collision = true
+size = Vector3(3, 14, 4)
+material = SubResource("Material_mauer")
+
+[node name="Bruecke3" type="Node3D" parent="Bruecken"]
+transform = Transform3D(0.9554, 0, -0.29531, 0, 1, 0, 0.29531, 0, 0.9554, 222.5, -18.1, 126.5)
+
+[node name="Deck" type="CSGBox3D" parent="Bruecken/Bruecke3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0, 0)
+use_collision = true
+size = Vector3(63.57, 0.6, 5)
+material = SubResource("Material_holz")
+
+[node name="GelaenderNord" type="CSGBox3D" parent="Bruecken/Bruecke3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.8, -2.4)
+use_collision = true
+size = Vector3(63.57, 1.0, 0.25)
+material = SubResource("Material_holz")
+
+[node name="GelaenderSued" type="CSGBox3D" parent="Bruecken/Bruecke3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.8, 2.4)
+use_collision = true
+size = Vector3(63.57, 1.0, 0.25)
+material = SubResource("Material_holz")
+
+[node name="Pfeiler" type="CSGBox3D" parent="Bruecken/Bruecke3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -7, 0)
+use_collision = true
+size = Vector3(3, 14, 4)
+material = SubResource("Material_mauer")
+
+[node name="SchwarzerBergfried" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 250, -17.8, 135)
+
+[node name="Turm" type="CSGCylinder3D" parent="SchwarzerBergfried"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 50, 0)
+use_collision = true
+radius = 20
+height = 100
+sides = 8
+material = SubResource("Material_basalt")
+
+[node name="Krone" type="CSGCylinder3D" parent="SchwarzerBergfried"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 93, 0)
+use_collision = true
+radius = 22.5
+height = 7
+sides = 8
+material = SubResource("Material_basalt")
+
+[node name="Tor" type="CSGBox3D" parent="SchwarzerBergfried"]
+transform = Transform3D(0.95538, 0, -0.29537, 0, 1, 0, 0.29537, 0, 0.95538, -19.2, 3, -5.9)
+
+size = Vector3(1.2, 6, 4)
+material = SubResource("Material_holz")
+
+[node name="AeussereMauer" type="CSGCombiner3D" parent="SchwarzerBergfried"]
+use_collision = true
+
+[node name="Ring" type="CSGCylinder3D" parent="SchwarzerBergfried/AeussereMauer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3, 0)
+
+radius = 31
+height = 6
+sides = 16
+material = SubResource("Material_basalt")
+
+[node name="Innen" type="CSGCylinder3D" parent="SchwarzerBergfried/AeussereMauer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+operation = 2
+radius = 29.5
+height = 7.0
+sides = 16
+
+[node name="Durchgang" type="CSGBox3D" parent="SchwarzerBergfried/AeussereMauer"]
+transform = Transform3D(0.95538, 0, -0.29537, 0, 1, 0, 0.29537, 0, 0.95538, -28.7, 2.5, -8.9)
+operation = 2
+size = Vector3(6, 5, 6)
+
+[node name="Schild" type="Label3D" parent="SchwarzerBergfried"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 106, 0)
+billboard = 1
+pixel_size = 0.02
+text = "Schwarzer Bergfried"
+font_size = 96
+outline_size = 14
+
+[node name="Gravemarch" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -600, -4, -205)
+
+[node name="AussenNord" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 4, -45)
+use_collision = true
+size = Vector3(92, 8, 2)
+material = SubResource("Material_mauer")
+
+[node name="AussenSued" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 4, 45)
+use_collision = true
+size = Vector3(92, 8, 2)
+material = SubResource("Material_mauer")
+
+[node name="AussenWest" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -45, 4, 0)
+use_collision = true
+size = Vector3(2, 8, 92)
+material = SubResource("Material_mauer")
+
+[node name="AussenOst1" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 45, 4, -25)
+use_collision = true
+size = Vector3(2, 8, 40)
+material = SubResource("Material_mauer")
+
+[node name="AussenOst2" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 45, 4, 25)
+use_collision = true
+size = Vector3(2, 8, 40)
+material = SubResource("Material_mauer")
+
+[node name="ScheintorSued" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3, 46.2)
+
+size = Vector3(6, 6, 0.6)
+material = SubResource("Material_holz")
+
+[node name="MitteNord1" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -22.5, 4, -30)
+use_collision = true
+size = Vector3(15, 8, 2)
+material = SubResource("Material_mauer")
+
+[node name="MitteNord2" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 12.5, 4, -30)
+use_collision = true
+size = Vector3(35, 8, 2)
+material = SubResource("Material_mauer")
+
+[node name="MitteSued" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 4, 30)
+use_collision = true
+size = Vector3(62, 8, 2)
+material = SubResource("Material_mauer")
+
+[node name="MitteWest" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -30, 4, 0)
+use_collision = true
+size = Vector3(2, 8, 62)
+material = SubResource("Material_mauer")
+
+[node name="MitteOst" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 30, 4, 0)
+use_collision = true
+size = Vector3(2, 8, 62)
+material = SubResource("Material_mauer")
+
+[node name="ScheintorOst" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 31.2, 3, 8)
+
+size = Vector3(0.6, 6, 6)
+material = SubResource("Material_holz")
+
+[node name="KapelleStAlrik" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 20, 3.5, -37.5)
+use_collision = true
+size = Vector3(10, 7, 9)
+material = SubResource("Material_hell")
+
+[node name="KernWest1" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -15, 4, -10)
+use_collision = true
+size = Vector3(2, 8, 12)
+material = SubResource("Material_mauer")
+
+[node name="KernWest2" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -15, 4, 10)
+use_collision = true
+size = Vector3(2, 8, 12)
+material = SubResource("Material_mauer")
+
+[node name="KernNord" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 4, -15)
+use_collision = true
+size = Vector3(32, 8, 2)
+material = SubResource("Material_mauer")
+
+[node name="KernSued" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 4, 15)
+use_collision = true
+size = Vector3(32, 8, 2)
+material = SubResource("Material_mauer")
+
+[node name="KernOst" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 15, 4, 0)
+use_collision = true
+size = Vector3(2, 8, 32)
+material = SubResource("Material_mauer")
+
+[node name="Donjon" type="CSGBox3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 3, 11, 0)
+use_collision = true
+size = Vector3(10, 22, 10)
+material = SubResource("Material_basalt")
+
+[node name="Schild" type="Label3D" parent="Gravemarch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 28, 0)
+billboard = 1
+pixel_size = 0.02
+text = "Gravemarch"
+font_size = 64
+outline_size = 14
+
+[node name="Gravecrest" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 70, 0)
+
+[node name="Zugbruecke" type="CSGBox3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -621, -0.3, -364)
+use_collision = true
+size = Vector3(19, 0.6, 5)
+material = SubResource("Material_holz")
+
+[node name="Torhaus" type="CSGCombiner3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -637, 0, -365)
+use_collision = true
+
+[node name="Block" type="CSGBox3D" parent="Gravecrest/Torhaus"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 7, 0)
+
+size = Vector3(10, 14, 16)
+material = SubResource("Material_eis")
+
+[node name="Durchgang" type="CSGBox3D" parent="Gravecrest/Torhaus"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3, 1)
+operation = 2
+size = Vector3(12, 6, 5)
+
+[node name="WachturmNord" type="CSGCylinder3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -637, 8, -375)
+use_collision = true
+radius = 3
+height = 16
+sides = 8
+material = SubResource("Material_eis")
+
+[node name="WachturmSued" type="CSGCylinder3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -637, 8, -355)
+use_collision = true
+radius = 3
+height = 16
+sides = 8
+material = SubResource("Material_eis")
+
+[node name="MauerNord" type="CSGBox3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -679, 3, -377.5)
+use_collision = true
+size = Vector3(86, 6, 1.5)
+material = SubResource("Material_eis")
+
+[node name="MauerSued" type="CSGBox3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -679, 3, -351.5)
+use_collision = true
+size = Vector3(86, 6, 1.5)
+material = SubResource("Material_eis")
+
+[node name="Kaserne" type="CSGBox3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -656, 3.5, -372)
+use_collision = true
+size = Vector3(16, 7, 7)
+material = SubResource("Material_eis")
+
+[node name="Akademie" type="CSGBox3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -658, 3.5, -357)
+use_collision = true
+size = Vector3(14, 7, 6)
+material = SubResource("Material_eis")
+
+[node name="Donjon" type="CSGCylinder3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -675, 14, -365)
+use_collision = true
+radius = 6
+height = 28
+sides = 8
+material = SubResource("Material_eis")
+
+[node name="Schmiede" type="CSGBox3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -692, 3, -372)
+use_collision = true
+size = Vector3(10, 6, 6)
+material = SubResource("Material_eis")
+
+[node name="Palas" type="CSGBox3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -714, 9, -365)
+use_collision = true
+size = Vector3(18, 18, 24)
+material = SubResource("Material_eis")
+
+[node name="Schild" type="Label3D" parent="Gravecrest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -675, 33, -365)
+billboard = 1
+pixel_size = 0.02
+text = "Gravecrest"
+font_size = 64
+outline_size = 14
+
+[node name="Signaltuerme" type="Node3D" parent="." node_paths=PackedStringArray("gelaende")]
+script = ExtResource("11_auf_gelaende")
+gelaende = NodePath("../Gelaende")
+
+[node name="Signalturm1" type="Node3D" parent="Signaltuerme"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 78, 0, -190)
+
+[node name="Turm" type="CSGBox3D" parent="Signaltuerme/Signalturm1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 5, 0)
+use_collision = true
+size = Vector3(4, 14, 4)
+material = SubResource("Material_mauer")
+
+[node name="Feuerbecken" type="CSGCylinder3D" parent="Signaltuerme/Signalturm1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 12.4, 0)
+
+radius = 1.6
+height = 0.8
+sides = 8
+material = SubResource("Material_feuer")
+
+[node name="Signalturm2" type="Node3D" parent="Signaltuerme"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 85, 0, 200)
+
+[node name="Turm" type="CSGBox3D" parent="Signaltuerme/Signalturm2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 5, 0)
+use_collision = true
+size = Vector3(4, 14, 4)
+material = SubResource("Material_mauer")
+
+[node name="Feuerbecken" type="CSGCylinder3D" parent="Signaltuerme/Signalturm2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 12.4, 0)
+
+radius = 1.6
+height = 0.8
+sides = 8
+material = SubResource("Material_feuer")
+
+[node name="Orte" type="Node3D" parent="."]
+
+[node name="Ort1" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 30, 0, 50)
+script = ExtResource("13_ort")
+ortsname = "Burgfeste Drachenstein"
+untertitel = "Drei Burgen, ein Stein, eine Feste."
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort1"]
+shape = SubResource("Form_ort1")
+
+[node name="Ort2" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 128, -18, 72)
+script = ExtResource("13_ort")
+ortsname = "Drachenkai"
+untertitel = "Hafen am Wächtermeer"
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort2"]
+shape = SubResource("Form_ort2")
+
+[node name="Ort3" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 225, -10, 128)
+script = ExtResource("13_ort")
+ortsname = "Schwarzer Bergfried"
+untertitel = "Gründungsarchiv des Ordens"
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort3"]
+shape = SubResource("Form_ort3")
+
+[node name="Ort4" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -600, -5, -205)
+script = ExtResource("13_ort")
+ortsname = "Gravemarch"
+untertitel = "Nicht das Land schützt Gravemarch, sondern die Zeit, die sie gebaut hat."
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort4"]
+shape = SubResource("Form_ort4")
+
+[node name="Ort5" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -672, 70, -365)
+script = ExtResource("13_ort")
+ortsname = "Gravecrest"
+untertitel = "Disziplin. Wissen. Ordnung. Sorrow bewahrt."
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort5"]
+shape = SubResource("Form_ort5")
+
+[node name="Personen" type="Node3D" parent="."]
+
+[node name="Bergwaechter" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 226, -17.8, 133)
+anzeige_name = "Bergwächter Tjark Halm"
+dialog_id = "bergwaechter"
+kordel = 2
+tracht = Color(0.05, 0.05, 0.06, 1)
+
+[node name="Lotsin" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 128, -17.8, 82)
+anzeige_name = "Lotsin Wenna Kroll"
+dialog_id = "lotsin"
+kordel = 0
+tracht = Color(0.2, 0.24, 0.3, 1)
+
+[node name="TorwacheGravecrest" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, -608, 70, -359)
+anzeige_name = "Kammbrecher Ulf Haskel"
+dialog_id = "torwache_gravecrest"
+kordel = 2
+tracht = Color(0.2, 0.2, 0.22, 1)
+
+[node name="PersonenAmBoden" type="Node3D" parent="Personen" node_paths=PackedStringArray("gelaende")]
+script = ExtResource("11_auf_gelaende")
+gelaende = NodePath("../../Gelaende")
+
+[node name="Haendlerin" parent="Personen/PersonenAmBoden" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 52, 0, 80)
+anzeige_name = "Händlerin Grete Lohm"
+dialog_id = "haendlerin"
+kordel = 0
+tracht = Color(0.45, 0.3, 0.2, 1)
+
+[node name="TorwacheGravemarch" parent="Personen/PersonenAmBoden" instance=ExtResource("4_person")]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, -549, 0, -195)
+anzeige_name = "Wächterin Esme Rauh"
+dialog_id = "torwache_gravemarch"
+kordel = 1
+tracht = Color(0.15, 0.15, 0.16, 1)
+
+[node name="Spieler" parent="." instance=ExtResource("5_spieler")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0, 46)
+
+[node name="HUD" parent="." node_paths=PackedStringArray("spieler") instance=ExtResource("6_hud")]
+spieler = NodePath("../Spieler")
+
+[node name="Pausemenue" parent="." instance=ExtResource("7_pause")]

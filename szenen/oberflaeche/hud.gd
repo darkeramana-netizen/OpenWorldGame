@@ -17,8 +17,17 @@ extends CanvasLayer
 @onready var _blende: ColorRect = %Blende
 @onready var _blende_text: Label = %BlendeText
 @onready var _blende_hinweis: Label = %BlendeHinweis
+@onready var _ort: Label = %Ort
+@onready var _karte: Control = %Karte
+@onready var _karte_bild: TextureRect = %KarteBild
+@onready var _karte_marke: Label = %KarteMarke
+
+## Lage von Drachenstein auf der Karte (Pixel) und Maßstab: 1 Kartenpixel = 5 m im Spiel.
+const KARTE_URSPRUNG := Vector2(272, 491)
+const KARTE_METER_PRO_PIXEL := 5.0
 
 var _meldung_tween: Tween
+var _ort_tween: Tween
 ## Wartende Blenden als [text, art], sie laufen nacheinander ab.
 var _blenden: Array = []
 var _blende_laeuft := false
@@ -30,6 +39,8 @@ func _ready() -> void:
 	_akte.hide()
 	_stille.hide()
 	_blende.hide()
+	_karte.hide()
+	_ort.modulate.a = 0.0
 	_meldung.modulate.a = 0.0
 	_hinweis.text = ""
 
@@ -41,6 +52,7 @@ func _ready() -> void:
 	Spielstand.rang_geaendert.connect(func(_r: int) -> void: _fuelle_akte())
 	Spielstand.ziel_geaendert.connect(_zeige_ziel)
 	Spielstand.blende.connect(_bei_blende)
+	Spielstand.ort_betreten.connect(_zeige_ort)
 	Dialog.zeile_gezeigt.connect(_zeige_zeile)
 	Dialog.beendet.connect(func(_id: String) -> void: _dialog.hide())
 	if spieler:
@@ -59,6 +71,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			Speicher.zum_hauptmenue()
 		if event is InputEventKey or event is InputEventMouseButton:
 			get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("karte_zeigen") and not Dialog.aktiv:
+		_karte.visible = not _karte.visible
+		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("akte_zeigen"):
 		_akte.visible = not _akte.visible
@@ -80,6 +96,29 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _zeige_uhr() -> void:
 	_uhr.text = "%s · %s\n%s" % [Spielzeit.datum_text(), Spielzeit.uhrzeit_text(), Spielzeit.abschnitt_name()]
+
+
+func _process(_delta: float) -> void:
+	if _karte.visible and spieler:
+		# Spielerposition auf der Karte: Pfeil zeigt in Blickrichtung.
+		var p: Vector3 = spieler.global_position
+		var pixel := KARTE_URSPRUNG + Vector2(p.x, p.z) / KARTE_METER_PRO_PIXEL
+		var faktor := _karte_bild.size / _karte_bild.texture.get_size()
+		var massstab := minf(faktor.x, faktor.y)
+		var versatz := (_karte_bild.size - _karte_bild.texture.get_size() * massstab) / 2.0
+		_karte_marke.position = _karte_bild.position + versatz + pixel * massstab - _karte_marke.size / 2.0
+		_karte_marke.pivot_offset = _karte_marke.size / 2.0
+		_karte_marke.rotation = -spieler.get_node("Koerper").rotation.y
+
+
+func _zeige_ort(name: String, untertitel: String) -> void:
+	_ort.text = name if untertitel == "" else "%s\n%s" % [name, untertitel]
+	if _ort_tween:
+		_ort_tween.kill()
+	_ort_tween = create_tween()
+	_ort_tween.tween_property(_ort, "modulate:a", 1.0, 0.8)
+	_ort_tween.tween_interval(3.0)
+	_ort_tween.tween_property(_ort, "modulate:a", 0.0, 1.5)
 
 
 func _zeige_ziel(text: String) -> void:

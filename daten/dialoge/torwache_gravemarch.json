@@ -1,0 +1,36 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Gravemarch. Bleib auf dem Weg, wenn du drinnen bist. Kein Weg hier führt geradeaus.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Noch etwas?",
+			"optionen": [
+				{
+					"text": "Warum ist die Burg so verwinkelt?",
+					"weiter": "warum"
+				},
+				{
+					"text": "Wie komme ich zum Donjon?",
+					"weiter": "weg"
+				},
+				{
+					"text": "Wach gut.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"warum": {
+			"text": "Sie ist nicht geplant worden, sie ist gewachsen. Erst ein Hof auf einem Hügel, dann Mauern, dann noch mehr Mauern. Manche Tore sind zugemauert, manche nur Schein. Wer sie nicht kennt, verliert sich, bevor er den Kern erreicht.",
+			"weiter": "fragen"
+		},
+		"weg": {
+			"text": "Durch das Osttor. Dann außen herum nach Norden, durch das Tor im mittleren Ring. Dann innen herum bis ganz nach Westen. Mehr verrate ich nicht. Merk es dir oder verlauf dich.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Wach gut."
+		}
+	}
+}

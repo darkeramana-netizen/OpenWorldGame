@@ -6,3 +6,4 @@
 *.glb binary
 *.ogg binary
 *.wav binary
+*.r32 binary

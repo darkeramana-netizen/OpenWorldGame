@@ -1,32 +1,10 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=15 format=3]
 
-[ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/ordenswand.gd" id="2_ordenswand"]
-[ext_resource type="PackedScene" path="res://szenen/spieler/spieler.tscn" id="3_spieler"]
 [ext_resource type="PackedScene" path="res://szenen/figuren/person.tscn" id="4_person"]
 [ext_resource type="PackedScene" path="res://szenen/figuren/bruchstein.tscn" id="5_bruchstein"]
-[ext_resource type="PackedScene" path="res://szenen/oberflaeche/hud.tscn" id="6_hud"]
-[ext_resource type="PackedScene" path="res://szenen/oberflaeche/pausemenue.tscn" id="7_pause"]
 [ext_resource type="PackedScene" path="res://szenen/figuren/werkbank.tscn" id="8_werkbank"]
 [ext_resource type="Script" path="res://szenen/welt/posten.gd" id="9_posten"]
-
-[sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
-sky_top_color = Color(0.32, 0.42, 0.56, 1)
-sky_horizon_color = Color(0.68, 0.68, 0.66, 1)
-ground_bottom_color = Color(0.12, 0.11, 0.1, 1)
-ground_horizon_color = Color(0.68, 0.68, 0.66, 1)
-
-[sub_resource type="Sky" id="Himmel"]
-sky_material = SubResource("Himmel_material")
-
-[sub_resource type="Environment" id="Umgebung"]
-background_mode = 2
-sky = SubResource("Himmel")
-ambient_light_source = 3
-tonemap_mode = 2
-fog_enabled = true
-fog_light_color = Color(0.62, 0.64, 0.68, 1)
-fog_density = 0.004
 
 [sub_resource type="StandardMaterial3D" id="Material_erde"]
 albedo_color = Color(0.33, 0.3, 0.22, 1)
@@ -52,10 +30,6 @@ roughness = 0.9
 albedo_color = Color(0.55, 0.49, 0.38, 1)
 roughness = 1.0
 
-[sub_resource type="StandardMaterial3D" id="Material_ferne"]
-albedo_color = Color(0.08, 0.08, 0.1, 1)
-roughness = 1.0
-
 [sub_resource type="StandardMaterial3D" id="Material_posten"]
 albedo_color = Color(0.55, 0.42, 0.16, 1)
 roughness = 0.8
@@ -66,31 +40,9 @@ size = Vector3(2, 3, 2)
 [sub_resource type="BoxShape3D" id="Form_posten_turm"]
 size = Vector3(8, 3, 8)
 
-[node name="Hof" type="Node3D"]
-
-[node name="Umgebung" type="WorldEnvironment" parent="."]
-environment = SubResource("Umgebung")
-
-[node name="Mond" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866, 0, -0.5, 0.35, 0.714, 0.606, 0.357, -0.7, 0.618, 0, 30, 0)
-light_color = Color(0.55, 0.65, 0.95, 1)
-light_energy = 0.0
-
-[node name="Sonne" type="DirectionalLight3D" parent="." node_paths=PackedStringArray("umgebung", "mond")]
-transform = Transform3D(1, 0, 0, 0, 0.5, 0.8660254, 0, -0.8660254, 0.5, 0, 30, 0)
-shadow_enabled = true
-directional_shadow_max_distance = 150.0
-script = ExtResource("1_tageslicht")
-umgebung = NodePath("../Umgebung")
-mond = NodePath("../Mond")
+[node name="BurgHof" type="Node3D"]
 
 [node name="Gelaende" type="Node3D" parent="."]
-
-[node name="Boden" type="CSGBox3D" parent="Gelaende"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
-use_collision = true
-size = Vector3(240, 1, 240)
-material = SubResource("Material_erde")
 
 [node name="Pflaster" type="CSGBox3D" parent="Gelaende"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
@@ -159,15 +111,21 @@ size = Vector3(8, 12, 8)
 material = SubResource("Material_basalt")
 
 [node name="RampeWehrgang" type="CSGBox3D" parent="Mauern"]
-transform = Transform3D(0.8683, -0.4961, 0, 0.4961, 0.8683, 0, 0, 0, 1, -17, 4, 28.5)
+transform = Transform3D(0.8683, 0.4961, 0, -0.4961, 0.8683, 0, 0, 0, 1, -15.7, 3.03, 28.5)
 use_collision = true
-size = Vector3(16.12, 0.4, 3)
+size = Vector3(19.12, 0.4, 3)
+material = SubResource("Material_holz")
+
+[node name="AbsatzWehrgang" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 7.8, 28.5)
+use_collision = true
+size = Vector3(6, 0.4, 3)
 material = SubResource("Material_holz")
 
 [node name="RampeTurm" type="CSGBox3D" parent="Mauern"]
-transform = Transform3D(1, 0, 0, 0, 0.96623, 0.25766, 0, -0.25766, 0.96623, -31, 10, -15.5)
+transform = Transform3D(1, 0, 0, 0, 0.96623, -0.25766, 0, 0.25766, 0.96623, -31, 9.535, -14.53)
 use_collision = true
-size = Vector3(2, 0.4, 15.52)
+size = Vector3(2, 0.4, 17.52)
 material = SubResource("Material_holz")
 
 [node name="SchildTurm" type="Label3D" parent="Mauern"]
@@ -339,15 +297,6 @@ verweis_text = "Turmwache vor dem Morgengrauen verlassen."
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 shape = SubResource("Form_posten_turm")
 
-[node name="Ferne" type="Node3D" parent="."]
-
-[node name="SchwarzerBergfried" type="CSGCylinder3D" parent="Ferne"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, 50, -420)
-radius = 20.0
-height = 100.0
-sides = 8
-material = SubResource("Material_ferne")
-
 [node name="Personen" type="Node3D" parent="."]
 
 [node name="Kammerhueter" parent="Personen" instance=ExtResource("4_person")]
@@ -413,11 +362,3 @@ anzeige_name = "Komtur Aldric Hayn"
 dialog_id = "komtur"
 kordel = 3
 tracht = Color(0.08, 0.08, 0.09, 1)
-
-[node name="Spieler" parent="." instance=ExtResource("3_spieler")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 46)
-
-[node name="HUD" parent="." node_paths=PackedStringArray("spieler") instance=ExtResource("6_hud")]
-spieler = NodePath("../Spieler")
-
-[node name="Pausemenue" parent="." instance=ExtResource("7_pause")]

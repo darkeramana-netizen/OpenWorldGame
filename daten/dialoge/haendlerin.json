@@ -1,0 +1,45 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Wächter! Frisches Brot, ein Heller der Laib. Stiefel hab ich keine, die macht der Schuster zwei Häuser weiter, vier Schillinge das Paar.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was darf es sein?",
+			"optionen": [
+				{
+					"text": "Wie läuft der Handel?",
+					"weiter": "handel"
+				},
+				{
+					"text": "Wer regiert die Stadt?",
+					"weiter": "stadt"
+				},
+				{
+					"text": "Ich darf nichts kaufen. Handel ist Mitgliedern verboten.",
+					"bedingung": "rang>=1",
+					"weiter": "verboten"
+				},
+				{
+					"text": "Leb wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"handel": {
+			"text": "Gut, solange der Fluss offen ist. Die Häuser von Velmund kaufen alles, was wir haben. Aber man hört, in Valdrenn rüstet der junge König. Wenn Krieg kommt, ist der Markt das Erste, was brennt. Das weiß hier jedes Kind.",
+			"weiter": "fragen"
+		},
+		"stadt": {
+			"text": "Der Stadtrat im Rathaus, mit Bürgermeister Joris Brandt. Der Rat prägt auch die Münzen. Euch gehören die Burg und die Hafenaufsicht, uns gehört der Markt. Im Krieg gehört dann wieder alles euch.",
+			"weiter": "fragen"
+		},
+		"verboten": {
+			"text": "Ach ja, ihr Wächter. Versorgt vom Orden, Sold wie ein Taschengeld. Dann nimm dir wenigstens den Geruch mit.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Komm wieder, Wächter. Oder schick jemanden, der kaufen darf."
+		}
+	}
+}

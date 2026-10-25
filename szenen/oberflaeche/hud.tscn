@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://szenen/oberflaeche/hud.gd" id="1_hud"]
+[ext_resource type="Texture2D" path="res://daten/karten/karte-sorrowland.webp" id="2_karte"]
 
 [sub_resource type="StyleBoxFlat" id="Stil_fenster"]
 content_margin_left = 20.0
@@ -65,7 +66,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 0.75)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 4
 text = "WASD gehen · Umschalt rennen · Leertaste springen
-E sprechen / aufheben · Tab Akte · Esc Menü
+E sprechen / aufheben · Tab Akte · M Karte · Esc Menü
 T eine Stunde vorspulen · F5 / F9 schnell speichern / laden"
 horizontal_alignment = 2
 
@@ -180,6 +181,81 @@ theme_override_font_sizes/bold_font_size = 20
 bbcode_enabled = true
 text = "Dienstakte"
 scroll_following = true
+
+[node name="Ort" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 230.0
+offset_right = 400.0
+offset_bottom = 330.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.92, 0.86, 0.72, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 40
+text = "Drachenstein"
+horizontal_alignment = 1
+
+[node name="Karte" type="ColorRect" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="KarteBild" type="TextureRect" parent="Karte"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_karte")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KarteMarke" type="Label" parent="Karte"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 24.0
+offset_bottom = 30.0
+theme_override_colors/font_color = Color(0.85, 0.12, 0.08, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 22
+text = "▲"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="KarteHinweis" type="Label" parent="Karte"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -44.0
+offset_right = 200.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 0.8)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "▲ Du bist hier · M schließt die Karte"
+horizontal_alignment = 1
 
 [node name="Blende" type="ColorRect" parent="."]
 unique_name_in_owner = true

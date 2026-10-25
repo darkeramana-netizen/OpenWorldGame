@@ -1,0 +1,44 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Halt. Gravecrest. Hier dienen die Kammspäher und die Kammbrecher.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du?",
+			"optionen": [
+				{
+					"text": "Wie kommt man zu den Eliten?",
+					"weiter": "auswahl"
+				},
+				{
+					"text": "Warum nennt man Gravecrest die Ordnung von Sorrow?",
+					"weiter": "name"
+				},
+				{
+					"text": "Was tun die Kammspäher in der Stille?",
+					"weiter": "spaeher"
+				},
+				{
+					"text": "Wach gut.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"auswahl": {
+			"text": "Gar nicht, wenn wir dich nicht wollen. Man wird nominiert, frühestens als Wächter mit vier Dienstjahren. Dann sechs Wochen Auswahlmarsch. Am Ende stimmen alle Gezeichneten ab. Eine Ablehnung wird nicht begründet. Bewerben kann sich niemand.",
+			"weiter": "fragen"
+		},
+		"name": {
+			"text": "Weil der ganze Orden früher so hieß. Und weil hier die sind, die ihn im Ernstfall tragen. Disziplin. Wissen. Ordnung. Sorrow bewahrt.",
+			"weiter": "fragen"
+		},
+		"spaeher": {
+			"text": "Sie beobachten. Am Hof von Orsenhold, in Velmund, an den Grenzburgen. Sie töten nicht und sie sabotieren nichts, solange Stille ist. Wir Kammbrecher dagegen warten. Wir treten erst an, wenn sie endet.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Wach gut. Und erzähl unten im Tal nicht, was du hier oben gesehen hast."
+		}
+	}
+}

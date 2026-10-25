@@ -3,11 +3,12 @@ extends Node
 ## (unter Windows: %APPDATA%/Godot/app_userdata/Sorrowland_ In Silentio/speicher).
 
 const STANDARD_ORDNER := "user://speicher/"
-const WELT := "res://szenen/welt/hof.tscn"
+const WELT := "res://szenen/welt/region_drachenstein.tscn"
 const HAUPTMENUE := "res://szenen/oberflaeche/hauptmenue.tscn"
 ## Manuelle Plätze im Pausemenü. "auto" und "schnell" kommen dazu.
 const PLAETZE: Array[String] = ["1", "2", "3"]
-const VERSION := 1
+## 1: Hof als eigene Szene (Akt I). 2: Hof liegt in der Region Drachenstein.
+const VERSION := 2
 
 ## Position und Blickrichtung des Spielers aus dem geladenen Spielstand.
 ## Die Spielfigur holt sie sich beim Start ab.
@@ -87,6 +88,7 @@ func laden(platz: String) -> bool:
 		return false
 	_autospeichern_vorgemerkt = false
 	Dialog.beende()
+	_ziehe_um(daten)
 	Spielstand.aus_dict(daten.get("spielstand", {}))
 	Spielzeit.aus_dict(daten.get("spielzeit", {}))
 	ausstehender_spieler = daten.get("spieler", {})
@@ -137,6 +139,17 @@ func _wechsle_zu(szene: String) -> void:
 	get_tree().change_scene_to_file(szene)
 	await get_tree().scene_changed
 	wechselt_szene = false
+
+
+## Bringt ältere Spielstände auf den aktuellen Aufbau der Welt.
+func _ziehe_um(daten: Dictionary) -> void:
+	if int(daten.get("version", 1)) < 2:
+		# Der Hof war die Hauptszene, jetzt liegt er als "BurgHof" in der Region.
+		# Seine Koordinaten sind gleich geblieben, nur die Knotenpfade ändern sich.
+		var stand: Dictionary = daten.get("spielstand", {})
+		var pfade: Array = stand.get("aufgehoben", [])
+		for i in pfade.size():
+			pfade[i] = String(pfade[i]).replace("/root/Hof/", "/root/Region/BurgHof/")
 
 
 func _spieler_daten() -> Dictionary:

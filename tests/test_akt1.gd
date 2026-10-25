@@ -15,8 +15,11 @@ func pruefe(bed: bool, was: String) -> void:
 		fehler += 1
 		print("FEHLER ", was, "   | zeile=", zeile.get("t", "").left(70), " flags=", S.flags.keys())
 
+func hof() -> Node:
+	return current_scene.get_node("BurgHof")
+
 func person(name: String) -> Node:
-	return current_scene.get_node("Personen/" + name)
+	return hof().get_node("Personen/" + name)
 
 func spieler() -> Node:
 	return current_scene.get_node("Spieler")
@@ -104,7 +107,7 @@ func _initialize() -> void:
 	pruefe(S.hat_flag("pruefung_lesen"), "Lesen bestanden")
 
 	rede("HeddaBrunn")
-	var bank = current_scene.get_node("Bauhof/Werkbank")
+	var bank = hof().get_node("Bauhof/Werkbank")
 	zeit(22); bank.interagieren(spieler())
 	pruefe(S.zaehler_wert("eckstein") == 0, "Werkbank nachts gesperrt")
 	zeit(8); for i in 3: bank.interagieren(spieler())
@@ -114,9 +117,9 @@ func _initialize() -> void:
 
 	rede("AnselmKray")
 	zeit(14); await gehe_zu(Vector3(-12, 8.3, 31))
-	pruefe(not current_scene.get_node("Posten/NachtwacheKnappe")._aktiv, "Nachtwache beginnt nicht am Tag")
+	pruefe(not hof().get_node("Posten/NachtwacheKnappe")._aktiv, "Nachtwache beginnt nicht am Tag")
 	await gehe_zu(Vector3(0, 0.2, 10)); zeit(21); await gehe_zu(Vector3(-12, 8.3, 31))
-	pruefe(current_scene.get_node("Posten/NachtwacheKnappe")._aktiv, "Nachtwache auf dem Wehrgang beginnt nachts")
+	pruefe(hof().get_node("Posten/NachtwacheKnappe")._aktiv, "Nachtwache auf dem Wehrgang beginnt nachts")
 	await bis_morgengrauen()
 	pruefe(S.hat_flag("pruefung_nachtwache"), "Nachtwache bis zum Morgengrauen gehalten")
 
@@ -167,7 +170,7 @@ func _initialize() -> void:
 	rede("IvoGrend", [2, 0])
 	pruefe(S.hat_flag("zustimmung_wachfuehrer"), "Ivo stimmt zu")
 	zeit(21); await gehe_zu(Vector3(-27, 12.3, -27))
-	pruefe(current_scene.get_node("Posten/Turmwache")._aktiv, "Turmwache beginnt")
+	pruefe(hof().get_node("Posten/Turmwache")._aktiv, "Turmwache beginnt")
 	await bis_morgengrauen()
 	pruefe(S.hat_flag("turmwache_erledigt"), "Turmwache allein gehalten")
 	await gehe_zu(Vector3(0, 0.2, -14))
@@ -177,7 +180,7 @@ func _initialize() -> void:
 	rede("Komtur", [0, 0, 0])
 	pruefe(S.rang == 4 and S.hat_flag("eid_waechter") and S.hat_flag("akt1_ende"), "Haupteid: Wächter, Ende von Akt I")
 	pruefe(blenden == ["zwischen", "akt_ende"], "Blenden: Namensstein und Akt-Ende")
-	var wand = current_scene.get_node("Ordenswand")
+	var wand = hof().get_node("Ordenswand")
 	pruefe(wand.get_children().any(func(n): return n is Label3D and n.text == "Ansel"), "Eigener Namensstein in der Ordenswand")
 	await warte_blenden()
 	await process_frame
