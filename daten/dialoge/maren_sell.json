@@ -1,0 +1,56 @@
+{
+	"einstieg": [
+		{ "bedingung": "steine_abgegeben", "knoten": "spaeter" },
+		{ "bedingung": "aufgabe_steine,bruchsteine>=3", "knoten": "abgabe" },
+		{ "bedingung": "aufgabe_steine", "knoten": "erinnerung" },
+		{ "bedingung": "geloebnis", "knoten": "auftrag" }
+	],
+	"knoten": {
+		"start": {
+			"text": "Du warst noch nicht an der Schwelle. Erst zum Kammerhüter am Tor. Ohne Gelöbnis keine Arbeit und kein Bett."
+		},
+		"auftrag": {
+			"text": "Du bist der Neue, den Rask schickt. Ich bin Maren Sell, Hüterin. Ab heute schläfst du hier im Haus der Schwelle. Erste Arbeit: Im Bauhof liegen Bruchsteine für die Mauer. Bring mir drei.",
+			"optionen": [
+				{ "text": "Warum ich? Ich kann lesen und schreiben.", "weiter": "lesen" },
+				{ "text": "Verstanden.", "weiter": "auftrag_ende" }
+			]
+		},
+		"lesen": {
+			"text": "Gut für die Knappenprüfung. Bis dahin trägst du Steine. Jeder arbeitet, auch der Komtur. Funktion gilt vor Stand.",
+			"weiter": "auftrag_ende"
+		},
+		"auftrag_ende": {
+			"text": "Der Bauhof liegt rechts vom Tor, auf der anderen Seite des Hofs.",
+			"setze": ["aufgabe_steine"],
+			"meldung": "Neues Ziel: Bring drei Bruchsteine aus dem Bauhof zu Maren Sell."
+		},
+		"erinnerung": {
+			"text": "Drei Bruchsteine. Der Bauhof liegt rechts vom Tor."
+		},
+		"abgabe": {
+			"text": "Drei. Gut. Leg sie dort ab.",
+			"zaehler": { "bruchsteine": -3 },
+			"setze": ["steine_abgegeben"],
+			"akte": "Erste Arbeit im Bauhof erledigt.",
+			"weiter": "abgabe_2"
+		},
+		"abgabe_2": {
+			"text": "Morgen Küche. Und merk dir: Bei Dämmerung schweigt die ganze Burg eine Stunde lang. Wer dann spricht, bekommt einen Verweis. Der steht in deiner Akte, und dein Bürge liest mit.",
+			"meldung": "Ende des Prototyps. Erkunde den Hof und erlebe die Stille-Stunde (T spult eine Stunde vor)."
+		},
+		"spaeter": {
+			"text": "Wach gut, Anwärter.",
+			"optionen": [
+				{ "text": "Fenn fragt seltsame Dinge.", "bedingung": "fenn_fragte,!fenn_gemeldet", "weiter": "fenn" },
+				{ "text": "Wach gut.", "weiter": "ende" }
+			]
+		},
+		"fenn": {
+			"text": "Dann sag es dem Kammerhüter, nicht mir. Und nicht laut."
+		},
+		"ende": {
+			"text": "..."
+		}
+	}
+}

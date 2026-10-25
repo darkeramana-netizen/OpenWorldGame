@@ -1,0 +1,8 @@
+# Einheitliche Zeilenenden, damit Godot-Dateien auf Windows und Linux gleich bleiben
+* text=auto eol=lf
+*.png binary
+*.webp binary
+*.jpg binary
+*.glb binary
+*.ogg binary
+*.wav binary

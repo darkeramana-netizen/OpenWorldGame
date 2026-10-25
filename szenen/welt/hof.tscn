@@ -1,0 +1,263 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
+[ext_resource type="Script" path="res://szenen/welt/ordenswand.gd" id="2_ordenswand"]
+[ext_resource type="PackedScene" path="res://szenen/spieler/spieler.tscn" id="3_spieler"]
+[ext_resource type="PackedScene" path="res://szenen/figuren/person.tscn" id="4_person"]
+[ext_resource type="PackedScene" path="res://szenen/figuren/bruchstein.tscn" id="5_bruchstein"]
+[ext_resource type="PackedScene" path="res://szenen/oberflaeche/hud.tscn" id="6_hud"]
+
+[sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
+sky_top_color = Color(0.32, 0.42, 0.56, 1)
+sky_horizon_color = Color(0.68, 0.68, 0.66, 1)
+ground_bottom_color = Color(0.12, 0.11, 0.1, 1)
+ground_horizon_color = Color(0.68, 0.68, 0.66, 1)
+
+[sub_resource type="Sky" id="Himmel"]
+sky_material = SubResource("Himmel_material")
+
+[sub_resource type="Environment" id="Umgebung"]
+background_mode = 2
+sky = SubResource("Himmel")
+ambient_light_source = 3
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.62, 0.64, 0.68, 1)
+fog_density = 0.004
+
+[sub_resource type="StandardMaterial3D" id="Material_erde"]
+albedo_color = Color(0.33, 0.3, 0.22, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_pflaster"]
+albedo_color = Color(0.26, 0.25, 0.23, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_mauer"]
+albedo_color = Color(0.3, 0.29, 0.28, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_basalt"]
+albedo_color = Color(0.12, 0.12, 0.14, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Material_holz"]
+albedo_color = Color(0.36, 0.25, 0.16, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Material_sand"]
+albedo_color = Color(0.55, 0.49, 0.38, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_ferne"]
+albedo_color = Color(0.08, 0.08, 0.1, 1)
+roughness = 1.0
+
+[node name="Hof" type="Node3D"]
+
+[node name="Umgebung" type="WorldEnvironment" parent="."]
+environment = SubResource("Umgebung")
+
+[node name="Sonne" type="DirectionalLight3D" parent="." node_paths=PackedStringArray("umgebung")]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.8660254, 0, -0.8660254, 0.5, 0, 30, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 150.0
+script = ExtResource("1_tageslicht")
+umgebung = NodePath("../Umgebung")
+
+[node name="Gelaende" type="Node3D" parent="."]
+
+[node name="Boden" type="CSGBox3D" parent="Gelaende"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+use_collision = true
+size = Vector3(240, 1, 240)
+material = SubResource("Material_erde")
+
+[node name="Pflaster" type="CSGBox3D" parent="Gelaende"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+size = Vector3(60, 0.04, 60)
+material = SubResource("Material_pflaster")
+
+[node name="Weg" type="CSGBox3D" parent="Gelaende"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 50)
+size = Vector3(5, 0.04, 40)
+material = SubResource("Material_pflaster")
+
+[node name="Mauern" type="Node3D" parent="."]
+
+[node name="Nord" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -31)
+use_collision = true
+size = Vector3(64, 8, 2)
+material = SubResource("Material_mauer")
+
+[node name="Ost" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 4, 0)
+use_collision = true
+size = Vector3(2, 8, 64)
+material = SubResource("Material_mauer")
+
+[node name="West" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31, 4, 0)
+use_collision = true
+size = Vector3(2, 8, 64)
+material = SubResource("Material_mauer")
+
+[node name="SuedWest" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.5, 4, 31)
+use_collision = true
+size = Vector3(29, 8, 2)
+material = SubResource("Material_mauer")
+
+[node name="SuedOst" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, 4, 31)
+use_collision = true
+size = Vector3(29, 8, 2)
+material = SubResource("Material_mauer")
+
+[node name="TorturmWest" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 5.5, 31)
+use_collision = true
+size = Vector3(4, 11, 4)
+material = SubResource("Material_mauer")
+
+[node name="TorturmOst" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 5.5, 31)
+use_collision = true
+size = Vector3(4, 11, 4)
+material = SubResource("Material_mauer")
+
+[node name="Torbogen" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, 31)
+use_collision = true
+size = Vector3(6, 3, 2)
+material = SubResource("Material_mauer")
+
+[node name="Wachturm" type="CSGCylinder3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 9, -27)
+use_collision = true
+radius = 4.0
+height = 18.0
+sides = 8
+material = SubResource("Material_basalt")
+
+[node name="Gebaeude" type="Node3D" parent="."]
+
+[node name="HausDerSchwelle" type="CSGBox3D" parent="Gebaeude"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 3, 4)
+use_collision = true
+size = Vector3(10, 6, 14)
+material = SubResource("Material_holz")
+
+[node name="SchildSchwelle" type="Label3D" parent="Gebaeude"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.5, 5, 4)
+billboard = 1
+pixel_size = 0.01
+text = "Haus der Schwelle"
+font_size = 64
+outline_size = 12
+
+[node name="Speisesaal" type="CSGBox3D" parent="Gebaeude"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3.5, -24)
+use_collision = true
+size = Vector3(16, 7, 10)
+material = SubResource("Material_mauer")
+
+[node name="SchildSpeisesaal" type="Label3D" parent="Gebaeude"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 8, -18.5)
+billboard = 1
+pixel_size = 0.01
+text = "Speisesaal und Küche"
+font_size = 64
+outline_size = 12
+
+[node name="Ordenswand" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
+script = ExtResource("2_ordenswand")
+
+[node name="Wand" type="CSGBox3D" parent="Ordenswand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+use_collision = true
+size = Vector3(14, 4, 1)
+material = SubResource("Material_basalt")
+
+[node name="Schild" type="Label3D" parent="Ordenswand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.8, 0.6)
+pixel_size = 0.01
+text = "Ordenswand"
+font_size = 64
+outline_size = 12
+
+[node name="Bauhof" type="Node3D" parent="."]
+
+[node name="Platz" type="CSGBox3D" parent="Bauhof"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 0.05, 10)
+size = Vector3(14, 0.06, 12)
+material = SubResource("Material_sand")
+
+[node name="Steinhaufen1" type="CSGBox3D" parent="Bauhof"]
+transform = Transform3D(0.9, 0, 0.43, 0, 1, 0, -0.43, 0, 0.9, 26, 0.6, 14)
+use_collision = true
+size = Vector3(2.2, 1.2, 2)
+material = SubResource("Material_mauer")
+
+[node name="Steinhaufen2" type="CSGBox3D" parent="Bauhof"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 0.4, 7)
+use_collision = true
+size = Vector3(1.6, 0.8, 1.6)
+material = SubResource("Material_mauer")
+
+[node name="Schild" type="Label3D" parent="Bauhof"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 3, 10)
+billboard = 1
+pixel_size = 0.01
+text = "Bauhof"
+font_size = 64
+outline_size = 12
+
+[node name="Bruchstein1" parent="Bauhof" instance=ExtResource("5_bruchstein")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 0.08, 7)
+
+[node name="Bruchstein2" parent="Bauhof" instance=ExtResource("5_bruchstein")]
+transform = Transform3D(0.8, 0, 0.6, 0, 1, 0, -0.6, 0, 0.8, 21, 0.08, 13)
+
+[node name="Bruchstein3" parent="Bauhof" instance=ExtResource("5_bruchstein")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0.08, 5)
+
+[node name="Ferne" type="Node3D" parent="."]
+
+[node name="SchwarzerBergfried" type="CSGCylinder3D" parent="Ferne"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, 50, -420)
+radius = 20.0
+height = 100.0
+sides = 8
+material = SubResource("Material_ferne")
+
+[node name="Personen" type="Node3D" parent="."]
+
+[node name="Kammerhueter" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3, 0, 34.5)
+anzeige_name = "Kammerhüter Wendel Groth"
+dialog_id = "kammerhueter"
+kordel = 2
+tracht = Color(0.13, 0.13, 0.15, 1)
+
+[node name="MarenSell" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -17, 0, 4)
+anzeige_name = "Hüterin Maren Sell"
+dialog_id = "maren_sell"
+kordel = 2
+tracht = Color(0.18, 0.16, 0.15, 1)
+
+[node name="Fenn" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 15)
+anzeige_name = "Fenn, Anwärter"
+dialog_id = "fenn"
+kordel = 0
+tracht = Color(0.3, 0.27, 0.22, 1)
+
+[node name="Spieler" parent="." instance=ExtResource("3_spieler")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 46)
+
+[node name="HUD" parent="." node_paths=PackedStringArray("spieler") instance=ExtResource("6_hud")]
+spieler = NodePath("../Spieler")

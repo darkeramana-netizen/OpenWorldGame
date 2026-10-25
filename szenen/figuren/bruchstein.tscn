@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://szenen/figuren/aufhebbar.gd" id="1_aufhebbar"]
+
+[sub_resource type="BoxShape3D" id="Form_stein"]
+size = Vector3(0.6, 0.4, 0.5)
+
+[sub_resource type="BoxMesh" id="Mesh_stein"]
+size = Vector3(0.6, 0.4, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="Material_stein"]
+albedo_color = Color(0.55, 0.52, 0.47, 1)
+roughness = 1.0
+
+[node name="Bruchstein" type="StaticBody3D"]
+script = ExtResource("1_aufhebbar")
+bedingung = "aufgabe_steine"
+
+[node name="Kollision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+shape = SubResource("Form_stein")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+mesh = SubResource("Mesh_stein")
+surface_material_override/0 = SubResource("Material_stein")

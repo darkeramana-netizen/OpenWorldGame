@@ -1,0 +1,81 @@
+{
+	"einstieg": [
+		{ "bedingung": "geloebnis", "knoten": "danach" }
+	],
+	"knoten": {
+		"start": {
+			"text": "Halt. Du stehst an der Schwelle der Burgfeste Drachenstein. Wer bürgt für dich?",
+			"optionen": [
+				{ "text": "Hauptwächter Bertil Rask von der Bezirksfestung Hollmoor.", "weiter": "herkunft" }
+			]
+		},
+		"herkunft": {
+			"text": "Rask also. Dann trägt er von heute an mit, was du tust. Woher kommst du?",
+			"optionen": [
+				{ "text": "Aus Kellbrück. Das Dorf ist im Winter abgebrannt.", "setze": ["herkunft_dorf"], "weiter": "beweggrund" },
+				{ "text": "Aus dem Süden Valdrenns. Dort hungern sie.", "setze": ["herkunft_valdrenn"], "weiter": "valdrenn" },
+				{ "text": "Von nirgendwo. Ich bin in einer Bezirksfestung aufgewachsen.", "setze": ["herkunft_waise"], "weiter": "beweggrund" }
+			]
+		},
+		"valdrenn": {
+			"text": "Aus Valdrenn. Du bist nicht der Erste, der von dort kommt, und nicht jeder kam wegen des Hungers. Ich werde mir dein Gesicht merken.",
+			"akte": "Herkunft Valdrenn vermerkt. Die Prüfung beobachtet.",
+			"weiter": "beweggrund"
+		},
+		"beweggrund": {
+			"text": "Warum willst du in den Orden?",
+			"optionen": [
+				{ "text": "Ich will nie wieder meine Heimat verlieren.", "weiter": "glaube" },
+				{ "text": "Ich will kämpfen.", "weiter": "kaempfen" },
+				{ "text": "Ich habe keinen anderen Ort.", "weiter": "glaube" }
+			]
+		},
+		"kaempfen": {
+			"text": "Dann bist du hier falsch. Wir wachen. Solange Stille ist, greifen wir nicht ein, und die Stille währt seit sechshundertzwanzig Jahren. Überleg dir deine Antwort noch einmal.",
+			"weiter": "beweggrund"
+		},
+		"glaube": {
+			"text": "Gut. Mehr muss ich nicht wissen.",
+			"optionen": [
+				{ "text": "Fragt Ihr nicht nach meinem Glauben?", "weiter": "glaube_antwort" },
+				{ "text": "Was geschieht jetzt?", "weiter": "geloebnis" }
+			]
+		},
+		"glaube_antwort": {
+			"text": "Erstens: Hier sagt niemand „Ihr“. Wir duzen uns, Funktion gilt vor Stand. Zweitens: Nein. Der Orden fragt nach Beweggrund und Herkunft, nicht nach dem Glauben.",
+			"weiter": "geloebnis"
+		},
+		"geloebnis": {
+			"text": "Noch schwörst du nichts. Ein Jahr Arbeit in Küche und Bauhof, dann sehen wir weiter. Sprich das Gelöbnis.",
+			"optionen": [
+				{
+					"text": "„Ich trete an die Schwelle und bitte um Arbeit. Ich schweige, bis man mich fragt.“",
+					"setze": ["geloebnis"],
+					"rang": 1,
+					"akte": "Gelöbnis an der Schwelle abgelegt. Bürge: Hauptwächter Bertil Rask.",
+					"weiter": "abschluss"
+				}
+			]
+		},
+		"abschluss": {
+			"text": "So sei es. Geh ins Haus der Schwelle, links im Hof. Hüterin Maren Sell gibt dir Arbeit. Und wenn die Dämmerung kommt: Schweig.",
+			"meldung": "Neues Ziel: Melde dich bei Hüterin Maren Sell im Haus der Schwelle."
+		},
+		"danach": {
+			"text": "In silentio, Anwärter. Was willst du?",
+			"optionen": [
+				{ "text": "Fenn hat mich gefragt, wo die Fluchtgänge sind.", "bedingung": "fenn_fragte,!fenn_gemeldet", "weiter": "fenn_melden" },
+				{ "text": "Nichts. Ich gehe an die Arbeit.", "weiter": "gruss" }
+			]
+		},
+		"fenn_melden": {
+			"text": "Fragen nach Plänen und Fluchtgängen sind ein Warnzeichen. Gut, dass du es sagst. Und jetzt behalte es für dich. Die Prüfung kümmert sich darum.",
+			"setze": ["fenn_gemeldet"],
+			"akte": "Warnzeichen gemeldet: Anwärter Fenn fragte nach Fluchtgängen.",
+			"weiter": "gruss"
+		},
+		"gruss": {
+			"text": "Wach gut."
+		}
+	}
+}

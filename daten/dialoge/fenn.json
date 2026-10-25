@@ -1,0 +1,46 @@
+{
+	"einstieg": [
+		{ "bedingung": "fenn_gemeldet", "knoten": "misstrauisch" },
+		{ "bedingung": "fenn_fragte", "knoten": "danach" },
+		{ "bedingung": "geloebnis", "knoten": "vorstellen" }
+	],
+	"knoten": {
+		"start": {
+			"text": "Du bist auch neu? Geh erst zum Kammerhüter am Tor, sonst lassen sie dich nicht mal Rüben schälen."
+		},
+		"vorstellen": {
+			"text": "Fenn. Anwärter, wie du. Seit drei Wochen hier.",
+			"weiter": "frage"
+		},
+		"frage": {
+			"text": "Sag mal ... du bist doch viel im Hof unterwegs. Weißt du, wo die Fluchtgänge der Wolfsfeste herauskommen? Ich frag nur so. Falls mal was ist.",
+			"setze": ["fenn_fragte"],
+			"optionen": [
+				{ "text": "Nein. Und warum willst du das wissen?", "weiter": "ausweichen" },
+				{ "text": "Das geht uns nichts an.", "weiter": "einlenken" },
+				{ "text": "Ich halte die Augen offen.", "setze": ["fenn_vertrauen"], "weiter": "vertrauen" }
+			]
+		},
+		"ausweichen": {
+			"text": "Nur so. Vergiss es."
+		},
+		"einlenken": {
+			"text": "Hast recht. Vergiss, dass ich gefragt hab."
+		},
+		"vertrauen": {
+			"text": "Gut. Du bist in Ordnung. Wir zwei sollten zusammenhalten."
+		},
+		"danach": {
+			"text": "Na? Schon was gefunden?",
+			"optionen": [
+				{ "text": "Nein.", "weiter": "ende" }
+			]
+		},
+		"misstrauisch": {
+			"text": "Du siehst mich so komisch an. Hab ich was falsch gemacht?"
+		},
+		"ende": {
+			"text": "Schade."
+		}
+	}
+}

@@ -1,0 +1,166 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://szenen/oberflaeche/hud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="Stil_fenster"]
+content_margin_left = 20.0
+content_margin_top = 16.0
+content_margin_right = 20.0
+content_margin_bottom = 16.0
+bg_color = Color(0.07, 0.07, 0.08, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.56, 0.24, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="LabelSettings" id="Schrift_schatten"]
+font_size = 18
+outline_size = 6
+outline_color = Color(0, 0, 0, 0.85)
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="Uhr" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 420.0
+offset_bottom = 70.0
+text = "Tag 1 · 06:00"
+label_settings = SubResource("Schrift_schatten")
+
+[node name="Steuerung" type="Label" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -360.0
+offset_top = 16.0
+offset_right = -20.0
+offset_bottom = 140.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 1, 1, 0.75)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 4
+text = "WASD gehen · Umschalt rennen · Leertaste springen
+E sprechen / aufheben · Tab Akte
+T eine Stunde vorspulen · Esc Maus freigeben"
+horizontal_alignment = 2
+
+[node name="Stille" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 24.0
+offset_right = 300.0
+offset_bottom = 70.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.85, 0.75, 0.55, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 26
+text = "· STILLE-STUNDE ·"
+horizontal_alignment = 1
+
+[node name="Meldung" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -420.0
+offset_top = 90.0
+offset_right = 420.0
+offset_bottom = 150.0
+grow_horizontal = 2
+text = "Meldung"
+label_settings = SubResource("Schrift_schatten")
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Hinweis" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -80.0
+offset_right = 300.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "[E] Sprechen – Name"
+label_settings = SubResource("Schrift_schatten")
+horizontal_alignment = 1
+
+[node name="DialogFenster" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -460.0
+offset_top = -300.0
+offset_right = 460.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("Stil_fenster")
+
+[node name="Inhalt" type="VBoxContainer" parent="DialogFenster"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Sprecher" type="Label" parent="DialogFenster/Inhalt"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.65, 0.25, 1)
+theme_override_font_sizes/font_size = 20
+text = "Sprecher"
+
+[node name="Text" type="Label" parent="DialogFenster/Inhalt"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Text"
+autowrap_mode = 3
+
+[node name="Optionen" type="VBoxContainer" parent="DialogFenster/Inhalt"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="AkteFenster" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -480.0
+offset_top = -220.0
+offset_right = -20.0
+offset_bottom = 220.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("Stil_fenster")
+
+[node name="AkteText" type="RichTextLabel" parent="AkteFenster"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 16
+theme_override_font_sizes/bold_font_size = 20
+bbcode_enabled = true
+text = "Dienstakte"
+scroll_following = true
