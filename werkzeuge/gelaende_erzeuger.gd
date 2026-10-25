@@ -3,8 +3,9 @@ class_name GelaendeErzeuger
 ##
 ## Maßstab 1:50 (1 km auf der Karte = 20 m im Spiel). Ursprung (0, 0) ist der Hof
 ## der Burgfeste Drachenstein, +x ist Osten, +z ist Süden. Lage der Orte:
-##   Burgfeste Drachenstein   (0, 0)        Hof auf Höhe 0
-##   Schwarzer Bergfried       (250, 135)    Insel, über zwei kleinere Inseln erreichbar
+##   Burgfeste Drachenstein   (0, 0)        Hof (Mittlere Burg) auf Höhe 0, nach dem Grundriss
+##                                          gedreht: Oberer Burg im Westen, Hafen im Osten
+##   Schwarzer Bergfried       (250, 135)    Insel, von der Südmole über zwei Inseln erreichbar
 ##   Gravemarch                (-600, -205)  im Tal unter dem Felssporn
 ##   Gravecrest                (-675, -365)  auf dem eisigen Felssporn, Höhe 70
 ## Der Meeresspiegel liegt bei -20.
@@ -21,14 +22,25 @@ const MEERESSPIEGEL := -20.0
 const GRAVEMARCH := Vector2(-600, -205)
 const BERGFRIED := Vector2(250, 135)
 ## Inseln zwischen Drachenkai und Bergfried: [Mitte, Radius].
-const INSELN := [[Vector2(165, 100), 11.0], [Vector2(195, 118), 9.0], [BERGFRIED, 40.0]]
+const INSELN := [[Vector2(185, 60), 10.0], [Vector2(212, 95), 9.0], [BERGFRIED, 40.0]]
 const INSEL_HOEHE := -17.8
 ## Radius der Grube für den Unterbau des Bergfrieds (liegt innerhalb seiner 10 m dicken Mauer).
 const BERGFRIED_GRUBE := 17.0
 
+## Oberer Burg (Drachenhorst) westlich vom Hof, auf Höhe der Hofmauerkrone.
+const OBERE_BURG_MIN := Vector2(-86, -45)
+const OBERE_BURG_MAX := Vector2(-33.5, 11)
+const OBERE_BURG_HOEHE := 8.0
+## Hafen im Osten: Kais auf Höhe -17.8, Becken (offen nach Osten) zwischen Nord- und Südmole.
+const KAI_HOEHE := -17.8
+const BECKEN_MIN := Vector2(101, -19)
+const BECKEN_MAX := Vector2(173, 16)
+const BECKEN_TIEFE := -27.0
+const MOLE_ENDE := 166.0
+
 ## Wege als Linienzüge.
-const WEG_HAFEN := [Vector2(0, 40), Vector2(0, 80), Vector2(40, 88), Vector2(80, 82), Vector2(118, 74)]
-const WEG_DRACHENHORST := [Vector2(0, 80), Vector2(-40, 62), Vector2(-75, 30)]
+const WEG_HAFEN := [Vector2(0, 40), Vector2(0, 56), Vector2(44, 46), Vector2(58, 22), Vector2(75, 4), Vector2(98, 0)]
+const WEG_DRACHENHORST := [Vector2(0, 56), Vector2(-25, 52), Vector2(-50, 18), Vector2(-50, 8)]
 const WEG_GRAVEMARCH := [Vector2(0, 80), Vector2(-60, 95), Vector2(-150, 70), Vector2(-260, 10),
 	Vector2(-360, -70), Vector2(-460, -150), Vector2(-548, -200)]
 ## Der Weg nach Gravecrest steigt vom Tal bis zur Zugbrücke auf Höhe 70.
@@ -141,9 +153,14 @@ func hoehe(p: Vector2) -> float:
 	hof = minf(hof, _rechteck_abstand(p, Vector2(-14, 42), Vector2(14, 92)))
 	h = lerpf(h, 0.0, 1.0 - smoothstep(0.0, 30.0, hof))
 
-	# Drachenhorst, die oberste Burg, westlich vom Hof auf Höhe 12.
-	var horst := p.distance_to(Vector2(-75, 0))
-	h = lerpf(h, 12.0, 1.0 - smoothstep(33.0, 58.0, horst))
+	# Oberer Burg (Drachenhorst) westlich vom Hof auf Höhe der Mauerkrone. Zum Hof hin
+	# endet das Plateau scharf an der Westmauer, sonst fällt es in 16 m ab.
+	if p.x <= -32.0:
+		var horst := _rechteck_abstand(p, OBERE_BURG_MIN, OBERE_BURG_MAX)
+		h = lerpf(h, OBERE_BURG_HOEHE, 1.0 - smoothstep(0.0, 16.0, horst))
+
+	# Stadt am Hang: vom Hof hinunter über den Marktplatz zu den Kais.
+	h = _stadthang(h, p)
 
 	# Gravemarch auf einem aufgeschütteten Hügel im Sumpf.
 	var gm := p.distance_to(GRAVEMARCH)
@@ -163,6 +180,33 @@ func hoehe(p: Vector2) -> float:
 	# Abgrund vor dem Torhaus von Gravecrest, die Zugbrücke führt darüber.
 	if p.x > -629.0 and p.x < -613.0 and absf(p.y + 364.0) < 30.0:
 		h = minf(h, 10.0)
+	return h
+
+
+## Hang der Stadt zwischen Hof und Hafen mit dem Marktplatz als flacher Stufe. Ausgefahren
+## wird er nur in einem Band um den Hafen, nach Osten laufen nur die schmalen Molen ins Meer.
+func _stadthang(h: float, p: Vector2) -> float:
+	if p.x < 28.0:
+		return h
+	var profil: float
+	if p.x < 42.0:
+		profil = 0.0
+	elif p.x < 58.0:
+		profil = lerpf(0.0, -7.5, (p.x - 42.0) / 16.0)
+	elif p.x < 80.0:
+		profil = lerpf(-7.5, -8.5, (p.x - 58.0) / 22.0)  # Marktplatz
+	elif p.x < 95.0:
+		profil = lerpf(-8.5, KAI_HOEHE, (p.x - 80.0) / 15.0)
+	else:
+		profil = KAI_HOEHE
+	var quer := absf(p.y + 2.0)
+	var rand := lerpf(24.0, 1.0, smoothstep(100.0, 115.0, p.x))
+	var anteil := (1.0 - smoothstep(26.0, 26.0 + rand, quer)) * smoothstep(28.0, 42.0, p.x)
+	anteil *= 1.0 - smoothstep(MOLE_ENDE, MOLE_ENDE + 3.0, p.x)
+	h = lerpf(h, profil, anteil)
+	# Hafenbecken mit senkrechten Kaimauern (die Mauern selbst baut die Szene).
+	if p.x > BECKEN_MIN.x and p.x < BECKEN_MAX.x and p.y > BECKEN_MIN.y and p.y < BECKEN_MAX.y:
+		h = minf(h, BECKEN_TIEFE)
 	return h
 
 

@@ -23,6 +23,29 @@ func setze(pos: Vector3, blick_grad: float = 0.0) -> void:
 	spieler().get_node("KameraDrehpunkt").rotation.y = deg_to_rad(blick_grad)
 	for i in 6: await physics_frame
 
+## Läuft nacheinander zu den Wegpunkten (nur x und z zählen). Gibt zurück, ob alle erreicht wurden.
+func gehe_ueber(punkte: Array, zeit_pro_punkt: float = 20.0) -> bool:
+	Input.action_press("vor")
+	var alle := true
+	for ziel: Vector2 in punkte:
+		var ende := Time.get_ticks_msec() + int(zeit_pro_punkt * 1000)
+		var erreicht := false
+		while Time.get_ticks_msec() < ende:
+			var p: Vector3 = spieler().global_position
+			var weg := Vector2(ziel.x - p.x, ziel.y - p.z)
+			if weg.length() < 0.8:
+				erreicht = true
+				break
+			spieler().get_node("KameraDrehpunkt").rotation.y = atan2(-weg.x, -weg.y)
+			await physics_frame
+		alle = alle and erreicht
+		if not erreicht:
+			print("       nicht erreicht: Ziel %s, stehe bei %s" % [ziel, spieler().global_position.snapped(Vector3.ONE * 0.1)])
+			break
+	Input.action_release("vor")
+	for i in 3: await physics_frame
+	return alle
+
 func druecke(code: Key) -> void:
 	for gedrueckt in [true, false]:
 		var e := InputEventKey.new()
@@ -76,19 +99,31 @@ func _initialize() -> void:
 	pruefe(spieler().global_position.y > 11.5, "Rampe auf den Wachturm hinaufgelaufen (y=%.1f)" % spieler().global_position.y)
 
 	# Orte
+	# Wege der Burgfeste nach dem Grundriss
+	await setze(Vector3(0, 0.3, 46))
+	var hinauf := await gehe_ueber([Vector2(0, 56), Vector2(-25, 52), Vector2(-50, 18), Vector2(-50, 2)])
+	pruefe(hinauf and spieler().global_position.y > 7.5, "Weg hinauf durch das Tor in die Oberer Burg (y=%.1f)" % spieler().global_position.y)
+	await setze(Vector3(0, 0.3, 46))
+	var hinab := await gehe_ueber([Vector2(0, 56), Vector2(44, 46), Vector2(58, 22), Vector2(75, 4), Vector2(97, 0),
+			Vector2(98, 19.5), Vector2(125, 20.5)])
+	pruefe(hinab and absf(spieler().global_position.y + 17.8) < 0.5, "Durch die Stadt über den Markt hinunter zum Kai gelaufen")
+	await setze(Vector3(0, 0.3, 56))
+	pruefe(await gehe_ueber([Vector2(-14, 83.5), Vector2(-30, 95)]), "Durch das Vorburgtor hinaus gelaufen")
 	await setze(Vector3(-560, g.hoehe_bei(-560, -200) + 0.5, -200))
 	pruefe(orte.has("Gravemarch"), "Ortsname beim Betreten: Gravemarch")
 	await setze(Vector3(-650, 70.5, -364))
 	pruefe(orte.has("Gravecrest"), "Ortsname beim Betreten: Gravecrest")
 
-	# Brücke zum Bergfried: von der ersten Insel über Brücke 2 laufen
-	await setze(Vector3(124, -17.5, 76.5), rad_to_deg(atan2(-35.0, -20.0)))
+	# Hafen: über den Kai der Südmole bis an die erste Brücke, dann über die Inseln
+	await setze(Vector3(125, -17.5, 21), 0.0)
+	pruefe(orte.has("Drachenkai"), "Ortsname beim Betreten: Drachenkai")
+	await setze(Vector3(155, -17.5, 21.5), rad_to_deg(atan2(-27.0, -36.0)))
 	await laufe(6.0)
-	pruefe(spieler().global_position.x > 140.0 and spieler().global_position.y > -18.2, "Vom Kai auf die erste Brücke gelaufen")
-	await setze(Vector3(166, -17.5, 100.5), rad_to_deg(atan2(-30.0, -18.0)))
+	pruefe(spieler().global_position.z > 32.0 and spieler().global_position.y > -18.2, "Von der Südmole auf die erste Brücke gelaufen")
+	await setze(Vector3(185, -17.5, 60), rad_to_deg(atan2(-27.0, -35.0)))
 	await laufe(6.0)
 	var p: Vector3 = spieler().global_position
-	pruefe(p.x > 180.0 and p.y > -18.5, "Über die Brücke zur zweiten Insel gelaufen (x=%.0f, y=%.1f)" % [p.x, p.y])
+	pruefe(p.z > 78.0 and p.y > -18.5, "Über die Brücke zur zweiten Insel gelaufen (z=%.0f, y=%.1f)" % [p.z, p.y])
 	pruefe(orte.has("Schwarzer Bergfried"), "Ortsname beim Betreten: Schwarzer Bergfried")
 
 	# Meer: Wer hineinfällt, landet wieder an Land
@@ -101,13 +136,12 @@ func _initialize() -> void:
 	pruefe(spieler().global_position.x > -880.0 and meldungen.size() > 0, "Am Rand der Region zurückgesetzt")
 
 	# Personen der Region mit echter Taste E
-	for eintrag in [["Bergwaechter", Vector3(224.5, -17.6, 133)], ["Lotsin", Vector3(126.5, -17.6, 82)],
-			["TorwacheGravecrest", Vector3(-606.5, 70.2, -359)], ["PersonenAmBoden/Haendlerin", Vector3(52, 0, 81.6)],
-			["PersonenAmBoden/TorwacheGravemarch", Vector3(-547.5, 0, -195)]]:
+	for eintrag in [["Bergwaechter", Vector3(-1.5, 0, 0)], ["Lotsin", Vector3(0, 0, 1.5)],
+			["TorwacheGravecrest", Vector3(1.5, 0, 0)], ["PersonenAmBoden/Haendlerin", Vector3(0, 0, 1.6)],
+			["PersonenAmBoden/TorwacheGravemarch", Vector3(1.5, 0, 0)]]:
 		var person = current_scene.get_node("Personen/" + eintrag[0])
-		var ziel: Vector3 = eintrag[1]
-		if ziel.y == 0:
-			ziel.y = g.hoehe_bei(ziel.x, ziel.z) + 0.3
+		var ziel: Vector3 = person.global_position + eintrag[1]
+		ziel.y = maxf(ziel.y, g.hoehe_bei(ziel.x, ziel.z)) + 0.3
 		await setze(ziel)
 		await druecke(KEY_E)
 		var offen: bool = D.aktiv

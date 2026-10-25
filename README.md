@@ -12,6 +12,22 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Burgfeste Drachenstein nach Grundriss
+
+Gebaut nach deinem Grundriss, **gedreht**: Der Süden des Plans liegt jetzt im Osten, der Hafen öffnet sich zum Wächtermeer.
+
+- **Mittlere Burg:** der Hof aus Akt I, unverändert.
+- **Oberer Burg (Drachenhorst)** im Westen, auf Höhe der Hofmauerkrone (8 m), mit eigener Ringmauer, Tor im Süden, Urkern, Aussichtsplattform, Palas, Kapelle und Zeughaus. Von der Hofmauer führt ein Durchlass hinüber.
+- **Stadt:** Die Ringmauer (Löwenward) umschließt alles, mit dem **Vorburgtor** am Weg nach Gravemarch und dem **Ölturm** an der Nordspitze. Darin liegen 58 Stadthäuser, der **Marktplatz** mit Brunnen und Ständen, die **Kirche St. Georg** und das **Rathaus**.
+- **Drachenkai:** Hafenbecken mit Kaimauern zwischen Nord- und Südmole, an den Molenköpfen **Hafentor** und **Schiffstor**. Dazu Zollhaus, Dockspeicher und drei Schiffe.
+- **Zum Bergfried:** Von der Südmole führen drei Brücken über zwei Inseln zum Tor des Bergfrieds.
+
+Der Weg vom Hoftor führt den Hang hinunter über den Markt bis an den Kai.
+
+| Drachenstein vom Meer | Von oben (Norden oben) |
+|---|---|
+| ![Drachenstein vom Meer](docs/bilder/region-drachenstein.png) | ![Draufsicht](docs/bilder/drachenstein-draufsicht.png) |
+
 ### Innenräume: Schwarzer Bergfried und Gravecrest
 
 Gebaut nach deinen Grundrissen und Schnitten.
@@ -50,9 +66,9 @@ Die erste begehbare Region, gebaut nach deiner Karte im Maßstab **1:50** (1 km 
 
 | Ort | Was dort steht |
 |---|---|
-| **Burgfeste Drachenstein** | der Hof aus Akt I, darüber der **Drachenhorst** mit dem Urkern, darunter das **Marktviertel** mit Rathaus und Kirchturm, die **Löwenward** mit Tortürmen, Ölturm und Kanonen |
-| **Drachenkai** | Kai, Zollhaus, zwei Schiffe, Lotsin aus Riverlock |
-| **Brücken zum Bergfried** | drei Brücken über zwei Inseln |
+| **Burgfeste Drachenstein** | nach Grundriss (siehe oben): Hof, Oberer Burg, Stadt mit Markt, Kirche und Rathaus, Ringmauer mit Vorburgtor und Ölturm |
+| **Drachenkai** | Hafenbecken im Osten, Molen mit Hafentor und Schiffstor, Zollhaus, Schiffe, Lotsin aus Riverlock |
+| **Brücken zum Bergfried** | drei Brücken von der Südmole über zwei Inseln |
 | **Schwarzer Bergfried** | 100 m hoher achteckiger Turm mit Krone und äußerer Mauer, Bergwächter am Tor |
 | **Gravemarch** | im Sumpftal unter dem Felssporn, drei Mauerringe mit versetzten Toren, Scheintore, Kapelle St. Alriks, Donjon |
 | **Gravecrest** | auf dem eisigen Felssporn (Höhe 70), Weg hinauf, Zugbrücke über den Abgrund, Torhaus, achteckiger Donjon, Palas |
@@ -127,7 +143,7 @@ Dazu kommen diese Systeme:
 
 Den Wehrgang erreichst du über die Holzrampe an der Südmauer, westlich vom Tor. Von dort führt die Westmauer zur zweiten Rampe hinauf auf den Wachturm in der Nordwestecke.
 
-Wege durch die Region: Vom Tor des Hofs führt der Weg nach Osten durch das Marktviertel zum Drachenkai und von dort über die Brücken zum Bergfried. Nach Westen führt er ins Tal nach Gravemarch. Kurz vor Gravemarch zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
+Wege durch die Region: Vom Tor des Hofs führt der Weg nach Osten über den Marktplatz zum Drachenkai und von der Südmole über die Brücken zum Bergfried. Ein zweiter Weg steigt nach Westen zum Tor der Oberer Burg. Nach Westen führt er ins Tal nach Gravemarch. Kurz vor Gravemarch zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
 
 ## Speichern und Laden
 
@@ -158,7 +174,7 @@ szenen/
   welt/wasser.gdshader     das Wächtermeer
   welt/auf_gelaende.gd     setzt Häuser und Personen auf die Geländehöhe
   welt/ort.gd              benannter Ort, zeigt beim Betreten den Namen
-  welt/haus.tscn           Haus für das Marktviertel
+  welt/haus.tscn           Stadthaus
   welt/turm.gd             begehbarer achteckiger Turm: Ebenen, Wendelrampe, Türen, Zinnen
   welt/tor.gd              Tor, das sich erst unter einer Bedingung öffnet
   welt/lesbar.gd           Gegenstand zum Lesen oder Ansehen (Namensbuch, Feuerbecken)
@@ -198,7 +214,7 @@ Das Gelände wird aus `werkzeuge/gelaende_erzeuger.gd` erzeugt. Dort stehen die 
 2. `werkzeuge/gelaende_erzeugen.gd` öffnen und **Datei → Ausführen** wählen (Strg+Umschalt+X).
 3. Die Szene `region_drachenstein.tscn` neu öffnen.
 
-`daten/gelaende/vorschau.png` zeigt das Ergebnis von oben. Häuser und Personen unter einem Knoten mit `auf_gelaende.gd` (Marktviertel, Löwenward, Signaltürme, PersonenAmBoden) folgen der neuen Geländehöhe von selbst.
+`daten/gelaende/vorschau.png` zeigt das Ergebnis von oben. Signaltürme und Personen unter einem Knoten mit `auf_gelaende.gd` (Signaltuerme, PersonenAmBoden) folgen der neuen Geländehöhe von selbst. Die Bauten von Drachenstein (Ringmauer, Stadthäuser, Kirche) haben feste Höhen, die beim Bau der Szene aus dem Gelände gelesen wurden. Wer das Gelände um Drachenstein ändert, verschiebt sie im Editor mit oder sagt mir Bescheid, dann baue ich die Szene neu.
 
 ## Einen Turm bauen
 
@@ -283,7 +299,7 @@ Vier automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstä
 | `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
 | `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
 | `tests/test_innen.gd` | die Innenräume, 19 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü |
-| `tests/test_region.gd` | die Region, 25 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
+| `tests/test_region.gd` | die Region, 29 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, die Wege zur Oberer Burg, zum Kai und durchs Vorburgtor, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
 
 ```
 godot --headless --path . --script res://tests/test_akt1.gd
