@@ -23,6 +23,8 @@ const BERGFRIED := Vector2(250, 135)
 ## Inseln zwischen Drachenkai und Bergfried: [Mitte, Radius].
 const INSELN := [[Vector2(165, 100), 11.0], [Vector2(195, 118), 9.0], [BERGFRIED, 40.0]]
 const INSEL_HOEHE := -17.8
+## Radius der Grube für den Unterbau des Bergfrieds (liegt innerhalb seiner 10 m dicken Mauer).
+const BERGFRIED_GRUBE := 17.0
 
 ## Wege als Linienzüge.
 const WEG_HAFEN := [Vector2(0, 40), Vector2(0, 80), Vector2(40, 88), Vector2(80, 82), Vector2(118, 74)]
@@ -111,9 +113,10 @@ func hoehe(p: Vector2) -> float:
 
 	# Felssporn von Gravecrest: schmaler Grat mit flacher Krone auf Höhe 70.
 	if p.x < -625.0 and p.x > -860.0:
+		# Die Krone ist flach und breit genug für die Burg nach Grundriss (130 x 36 m).
 		var quer := absf(p.y - (-365.0))
-		var flanke := 1.0 - smoothstep(14.0, 45.0, quer)
-		var krone := GRAVECREST_HOEHE + maxf(0.0, -p.x - 760.0) * 0.8
+		var flanke := 1.0 - smoothstep(19.0, 50.0, quer)
+		var krone := GRAVECREST_HOEHE + maxf(0.0, -p.x - 775.0) * 0.8
 		h = lerpf(h, maxf(h, krone), flanke)
 
 	# Küste: Das Land fällt zum Wächtermeer hin ab.
@@ -128,6 +131,10 @@ func hoehe(p: Vector2) -> float:
 		var abstand := p.distance_to(insel[0])
 		var insel_h := lerpf(INSEL_HOEHE, -32.0, smoothstep(r * 0.8, r * 1.4, abstand))
 		h = maxf(h, insel_h)
+
+	# Grube unter dem Schwarzen Bergfried: Dort liegt sein Unterbau mit vier Ebenen.
+	if p.distance_to(BERGFRIED) < BERGFRIED_GRUBE:
+		h = -50.0
 
 	# Plateau des Hofs (64 x 64 m) mit Vorplatz vor dem Tor, Höhe 0.
 	var hof := _rechteck_abstand(p, Vector2(-42, -42), Vector2(42, 42))
@@ -148,6 +155,10 @@ func hoehe(p: Vector2) -> float:
 	h = _weg_einebnen(h, p, WEG_DRACHENHORST)
 	h = _weg_einebnen(h, p, WEG_GRAVEMARCH)
 	h = _weg_gravecrest(h, p)
+
+	# Rückseite des Felsens hinter dem Palas: Hier hängt der Flaschenzug über dem Abgrund.
+	if p.x > -805.0 and p.x < -772.0 and absf(p.y + 365.0) < 40.0:
+		h = minf(h, 25.0)
 
 	# Abgrund vor dem Torhaus von Gravecrest, die Zugbrücke führt darüber.
 	if p.x > -629.0 and p.x < -613.0 and absf(p.y + 364.0) < 30.0:

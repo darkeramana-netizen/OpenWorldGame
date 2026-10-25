@@ -1,0 +1,26 @@
+{
+	"knoten": {
+		"start": {
+			"sprecher": "Feuerbecken des ersten Feuers",
+			"text": "Ein schweres Becken aus Eisen, kalt, die Asche alt. Von hier oben sieht man den Ring der Signaltürme um das ganze Wächtermeer. Wenn die Stille endet, steigt der Hüter der Stille durch die leere Ebene herauf und entzündet hier das erste Feuer. In einer Nacht weiß das ganze Land Bescheid.",
+			"optionen": [
+				{
+					"text": "Wann wurde es zuletzt entzündet?",
+					"weiter": "zuletzt"
+				},
+				{
+					"text": "Weitergehen.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"zuletzt": {
+			"sprecher": "Feuerbecken des ersten Feuers",
+			"text": "Um 1130, vor dem ersten Handel der Zwölf. Seitdem nicht mehr. Über sechshundert Jahre."
+		},
+		"ende": {
+			"sprecher": "Feuerbecken des ersten Feuers",
+			"text": "Die Asche bleibt kalt."
+		}
+	}
+}

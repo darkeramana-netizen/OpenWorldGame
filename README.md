@@ -12,6 +12,38 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Innenräume: Schwarzer Bergfried und Gravecrest
+
+Gebaut nach deinen Grundrissen und Schnitten.
+
+**Schwarzer Bergfried:** achteckiger Turm, 40 m breit. Die Mauern sind unten 10 m dick, im Schaft 5 m und an der Krone 3 m. Der Turm verjüngt sich nach oben und wird an der Krone wieder breiter. Alle 13 Ebenen sind begehbar, über eine **Wendelrampe um die Mittelsäule** im zentralen Treppenhaus:
+
+| Ebene | Raum | Ebene | Raum |
+|---|---|---|---|
+| −4 | Sonderzellen | 3 | Ausbildung |
+| −3 | Zellentrakt | 4 | **Archive** mit dem **Namensbuch** und **Hüterin der Stille Leofa Marsh** |
+| −2 | Zisternen | 5 | **Stillebene**, vollständig leer |
+| −1 | Interne Sicherung | 6 | Thronsaal, bewusst schlicht |
+| 0 | Schwelle (Eingang von der Brücke) | 7 | Vorbereitung |
+| 1 | Wachring | 8 | Observatorium |
+| 2 | Unterkünfte | Dach | Zinnen und das **Feuerbecken des ersten Feuers** |
+
+Der Unterbau liegt unter dem Meeresspiegel. Das Tor öffnet der Bergwächter erst nach dem Haupteid, dann darfst du deinen Namen im Namensbuch suchen.
+
+**Gravecrest:** nach dem Grundriss, alle nummerierten Räume begehbar:
+- **Palas-Block** mit Kaisersaal, Imperialen Gemächern, Audienzsaal, Bibliothek, Schreibstube, Garderobe, Speisesaal und der Kapelle des Sorrow, verbunden über eine Halle.
+- **Oberer und Unterer Hof** mit Schmieden, Apotheken, Wachräumen, Kaserne, Akademie, Badehaus, Speichern, Ställen und Brunnenhäusern.
+- Der **achteckige Donjon** trennt die Höfe. Man geht durch ihn hindurch und kann über die Wendelrampe zur Signalfeuerplattform steigen.
+- **Torhaus** mit Fallgatter und Zugbrücke über den Abgrund, Flaschenzug an der Westseite.
+- Im Audienzsaal sitzt **Komtur Torben Wick**.
+- Das Fallgatter zieht der Kammbrecher an der Brücke erst für Wächter hoch.
+
+| Wendelrampe im Bergfried | Archive mit Namensbuch |
+|---|---|
+| ![Wendelrampe](docs/bilder/innen-wendelrampe.png) | ![Archive](docs/bilder/innen-archiv.png) |
+| **Der Schwarze Bergfried** | **Gravecrest von oben** |
+| ![Bergfried](docs/bilder/innen-bergfried-aussen.png) | ![Gravecrest](docs/bilder/innen-gravecrest-grundriss.png) |
+
 ### Die Region Drachenstein
 
 Die erste begehbare Region, gebaut nach deiner Karte im Maßstab **1:50** (1 km = 20 m). Gebäude sind noch Platzhalter aus einfachen Formen.
@@ -91,6 +123,7 @@ Dazu kommen diese Systeme:
 | T | eine Stunde vorspulen (praktisch für Nachtwachen) |
 | Esc | Pausemenü: Speichern, Laden, Hauptmenü |
 | F5 / F9 | schnell speichern / schnell laden (im laufenden Spiel) |
+| F10 | Entwicklermenü (nur beim Start aus dem Editor): zu Orten springen, Uhrzeit, alle Tore öffnen, Akt I überspringen |
 
 Den Wehrgang erreichst du über die Holzrampe an der Südmauer, westlich vom Tor. Von dort führt die Westmauer zur zweiten Rampe hinauf auf den Wachturm in der Nordwestecke.
 
@@ -126,6 +159,10 @@ szenen/
   welt/auf_gelaende.gd     setzt Häuser und Personen auf die Geländehöhe
   welt/ort.gd              benannter Ort, zeigt beim Betreten den Namen
   welt/haus.tscn           Haus für das Marktviertel
+  welt/turm.gd             begehbarer achteckiger Turm: Ebenen, Wendelrampe, Türen, Zinnen
+  welt/tor.gd              Tor, das sich erst unter einer Bedingung öffnet
+  welt/lesbar.gd           Gegenstand zum Lesen oder Ansehen (Namensbuch, Feuerbecken)
+  oberflaeche/entwickler.tscn  Entwicklermenü (F10)
   welt/tageslicht.gd       Sonne, Mond, Himmel und Nebel nach Uhrzeit
   welt/ordenswand.gd       Namenssteine, nach dem Haupteid auch deiner
   welt/posten.gd           Wachposten (Torwache, Nachtwachen)
@@ -162,6 +199,21 @@ Das Gelände wird aus `werkzeuge/gelaende_erzeuger.gd` erzeugt. Dort stehen die 
 3. Die Szene `region_drachenstein.tscn` neu öffnen.
 
 `daten/gelaende/vorschau.png` zeigt das Ergebnis von oben. Häuser und Personen unter einem Knoten mit `auf_gelaende.gd` (Marktviertel, Löwenward, Signaltürme, PersonenAmBoden) folgen der neuen Geländehöhe von selbst.
+
+## Einen Turm bauen
+
+`szenen/welt/turm.gd` baut aus einer Liste von Ebenen einen begehbaren achteckigen Turm, auch im Editor. Im Inspektor einstellen:
+
+| Wert | Bedeutung |
+|---|---|
+| Ebenen Nummern / Namen | z. B. −4 bis 8, „Archive“, „Stillebene“ |
+| Boden Hoehen | Höhe jedes Bodens, ein Eintrag mehr als Ebenen (der letzte ist das Dach) |
+| Aussen Radien / Wandstaerken | je Ebene, so entstehen Verjüngung und Krone |
+| Eingaenge | Türen in der Außenmauer: (Ebene, Winkel) |
+| Treppen Winkel | Richtung der Türen zum Treppenhaus |
+| Wasserdicht | Turm reicht unter den Meeresspiegel (keine Rettung aus dem Wasser innen) |
+
+Jede Ebene bekommt automatisch Licht und ein Schild „Ebene X · Name“. Vorlagen sind der Bergfried und der Donjon von Gravecrest. Die Rampe bleibt flacher als 35°, wenn die Mittelsäule dick genug ist (Bergfried 1,9 m, Donjon 1,4 m).
 
 ## Einen Wachposten hinzufügen
 
@@ -224,22 +276,24 @@ Jede Datei hat Knoten. Begonnen wird beim Knoten `start`, außer ein Eintrag in 
 
 ## Testen
 
-Drei automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
+Vier automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
 
 | Test | Prüft |
 |---|---|
 | `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
 | `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
+| `tests/test_innen.gd` | die Innenräume, 19 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü |
 | `tests/test_region.gd` | die Region, 25 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
 
 ```
 godot --headless --path . --script res://tests/test_akt1.gd
 godot --headless --path . --script res://tests/test_eingabe.gd
 godot --headless --path . --script res://tests/test_region.gd
+godot --headless --path . --script res://tests/test_innen.gd
 ```
 
 Am Ende steht jeweils `Fehler: 0`, wenn alles stimmt.
 
 ## Nächste Schritte
 
-Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Offen in Stufe 3 sind die Innenräume (Bergfried mit Stillebene, Gravemarch als echtes Labyrinth) und echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.
+Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Offen in Stufe 3 sind Drachenstein und Gravemarch nach ihren Grundrissen, Riverlock und Ashenveil sowie echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.

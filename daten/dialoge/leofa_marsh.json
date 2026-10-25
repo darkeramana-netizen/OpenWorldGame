@@ -1,0 +1,52 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Leofa Marsh, Hüterin der Stille. Du stehst in meinen Archiven, {name}. Was suchst du?",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Frag. Ich antworte, was das Archiv belegt.",
+			"optionen": [
+				{
+					"text": "Was tut die Hüterin der Stille?",
+					"weiter": "amt"
+				},
+				{
+					"text": "Was geschah 1130?",
+					"weiter": "tausend"
+				},
+				{
+					"text": "Wird die Stille enden?",
+					"weiter": "enden"
+				},
+				{
+					"text": "Warum braucht das Archiv zwei Schlüssel?",
+					"weiter": "schluessel"
+				},
+				{
+					"text": "Ich gehe.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"amt": {
+			"text": "Ich zähle die Tage der Stille. Wenn ein Komtur oder die Kammspäher einen Angriff melden, prüfe ich im Archiv, ob andere den Orden angreifen und seine Existenz bedrohen. Nur dann spreche ich vor dem Rat: „Die Stille ist zu Ende. Wir handeln.“ Dann steige ich durch die Stillebene zur Krone und entzünde das erste Feuer.",
+			"weiter": "fragen"
+		},
+		"tausend": {
+			"text": "Valdrenn hatte nicht angegriffen. Der Rat wollte zuschlagen, bevor es wieder geschieht. Meine Vorgängerin Tamsin Orr hat gezögert, so lange sie konnte. Am Ende hat sie das Ende der Stille festgestellt. Ob sie es durfte, steht nicht im Archiv. Ich lese ihre Feststellung jedes Jahr. Und jedes Jahr finde ich keine Antwort.",
+			"weiter": "fragen"
+		},
+		"enden": {
+			"text": "Nicht, solange niemand den Orden angreift. Valdrenn rüstet, ja. Landkomtur Edda Rook will, dass ich früher spreche. Ein Überfall an der Grenze ist kein Ende der Stille, und Rüstung ist kein Angriff. Ich spreche, wenn das Archiv es belegt. Nicht vorher, und nicht aus Angst.",
+			"weiter": "fragen"
+		},
+		"schluessel": {
+			"text": "Einen trägt der Archivmeister, einen trage ich. Ohne beide öffnet sich keine Tür. Der Schlüssel im Wappen ist dieser Schlüssel. Niemand allein soll bestimmen, was der Orden weiß.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Wach gut. Und wenn du durch die leere Ebene gehst: Bleib einen Moment stehen."
+		}
+	}
+}

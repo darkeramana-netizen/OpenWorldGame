@@ -1,0 +1,44 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Torben Wick, Komtur von Gravecrest. Die Gezeichneten haben mich gewählt, der Rat hat bestätigt. Setz dich, {name}. Hier oben gibt es selten Besuch.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du wissen?",
+			"optionen": [
+				{
+					"text": "Was haltet ihr vom Handel der Zwölf?",
+					"weiter": "handel"
+				},
+				{
+					"text": "Wozu ein Kaisersaal, wenn der Orden keinem Kaiser dient?",
+					"weiter": "kaisersaal"
+				},
+				{
+					"text": "Was lernt man an der Akademie?",
+					"weiter": "akademie"
+				},
+				{
+					"text": "Ich störe nicht länger.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"handel": {
+			"text": "Meine Kammbrecher müssten ihn ausführen. Höfe abbrennen, Märkte, das Feuer auf eine Burg treiben. Ich zweifle daran, und ich sage es im Rat, laut. Zweifel ist kein Verrat, solange ich gehorche. Aber ich hoffe, ich muss nie herausfinden, ob ich gehorche.",
+			"weiter": "fragen"
+		},
+		"kaisersaal": {
+			"text": "Für das Auge. Die alte Ordnung von Sorrow wollte, dass Gesandte staunen, bevor sie verhandeln. Gesandte kommen längst nicht mehr hierher. Der Saal ist geblieben. Wir essen nicht darin, wir lernen darin, wie man nicht herrscht.",
+			"weiter": "fragen"
+		},
+		"akademie": {
+			"text": "Offiziere und Eliteanwärter. Festungskunde, Karten, Führung, Verschwiegenheit unter Druck. Wer Bannerträger werden will, sitzt hier ein Jahr. Und wer nominiert wird, läuft danach sechs Wochen durch den Eisgrat.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Disziplin. Wissen. Ordnung. Wach gut."
+		}
+	}
+}

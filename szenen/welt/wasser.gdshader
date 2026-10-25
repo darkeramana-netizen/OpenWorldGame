@@ -4,6 +4,9 @@ shader_type spatial;
 uniform vec3 farbe_tief = vec3(0.05, 0.12, 0.18);
 uniform vec3 farbe_hell = vec3(0.16, 0.3, 0.38);
 uniform float wellenhoehe = 0.15;
+// Kein Wasser innerhalb dieses Kreises: Dort steht der Unterbau des Bergfrieds.
+uniform vec2 loch_mitte = vec2(250.0, 135.0);
+uniform float loch_radius = 19.9;
 
 varying vec3 welt_pos;
 
@@ -14,6 +17,9 @@ void vertex() {
 }
 
 void fragment() {
+	if (distance(welt_pos.xz, loch_mitte) < loch_radius) {
+		discard;
+	}
 	float welle = sin(TIME * 0.9 + welt_pos.x * 0.15 + welt_pos.z * 0.08) * 0.5 + 0.5;
 	ALBEDO = mix(farbe_tief, farbe_hell, welle * 0.4);
 	ROUGHNESS = 0.12;

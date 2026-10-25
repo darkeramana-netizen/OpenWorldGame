@@ -1,0 +1,30 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "namensbuch_gelesen",
+			"knoten": "wieder"
+		},
+		{
+			"bedingung": "eid_waechter",
+			"knoten": "eigener_name"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Das Namensbuch",
+			"text": "Ein schwerer Band, eng beschrieben. Ganz vorne, in alter Schrift: „Jorin, Fischer. Der erste Stein.“ Danach Namen, Seite um Seite, aus allen Burgen. Manche sind durchgestrichen: geschlagene Steine. Dein Name steht nicht darin. Er wird erst nach dem Haupteid eingetragen."
+		},
+		"eigener_name": {
+			"sprecher": "Das Namensbuch",
+			"text": "Ein schwerer Band, eng beschrieben. Ganz vorne: „Jorin, Fischer. Der erste Stein.“ Du blätterst lange. Dann, auf einer der letzten beschriebenen Seiten, in frischer Tinte: „{name}. Burgfeste Drachenstein. Bürge: {buerge}.“",
+			"setze": [
+				"namensbuch_gelesen"
+			],
+			"akte": "Den eigenen Namen im Namensbuch des Schwarzen Bergfrieds gesehen."
+		},
+		"wieder": {
+			"sprecher": "Das Namensbuch",
+			"text": "Dein Name steht noch da, zwischen Tausenden. Sein Stein bleibt."
+		}
+	}
+}

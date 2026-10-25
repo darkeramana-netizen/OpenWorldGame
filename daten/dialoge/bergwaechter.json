@@ -27,7 +27,13 @@
 				},
 				{
 					"text": "Darf ich hinein?",
-					"weiter": "hinein"
+					"weiter": "hinein",
+					"bedingung": "!bergfried_zugang"
+				},
+				{
+					"text": "Ich bin Wächter. Ich möchte meinen Namen im Namensbuch sehen.",
+					"bedingung": "eid_waechter,!bergfried_zugang",
+					"weiter": "einlass"
 				},
 				{
 					"text": "Wach gut.",
@@ -62,6 +68,15 @@
 		},
 		"ende": {
 			"text": "Wach gut."
+		},
+		"einlass": {
+			"text": "Dein Name. Gut, das ist ein Grund. Ich öffne das Tor. Das Namensbuch liegt auf Ebene vier, bei den Archiven. Und auf Ebene fünf: kein Wort.",
+			"setze": [
+				"bergfried_zugang"
+			],
+			"akte": "Vom Bergwächter in den Schwarzen Bergfried eingelassen.",
+			"ziel": "Sieh dir deinen Namen im Namensbuch an (Bergfried, Ebene 4).",
+			"weiter": "fragen"
 		}
 	}
 }

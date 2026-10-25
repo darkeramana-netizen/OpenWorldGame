@@ -20,6 +20,11 @@
 					"weiter": "spaeher"
 				},
 				{
+					"text": "Ich bin Wächter von Drachenstein. Lass mich hinein.",
+					"bedingung": "eid_waechter,!gravecrest_zugang",
+					"weiter": "einlass"
+				},
+				{
 					"text": "Wach gut.",
 					"weiter": "ende"
 				}
@@ -39,6 +44,14 @@
 		},
 		"ende": {
 			"text": "Wach gut. Und erzähl unten im Tal nicht, was du hier oben gesehen hast."
+		},
+		"einlass": {
+			"text": "Ein Wächter mit Stein in der Wand. Dann zieh ich das Gatter hoch. Der Komtur sitzt im Audienzsaal, im Palas ganz im Westen. Durch den Donjon kommst du vom unteren in den oberen Hof.",
+			"setze": [
+				"gravecrest_zugang"
+			],
+			"ziel": "Besuche Komtur Torben Wick im Audienzsaal von Gravecrest.",
+			"weiter": "fragen"
 		}
 	}
 }

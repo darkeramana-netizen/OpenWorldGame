@@ -114,7 +114,7 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 | **0 – Lernen** | Godot installieren, ein offizielles 3D-Einsteigertutorial durcharbeiten | 2–4 Wochen |
 | **1 – Graubox „Die Schwelle“** ✅ | Spielfigur, Kamera, ein Hof aus Klötzen, Tageszyklus mit Stille-Stunde, drei NPCs mit Dialog | 1–2 Monate |
 | **2 – Akt I spielbar** ✅ | Haus der Schwelle in Drachenstein, Knappenprüfung, Nachtwache, Eid, Namensstein auf der Ordenswand, Speichern und Laden | 3–6 Monate |
-| **3 – Die erste Region** 🔶 | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände. Begehbar als Graybox, offen: Innenräume, Modelle | 6+ Monate |
+| **3 – Die erste Region** 🔶 | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände. Begehbar als Graybox, Bergfried und Gravecrest mit Innenräumen. Offen: Drachenstein und Gravemarch nach Grundriss, Modelle | 6+ Monate |
 | **4 – Systeme** | Kampf, Ansehen, Akte und Verfahren, Alarmstufen | laufend |
 | **5 – Das ganze Becken** | Ashenveil, Nord- und Südstraße, Riverlock, Akt II | später |
 | **6 – Akt III** | Ende der Stille, Kriegszustand, Enden | später |
@@ -122,6 +122,12 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 **Bewusst weggelassen, mindestens bis Stufe 5:** Reiten, selbst Segeln, Sprachausgabe, große Schlachten, begehbares Valdrenn.
 
 ## 9. Stand
+
+**Innenräume (Teil von Stufe 3):** Der Schwarze Bergfried hat alle 13 Ebenen nach dem Schnitt, Gravecrest alle Räume nach dem Grundriss. Entscheidungen:
+- **Wendelrampe statt Stufen:** Godot-Spielfiguren steigen keine Stufen von selbst. Eine durchgehende Wendelfläche um eine dicke Mittelsäule ist überall flacher als 35° und ohne Kanten.
+- **Gravecrest im halben Maßstab des Plans** (rund 130 x 36 m statt 240 x 60 m), passend zu „Wege schrumpfen, Orte bleiben groß“.
+- **Zugang:** Bergfried und Gravecrest öffnen sich erst nach dem Haupteid (Bergwächter, Kammbrecher). Zum Testen gibt es das Entwicklermenü (F10).
+- **Neue Personen aus der Lore:** Leofa Marsh (Hüterin der Stille, 1750) im Archiv, Torben Wick (Komtur von Gravecrest, Zweifler) im Audienzsaal.
 
 **Stufe 3 (die erste Region) ist begehbar.** Entscheidungen:
 - **Gelände ohne Plugin:** Statt Terrain3D erzeugt ein eigener GDScript-Generator (`werkzeuge/gelaende_erzeuger.gd`) die Höhen aus der Karte. Das braucht keine Zusatzprogramme und läuft mit jeder Godot-Version. Ein Plugin wie Terrain3D lohnt sich erst, wenn das Gelände von Hand bemalt werden soll.

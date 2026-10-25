@@ -8,7 +8,7 @@ signal ziel_gewechselt(ziel: Node)
 @export var sprungkraft: float = 4.5
 @export var maus_empfindlichkeit: float = 0.003
 ## Wie nah man an Personen und Dinge herangehen muss, um sie mit E anzusprechen (Meter).
-@export var reichweite: float = 2.5
+@export var reichweite: float = 3.0
 
 const KORDELFARBEN := {
 	"schwarz": Color(0.05, 0.05, 0.05),
@@ -95,10 +95,18 @@ func _physics_process(delta: float) -> void:
 	_aktualisiere_ziel()
 
 
+func _in_wasserdichtem_bau(p: Vector3) -> bool:
+	for bau in get_tree().get_nodes_in_group("wasserdicht"):
+		if bau.enthaelt(p):
+			return true
+	return false
+
+
 func _pruefe_grenzen() -> void:
 	var p := global_position
 	var draussen := p.x < GRENZE_MIN.x or p.z < GRENZE_MIN.y or p.x > GRENZE_MAX.x or p.z > GRENZE_MAX.y
-	if p.y < MEERESSPIEGEL - 1.0 or draussen:
+	var unter_wasser := p.y < MEERESSPIEGEL - 1.0 and not _in_wasserdichtem_bau(p)
+	if unter_wasser or draussen:
 		global_position = _sichere_position
 		velocity = Vector3.ZERO
 		if draussen:
