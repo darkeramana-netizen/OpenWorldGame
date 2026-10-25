@@ -1,6 +1,6 @@
 {
 	"einstieg": [
-		{ "bedingung": "fenn_gemeldet", "knoten": "misstrauisch" },
+		{ "bedingung": "geselle,!fenn_gemeldet", "knoten": "werbung" },
 		{ "bedingung": "fenn_fragte", "knoten": "danach" },
 		{ "bedingung": "geloebnis", "knoten": "vorstellen" }
 	],
@@ -31,16 +31,58 @@
 			"text": "Gut. Du bist in Ordnung. Wir zwei sollten zusammenhalten."
 		},
 		"danach": {
-			"text": "Na? Schon was gefunden?",
+			"text": "Na? Hältst du die Augen offen?",
 			"optionen": [
-				{ "text": "Nein.", "weiter": "ende" }
+				{ "text": "Ich arbeite. Mehr nicht.", "weiter": "ende" }
 			]
-		},
-		"misstrauisch": {
-			"text": "Du siehst mich so komisch an. Hab ich was falsch gemacht?"
 		},
 		"ende": {
 			"text": "Schade."
+		},
+		"werbung": {
+			"text": "{name}. Geselle jetzt, was? Hör mir einen Moment zu. Weißt du, warum Burg Sorrow gefallen ist?",
+			"optionen": [
+				{ "text": "Weil Riverlock das Heer durchgelassen hat.", "weiter": "werbung_2" },
+				{ "text": "Sag es mir.", "weiter": "werbung_2" }
+			]
+		},
+		"werbung_2": {
+			"text": "Weil der Orden gewartet hat. Und jetzt rüstet Valdrenn wieder, und was beschließt der Rat? Wachsamkeit. Silas Holt sagt, der Orden wartet wieder, genau wie damals. Es gibt Leute, die nicht mehr warten wollen.",
+			"weiter": "werbung_3"
+		},
+		"werbung_3": {
+			"text": "Heute Nacht hast du Wache an der Nebenpforte. Lass sie eine Stunde offen. Eine Stunde. Niemand wird verletzt, niemand muss es je erfahren.",
+			"optionen": [
+				{ "text": "Nein. Und ich melde das.", "setze": ["fenn_abgelehnt"], "weiter": "abgelehnt" },
+				{ "text": "Nein. Vergiss, dass du gefragt hast.", "weiter": "verschwiegen" },
+				{ "text": "Gut. Ich lasse sie offen.", "setze": ["fenn_geholfen"], "weiter": "verrat" }
+			]
+		},
+		"abgelehnt": {
+			"text": "Dann hast du dich entschieden. Wach gut, {name}. Solange du noch kannst.",
+			"ziel": "Melde Fenn sofort bei Kammerhüter Wendel Groth am Tor."
+		},
+		"verschwiegen": {
+			"text": "Schade. Ich dachte, du verstehst es.",
+			"weiter": "verschwiegen_2"
+		},
+		"verschwiegen_2": {
+			"blende": "In der Nacht wird an der Nebenpforte ein Mann gefasst. Es ist Fenn.\n\nAm Morgen fragt die Prüfung, wer davon wusste.",
+			"setze": ["fenn_aufgeloest", "fenn_verschwiegen"],
+			"verweis": "Wissen über Rufer-Werbung nicht gemeldet.",
+			"akte": "Bürge {buerge} im selben Verfahren mitverhandelt.",
+			"sprecher": "Kammerhüter Wendel Groth",
+			"text": "Du hast es gewusst und geschwiegen. Schweigen ist unsere Pflicht in der Stille, nicht gegenüber Verrätern. Dein Bürge hat für dich gesprochen. Diesmal reicht ein Verweis.",
+			"ziel": "Sprich mit Hüterin Maren Sell."
+		},
+		"verrat": {
+			"text": "Ich wusste es. Eine Stunde, {name}. Mehr nicht.",
+			"weiter": "verrat_2"
+		},
+		"verrat_2": {
+			"spielende": "In der Nacht öffnest du die Nebenpforte.\n\nAm Morgen holt dich die Prüfung. Das Burggericht nennt es Verrat: Strafstufe fünf. Dein Bürge Bertil Rask wird mitverhandelt.\n\nAm Ufer von Riverlock verlässt du Sorrowland. Dein Name steht in keiner Wand.",
+			"verweis": "Verrat. Verbannung aus Sorrowland.",
+			"text": "..."
 		}
 	}
 }

@@ -13,14 +13,23 @@ extends CanvasLayer
 @onready var _optionen: VBoxContainer = %Optionen
 @onready var _akte: PanelContainer = %AkteFenster
 @onready var _akte_text: RichTextLabel = %AkteText
+@onready var _ziel: Label = %Ziel
+@onready var _blende: ColorRect = %Blende
+@onready var _blende_text: Label = %BlendeText
+@onready var _blende_hinweis: Label = %BlendeHinweis
 
 var _meldung_tween: Tween
+## Wartende Blenden als [text, art], sie laufen nacheinander ab.
+var _blenden: Array = []
+var _blende_laeuft := false
+var _warte_auf_taste := false
 
 
 func _ready() -> void:
 	_dialog.hide()
 	_akte.hide()
 	_stille.hide()
+	_blende.hide()
 	_meldung.modulate.a = 0.0
 	_hinweis.text = ""
 
@@ -30,17 +39,27 @@ func _ready() -> void:
 	Spielstand.meldung.connect(_zeige_meldung)
 	Spielstand.akte_geaendert.connect(_fuelle_akte)
 	Spielstand.rang_geaendert.connect(func(_r: int) -> void: _fuelle_akte())
+	Spielstand.ziel_geaendert.connect(_zeige_ziel)
+	Spielstand.blende.connect(_bei_blende)
 	Dialog.zeile_gezeigt.connect(_zeige_zeile)
 	Dialog.beendet.connect(func(_id: String) -> void: _dialog.hide())
 	if spieler:
 		spieler.ziel_gewechselt.connect(_zeige_hinweis)
 
 	_zeige_uhr()
+	_zeige_ziel(Spielstand.ziel)
 	_bei_stille(Spielzeit.stille_aktiv)
 	_fuelle_akte()
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Spielstand.eingabe_gesperrt:
+		# Während einer Blende wird jede Eingabe geschluckt. Am Spielende führt sie ins Hauptmenü.
+		if _warte_auf_taste and event.is_pressed() and not event.is_echo():
+			Speicher.zum_hauptmenue()
+		if event is InputEventKey or event is InputEventMouseButton:
+			get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("akte_zeigen"):
 		_akte.visible = not _akte.visible
 		get_viewport().set_input_as_handled()
@@ -60,7 +79,44 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _zeige_uhr() -> void:
-	_uhr.text = "Tag %d · %s\n%s" % [Spielzeit.tag, Spielzeit.uhrzeit_text(), Spielzeit.abschnitt_name()]
+	_uhr.text = "%s · %s\n%s" % [Spielzeit.datum_text(), Spielzeit.uhrzeit_text(), Spielzeit.abschnitt_name()]
+
+
+func _zeige_ziel(text: String) -> void:
+	_ziel.text = "Ziel: " + text if text != "" else ""
+
+
+func _bei_blende(text: String, art: String) -> void:
+	_blenden.append([text, art])
+	Spielstand.eingabe_gesperrt = true
+	if not _blende_laeuft:
+		_naechste_blende()
+
+
+func _naechste_blende() -> void:
+	if _blenden.is_empty():
+		_blende_laeuft = false
+		Spielstand.eingabe_gesperrt = false
+		return
+	_blende_laeuft = true
+	var eintrag: Array = _blenden.pop_front()
+	var art: String = eintrag[1]
+	_blende_text.text = eintrag[0]
+	_blende_hinweis.visible = false
+	_blende.modulate.a = 0.0
+	_blende.show()
+	var tween := create_tween()
+	tween.tween_property(_blende, "modulate:a", 1.0, 0.8)
+	tween.tween_interval(6.0 if art == "akt_ende" else 3.5)
+	if art == "spielende":
+		tween.tween_callback(func() -> void:
+			_blende_hinweis.visible = true
+			_warte_auf_taste = true)
+		return
+	tween.tween_property(_blende, "modulate:a", 0.0, 0.8)
+	tween.tween_callback(func() -> void:
+		_blende.hide()
+		_naechste_blende())
 
 
 func _bei_stille(aktiv: bool) -> void:
@@ -123,5 +179,5 @@ func _fuelle_akte() -> void:
 		zeilen.append("[i]Noch keine Einträge.[/i]")
 	for eintrag in Spielstand.akte:
 		var farbe := "#e07a5f" if eintrag["art"] == "verweis" else "#e8dcc4"
-		zeilen.append("[color=%s]Tag %d, %s: %s[/color]" % [farbe, eintrag["tag"], eintrag["uhrzeit"], eintrag["text"]])
+		zeilen.append("[color=%s]%s, %s: %s[/color]" % [farbe, eintrag.get("datum", ""), eintrag["uhrzeit"], eintrag["text"]])
 	_akte_text.text = "\n".join(zeilen)

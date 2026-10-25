@@ -1,0 +1,63 @@
+{
+	"einstieg": [
+		{ "bedingung": "eid_waechter", "knoten": "gruss_waechter" },
+		{ "bedingung": "zustimmung_wachfuehrer", "knoten": "schon" },
+		{ "bedingung": "aufgabe_turmwache", "knoten": "frage_stille" },
+		{ "bedingung": "torwache_gemeldet", "knoten": "zum_eid" },
+		{ "bedingung": "torwache_erledigt", "knoten": "torwache_ok" },
+		{ "bedingung": "aufgabe_torwache", "knoten": "torwache_erinnerung" },
+		{ "bedingung": "lehrjahre_vorbei", "knoten": "torwache_auftrag" }
+	],
+	"knoten": {
+		"start": {
+			"text": "Wachführer Grend. Ich teile die Wachen ein. Du bist noch nicht dran."
+		},
+		"torwache_auftrag": {
+			"text": "Torwache also. Links vor dem Tor ist der Posten, der Stein mit der Markierung. Zwei Stunden. Du gehst, wenn die Ablösung kommt. Nicht früher, nicht später.",
+			"setze": ["aufgabe_torwache"],
+			"ziel": "Halte Torwache auf der Markierung links vor dem Tor, bis die Ablösung kommt (zwei Stunden)."
+		},
+		"torwache_erinnerung": {
+			"text": "Der Posten links vor dem Tor. Zwei Stunden. Wer vorher geht, bekommt einen Verweis."
+		},
+		"torwache_ok": {
+			"text": "Gut gestanden. Ich sage Maren Sell Bescheid. Wissen führt, nicht Lautstärke, und du hast heute nichts Lautes getan.",
+			"setze": ["torwache_gemeldet"],
+			"ziel": "Sprich mit Hüterin Maren Sell. Der Eid des Gesellen wartet."
+		},
+		"zum_eid": {
+			"text": "Maren Sell wartet mit deinem Eid."
+		},
+		"frage_stille": {
+			"text": "Du willst meine Zustimmung zum Haupteid. Dann eine Frage, die jeder Wächter im Schlaf beantworten muss: Wann endet die Stille?",
+			"optionen": [
+				{ "text": "Wenn Valdrenn rüstet.", "weiter": "falsch" },
+				{ "text": "Wenn der Großmeister es befiehlt.", "weiter": "falsch" },
+				{ "text": "Nur wenn andere den Orden angreifen und seine Existenz bedrohen.", "weiter": "frage_2" }
+			]
+		},
+		"frage_2": {
+			"text": "Und wer stellt fest, dass sie endet?",
+			"optionen": [
+				{ "text": "Nur der Hüter der Stille.", "weiter": "richtig" },
+				{ "text": "Der Großmeister.", "weiter": "falsch" },
+				{ "text": "Der Rat mit Zweidrittelmehrheit.", "weiter": "falsch" }
+			]
+		},
+		"falsch": {
+			"text": "Falsch. Lies die Regel noch einmal und komm wieder. Wer das verwechselt, verbrennt eines Tages das falsche Land."
+		},
+		"richtig": {
+			"text": "Richtig. Und vergiss nie: Ein Überfall an der Grenze ist noch kein Ende der Stille. Kriege zwischen anderen beobachten wir nur. Ich stimme zu.",
+			"setze": ["zustimmung_wachfuehrer"],
+			"akte": "Zustimmung von Wachführer Ivo Grend zum Haupteid.",
+			"meldung": "Wachführer Ivo Grend stimmt zu."
+		},
+		"schon": {
+			"text": "Du hast meine Zustimmung. Den Rest musst du selbst tragen."
+		},
+		"gruss_waechter": {
+			"text": "In silentio, Wächter."
+		}
+	}
+}

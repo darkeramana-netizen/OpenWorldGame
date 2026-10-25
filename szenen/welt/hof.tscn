@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/ordenswand.gd" id="2_ordenswand"]
@@ -6,6 +6,9 @@
 [ext_resource type="PackedScene" path="res://szenen/figuren/person.tscn" id="4_person"]
 [ext_resource type="PackedScene" path="res://szenen/figuren/bruchstein.tscn" id="5_bruchstein"]
 [ext_resource type="PackedScene" path="res://szenen/oberflaeche/hud.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://szenen/oberflaeche/pausemenue.tscn" id="7_pause"]
+[ext_resource type="PackedScene" path="res://szenen/figuren/werkbank.tscn" id="8_werkbank"]
+[ext_resource type="Script" path="res://szenen/welt/posten.gd" id="9_posten"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
 sky_top_color = Color(0.32, 0.42, 0.56, 1)
@@ -53,17 +56,33 @@ roughness = 1.0
 albedo_color = Color(0.08, 0.08, 0.1, 1)
 roughness = 1.0
 
+[sub_resource type="StandardMaterial3D" id="Material_posten"]
+albedo_color = Color(0.55, 0.42, 0.16, 1)
+roughness = 0.8
+
+[sub_resource type="BoxShape3D" id="Form_posten_klein"]
+size = Vector3(2, 3, 2)
+
+[sub_resource type="BoxShape3D" id="Form_posten_turm"]
+size = Vector3(8, 3, 8)
+
 [node name="Hof" type="Node3D"]
 
 [node name="Umgebung" type="WorldEnvironment" parent="."]
 environment = SubResource("Umgebung")
 
-[node name="Sonne" type="DirectionalLight3D" parent="." node_paths=PackedStringArray("umgebung")]
+[node name="Mond" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, 0, -0.5, 0.35, 0.714, 0.606, 0.357, -0.7, 0.618, 0, 30, 0)
+light_color = Color(0.55, 0.65, 0.95, 1)
+light_energy = 0.0
+
+[node name="Sonne" type="DirectionalLight3D" parent="." node_paths=PackedStringArray("umgebung", "mond")]
 transform = Transform3D(1, 0, 0, 0, 0.5, 0.8660254, 0, -0.8660254, 0.5, 0, 30, 0)
 shadow_enabled = true
 directional_shadow_max_distance = 150.0
 script = ExtResource("1_tageslicht")
 umgebung = NodePath("../Umgebung")
+mond = NodePath("../Mond")
 
 [node name="Gelaende" type="Node3D" parent="."]
 
@@ -133,13 +152,31 @@ use_collision = true
 size = Vector3(6, 3, 2)
 material = SubResource("Material_mauer")
 
-[node name="Wachturm" type="CSGCylinder3D" parent="Mauern"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 9, -27)
+[node name="Wachturm" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 6, -27)
 use_collision = true
-radius = 4.0
-height = 18.0
-sides = 8
+size = Vector3(8, 12, 8)
 material = SubResource("Material_basalt")
+
+[node name="RampeWehrgang" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(0.8683, -0.4961, 0, 0.4961, 0.8683, 0, 0, 0, 1, -17, 4, 28.5)
+use_collision = true
+size = Vector3(16.12, 0.4, 3)
+material = SubResource("Material_holz")
+
+[node name="RampeTurm" type="CSGBox3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 0.96623, 0.25766, 0, -0.25766, 0.96623, -31, 10, -15.5)
+use_collision = true
+size = Vector3(2, 0.4, 15.52)
+material = SubResource("Material_holz")
+
+[node name="SchildTurm" type="Label3D" parent="Mauern"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 14.5, -27)
+billboard = 1
+pixel_size = 0.01
+text = "Wachturm"
+font_size = 64
+outline_size = 12
 
 [node name="Gebaeude" type="Node3D" parent="."]
 
@@ -168,6 +205,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 8, -18.5)
 billboard = 1
 pixel_size = 0.01
 text = "Speisesaal und Küche"
+font_size = 64
+outline_size = 12
+
+[node name="Schreibstube" type="CSGBox3D" parent="Gebaeude"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 2.5, -15)
+use_collision = true
+size = Vector3(8, 5, 8)
+material = SubResource("Material_mauer")
+
+[node name="SchildSchreibstube" type="Label3D" parent="Gebaeude"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 4.5, -15)
+billboard = 1
+pixel_size = 0.01
+text = "Schreibstube"
 font_size = 64
 outline_size = 12
 
@@ -224,6 +275,70 @@ transform = Transform3D(0.8, 0, 0.6, 0, 1, 0, -0.6, 0, 0.8, 21, 0.08, 13)
 [node name="Bruchstein3" parent="Bauhof" instance=ExtResource("5_bruchstein")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0.08, 5)
 
+[node name="Werkbank" parent="Bauhof" instance=ExtResource("8_werkbank")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.5, 0.08, 9.5)
+
+[node name="Posten" type="Node3D" parent="."]
+
+[node name="Torwache" type="Area3D" parent="Posten"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 0, 34.6)
+script = ExtResource("9_posten")
+bedingung = "aufgabe_torwache"
+erledigt_flag = "torwache_erledigt"
+dauer_minuten = 120.0
+text_beginn = "Du stehst Torwache. Der Posten ist dein, bis die Ablösung kommt. (T spult vor)"
+text_ende = "Die Ablösung kommt. Melde dich bei Wachführer Ivo Grend."
+akte_ende = "Torwache gehalten, bis die Ablösung kam."
+
+[node name="Form" type="CollisionShape3D" parent="Posten/Torwache"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("Form_posten_klein")
+
+[node name="Markierung" type="CSGCylinder3D" parent="Posten/Torwache"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+radius = 0.9
+height = 0.06
+material = SubResource("Material_posten")
+
+[node name="NachtwacheKnappe" type="Area3D" parent="Posten"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 8, 31)
+script = ExtResource("9_posten")
+bedingung = "aufgabe_nachtwache_knappe,abschnitt=nacht"
+erledigt_flag = "pruefung_nachtwache"
+dauer_minuten = 0.0
+bis_abschnitt = &"morgengrauen"
+text_beginn = "Du stehst neben Hüter Anselm Kray. Kein Wort. Ihr wacht bis zum Morgengrauen. (T spult vor)"
+text_mitte = "Kray steht reglos. Unten im Hof brennt keine Lampe mehr."
+text_ende = "Das Morgengrauen kommt. Kray nickt dir zu. Die Nachtwache ist bestanden."
+akte_ende = "Knappenprüfung: Nachtwache neben Hüter Anselm Kray bestanden."
+
+[node name="Form" type="CollisionShape3D" parent="Posten/NachtwacheKnappe"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("Form_posten_klein")
+
+[node name="Markierung" type="CSGCylinder3D" parent="Posten/NachtwacheKnappe"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+radius = 0.8
+height = 0.06
+material = SubResource("Material_posten")
+
+[node name="Turmwache" type="Area3D" parent="Posten"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 12, -27)
+script = ExtResource("9_posten")
+bedingung = "aufgabe_turmwache,abschnitt=nacht"
+erledigt_flag = "turmwache_erledigt"
+dauer_minuten = 0.0
+bis_abschnitt = &"morgengrauen"
+text_beginn = "Du bist allein auf dem Turm. Niemand löst dich ab bis zum Morgengrauen. (T spult vor)"
+text_mitte = "Über dem Wächtermeer liegt Stille. Draußen im Dunkeln steht der Schwarze Bergfried. Kein Feuer brennt."
+text_ende = "Das Morgengrauen kommt. Du hast allein gewacht. Melde dich bei Hüterin Maren Sell."
+akte_ende = "Nachtwache allein auf dem Turm gehalten."
+verweis_text = "Turmwache vor dem Morgengrauen verlassen."
+
+[node name="Form" type="CollisionShape3D" parent="Posten/Turmwache"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("Form_posten_turm")
+
 [node name="Ferne" type="Node3D" parent="."]
 
 [node name="SchwarzerBergfried" type="CSGCylinder3D" parent="Ferne"]
@@ -251,13 +366,58 @@ tracht = Color(0.18, 0.16, 0.15, 1)
 
 [node name="Fenn" parent="Personen" instance=ExtResource("4_person")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 15)
-anzeige_name = "Fenn, Anwärter"
+anzeige_name = "Fenn"
 dialog_id = "fenn"
 kordel = 0
+sichtbar_wenn = "!fenn_gemeldet,!fenn_aufgeloest"
 tracht = Color(0.3, 0.27, 0.22, 1)
+
+[node name="IlseDorn" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 17, 0, -17.5)
+anzeige_name = "Verwalterin Ilse Dorn"
+dialog_id = "ilse_dorn"
+kordel = 1
+tracht = Color(0.22, 0.2, 0.17, 1)
+
+[node name="OdoHesse" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -19.5, 0, -15)
+anzeige_name = "Schreiber Odo Hesse"
+dialog_id = "odo_hesse"
+kordel = 1
+tracht = Color(0.16, 0.17, 0.2, 1)
+
+[node name="HeddaBrunn" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0, 17)
+anzeige_name = "Werkmeisterin Hedda Brunn"
+dialog_id = "hedda_brunn"
+kordel = 3
+tracht = Color(0.3, 0.25, 0.2, 1)
+
+[node name="AnselmKray" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -14, 8, 31)
+anzeige_name = "Hüter Anselm Kray"
+dialog_id = "anselm_kray"
+kordel = 2
+tracht = Color(0.12, 0.12, 0.14, 1)
+
+[node name="IvoGrend" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 27)
+anzeige_name = "Wachführer Ivo Grend"
+dialog_id = "ivo_grend"
+kordel = 3
+tracht = Color(0.14, 0.13, 0.13, 1)
+
+[node name="Komtur" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 4, 0, -17)
+anzeige_name = "Komtur Aldric Hayn"
+dialog_id = "komtur"
+kordel = 3
+tracht = Color(0.08, 0.08, 0.09, 1)
 
 [node name="Spieler" parent="." instance=ExtResource("3_spieler")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 46)
 
 [node name="HUD" parent="." node_paths=PackedStringArray("spieler") instance=ExtResource("6_hud")]
 spieler = NodePath("../Spieler")
+
+[node name="Pausemenue" parent="." instance=ExtResource("7_pause")]

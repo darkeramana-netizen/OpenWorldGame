@@ -1,6 +1,21 @@
 {
 	"einstieg": [
-		{ "bedingung": "steine_abgegeben", "knoten": "spaeter" },
+		{ "bedingung": "eid_waechter", "knoten": "nach_eid" },
+		{ "bedingung": "zustimmung_hueter", "knoten": "warte_auf_rest" },
+		{ "bedingung": "turmwache_erledigt,verweise>=3", "knoten": "zustimmung_schwer" },
+		{ "bedingung": "turmwache_erledigt", "knoten": "zustimmung" },
+		{ "bedingung": "aufgabe_turmwache", "knoten": "turm_erinnerung" },
+		{ "bedingung": "geselle,fenn_gemeldet", "knoten": "waechter_weg" },
+		{ "bedingung": "geselle,fenn_aufgeloest", "knoten": "waechter_weg" },
+		{ "bedingung": "geselle,fenn_abgelehnt", "knoten": "zum_kammerhueter" },
+		{ "bedingung": "geselle", "knoten": "fenn_sucht" },
+		{ "bedingung": "torwache_gemeldet", "knoten": "geselle_eid" },
+		{ "bedingung": "lehrjahre_vorbei", "knoten": "zu_ivo" },
+		{ "bedingung": "pruefung_lesen,pruefung_handwerk,pruefung_nachtwache,verweise>=2", "knoten": "versammlung_zoegert" },
+		{ "bedingung": "pruefung_lesen,pruefung_handwerk,pruefung_nachtwache", "knoten": "versammlung" },
+		{ "bedingung": "pruefung_knappe", "knoten": "pruefung_erinnerung" },
+		{ "bedingung": "kueche_erledigt", "knoten": "probejahr" },
+		{ "bedingung": "aufgabe_kueche", "knoten": "kueche_erinnerung" },
 		{ "bedingung": "aufgabe_steine,bruchsteine>=3", "knoten": "abgabe" },
 		{ "bedingung": "aufgabe_steine", "knoten": "erinnerung" },
 		{ "bedingung": "geloebnis", "knoten": "auftrag" }
@@ -21,12 +36,12 @@
 			"weiter": "auftrag_ende"
 		},
 		"auftrag_ende": {
-			"text": "Der Bauhof liegt rechts vom Tor, auf der anderen Seite des Hofs.",
+			"text": "Der Bauhof liegt rechts, wenn du durchs Tor kommst, auf der anderen Seite des Hofs.",
 			"setze": ["aufgabe_steine"],
-			"meldung": "Neues Ziel: Bring drei Bruchsteine aus dem Bauhof zu Maren Sell."
+			"ziel": "Bring drei Bruchsteine aus dem Bauhof zu Hüterin Maren Sell."
 		},
 		"erinnerung": {
-			"text": "Drei Bruchsteine. Der Bauhof liegt rechts vom Tor."
+			"text": "Drei Bruchsteine. Der Bauhof liegt auf der anderen Seite des Hofs."
 		},
 		"abgabe": {
 			"text": "Drei. Gut. Leg sie dort ab.",
@@ -36,21 +51,113 @@
 			"weiter": "abgabe_2"
 		},
 		"abgabe_2": {
-			"text": "Morgen Küche. Und merk dir: Bei Dämmerung schweigt die ganze Burg eine Stunde lang. Wer dann spricht, bekommt einen Verweis. Der steht in deiner Akte, und dein Bürge liest mit.",
-			"meldung": "Ende des Prototyps. Erkunde den Hof und erlebe die Stille-Stunde (T spult eine Stunde vor)."
+			"text": "Jetzt die Küche. Zum Mittagsmahl hilfst du Verwalterin Ilse Dorn im Speisesaal. Und merk dir: Bei Dämmerung schweigt die ganze Burg eine Stunde lang. Wer dann spricht, bekommt einen Verweis. Der steht in deiner Akte, und dein Bürge liest mit.",
+			"setze": ["aufgabe_kueche"],
+			"ziel": "Hilf Verwalterin Ilse Dorn beim Mittagsmahl im Speisesaal (Mittag, 12 bis 13 Uhr)."
 		},
-		"spaeter": {
-			"text": "Wach gut, Anwärter.",
+		"kueche_erinnerung": {
+			"text": "Ilse Dorn wartet zum Mittag im Speisesaal. Zwischen zwölf und eins wird aufgetragen."
+		},
+		"probejahr": {
+			"text": "Ilse sagt, du trägst ordentlich. Dann ist es Zeit.",
+			"weiter": "probejahr_2"
+		},
+		"probejahr_2": {
+			"zeitsprung": { "jahre": 1, "text": "Das Probejahr vergeht.\n\nKüche, Bauhof, Küche. Du lernst, wann man spricht und wann man schweigt." },
+			"setze": ["pruefung_knappe"],
+			"text": "Dein Probejahr ist um, {name}. Jetzt die Knappenprüfung. Drei Teile: Lesen bei Schreiber Odo Hesse in der Schreibstube. Ein Handwerk bei Werkmeisterin Hedda Brunn im Bauhof. Und eine Nachtwache neben Hüter Anselm Kray auf dem Wehrgang.",
+			"ziel": "Knappenprüfung: Lesen (Odo Hesse, Schreibstube), Handwerk (Hedda Brunn, Bauhof), Nachtwache (Anselm Kray, Wehrgang)."
+		},
+		"pruefung_erinnerung": {
+			"text": "Lesen bei Odo Hesse, Handwerk bei Hedda Brunn, Nachtwache bei Anselm Kray. Erst wenn alle drei zustimmen, fragt die Versammlung."
+		},
+		"versammlung": {
+			"text": "Lesen, Handwerk, Nachtwache: alles bestanden. Die Versammlung hat zugestimmt.",
+			"weiter": "knappen_eid"
+		},
+		"versammlung_zoegert": {
+			"text": "Lesen, Handwerk, Nachtwache: alles bestanden. Die Versammlung hat gezögert. Zu viele Verweise für ein einziges Jahr. Aber sie hat zugestimmt. Knapp.",
+			"weiter": "knappen_eid"
+		},
+		"knappen_eid": {
+			"text": "Tritt in den Hof. Sprich den Eid des Knappen.",
 			"optionen": [
-				{ "text": "Fenn fragt seltsame Dinge.", "bedingung": "fenn_fragte,!fenn_gemeldet", "weiter": "fenn" },
-				{ "text": "Wach gut.", "weiter": "ende" }
+				{
+					"text": "„Lernen heißt dienen, bevor man versteht. So lerne ich.“",
+					"setze": ["knappe"],
+					"rang": 2,
+					"akte": "Eid des Knappen im Hof gesprochen.",
+					"weiter": "knappe_2"
+				}
 			]
 		},
-		"fenn": {
-			"text": "Dann sag es dem Kammerhüter, nicht mir. Und nicht laut."
+		"knappe_2": {
+			"text": "Jetzt lernst du bei den Hütern. Zwei Jahre Wache und Arbeit, dann reden wir über den Gesellen.",
+			"optionen": [
+				{ "text": "Ich bin bereit.", "weiter": "lehrjahre" }
+			]
 		},
-		"ende": {
-			"text": "..."
+		"lehrjahre": {
+			"zeitsprung": { "jahre": 2, "text": "Zwei Jahre vergehen.\n\nWache auf den Mauern, Arbeit in der Bauhütte, Unterricht bei den Hütern. Du lernst jede Mauer und jeden Weg der Burg." },
+			"setze": ["lehrjahre_vorbei"],
+			"text": "Zwei Jahre, {name}. Bevor du den Eid des Gesellen sprichst: eine Torwache. Wachführer Ivo Grend teilt dich ein.",
+			"ziel": "Melde dich bei Wachführer Ivo Grend am Tor."
+		},
+		"zu_ivo": {
+			"text": "Erst die Torwache. Ivo Grend steht am Tor."
+		},
+		"geselle_eid": {
+			"text": "Ivo Grend sagt, du hast gestanden, bis die Ablösung kam. Gut. Sprich den Eid des Gesellen.",
+			"optionen": [
+				{
+					"text": "„Der Posten ist mein, bis die Ablösung kommt. Nicht früher, nicht später.“",
+					"setze": ["geselle"],
+					"rang": 3,
+					"akte": "Eid des Gesellen im Hof gesprochen.",
+					"weiter": "geselle_2"
+				}
+			]
+		},
+		"geselle_2": {
+			"text": "Noch ein Schritt bis zu deinem Stein. Komm wieder, wenn du bereit bist.",
+			"ziel": "Sprich noch einmal mit Hüterin Maren Sell."
+		},
+		"fenn_sucht": {
+			"text": "Bevor wir weiterreden: Fenn sucht dich. Er war heute schon zweimal hier. Er wartet beim Bauhof.",
+			"ziel": "Sprich mit Fenn beim Bauhof."
+		},
+		"zum_kammerhueter": {
+			"text": "Fenn wirbt für die Rufer? Dann sag es nicht mir. Sag es dem Kammerhüter. Sofort, und nicht laut."
+		},
+		"waechter_weg": {
+			"text": "Für den Haupteid fehlen dir drei Dinge: eine Nachtwache allein auf dem Turm, meine Zustimmung und die von Wachführer Grend. Dann nimmt dich der Komtur auf.",
+			"weiter": "waechter_weg_2"
+		},
+		"waechter_weg_2": {
+			"text": "Der Wachturm steht in der Nordwestecke. Über die Rampe zum Wehrgang an der Südmauer und dann die Westmauer entlang kommst du hinauf. Geh nach der Stille-Stunde, und bleib bis zum Morgengrauen.",
+			"setze": ["aufgabe_turmwache"],
+			"ziel": "Halte nachts allein Wache auf dem Wachturm bis zum Morgengrauen. Hol dir die Zustimmung von Wachführer Ivo Grend."
+		},
+		"turm_erinnerung": {
+			"text": "Erst der Turm. Allein, bis zum Morgengrauen."
+		},
+		"zustimmung": {
+			"text": "Du hast allein gewacht. Ich stimme zu.",
+			"setze": ["zustimmung_hueter"],
+			"akte": "Zustimmung von Hüterin Maren Sell zum Haupteid.",
+			"ziel": "Hol dir die Zustimmung von Wachführer Ivo Grend und melde dich dann bei Komtur Aldric Hayn an der Ordenswand."
+		},
+		"zustimmung_schwer": {
+			"text": "Du hast allein gewacht. Aber drei Verweise stehen in deiner Akte, und dein Bürge Rask hat jeden davon gelesen. Ich stimme trotzdem zu. Mach mir keine Schande.",
+			"setze": ["zustimmung_hueter"],
+			"akte": "Zustimmung von Hüterin Maren Sell zum Haupteid, mit Vorbehalt.",
+			"ziel": "Hol dir die Zustimmung von Wachführer Ivo Grend und melde dich dann bei Komtur Aldric Hayn an der Ordenswand."
+		},
+		"warte_auf_rest": {
+			"text": "Von mir hast du alles. Wenn Grend zugestimmt hat, geh zum Komtur an der Ordenswand."
+		},
+		"nach_eid": {
+			"text": "Wach gut, Wächter {name}. „Sein Stein bleibt“, sagen wir. Deiner jetzt auch."
 		}
 	}
 }

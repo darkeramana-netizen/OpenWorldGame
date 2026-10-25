@@ -1,0 +1,39 @@
+{
+	"einstieg": [
+		{ "bedingung": "kueche_erledigt", "knoten": "spaeter" },
+		{ "bedingung": "aufgabe_kueche,abschnitt=mittag", "knoten": "mahl" },
+		{ "bedingung": "aufgabe_kueche", "knoten": "warten" }
+	],
+	"knoten": {
+		"start": {
+			"text": "Die Küche gehört der Versorgung. Wer hier helfen soll, den schickt mir Maren Sell."
+		},
+		"warten": {
+			"text": "Du bist die Hilfe von Maren? Komm zum Mittag wieder, zwischen zwölf und eins. Dann wird aufgetragen."
+		},
+		"mahl": {
+			"text": "Da bist du ja. Trag die Schüsseln an den Tisch. Alle essen am selben Tisch, auch der Komtur.",
+			"optionen": [
+				{ "text": "Wo sitzt der Komtur?", "weiter": "komtur" },
+				{ "text": "Wer bekommt zuerst?", "weiter": "zuerst" }
+			]
+		},
+		"komtur": {
+			"text": "Wo Platz ist. Wer isst, sitzt ohne Rangordnung. Gestern saß er neben dem Schmiedeknecht.",
+			"weiter": "mahl_2"
+		},
+		"zuerst": {
+			"text": "Wer zuerst kommt. Hier gibt es kein „Herr“ und kein „Ihr“, nur hungrige Leute.",
+			"weiter": "mahl_2"
+		},
+		"mahl_2": {
+			"text": "Ich führe Buch, und das Buch lügt nicht: Du hast heute ordentlich getragen. Geh zu Maren Sell.",
+			"setze": ["kueche_erledigt"],
+			"akte": "Küchendienst beim gemeinsamen Mahl geleistet.",
+			"ziel": "Melde dich bei Hüterin Maren Sell."
+		},
+		"spaeter": {
+			"text": "Hunger? Das Mahl gibt es zu Mittag. Für alle gleich."
+		}
+	}
+}

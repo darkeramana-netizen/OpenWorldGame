@@ -1,0 +1,42 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://szenen/figuren/arbeitsstelle.gd" id="1_arbeit"]
+
+[sub_resource type="BoxShape3D" id="Form_bank"]
+size = Vector3(2, 0.9, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_bank"]
+size = Vector3(2, 0.9, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_holz"]
+albedo_color = Color(0.4, 0.28, 0.17, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="Mesh_stein"]
+size = Vector3(0.6, 0.45, 0.6)
+
+[sub_resource type="StandardMaterial3D" id="Material_stein"]
+albedo_color = Color(0.55, 0.52, 0.47, 1)
+roughness = 1.0
+
+[node name="Werkbank" type="StaticBody3D"]
+script = ExtResource("1_arbeit")
+anzeige_name = "Werkbank"
+aktion_text = "Eckstein behauen"
+bedingung = "aufgabe_eckstein"
+text_gang = "Du behaust den Eckstein. Eine Stunde vergeht"
+text_fertig = "Der Eckstein ist behauen. Zeig ihn Werkmeisterin Hedda Brunn."
+
+[node name="Kollision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("Form_bank")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("Mesh_bank")
+surface_material_override/0 = SubResource("Material_holz")
+
+[node name="Eckstein" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.92, 0, 0.38, 0, 1, 0, -0.38, 0, 0.92, 0.3, 1.12, 0)
+mesh = SubResource("Mesh_stein")
+surface_material_override/0 = SubResource("Material_stein")

@@ -1,0 +1,59 @@
+{
+	"einstieg": [
+		{ "bedingung": "eid_waechter", "knoten": "nach_eid" },
+		{ "bedingung": "zustimmung_hueter,zustimmung_wachfuehrer,turmwache_erledigt", "knoten": "eid" },
+		{ "bedingung": "geselle", "knoten": "noch_nicht" }
+	],
+	"knoten": {
+		"start": {
+			"text": "Aldric Hayn, Komtur dieser Feste. Beim Mahl sitzt du neben mir, wenn dort Platz ist. Mehr ist an mir nicht besonders. Geh an deine Arbeit."
+		},
+		"noch_nicht": {
+			"text": "Geselle {name}. Für den Haupteid brauchst du die Nachtwache allein auf dem Turm und die Zustimmung von Hüterin Sell und Wachführer Grend. Dann komm wieder."
+		},
+		"eid": {
+			"text": "Die Mannschaft ist im Hof versammelt. Hüterin Sell und Wachführer Grend haben zugestimmt, und du hast allein auf dem Turm gewacht. Drei Jahre, {name}. Bist du bereit?",
+			"optionen": [
+				{ "text": "Ich bin bereit.", "weiter": "eid_2" },
+				{ "text": "Noch nicht.", "weiter": "spaeter" }
+			]
+		},
+		"spaeter": {
+			"text": "Dann komm, wenn du es bist. Der Eid bindet auf Lebenszeit. Bis zu ihm kann jeder gehen."
+		},
+		"eid_2": {
+			"text": "Nach diesem Eid kannst du nicht mehr gehen. Sprich den Haupteid.",
+			"optionen": [
+				{
+					"text": "„Ich schwöre bei Stein und Schweigen: Ich diene dem Orden, keinem Herrn. Ich sehe und bewahre, ich greife nicht ein. In silentio vigilamus. Aber wenn die Stille endet, handle ich.“",
+					"setze": ["eid_waechter"],
+					"rang": 4,
+					"akte": "Haupteid im Hof gesprochen. Der Name {name} ist in den Namensstein geschlagen und in die Ordenswand gesetzt.",
+					"weiter": "stein"
+				}
+			]
+		},
+		"stein": {
+			"blende": "Der Steinmetz schlägt deinen Namen in den Stein.\n\n{name}\n\nDer Stein wird in die Ordenswand gesetzt.",
+			"text": "Dein Stein bleibt, Wächter {name}. In silentio.",
+			"optionen": [
+				{ "text": "Vigilamus.", "weiter": "akt_ende" }
+			]
+		},
+		"akt_ende": {
+			"akt_ende": "Ende von Akt I · Die Schwelle\n\nHerbst 1753. Die Stille hält. Noch.\n\nIn Valdrenn lässt König Marek Karvane Kanonen nach Tarnwacht ziehen. Am Ufer von Riverlock wägt Zollherr Hendrik Falk ein Angebot aus Gold.",
+			"setze": ["akt1_ende"],
+			"ziel": "Akt I ist abgeschlossen. Sieh dir deinen Stein in der Ordenswand an.",
+			"text": "Wach gut."
+		},
+		"nach_eid": {
+			"text": "In silentio, Wächter {name}.",
+			"optionen": [
+				{ "text": "Vigilamus.", "weiter": "ende" }
+			]
+		},
+		"ende": {
+			"text": "Wach gut."
+		}
+	}
+}

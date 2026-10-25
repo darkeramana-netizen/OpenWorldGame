@@ -1,0 +1,63 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://szenen/oberflaeche/hauptmenue.gd" id="1_menue"]
+
+[node name="Hauptmenue" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menue")
+
+[node name="Hintergrund" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.065, 0.08, 1)
+
+[node name="Mitte" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Inhalt" type="VBoxContainer" parent="Mitte"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Titel" type="Label" parent="Mitte/Inhalt"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.65, 0.25, 1)
+theme_override_font_sizes/font_size = 52
+text = "SORROWLAND"
+horizontal_alignment = 1
+
+[node name="Untertitel" type="Label" parent="Mitte/Inhalt"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.82, 0.75, 1)
+theme_override_font_sizes/font_size = 22
+text = "In Silentio"
+horizontal_alignment = 1
+
+[node name="Leitspruch" type="Label" parent="Mitte/Inhalt"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.58, 0.54, 1)
+theme_override_font_sizes/font_size = 16
+text = "In silentio vigilamus. Aber wenn die Stille endet, handeln wir."
+horizontal_alignment = 1
+
+[node name="Abstand" type="Control" parent="Mitte/Inhalt"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="Liste" type="VBoxContainer" parent="Mitte/Inhalt"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8

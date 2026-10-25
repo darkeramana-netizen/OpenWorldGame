@@ -1,0 +1,56 @@
+{
+	"einstieg": [
+		{ "bedingung": "pruefung_lesen", "knoten": "gruss" },
+		{ "bedingung": "pruefung_knappe", "knoten": "lesen" }
+	],
+	"knoten": {
+		"start": {
+			"text": "Schreibstube. Wer lesen lernen will, kommt nach dem Probejahr wieder."
+		},
+		"lesen": {
+			"text": "Lesen ist der erste Teil der Knappenprüfung. Ich lese dir nichts vor. Du liest mir. Hier, drei Artikel der Ordensregel.",
+			"weiter": "regel"
+		},
+		"regel": {
+			"sprecher": "Die Ordensregel",
+			"text": "„2. Die Stille: In der Stille greift der Orden nicht ein. Sie endet nur, wenn andere ihn angreifen und seine Existenz bedrohen.\n4. Die Dörfer: Der Orden schützt die Dörfer, er beherrscht sie nicht. In der Stille und im eigenen Land wird niemand ungewarnt verbrannt.\n10. Die Bürgschaft: Wer für ein Mitglied bürgt, trägt seine Verantwortung mit.“",
+			"weiter": "frage1"
+		},
+		"frage1": {
+			"text": "Gelesen? Dann frage ich. Wann endet die Stille?",
+			"optionen": [
+				{ "text": "Wenn der Großmeister es befiehlt.", "weiter": "falsch" },
+				{ "text": "Nur wenn andere den Orden angreifen und seine Existenz bedrohen.", "weiter": "frage2" },
+				{ "text": "Wenn Valdrenn rüstet.", "weiter": "falsch" }
+			]
+		},
+		"frage2": {
+			"text": "Was schuldet der Orden den Dörfern?",
+			"optionen": [
+				{ "text": "Schutz, nicht Herrschaft. Und niemand wird ungewarnt verbrannt.", "weiter": "frage3" },
+				{ "text": "Nichts. Die Dörfer schulden dem Orden Abgaben.", "weiter": "falsch" },
+				{ "text": "Die Dörfer wählen den Komtur.", "weiter": "falsch" }
+			]
+		},
+		"frage3": {
+			"text": "Und wer für einen anderen bürgt?",
+			"optionen": [
+				{ "text": "Der ist frei, sobald der andere den Eid gesprochen hat.", "weiter": "falsch" },
+				{ "text": "Der zahlt dessen Sold zurück, wenn er geht.", "weiter": "falsch" },
+				{ "text": "Der trägt seine Verantwortung mit.", "weiter": "bestanden" }
+			]
+		},
+		"falsch": {
+			"text": "Nein. Das steht da nicht. Lies es noch einmal und komm wieder."
+		},
+		"bestanden": {
+			"text": "Gut. Du liest, was dasteht, nicht was dir gefällt. Das ist mehr, als manche Offiziere können.",
+			"setze": ["pruefung_lesen"],
+			"akte": "Knappenprüfung: Lesen bestanden.",
+			"meldung": "Knappenprüfung: Lesen bestanden."
+		},
+		"gruss": {
+			"text": "Ich schreibe, was dasteht. Wach gut."
+		}
+	}
+}

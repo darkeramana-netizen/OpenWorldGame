@@ -1,20 +1,44 @@
 {
 	"einstieg": [
-		{ "bedingung": "geloebnis", "knoten": "danach" }
+		{
+			"bedingung": "geloebnis",
+			"knoten": "danach"
+		}
 	],
 	"knoten": {
 		"start": {
 			"text": "Halt. Du stehst an der Schwelle der Burgfeste Drachenstein. Wer bürgt für dich?",
 			"optionen": [
-				{ "text": "Hauptwächter Bertil Rask von der Bezirksfestung Hollmoor.", "weiter": "herkunft" }
+				{
+					"text": "Hauptwächter Bertil Rask von der Bezirksfestung Hollmoor.",
+					"weiter": "herkunft"
+				}
 			]
 		},
 		"herkunft": {
 			"text": "Rask also. Dann trägt er von heute an mit, was du tust. Woher kommst du?",
 			"optionen": [
-				{ "text": "Aus Kellbrück. Das Dorf ist im Winter abgebrannt.", "setze": ["herkunft_dorf"], "weiter": "beweggrund" },
-				{ "text": "Aus dem Süden Valdrenns. Dort hungern sie.", "setze": ["herkunft_valdrenn"], "weiter": "valdrenn" },
-				{ "text": "Von nirgendwo. Ich bin in einer Bezirksfestung aufgewachsen.", "setze": ["herkunft_waise"], "weiter": "beweggrund" }
+				{
+					"text": "Aus Kellbrück. Das Dorf ist im Winter abgebrannt.",
+					"setze": [
+						"herkunft_dorf"
+					],
+					"weiter": "beweggrund"
+				},
+				{
+					"text": "Aus dem Süden Valdrenns. Dort hungern sie.",
+					"setze": [
+						"herkunft_valdrenn"
+					],
+					"weiter": "valdrenn"
+				},
+				{
+					"text": "Von nirgendwo. Ich bin in einer Bezirksfestung aufgewachsen.",
+					"setze": [
+						"herkunft_waise"
+					],
+					"weiter": "beweggrund"
+				}
 			]
 		},
 		"valdrenn": {
@@ -25,9 +49,18 @@
 		"beweggrund": {
 			"text": "Warum willst du in den Orden?",
 			"optionen": [
-				{ "text": "Ich will nie wieder meine Heimat verlieren.", "weiter": "glaube" },
-				{ "text": "Ich will kämpfen.", "weiter": "kaempfen" },
-				{ "text": "Ich habe keinen anderen Ort.", "weiter": "glaube" }
+				{
+					"text": "Ich will nie wieder meine Heimat verlieren.",
+					"weiter": "glaube"
+				},
+				{
+					"text": "Ich will kämpfen.",
+					"weiter": "kaempfen"
+				},
+				{
+					"text": "Ich habe keinen anderen Ort.",
+					"weiter": "glaube"
+				}
 			]
 		},
 		"kaempfen": {
@@ -37,8 +70,14 @@
 		"glaube": {
 			"text": "Gut. Mehr muss ich nicht wissen.",
 			"optionen": [
-				{ "text": "Fragt Ihr nicht nach meinem Glauben?", "weiter": "glaube_antwort" },
-				{ "text": "Was geschieht jetzt?", "weiter": "geloebnis" }
+				{
+					"text": "Fragt Ihr nicht nach meinem Glauben?",
+					"weiter": "glaube_antwort"
+				},
+				{
+					"text": "Was geschieht jetzt?",
+					"weiter": "geloebnis"
+				}
 			]
 		},
 		"glaube_antwort": {
@@ -50,7 +89,9 @@
 			"optionen": [
 				{
 					"text": "„Ich trete an die Schwelle und bitte um Arbeit. Ich schweige, bis man mich fragt.“",
-					"setze": ["geloebnis"],
+					"setze": [
+						"geloebnis"
+					],
 					"rang": 1,
 					"akte": "Gelöbnis an der Schwelle abgelegt. Bürge: Hauptwächter Bertil Rask.",
 					"weiter": "abschluss"
@@ -59,23 +100,59 @@
 		},
 		"abschluss": {
 			"text": "So sei es. Geh ins Haus der Schwelle, links im Hof. Hüterin Maren Sell gibt dir Arbeit. Und wenn die Dämmerung kommt: Schweig.",
-			"meldung": "Neues Ziel: Melde dich bei Hüterin Maren Sell im Haus der Schwelle."
+			"ziel": "Melde dich bei Hüterin Maren Sell im Haus der Schwelle."
 		},
 		"danach": {
-			"text": "In silentio, Anwärter. Was willst du?",
+			"text": "In silentio, {name}. Was willst du?",
 			"optionen": [
-				{ "text": "Fenn hat mich gefragt, wo die Fluchtgänge sind.", "bedingung": "fenn_fragte,!fenn_gemeldet", "weiter": "fenn_melden" },
-				{ "text": "Nichts. Ich gehe an die Arbeit.", "weiter": "gruss" }
+				{
+					"text": "Fenn hat mich gefragt, wo die Fluchtgänge sind.",
+					"bedingung": "fenn_fragte,!fenn_gemeldet,!geselle",
+					"weiter": "fenn_melden"
+				},
+				{
+					"text": "Fenn wirbt für die Rufer. Ich soll heute Nacht die Nebenpforte offen lassen.",
+					"bedingung": "fenn_abgelehnt,!fenn_aufgeloest",
+					"weiter": "fenn_rufer"
+				},
+				{
+					"text": "Was wurde aus Fenn?",
+					"bedingung": "fenn_gemeldet",
+					"weiter": "fenn_fort"
+				},
+				{
+					"text": "Nichts. Ich gehe an die Arbeit.",
+					"weiter": "gruss"
+				}
 			]
 		},
 		"fenn_melden": {
 			"text": "Fragen nach Plänen und Fluchtgängen sind ein Warnzeichen. Gut, dass du es sagst. Und jetzt behalte es für dich. Die Prüfung kümmert sich darum.",
-			"setze": ["fenn_gemeldet"],
+			"setze": [
+				"fenn_gemeldet"
+			],
 			"akte": "Warnzeichen gemeldet: Anwärter Fenn fragte nach Fluchtgängen.",
 			"weiter": "gruss"
 		},
 		"gruss": {
 			"text": "Wach gut."
+		},
+		"fenn_fort": {
+			"text": "Er hat nicht nur dich gefragt. Die Prüfung hat ihn verhört, das Burggericht hat geurteilt. Er hat Sorrowland am Ufer von Riverlock verlassen. Mehr musst du nicht wissen.",
+			"weiter": "gruss"
+		},
+		"fenn_rufer": {
+			"text": "Die Nebenpforte. Wie damals in Ashenveil. Wer von innen verrät, öffnet auch die stärkste Burg.",
+			"weiter": "fenn_rufer_2"
+		},
+		"fenn_rufer_2": {
+			"text": "Die Prüfung holt ihn noch heute Nacht. Hilfe für die Rufer ist Verrat, Stufe fünf. Er wird Sorrowland über Riverlock verlassen. Und du hast getan, was die Regel verlangt.",
+			"setze": [
+				"fenn_aufgeloest"
+			],
+			"akte": "Rufer-Werbung gemeldet. Fenn wurde von der Prüfung gefasst.",
+			"ziel": "Sprich mit Hüterin Maren Sell.",
+			"weiter": "gruss"
 		}
 	}
 }

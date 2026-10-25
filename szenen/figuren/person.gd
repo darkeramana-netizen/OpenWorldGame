@@ -16,16 +16,19 @@ const KORDELFARBEN := {
 ## Rangabzeichen am Kragen (Alltag 1.3).
 @export var kordel: Kordel = Kordel.SCHWARZ
 @export var tracht: Color = Color(0.15, 0.15, 0.17)
+## Die Person ist nur da, solange diese Bedingung gilt (Schreibweise wie in den Dialogen).
+@export var sichtbar_wenn: String = ""
 
 var aktion_text: String = "Sprechen"
 
 
 func _ready() -> void:
-	add_to_group("interagierbar")
 	$Name.text = anzeige_name
 	$Mesh.material_override = _material(tracht)
 	$Kordel.visible = kordel != Kordel.KEINE
 	$Kordel.material_override = _material(KORDELFARBEN[kordel])
+	Spielstand.flag_geaendert.connect(func(_f: String) -> void: _pruefe_sichtbarkeit())
+	_pruefe_sichtbarkeit()
 
 
 func interagieren(spieler: Node3D) -> void:
@@ -34,6 +37,16 @@ func interagieren(spieler: Node3D) -> void:
 		Spielstand.stille_gebrochen(anzeige_name)
 		return
 	Dialog.starte(dialog_id, anzeige_name)
+
+
+func _pruefe_sichtbarkeit() -> void:
+	var da := Spielstand.pruefe_bedingung(sichtbar_wenn)
+	visible = da
+	$Kollision.set_deferred("disabled", not da)
+	if da:
+		add_to_group("interagierbar")
+	else:
+		remove_from_group("interagierbar")
 
 
 func _schaue_zu(punkt: Vector3) -> void:

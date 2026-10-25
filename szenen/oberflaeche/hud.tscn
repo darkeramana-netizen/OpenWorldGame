@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://szenen/oberflaeche/hud.gd" id="1_hud"]
 
@@ -23,6 +23,12 @@ font_size = 18
 outline_size = 6
 outline_color = Color(0, 0, 0, 0.85)
 
+[sub_resource type="LabelSettings" id="Schrift_ziel"]
+font_size = 17
+font_color = Color(0.92, 0.78, 0.45, 1)
+outline_size = 6
+outline_color = Color(0, 0, 0, 0.85)
+
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
 
@@ -34,6 +40,16 @@ offset_right = 420.0
 offset_bottom = 70.0
 text = "Tag 1 · 06:00"
 label_settings = SubResource("Schrift_schatten")
+
+[node name="Ziel" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = 20.0
+offset_top = 72.0
+offset_right = 440.0
+offset_bottom = 150.0
+text = "Ziel: Sprich mit dem Kammerhüter."
+label_settings = SubResource("Schrift_ziel")
+autowrap_mode = 3
 
 [node name="Steuerung" type="Label" parent="."]
 anchors_preset = 1
@@ -49,8 +65,8 @@ theme_override_colors/font_color = Color(1, 1, 1, 0.75)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 4
 text = "WASD gehen · Umschalt rennen · Leertaste springen
-E sprechen / aufheben · Tab Akte
-T eine Stunde vorspulen · Esc Maus freigeben"
+E sprechen / aufheben · Tab Akte · Esc Menü
+T eine Stunde vorspulen · F5 / F9 schnell speichern / laden"
 horizontal_alignment = 2
 
 [node name="Stille" type="Label" parent="."]
@@ -76,9 +92,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -420.0
-offset_top = 90.0
+offset_top = 160.0
 offset_right = 420.0
-offset_bottom = 150.0
+offset_bottom = 220.0
 grow_horizontal = 2
 text = "Meldung"
 label_settings = SubResource("Schrift_schatten")
@@ -164,3 +180,48 @@ theme_override_font_sizes/bold_font_size = 20
 bbcode_enabled = true
 text = "Dienstakte"
 scroll_following = true
+
+[node name="Blende" type="ColorRect" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.02, 0.03, 1)
+
+[node name="BlendeText" type="Label" parent="Blende"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 160.0
+offset_right = -160.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.88, 0.84, 0.76, 1)
+theme_override_font_sizes/font_size = 26
+text = "Ein Jahr vergeht."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BlendeHinweis" type="Label" parent="Blende"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -90.0
+offset_right = 300.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.6, 0.58, 0.54, 1)
+theme_override_font_sizes/font_size = 16
+text = "Taste drücken, um zum Hauptmenü zurückzukehren"
+horizontal_alignment = 1

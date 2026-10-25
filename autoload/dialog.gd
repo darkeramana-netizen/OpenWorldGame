@@ -77,7 +77,10 @@ func _zeige(knoten_id: String) -> void:
 		if Spielstand.pruefe_bedingung(option.get("bedingung", "")):
 			_sichtbare_optionen.append(option)
 			texte.append(option["text"])
-	zeile_gezeigt.emit(knoten.get("sprecher", _gespraechspartner), knoten.get("text", ""), texte)
+	zeile_gezeigt.emit(
+		knoten.get("sprecher", _gespraechspartner),
+		Spielstand.text_einsetzen(knoten.get("text", "")),
+		Array(texte).map(Spielstand.text_einsetzen))
 
 
 func _gehe_weiter(eintrag: Dictionary) -> void:
@@ -87,7 +90,7 @@ func _gehe_weiter(eintrag: Dictionary) -> void:
 		beende()
 
 
-## Wirkungen eines Knotens oder einer Antwort: Flags, Akte, Zähler, Rang, Meldung.
+## Wirkungen eines Knotens oder einer Antwort. Alle Felder stehen im README.
 func _wende_wirkungen_an(eintrag: Dictionary) -> void:
 	for flag: String in eintrag.get("setze", []):
 		Spielstand.setze_flag(flag)
@@ -97,6 +100,20 @@ func _wende_wirkungen_an(eintrag: Dictionary) -> void:
 	if eintrag.has("rang"):
 		Spielstand.setze_rang(int(eintrag["rang"]))
 	if eintrag.has("akte"):
-		Spielstand.akte_eintrag(eintrag["akte"])
+		Spielstand.akte_eintrag(Spielstand.text_einsetzen(eintrag["akte"]))
+	if eintrag.has("verweis"):
+		Spielstand.verweis(eintrag["verweis"])
 	if eintrag.has("meldung"):
-		Spielstand.meldung.emit(eintrag["meldung"])
+		Spielstand.meldung.emit(Spielstand.text_einsetzen(eintrag["meldung"]))
+	if eintrag.has("ziel"):
+		Spielstand.setze_ziel(Spielstand.text_einsetzen(eintrag["ziel"]))
+	if eintrag.has("zeitsprung"):
+		var sprung: Dictionary = eintrag["zeitsprung"]
+		Spielzeit.zeitsprung(int(sprung.get("jahre", 1)))
+		Spielstand.blende.emit(Spielstand.text_einsetzen(sprung.get("text", "")), "zwischen")
+	if eintrag.has("blende"):
+		Spielstand.blende.emit(Spielstand.text_einsetzen(eintrag["blende"]), "zwischen")
+	if eintrag.has("akt_ende"):
+		Spielstand.blende.emit(Spielstand.text_einsetzen(eintrag["akt_ende"]), "akt_ende")
+	if eintrag.has("spielende"):
+		Spielstand.blende.emit(Spielstand.text_einsetzen(eintrag["spielende"]), "spielende")

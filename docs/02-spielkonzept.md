@@ -112,8 +112,8 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 | Stufe | Inhalt | ungefähre Dauer |
 |---|---|---|
 | **0 – Lernen** | Godot installieren, ein offizielles 3D-Einsteigertutorial durcharbeiten | 2–4 Wochen |
-| **1 – Graubox „Die Schwelle“** | Spielfigur, Kamera, ein Hof aus Klötzen, Tageszyklus mit Stille-Stunde, drei NPCs mit Dialog | 1–2 Monate |
-| **2 – Akt I spielbar** | Haus der Schwelle in Drachenstein, Knappenprüfung, Nachtwache, Eid, Namensstein auf der Ordenswand | 3–6 Monate |
+| **1 – Graubox „Die Schwelle“** ✅ | Spielfigur, Kamera, ein Hof aus Klötzen, Tageszyklus mit Stille-Stunde, drei NPCs mit Dialog | 1–2 Monate |
+| **2 – Akt I spielbar** ✅ | Haus der Schwelle in Drachenstein, Knappenprüfung, Nachtwache, Eid, Namensstein auf der Ordenswand, Speichern und Laden | 3–6 Monate |
 | **3 – Die erste Region** | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände mit Terrain3D | 6+ Monate |
 | **4 – Systeme** | Kampf, Ansehen, Akte und Verfahren, Alarmstufen | laufend |
 | **5 – Das ganze Becken** | Ashenveil, Nord- und Südstraße, Riverlock, Akt II | später |
@@ -123,19 +123,26 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 
 ## 9. Stand
 
-**Stufe 1 ist angelegt** (siehe README.md). Spielbar sind:
-- Vorgespräch mit dem Kammerhüter (Bürge, Herkunft, Beweggrund) und das Gelöbnis: „Ich trete an die Schwelle und bitte um Arbeit. Ich schweige, bis man mich fragt.“
-- die erste Arbeit: drei Bruchsteine aus dem Bauhof
-- Fenn, der nach Fluchtgängen fragt (melden, decken oder schweigen)
-- Tageszyklus mit Stille-Stunde, Verweis in der Dienstakte
+**Stufe 1 und Stufe 2 sind fertig: Akt I ist durchspielbar**, mit Speichern und Laden (Ablauf siehe README.md).
 
-**Neu erfundene Namen im Prototyp** (Platzhalter, frei änderbar, noch nicht in der Lore-Bibel):
+Entscheidungen beim Bau von Akt I:
+- **Akt I dauert drei Spieljahre (1750 bis 1753),** weil die Ordensregel für den Wächter drei Dienstjahre verlangt. Probejahr und Lehrjahre werden als Zeitsprung mit Blende erzählt. Akt II beginnt also im Herbst 1753, nicht 1750.
+- **Die Ränge folgen exakt den Bedingungen aus dem Dokument „Ränge und Eide“:** Gelöbnis, Knappenprüfung (Lesen, Handwerk, Nachtwache neben einem Hüter, Zustimmung der Versammlung), Gesellen-Eid nach zwei Jahren und Haupteid nach der Nachtwache allein auf dem Turm mit Zustimmung von Hüter und Wachführer und Aufnahme durch den Komtur.
+- **Fenn ist ein Rufer-Werber.** Melden ist sauber. Schweigen bringt einen Verweis, und der Bürge wird mitverhandelt. Helfen führt zur Verbannung (Strafstufe 5) und zum Spielende.
+
+**Neu erfundene Namen** (Platzhalter, frei änderbar, noch nicht in der Lore-Bibel):
 
 | Name | Rolle |
 |---|---|
-| Wendel Groth | Kammerhüter an der Schwelle von Drachenstein |
+| Wendel Groth | Kammerhüter an der Schwelle von Drachenstein (Prüfer) |
 | Maren Sell | Hüterin im Haus der Schwelle |
-| Fenn | Anwärter, stellt verdächtige Fragen |
+| Fenn | Anwärter, wirbt später für die Rufer |
 | Bertil Rask | Hauptwächter, Leiter der Bezirksfestung Hollmoor, Bürge des Spielers |
+| Ilse Dorn | Verwalterin (Versorgung), Küche und Speisesaal |
+| Odo Hesse | Schreiber (Archiv), Schreibstube |
+| Hedda Brunn | Werkmeisterin der Bauhütte |
+| Anselm Kray | Hüter, Nachtwache auf dem Wehrgang |
+| Ivo Grend | Wachführer, teilt die Wachen ein |
+| Aldric Hayn | Komtur der Burgfeste Drachenstein |
 | Hollmoor | Bezirksfestung |
 | Kellbrück | abgebranntes Heimatdorf (Herkunftsoption) |

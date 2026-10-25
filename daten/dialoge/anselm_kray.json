@@ -1,0 +1,23 @@
+{
+	"einstieg": [
+		{ "bedingung": "pruefung_nachtwache", "knoten": "danach" },
+		{ "bedingung": "aufgabe_nachtwache_knappe", "knoten": "erinnerung" },
+		{ "bedingung": "pruefung_knappe", "knoten": "auftrag" }
+	],
+	"knoten": {
+		"start": {
+			"text": "Hüter Kray. Ich wache. Geh weiter."
+		},
+		"auftrag": {
+			"text": "Die Nachtwache. Komm nach der Stille-Stunde hierher auf den Wehrgang und stell dich auf die Markierung neben mich. Dann stehen wir bis zum Morgengrauen. Ohne ein Wort.",
+			"setze": ["aufgabe_nachtwache_knappe"],
+			"ziel": "Stell dich nach 20 Uhr auf die Markierung neben Hüter Anselm Kray auf dem Wehrgang und bleib bis zum Morgengrauen."
+		},
+		"erinnerung": {
+			"text": "Nachts. Auf die Markierung. Und dann schweigen."
+		},
+		"danach": {
+			"text": "Du hast gestanden und geschwiegen. Mehr verlangt die erste Nachtwache nicht."
+		}
+	}
+}

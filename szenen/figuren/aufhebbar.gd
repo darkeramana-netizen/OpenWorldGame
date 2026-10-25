@@ -10,6 +10,10 @@ var aktion_text: String = "Aufheben"
 
 
 func _ready() -> void:
+	# Schon in einem früheren Spielstand aufgehoben?
+	if Spielstand.ist_aufgehoben(str(get_path())):
+		queue_free()
+		return
 	add_to_group("interagierbar")
 
 
@@ -21,5 +25,7 @@ func interagieren(_spieler: Node3D) -> void:
 		Spielstand.meldung.emit("Das ist nicht deine Aufgabe. Noch nicht.")
 		return
 	Spielstand.zaehler_aendern(zaehler_name, 1)
+	Spielstand.aufgehoben.append(str(get_path()))
 	Spielstand.meldung.emit("%s aufgehoben (%d)." % [anzeige_name, Spielstand.zaehler_wert(zaehler_name)])
+	remove_from_group("interagierbar")
 	queue_free()

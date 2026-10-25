@@ -1,0 +1,30 @@
+{
+	"einstieg": [
+		{ "bedingung": "pruefung_handwerk", "knoten": "gruss" },
+		{ "bedingung": "aufgabe_eckstein,eckstein>=3", "knoten": "abnahme" },
+		{ "bedingung": "aufgabe_eckstein", "knoten": "erinnerung" },
+		{ "bedingung": "pruefung_knappe", "knoten": "auftrag" }
+	],
+	"knoten": {
+		"start": {
+			"text": "Bauhütte. Wenn Maren dich schickt, sag es. Sonst steh nicht im Weg."
+		},
+		"auftrag": {
+			"text": "Handwerk also. Auf der Werkbank liegt ein Eckstein. Behau ihn: drei Arbeitsgänge, jeder dauert eine Stunde. Nach dem Maß wird gebaut, nicht nach der Eile.",
+			"setze": ["aufgabe_eckstein"],
+			"ziel": "Behau den Eckstein an der Werkbank im Bauhof (dreimal arbeiten, nur tagsüber) und zeig ihn Hedda Brunn."
+		},
+		"erinnerung": {
+			"text": "Der Stein liegt auf der Werkbank. Er behaut sich nicht von allein."
+		},
+		"abnahme": {
+			"text": "Zeig her. Die Kanten sind gerade, die Ecke hält. Für einen Knappen reicht das. Eines Tages schlägst du vielleicht dein eigenes Zeichen ein.",
+			"setze": ["pruefung_handwerk"],
+			"akte": "Knappenprüfung: Handwerk (Eckstein in der Bauhütte) bestanden.",
+			"meldung": "Knappenprüfung: Handwerk bestanden."
+		},
+		"gruss": {
+			"text": "Was ich setze, hält länger als ich. Merk dir das."
+		}
+	}
+}
