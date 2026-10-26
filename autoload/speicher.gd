@@ -8,6 +8,9 @@ const REGIONEN := {
 	"drachenstein": "res://szenen/welt/region_drachenstein.tscn",
 	"riverlock": "res://szenen/welt/region_riverlock.tscn",
 	"ashenveil": "res://szenen/welt/region_ashenveil.tscn",
+	"nordstrasse": "res://szenen/welt/region_nordstrasse.tscn",
+	"suedstrasse": "res://szenen/welt/region_suedstrasse.tscn",
+	"kuestenweg": "res://szenen/welt/region_kuestenweg.tscn",
 }
 const START_REGION := "drachenstein"
 const HAUPTMENUE := "res://szenen/oberflaeche/hauptmenue.tscn"
@@ -26,6 +29,9 @@ var ordner: String = STANDARD_ORDNER:
 		DirAccess.make_dir_recursive_absolute(ordner)
 ## Die Region, in der der Spieler gerade ist. Setzt die Region selbst beim Betreten (region.gd).
 var region: String = START_REGION
+## Name des Ankunftsorts der letzten Reise (z. B. "von_drachenstein"). Übergänge an Wegen
+## lassen nur dann Tage vergehen, wenn man am anderen Ende hereingekommen ist.
+var letzte_ankunft: String = ""
 ## Wahr, solange die alte Szene abgebaut wird. Posten werten das Verlassen dann nicht als Fehler.
 var wechselt_szene: bool = false
 
@@ -66,6 +72,7 @@ func neues_spiel(name: String) -> void:
 	Spielzeit.zuruecksetzen()
 	ausstehender_spieler = {}
 	region = START_REGION
+	letzte_ankunft = ""
 	_wechsle_zu(REGIONEN[region])
 
 
@@ -78,6 +85,7 @@ func reise(ziel: String, ankunft: String, stunden: float = 0.0, text: String = "
 	Dialog.beende()
 	Spielzeit.vorspulen(stunden)
 	ausstehender_spieler = {"ankunft": ankunft}
+	letzte_ankunft = ankunft
 	region = ziel
 	await _wechsle_zu(REGIONEN[ziel])
 	if text != "":
@@ -98,6 +106,7 @@ func speichern(platz: String) -> bool:
 		"spielzeit": Spielzeit.als_dict(),
 		"spieler": _spieler_daten(),
 		"region": region,
+		"letzte_ankunft": letzte_ankunft,
 	}
 	var datei := FileAccess.open(_pfad(platz), FileAccess.WRITE)
 	if datei == null:
@@ -118,6 +127,7 @@ func laden(platz: String) -> bool:
 	Spielzeit.aus_dict(daten.get("spielzeit", {}))
 	ausstehender_spieler = daten.get("spieler", {})
 	region = daten.get("region", START_REGION)
+	letzte_ankunft = daten.get("letzte_ankunft", "")
 	if not REGIONEN.has(region):
 		region = START_REGION
 	_wechsle_zu(REGIONEN[region])

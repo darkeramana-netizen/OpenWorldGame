@@ -12,6 +12,39 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Die Landwege: einmal um das Wächtermeer
+
+Die drei Straßen aus der Lore sind jetzt begehbare Strecken. Jede ist eine eigene, lange Region im Maßstab **1:100** (1 km = 10 m):
+
+| Straße | Verbindung | Lore | im Spiel | Reisezeit |
+|---|---|---|---|---|
+| **Nordstraße** | Drachenstein – Riverlock, nördlich um das Meer | 225 km | 2,25 km | 9 Tage |
+| **Südstraße** | Ashenveil – Riverlock, südlich um das Meer | 185 km | 1,85 km | 7 Tage |
+| **Küstenweg** | Drachenstein – Ashenveil, an der Westküste | 70 km | 0,7 km | 3 Tage |
+
+- **Anschlüsse:**
+  - Drachenstein hat zwei neue Tore in der Ringmauer: das **Nordtor** (Nordstraße) und das **Südtor** (Küstenweg). Hinter beiden führt die Straße über einen **Pass** durchs Gebirge.
+  - In Riverlock geht die Nordstraße nach Westen ab, die Südstraße nach Süden.
+  - In Ashenveil beginnt der Küstenweg am Ende des Damms, die Südstraße am Ostpfad.
+  - Wer am Ende eines Weges weitergeht, ist in der nächsten Region.
+- **Zeit:** Die Reisetage vergehen erst, wenn du am anderen Ende ankommst, und es folgt eine Blende. Wer umkehrt, verliert keine Tage.
+- **Unterwegs:**
+  - **Signaltürme** wie in der Lore alle 15 km zwischen Straße und Meer
+  - **Meilensteine** mit den echten Entfernungen
+  - **Bezirksfestungen**, Dörfer und Wald; links und rechts das Meer und das Gebirge
+- **Leute an der Straße:**
+  - Dorfvorsteherin Berit Haag in Hollmar (erzählt von den Rufern)
+  - Feuerwart Tobias Wern an einem Signalturm
+  - Torfstecherin Mara Lind in Torfwinkel
+  - je eine Bezirkswache
+- **Als Anwärter** kommst du nicht aus der Burgfeste hinaus. Erst als Wächter lassen dich die Pässe durch.
+- **Karte (M):** Der Pfeil wandert die Straße entlang.
+- Schiff (Lotsin) und Pferd (Reiterin) bleiben die schnelle Abkürzung.
+
+| Nordstraße mit Dorf und Signaltürmen | Südstraße am Meer | Pass im Norden von Drachenstein |
+|---|---|---|
+| ![Nordstraße](docs/bilder/landweg-nordstrasse.png) | ![Südstraße](docs/bilder/landweg-suedstrasse.png) | ![Pass](docs/bilder/landweg-pass.png) |
+
 ### Ashenveil: die dritte Region
 
 Ashenveil, die Reiter- und Rüstburg im **Nebelmoor**, ist eine eigene Region mit dichtem Nebel. Gebaut ist sie nach deinem Grundriss, ohne Drehung.
@@ -251,6 +284,8 @@ szenen/
   welt/region_drachenstein.tscn  Region Drachenstein: Gelände, Meer, Burgen, Brücken, Orte, Personen
   welt/region_riverlock.tscn     Region Riverlock: Valnschlucht, Westburg, Mittelbau, Ostburg
   welt/region_ashenveil.tscn     Region Ashenveil: Nebelmoor, Burg, Kapelle der Stille, Fluchttunnel
+  welt/region_nordstrasse.tscn, region_suedstrasse.tscn, region_kuestenweg.tscn  die Landstraßen
+  welt/uebergang.gd        Übergang am Ende eines Weges in die nächste Region
   welt/wasserdicht.gd      Bereich unter dem Wasserspiegel, in dem niemand zurückgesetzt wird (Keller, Tunnel)
   welt/region.gd           Wurzel einer Region: Wasser, Rand, Lage auf der Karte
   welt/gelaende.gd         baut Gelände und Kollision aus daten/gelaende*/
@@ -275,6 +310,7 @@ daten/dialoge/             Gespräche als JSON-Dateien
 daten/gelaende/            Höhen (hoehen.r32), Wege und Sumpf (maske.png), Vorschau der Region Drachenstein
 daten/gelaende_riverlock/  dasselbe für Riverlock
 daten/gelaende_ashenveil/  dasselbe für Ashenveil
+daten/gelaende_<straße>/   dasselbe für Nordstraße, Südstraße und Küstenweg
 daten/karten/              die Karte von Sorrowland für die Taste M
 werkzeuge/                 Gelände-Generatoren (in Godot ausführbar)
 werkzeuge/bau/             Bauskripte (Python), aus denen die Regionsszenen entstehen
@@ -298,7 +334,7 @@ Die Regionsszenen werden aus den Bauskripten erzeugt (siehe „Die Regionsszenen
 
 ## Das Gelände verändern
 
-Das Gelände von Drachenstein wird aus `werkzeuge/gelaende_erzeuger.gd` erzeugt, das von Riverlock aus `werkzeuge/gelaende_riverlock.gd`, das von Ashenveil aus `werkzeuge/gelaende_ashenveil.gd`. `werkzeuge/gelaende_erzeugen.gd` erzeugt alle drei. Dort stehen die Lage der Orte, die Wege, das Gebirge, der Felssporn, die Küste und die Inseln, jeweils mit Kommentar.
+Das Gelände von Drachenstein wird aus `werkzeuge/gelaende_erzeuger.gd` erzeugt, das von Riverlock aus `werkzeuge/gelaende_riverlock.gd`, das von Ashenveil aus `werkzeuge/gelaende_ashenveil.gd`, die drei Straßen aus `werkzeuge/gelaende_strasse.gd`. `werkzeuge/gelaende_erzeugen.gd` erzeugt alle. Dort stehen die Lage der Orte, die Wege, das Gebirge, der Felssporn, die Küste und die Inseln, jeweils mit Kommentar.
 
 1. Werte im Erzeuger ändern, z. B. einen Weg oder die Höhe des Felssporns.
 2. `werkzeuge/gelaende_erzeugen.gd` öffnen und **Datei → Ausführen** wählen (Strg+Umschalt+X).
@@ -314,6 +350,7 @@ Die großen Bauten (Burgen nach Grundriss, Ringmauern, Stadthäuser, Mittelbau) 
 python3 werkzeuge/bau/region_drachenstein.py   # schreibt szenen/welt/region_drachenstein.tscn
 python3 werkzeuge/bau/region_riverlock.py      # schreibt szenen/welt/region_riverlock.tscn
 python3 werkzeuge/bau/region_ashenveil.py      # schreibt szenen/welt/region_ashenveil.tscn
+python3 werkzeuge/bau/region_strasse.py        # schreibt die drei Landstraßen
 ```
 
 Dafür braucht es Python 3 mit `numpy`. `grundlage.py` enthält die gemeinsamen Bausteine (Mauerzug, Tor, Raum, Rampe ...), die `teil_*.py` die einzelnen Burgen. Die Skripte lesen die Geländehöhen, also zuerst das Gelände erzeugen, dann bauen. **Achtung:** Was du in diesen Szenen im Editor änderst, ist nach dem Neubau weg. Größere Änderungen gehören deshalb in die Skripte.
@@ -391,17 +428,18 @@ Jede Datei hat Knoten. Begonnen wird beim Knoten `start`, außer ein Eintrag in 
 | `spielende` | Blende, danach zurück ins Hauptmenü |
 | `reise` | `{ "ziel": "riverlock", "ankunft": "von_drachenstein", "stunden": 54, "text": "..." }`: Am Ende des Gesprächs geht es in die andere Region, an den Marker mit diesem Namen (Gruppe `ankunft`), die Zeit läuft weiter, dann kommt die Blende mit dem Text |
 
-**Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `rang>=2`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht), `region=riverlock` (die Region, in der man gerade ist: drachenstein, riverlock, ashenveil). Mehrere werden durch Komma getrennt und müssen alle gelten.
+**Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `rang>=2`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht), `region=riverlock` (die Region, in der man gerade ist: drachenstein, riverlock, ashenveil, nordstrasse, suedstrasse, kuestenweg). Mehrere werden durch Komma getrennt und müssen alle gelten.
 
 ## Testen
 
-Sechs automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
+Sieben automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
 
 | Test | Prüft |
 |---|---|
 | `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
 | `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
 | `tests/test_innen.gd` | die Innenräume, 25 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü, in Gravemarch Donjon, Archivarin und Scheintore |
+| `tests/test_landwege.gd` | die Landwege, 26 Punkte: Anwärter bleiben drin, durch das Nordtor, einmal um das Meer (Nordstraße, Südstraße, Küstenweg) mit den richtigen Reisetagen, Umkehren kostet nichts, Karte, Wald, Personen an der Straße, Speichern und Laden unterwegs, über den Pass und durch das Südtor zurück in die Stadt |
 | `tests/test_ashenveil.gd` | Ashenveil, 24 Punkte: Reiterin lehnt Anwärter ab, Ritt hin und zurück mit Zeitverlust, Morast, über den Damm und durch das Fallgitter, Rampe hinunter in die Kapelle, Gedenkstein, durch den Fluchttunnel ins Moor, Personen, verriegelter Nebeneingang, Speichern und Laden |
 | `tests/test_riverlock.gd` | Riverlock und das Reisen, 21 Punkte: Lotsin lehnt Anwärter ab, Überfahrt hin und zurück mit Zeitverlust, Rampen durch alle drei Geschosse des Mittelbaus, Zollherr in der Akte, Personen, Wege durch beide Burgen bis vor die Tore, Wasser, Speichern und Laden in Riverlock, Reise über das Entwicklermenü |
 | `tests/test_region.gd` | die Region, 30 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, die Wege zur Oberer Burg, zum Kai und durchs Vorburgtor, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
@@ -413,10 +451,11 @@ godot --headless --path . --script res://tests/test_region.gd
 godot --headless --path . --script res://tests/test_innen.gd
 godot --headless --path . --script res://tests/test_riverlock.gd
 godot --headless --path . --script res://tests/test_ashenveil.gd
+godot --headless --path . --script res://tests/test_landwege.gd
 ```
 
 Am Ende steht jeweils `Fehler: 0`, wenn alles stimmt.
 
 ## Nächste Schritte
 
-Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Alle Burgen aus deinen Grundrissen stehen jetzt. Offen in Stufe 3 sind die Wege über Land zwischen den Regionen (Nordstraße, Südstraße, Küstenweg als begehbare Strecken) und echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.
+Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Alle Burgen aus deinen Grundrissen stehen, und die Landwege verbinden sie. Offen in Stufe 3 sind echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.

@@ -1,0 +1,45 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Bezirksfestung des Ordens. Name, Herkunft, Ziel. Ach, Ordenstracht. Dann nur das Ziel, für das Wachbuch.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Noch etwas?",
+			"optionen": [
+				{
+					"text": "Was tut eine Bezirksfestung?",
+					"weiter": "aufgabe"
+				},
+				{
+					"text": "Was ist die verbrannte Straße?",
+					"weiter": "verbrannt"
+				},
+				{
+					"text": "Kommen viele Fremde vorbei?",
+					"weiter": "fremde"
+				},
+				{
+					"text": "Gute Wache.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"aufgabe": {
+			"text": "Rund dreihundert von uns für einen Bezirk mit zwanzigtausend Menschen. Wir schützen die Dörfer, halten die Räumungspläne bereit und sind der Sammelpunkt, wenn die Signalfeuer brennen. Und wir schreiben jeden Fremden auf, der die Straße entlangkommt.",
+			"weiter": "fragen"
+		},
+		"verbrannt": {
+			"text": "Die vierte Linie. Kommt ein Heer über die Straße, räumen wir die Dörfer, und dann brennt alles, was der Feind brauchen könnte. Aber niemand wird ungewarnt verbrannt. Das ist die vierte Regel, und die kennt hier jedes Kind.",
+			"weiter": "fragen"
+		},
+		"fremde": {
+			"text": "Händler aus Valdrenn, mit Papieren aus Riverlock. Sie kommen ohne Lotsen über Land, gerade weil wir sie hier sehen. Wer tiefer ins Land will, braucht die Erlaubnis des Landkomturs. Seit dem Winter fragen sie öfter nach dem Weg als früher.",
+			"akte": "Bezirksfestung an der Straße: Fremde aus Valdrenn fragen seit dem Winter öfter nach dem Weg.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Gute Wache. Die nächste Festung meldet, dass du durchgekommen bist."
+		}
+	}
+}

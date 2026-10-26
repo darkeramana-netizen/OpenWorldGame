@@ -1,4 +1,4 @@
-[gd_scene load_steps=46 format=3]
+[gd_scene load_steps=49 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -18,6 +18,7 @@
 [ext_resource type="Script" path="res://szenen/welt/lesbar.gd" id="16_lesbar"]
 [ext_resource type="PackedScene" path="res://szenen/oberflaeche/entwickler.tscn" id="17_entwickler"]
 [ext_resource type="Script" path="res://szenen/welt/region.gd" id="18_region"]
+[ext_resource type="Script" path="res://szenen/welt/uebergang.gd" id="20_uebergang"]
 [ext_resource type="Script" path="res://szenen/welt/wasserdicht.gd" id="19_wasserdicht"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
@@ -135,13 +136,19 @@ size = Vector3(16, 5, 19)
 [sub_resource type="BoxShape3D" id="Form_ort5"]
 size = Vector3(3.5, 4, 66)
 
+[sub_resource type="BoxShape3D" id="Form_ZumKuestenweg"]
+size = Vector3(24, 30, 5)
+
+[sub_resource type="BoxShape3D" id="Form_ZurSuedstrasse"]
+size = Vector3(10, 30, 24)
+
 [node name="Region" type="Node3D"]
 script = ExtResource("18_region")
 region_id = "ashenveil"
 wasserspiegel = -1.0
 wasser_meldung = "Der Morast verschluckt jeden, der den Weg verlässt."
 grenze_min = Vector2(-240, -190)
-grenze_max = Vector2(240, 190)
+grenze_max = Vector2(240, 199)
 grenze_meldung = "Dahinter liegen nur Nebel und Sumpf. Hier geht niemand weiter."
 karte_ursprung = Vector2(372, 749)
 karte_meter_pro_pixel = 60.0
@@ -1879,7 +1886,61 @@ metadata/anzeige = "Marstall"
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -4.3, 0.6, 190)
 
 [node name="von_riverlock" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
-transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 238, 0.5, 5.9)
+transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 222, 0.63, 3.5)
+
+[node name="von_suedstrasse" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
+transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 222, 0.63, 3.5)
+
+[node name="von_kuestenweg" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5.4, 0.71, 188)
+
+[node name="Uebergaenge" type="Node3D" parent="."]
+
+[node name="ZumKuestenweg" type="Area3D" parent="Uebergaenge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -1, 2.4, 196.5)
+script = ExtResource("20_uebergang")
+ziel = "kuestenweg"
+ankunft = "von_ashenveil"
+stunden = 0.0
+zeit_nur_von = ""
+text = ""
+bedingung = ""
+text_gesperrt = "Ein Anwärter verlässt die Burgfeste nicht ohne Auftrag."
+rueckweg = Vector3(-7.2, 1.25, 180)
+
+[node name="Form" type="CollisionShape3D" parent="Uebergaenge/ZumKuestenweg"]
+shape = SubResource("Form_ZumKuestenweg")
+
+[node name="ZurSuedstrasse" type="Area3D" parent="Uebergaenge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 236, 2.34, 5.5)
+script = ExtResource("20_uebergang")
+ziel = "suedstrasse"
+ankunft = "von_ashenveil"
+stunden = 0.0
+zeit_nur_von = ""
+text = ""
+bedingung = ""
+text_gesperrt = "Ein Anwärter verlässt die Burgfeste nicht ohne Auftrag."
+rueckweg = Vector3(215, 0.8, 2.3)
+
+[node name="Form" type="CollisionShape3D" parent="Uebergaenge/ZurSuedstrasse"]
+shape = SubResource("Form_ZurSuedstrasse")
+
+[node name="SchildKuestenweg" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 4, 9.48, 192)
+billboard = 1
+pixel_size = 0.02
+text = "Küstenweg → Drachenstein 70 km"
+font_size = 48
+outline_size = 14
+
+[node name="SchildSuedstrasse" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 214, 4.96, -2)
+billboard = 1
+pixel_size = 0.02
+text = "Südstraße → Riverlock 185 km"
+font_size = 48
+outline_size = 14
 
 [node name="Spieler" parent="." instance=ExtResource("5_spieler")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -4.3, 0.6, 190)

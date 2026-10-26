@@ -19,6 +19,8 @@ const MITTELBAU := Vector2(53, 18)
 ## Straßen aus den äußeren Toranlagen: nach Westen ins Land (Nordstraße), nach Osten nach Valdrenn.
 const WEG_WEST := [Vector2(-95, 58), Vector2(-95, 92), Vector2(-150, 106), Vector2(-220, 112), Vector2(-300, 118)]
 const WEG_OST := [Vector2(142, 74), Vector2(142, 98), Vector2(200, 110), Vector2(300, 116)]
+## Südstraße nach Ashenveil: zweigt vor der Westburg von der Nordstraße ab und führt nach Süden.
+const WEG_SUED := [Vector2(-150, 106), Vector2(-165, 150), Vector2(-160, 200)]
 
 
 func _init() -> void:
@@ -50,7 +52,7 @@ func hoehe(p: Vector2) -> float:
 	# Land neben dem Fluss, nach außen steigen die Wände der Schlucht an.
 	var h := 1.0 + n * 2.0 + fein * 0.6
 	var wand := smoothstep(hb + 110.0, hb + 190.0, d)
-	wand *= smoothstep(8.0, 30.0, minf(_abstand_zu(WEG_WEST, p), _abstand_zu(WEG_OST, p)))
+	wand *= smoothstep(8.0, 30.0, minf(minf(_abstand_zu(WEG_WEST, p), _abstand_zu(WEG_OST, p)), _abstand_zu(WEG_SUED, p)))
 	h += wand * (70.0 + _grat.get_noise_2dv(p) * 25.0)
 
 	# Terrassen der Burgen auf Höhe 0.
@@ -63,6 +65,7 @@ func hoehe(p: Vector2) -> float:
 
 	h = _weg_einebnen(h, p, WEG_WEST)
 	h = _weg_einebnen(h, p, WEG_OST)
+	h = _weg_einebnen(h, p, WEG_SUED)
 
 	# Unter dem Mittelbau (110 x 40 m) liegt die Hafenhalle: Hier ist nur Flussbett, die Kais baut die Szene.
 	if absf(p.x) < MITTELBAU.x and absf(p.y) < MITTELBAU.y:
@@ -72,7 +75,7 @@ func hoehe(p: Vector2) -> float:
 
 ## Rot = Weg, in den Burghöfen etwas schwächer als Pflaster. Grün bleibt leer (kein Sumpf).
 func maske_bei(p: Vector2) -> Color:
-	var weg := 1.0 - smoothstep(2.5, 4.5, minf(_abstand_zu(WEG_WEST, p), _abstand_zu(WEG_OST, p)))
+	var weg := 1.0 - smoothstep(2.5, 4.5, minf(minf(_abstand_zu(WEG_WEST, p), _abstand_zu(WEG_OST, p)), _abstand_zu(WEG_SUED, p)))
 	for burg: Array in [WESTBURG, OSTBURG]:
 		if _rechteck_abstand(p, burg[0], burg[1]) == 0.0:
 			weg = maxf(weg, 0.55)

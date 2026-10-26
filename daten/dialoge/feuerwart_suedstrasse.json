@@ -1,0 +1,36 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Feuerwart Tobias Wern. Pass auf, wo du hintrittst, das Holz da ist für den Ernstfall und nicht zum Sitzen.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du wissen?",
+			"optionen": [
+				{
+					"text": "Wie funktioniert der Signalring?",
+					"weiter": "ring"
+				},
+				{
+					"text": "Wann wurde das Feuer zuletzt entzündet?",
+					"weiter": "zuletzt"
+				},
+				{
+					"text": "Gute Wache.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"ring": {
+			"text": "Zweiunddreißig Türme rund um das Wächtermeer, alle fünfzehn Kilometer einer. Sieht man das Feuer des Nachbarn, zündet man das eigene. Ein Alarm erreicht alle Burgen in einer Nacht. Erec Stein hat den Ring geplant, einer der Gründer.",
+			"weiter": "fragen"
+		},
+		"zuletzt": {
+			"text": "Im Ernst? Seit der langen Stille nicht mehr. Wir üben zweimal im Jahr, mit Rauch statt Feuer. Mein Großvater hat nie ein echtes Signal gesehen, sein Großvater auch nicht. Ich hoffe, ich bleibe in dieser Reihe.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Gute Wache. Schau nachts zu den Türmen. Wenn einer brennt, renn."
+		}
+	}
+}

@@ -1,0 +1,45 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Berit Haag, Vorsteherin von Hollmar. Ein Wächter auf der Nordstraße. Hast du Zeit für einen Becher, oder musst du weiter?",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du wissen?",
+			"optionen": [
+				{
+					"text": "Wie lebt es sich unter dem Orden?",
+					"weiter": "orden"
+				},
+				{
+					"text": "Was ist das Dorfbuch?",
+					"weiter": "dorfbuch"
+				},
+				{
+					"text": "Gibt es Unruhe?",
+					"weiter": "unruhe"
+				},
+				{
+					"text": "Ich muss weiter.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"orden": {
+			"text": "Wir wählen selbst, wer Vorsteher wird, und regeln unsere Felder und unseren Streit. Dafür liefern wir Korn und Vieh und leisten zehn Tage Arbeitsdienst im Jahr. Sechs Tage üben unsere Leute mit Musketen und Piken. Der Orden schützt uns. Meistens reicht das.",
+			"weiter": "fragen"
+		},
+		"dorfbuch": {
+			"text": "Da steht alles drin, was jeder lesen darf: wer im Dorf wohnt, wer was schuldet, und die Räumungspläne. Wohin wir gehen, wenn die Feuer auf den Türmen brennen. Die Bezirksfestung hat eine Abschrift.",
+			"weiter": "fragen"
+		},
+		"unruhe": {
+			"text": "Im Winter waren Leute hier, die sagten, der Orden warte wieder, wie damals vor Burg Sorrow. Rufer nannten sie sich. Ein Silas Holt schickt sie. Die Jungen hören zu. Ich höre auch zu, aber ich glaube ihnen nicht.",
+			"akte": "In Hollmar an der Nordstraße haben im Winter Rufer im Auftrag von Silas Holt geworben.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Gute Straße, Wächter."
+		}
+	}
+}

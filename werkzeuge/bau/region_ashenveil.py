@@ -15,7 +15,7 @@ grundgeruest("gelaende_ashenveil", '''region_id = "ashenveil"
 wasserspiegel = -1.0
 wasser_meldung = "Der Morast verschluckt jeden, der den Weg verlässt."
 grenze_min = Vector2(-240, -190)
-grenze_max = Vector2(240, 190)
+grenze_max = Vector2(240, 199)
 grenze_meldung = "Dahinter liegen nur Nebel und Sumpf. Hier geht niemand weiter."
 karte_ursprung = Vector2(372, 749)
 karte_meter_pro_pixel = 60.0''', wasser_name="Moorwasser", wasser_hoehe=-1, wasser_groesse=(600, 500),
@@ -209,6 +209,14 @@ for name, x, y, z in [("Damm (Ankunft)", ANKUNFT[0], ANKUNFT[1] + 0.3, ANKUNFT[2
 # ---------- Ankunft, Spieler und Oberfläche ----------
 N("Ankuenfte", "Node3D", ".")
 N("von_drachenstein", "Marker3D", "Ankuenfte", T(*ANKUNFT), extra='groups=["ankunft"]')
-N("von_riverlock", "Marker3D", "Ankuenfte", T(238, round(H(238, 5.9) + 0.2, 2), 5.9, 90), extra='groups=["ankunft"]')
+ankunft("von_riverlock", 222, 3.5, 90)
+ankunft("von_suedstrasse", 222, 3.5, 90)
+ankunft("von_kuestenweg", -5.4, 188, 0)
+uebergang("ZumKuestenweg", (-1, round(H(-1, 196.5) + 2, 2), 196.5), (24, 30, 5), "kuestenweg", "von_ashenveil",
+          (-7.2, round(H(-7.2, 180) + 0.5, 2), 180), bedingung="")
+uebergang("ZurSuedstrasse", (236, round(H(236, 5.5) + 2, 2), 5.5), (10, 30, 24), "suedstrasse", "von_ashenveil",
+          (215, round(H(215, 2.3) + 0.5, 2), 2.3), bedingung="")
+schild("SchildKuestenweg", ".", 4, round(H(4, 192) + 3, 2), 192, "Küstenweg → Drachenstein 70 km", 48)
+schild("SchildSuedstrasse", ".", 214, round(H(214, -2) + 3, 2), -2, "Südstraße → Riverlock 185 km", 48)
 spieler_und_oberflaeche(*ANKUNFT)
 schreibe("region_ashenveil.tscn")

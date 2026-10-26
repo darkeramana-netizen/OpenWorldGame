@@ -92,6 +92,15 @@ for name, x, y, z in [("Hof der Burgfeste", 0, 0.5, 20), ("Vor dem Tor", 0, 0.5,
 N("Ankuenfte", "Node3D", ".")
 N("von_riverlock", "Marker3D", "Ankuenfte", T(125, -17.5, 23), extra='groups=["ankunft"]')
 N("von_ashenveil", "Marker3D", "Ankuenfte", T(-18.5, round(H(-18.5, 89) + 0.2, 2), 89, -53.4), extra='groups=["ankunft"]')
+ankunft("von_nordstrasse", 77.5, -600, 180)
+ankunft("von_kuestenweg", 83.5, 295, 0)
+schild("SchildNordstrasse", ".", 72, round(H(72, -560) + 3, 2), -560, "Nordstraße → Riverlock 225 km", 48)
+schild("SchildKuestenweg", ".", 78, round(H(78, 280) + 3, 2), 280, "Küstenweg → Ashenveil 70 km", 48)
+# Am Ende der Pässe beginnen die Landstraßen
+uebergang("ZurNordstrasse", (82.3, H(82.3, -628) + 2, -628), (30, 40, 16), "nordstrasse", "von_drachenstein",
+          (76.5, round(H(76.5, -590) + 0.5, 2), -590))
+uebergang("ZumKuestenweg", (86.6, H(86.6, 325) + 2, 325), (30, 40, 20), "kuestenweg", "von_drachenstein",
+          (82, round(H(82, 285) + 0.5, 2), 285))
 spieler_und_oberflaeche(0, 0, 46)
 
 # Person "kordel": person.tscn nutzt KEINE=0, SCHWARZ=1, GRAU=2, GOLDEN=3

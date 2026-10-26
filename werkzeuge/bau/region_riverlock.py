@@ -234,5 +234,13 @@ for name, x, y, z in [("Hafenhalle (Ankunft)", -46, -8.0, 4), ("Mittelbau, Zoll"
 N("Ankuenfte", "Node3D", ".")
 N("von_drachenstein", "Marker3D", "Ankuenfte", T(-46, KAI + 0.2, 4, 180), extra='groups=["ankunft"]')
 N("von_ashenveil", "Marker3D", "Ankuenfte", T(-92.4, round(H(-92.4, 70) + 0.2, 2), 70), extra='groups=["ankunft"]')
+ankunft("von_nordstrasse", -262, 115.6, -90)
+ankunft("von_suedstrasse", -163, 165, 0)
+uebergang("ZurNordstrasse", (-280, round(H(-280, 116.5) + 2, 2), 116.5), (16, 40, 30), "nordstrasse", "von_riverlock",
+          (-255, round(H(-255, 115) + 0.5, 2), 115), bedingung="")
+uebergang("ZurSuedstrasse", (-161.6, round(H(-161.6, 184) + 2, 2), 184), (30, 40, 16), "suedstrasse", "von_riverlock",
+          (-164, round(H(-164, 158) + 0.5, 2), 158), bedingung="")
+schild("SchildNordstrasse", ".", -250, round(H(-250, 108) + 3, 2), 108, "Nordstraße → Drachenstein 225 km", 48)
+schild("SchildSuedstrasse", ".", -172, round(H(-172, 150) + 3, 2), 150, "Südstraße → Ashenveil 185 km", 48)
 spieler_und_oberflaeche(-80, 0, 0)
 schreibe("region_riverlock.tscn")

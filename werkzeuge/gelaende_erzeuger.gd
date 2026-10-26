@@ -62,6 +62,16 @@ const WEG_GRAVEMARCH := [Vector2(0, 80), Vector2(-60, 95), Vector2(-150, 70), Ve
 const WEG_GRAVECREST := [Vector2(-460, -150), Vector2(-470, -240), Vector2(-500, -310),
 	Vector2(-560, -345), Vector2(-612, -363)]
 const GRAVECREST_HOEHE := 70.0
+## Landstraßen: die Nordstraße verlässt die Stadt durch das Nordtor und steigt über einen Pass
+## im Norden (nach Riverlock), der Küstenweg durch das Südtor über einen Pass im Süden (nach Ashenveil).
+const WEG_NORD := [Vector2(-11, -40), Vector2(-11.2, -49), Vector2(-14, -100), Vector2(0, -200), Vector2(30, -320),
+	Vector2(50, -420), Vector2(70, -540), Vector2(85, -650)]
+const WEG_NORD_STADT := [Vector2(-11, -40), Vector2(20, -40), Vector2(45, -20), Vector2(58, 22)]
+const WEG_KUESTE := [Vector2(0, 56), Vector2(10, 64), Vector2(22, 90), Vector2(28, 109.2), Vector2(40, 170),
+	Vector2(60, 240), Vector2(80, 300), Vector2(95, 350)]
+## Passstrecken mit fester Steigung: [Linienzug, Höhe am Anfang, Höhe am Ende].
+const PASS_NORD := [[Vector2(30, -320), Vector2(50, -420), Vector2(70, -540), Vector2(85, -650)], 3.0, 32.0]
+const PASS_SUED := [[Vector2(40, 170), Vector2(60, 240), Vector2(80, 300), Vector2(95, 350)], 2.0, 24.0]
 
 var _rauschen := FastNoiseLite.new()
 var _fein := FastNoiseLite.new()
@@ -187,6 +197,11 @@ func hoehe(p: Vector2) -> float:
 	h = _weg_einebnen(h, p, WEG_DRACHENHORST)
 	h = _weg_einebnen(h, p, WEG_GRAVEMARCH)
 	h = _weg_gravecrest(h, p)
+	h = _weg_einebnen(h, p, WEG_NORD)
+	h = _weg_einebnen(h, p, WEG_NORD_STADT)
+	h = _weg_einebnen(h, p, WEG_KUESTE)
+	h = _pass(h, p, PASS_NORD)
+	h = _pass(h, p, PASS_SUED)
 
 	# Rückseite des Felsens hinter dem Palas: Hier hängt der Flaschenzug über dem Abgrund.
 	if p.x > -805.0 and p.x < -772.0 and absf(p.y + 365.0) < 40.0:
@@ -257,7 +272,7 @@ func _polygon_abstand(p: Vector2, ecken: Array) -> float:
 ## Farbmaske für den Gelände-Shader: Rot = Weg, Grün = Sumpf.
 func maske_bei(p: Vector2) -> Color:
 	var weg := INF
-	for linie in [WEG_HAFEN, WEG_DRACHENHORST, WEG_GRAVEMARCH, WEG_GRAVECREST]:
+	for linie in [WEG_HAFEN, WEG_DRACHENHORST, WEG_GRAVEMARCH, WEG_GRAVECREST, WEG_NORD, WEG_NORD_STADT, WEG_KUESTE]:
 		weg = minf(weg, _abstand_zu(linie, p))
 	var gm := p.distance_to(GRAVEMARCH)
 	var sumpf := (1.0 - smoothstep(115.0, 140.0, gm)) * smoothstep(17.0, 26.0, _polygon_abstand(p - GRAVEMARCH, GRAVEMARCH_UMRISS))
@@ -283,6 +298,16 @@ func _weg_gravecrest(h: float, p: Vector2) -> float:
 	var anteil: float = info[1]
 	var weg_h := lerpf(hoehe_tal_start(), GRAVECREST_HOEHE, smoothstep(0.0, 1.0, anteil))
 	return lerpf(weg_h, h, smoothstep(5.0, 30.0, abstand))
+
+
+## Ein Weg über einen Pass: feste Steigung, das Gebirge daneben wird zu einem Tal ausgeräumt.
+func _pass(h: float, p: Vector2, pass_daten: Array) -> float:
+	var info := _naechster_punkt(pass_daten[0], p)
+	var abstand: float = info[0]
+	if abstand > 40.0:
+		return h
+	var weg_h := lerpf(pass_daten[1], pass_daten[2], smoothstep(0.0, 1.0, info[1]))
+	return lerpf(weg_h, h, smoothstep(6.0, 40.0, abstand))
 
 
 func hoehe_tal_start() -> float:

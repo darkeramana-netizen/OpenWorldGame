@@ -1,0 +1,36 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Mara Lind, Torfstecherin aus Torfwinkel. Weiter südlich wird der Boden weich, Wächter. Bleib auf dem Weg, bis du den Damm von Ashenveil siehst.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du wissen?",
+			"optionen": [
+				{
+					"text": "Was macht ihr mit dem Torf?",
+					"weiter": "torf"
+				},
+				{
+					"text": "Wie ist es so nah am Moor?",
+					"weiter": "moor"
+				},
+				{
+					"text": "Danke.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"torf": {
+			"text": "Brennen, was sonst. Ein Teil geht an den Orden, als Abgabe, ein Teil über die Händler bis nach Valdrenn. Dort haben sie Erz und Holz, aber nach zwei schlechten Ernten nicht genug zum Heizen.",
+			"weiter": "fragen"
+		},
+		"moor": {
+			"text": "Still. Im Nebel hört man die Reiter aus Ashenveil, lange bevor man sie sieht. Und manchmal Leute, die nicht auf dem Weg geblieben sind. Die hört man dann nicht mehr lange.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Gute Straße."
+		}
+	}
+}

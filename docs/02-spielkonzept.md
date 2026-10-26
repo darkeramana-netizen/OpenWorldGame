@@ -114,7 +114,7 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 | **0 – Lernen** | Godot installieren, ein offizielles 3D-Einsteigertutorial durcharbeiten | 2–4 Wochen |
 | **1 – Graubox „Die Schwelle“** ✅ | Spielfigur, Kamera, ein Hof aus Klötzen, Tageszyklus mit Stille-Stunde, drei NPCs mit Dialog | 1–2 Monate |
 | **2 – Akt I spielbar** ✅ | Haus der Schwelle in Drachenstein, Knappenprüfung, Nachtwache, Eid, Namensstein auf der Ordenswand, Speichern und Laden | 3–6 Monate |
-| **3 – Die erste Region** 🔶 | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände. Begehbar als Graybox, Bergfried und Gravecrest mit Innenräumen. Drachenstein (Hafen im Osten) und Gravemarch nach Grundriss. Riverlock als zweite Region (Valnschlucht), per Schiff mit der Lotsin erreichbar. Ashenveil als dritte Region (Nebelmoor) mit Kapelle der Stille und Fluchttunnel, mit der Reiterin erreichbar. Offen: Landwege, Modelle | 6+ Monate |
+| **3 – Die erste Region** 🔶 | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände. Begehbar als Graybox, Bergfried und Gravecrest mit Innenräumen. Drachenstein (Hafen im Osten) und Gravemarch nach Grundriss. Riverlock als zweite Region (Valnschlucht), per Schiff mit der Lotsin erreichbar. Ashenveil als dritte Region (Nebelmoor) mit Kapelle der Stille und Fluchttunnel, mit der Reiterin erreichbar. Landwege (Nordstraße, Südstraße, Küstenweg) als begehbare Strecken im Maßstab 1:100 mit Signaltürmen, Bezirksfestungen und Dörfern. Offen: Modelle | 6+ Monate |
 | **4 – Systeme** | Kampf, Ansehen, Akte und Verfahren, Alarmstufen | laufend |
 | **5 – Das ganze Becken** | Ashenveil, Nord- und Südstraße, Riverlock, Akt II | später |
 | **6 – Akt III** | Ende der Stille, Kriegszustand, Enden | später |
@@ -168,6 +168,14 @@ Entscheidungen beim Bau von Akt I:
 | Arvid Rask | Komtur von Ashenveil |
 | Henk Brask | Wachführer am Haupttor von Ashenveil |
 | Lene Ott, Piet Varn | Wachen am Nebeneingang von Ashenveil (zwei verschiedene Wachgruppen) |
+| Berit Haag | Dorfvorsteherin von Hollmar an der Nordstraße |
+| Jost Arndt | Bezirkswache in der Bezirksfestung Kammfeld (Nordstraße) |
+| Tobias Wern | Feuerwart an einem Signalturm der Südstraße |
+| Inga Roth | Bezirkswache in der Bezirksfestung Erlengrund (Südstraße) |
+| Mara Lind | Torfstecherin aus Torfwinkel am Küstenweg |
+| Ole Brandt | Bezirkswache in der Bezirksfestung Seewacht (Küstenweg) |
+
+Erfundene Orte an den Straßen: die Dörfer Hollmar, Erlenbrück und Torfwinkel, die Bezirksfestungen Kammfeld, Nordwacht, Erlengrund, Waldtor und Seewacht.
 | Ulf Haskel | Kammbrecher an der Zugbrücke von Gravecrest |
 | Hollmoor | Bezirksfestung |
 | Kellbrück | abgebranntes Heimatdorf (Herkunftsoption) |

@@ -32,6 +32,8 @@ for i, (x, z) in enumerate([(X0, Z0), (X1, Z0), (X0, Z1), (X1, Z1)]):
 RM = DS + "/Ringmauer"
 N("Ringmauer", "Node3D", DS)
 VORBURGTOR = 1  # Kante mit dem Tor
+# Tore in der Ringmauer: Kante → (Name, Lage auf der Kante, Breite). Nordtor und Südtor führen zu den Landstraßen.
+TORE = {VORBURGTOR: ("Vorburgtor", 0.827, 7.0), 2: ("Südtor (Küstenweg)", 0.5, 6.0), 14: ("Nordtor (Nordstraße)", 0.5, 6.0)}
 ecken = [(-86, 11), (-40.6, 47.6), (-8.4, 91), (64.4, 127.4), (103.6, 124.6), (120.4, 93.8), (140, 57.4),
          (152, 24.5), None, (150, -28), (128.8, -63), (95.2, -88.2), (53.2, -99.4), (22.4, -77), (8.4, -54.6),
          (-30.8, -43.4), (-33.5, -45)]
@@ -66,7 +68,7 @@ for i in range(len(ecken) - 1):
     a, b = ecken[i], ecken[i+1]
     if a is None or b is None:
         continue
-    mauerkante(a, b, (0.827, 7.0) if i == VORBURGTOR else None)
+    mauerkante(a, b, TORE[i][1:] if i in TORE else None)
 # Ecktürme
 for i, e in enumerate(ecken[1:-2]):
     if e is None:
@@ -79,17 +81,19 @@ for i, e in enumerate(ecken[1:-2]):
 oel = (53.2, -99.4)
 zyl("Oelturm", RM, oel[0], round(H(*oel) + 8, 2), oel[1], 5, 22, "Material_mauer", 12)
 schild("SchildOelturm", RM, oel[0], round(H(*oel) + 21, 2), oel[1], "Ölturm", 48)
-# Vorburgtor, wo der Weg nach Gravemarch die Mauer quert
-(ax, az), (bx, bz) = ecken[VORBURGTOR], ecken[VORBURGTOR + 1]
-tor = (ax + (bx-ax)*0.827, az + (bz-az)*0.827)
-ux, uz = (bx-ax), (bz-az); ul = math.hypot(ux, uz); ux, uz = ux/ul, uz/ul
-torboden = H(*tor)
-for seite, name in [(-1, "TorturmWest"), (1, "TorturmOst")]:
-    box(name, RM, round(tor[0] + ux*5.5*seite, 2), round(torboden + 5, 2), round(tor[1] + uz*5.5*seite, 2),
-        5, 16, 5, "Material_mauer", gier=round(gier_zu(ux, uz), 2))
-box("Torbogen", RM, round(tor[0], 2), round(torboden + 10.5, 2), round(tor[1], 2), 7.4, 3, 2.5, "Material_mauer",
-    gier=round(gier_zu(ux, uz), 2))
-schild("SchildVorburgtor", RM, round(tor[0] - uz*2, 2), round(torboden + 13.5, 2), round(tor[1] + ux*2, 2), "Vorburgtor", 48)
+# Tortürme und Bögen: Vorburgtor (Weg nach Gravemarch), Nordtor und Südtor (Landstraßen)
+for kante, (torname, anteil, breite) in TORE.items():
+    (ax, az), (bx, bz) = ecken[kante], ecken[kante + 1]
+    tor = (ax + (bx-ax)*anteil, az + (bz-az)*anteil)
+    ux, uz = (bx-ax), (bz-az); ul = math.hypot(ux, uz); ux, uz = ux/ul, uz/ul
+    torboden = H(*tor)
+    vor = "" if kante == VORBURGTOR else f"Tor{kante}"
+    for seite, name in [(-1, "TorturmWest"), (1, "TorturmOst")]:
+        box(vor + name, RM, round(tor[0] + ux*(breite/2 + 2)*seite, 2), round(torboden + 5, 2), round(tor[1] + uz*(breite/2 + 2)*seite, 2),
+            5, 16, 5, "Material_mauer", gier=round(gier_zu(ux, uz), 2))
+    box(vor + "Torbogen", RM, round(tor[0], 2), round(torboden + 10.5, 2), round(tor[1], 2), breite + 0.4, 3, 2.5, "Material_mauer",
+        gier=round(gier_zu(ux, uz), 2))
+    schild("Schild" + (vor or "Vorburgtor"), RM, round(tor[0] - uz*2, 2), round(torboden + 13.5, 2), round(tor[1] + ux*2, 2), torname, 48)
 
 # --- Hafen (Drachenkai) im Osten ---
 HF = DS + "/Drachenkai"
@@ -149,7 +153,8 @@ def im_ring(x, z):
             innen = not innen
     return innen
 WEGE = [[(0, 40), (0, 56), (44, 46), (58, 22), (75, 4), (98, 0)], [(0, 56), (-25, 52), (-50, 18), (-50, 8)],
-        [(0, 80), (-60, 95)]]
+        [(0, 80), (-60, 95)], [(-11.2, -49), (-11, -40), (20, -40), (45, -20), (58, 22)],
+        [(0, 56), (10, 64), (22, 90), (28, 109.2)]]
 FREI = [(-44, -44, 44, 44), (-18, 36, 18, 92), (-90, -50, -30, 16), (88, -32, 170, 28), (50, -16, 88, 22),
         (64, 24, 94, 52), (90, -52, 112, -30)]
 SH = DS + "/Stadthaeuser"

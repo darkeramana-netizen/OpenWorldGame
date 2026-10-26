@@ -15,11 +15,25 @@ extends Node3D
 ## Bildpunkt auf der Sorrowland-Karte, der dem Ursprung der Region entspricht.
 @export var karte_ursprung: Vector2 = Vector2(272, 491)
 @export var karte_meter_pro_pixel: float = 5.0
+## Für Landstraßen: Die Straße läuft auf der Karte als Bogen von karte_ursprung über karte_mitte
+## nach karte_ende, über die Länge karte_strecke (entlang x oder, mit karte_entlang_z, entlang z).
+@export var karte_mitte: Vector2 = Vector2.ZERO
+@export var karte_ende: Vector2 = Vector2.ZERO
+@export var karte_strecke: float = 0.0
+@export var karte_entlang_z: bool = false
 
 
 func _enter_tree() -> void:
 	# Über den Pfad, weil Klassen mit class_name auch ohne geladene Autoloads übersetzt werden.
 	get_node("/root/Speicher").region = region_id
+
+
+## Bildpunkt auf der Sorrowland-Karte für eine Weltposition in dieser Region.
+func karten_pixel(p: Vector3) -> Vector2:
+	if karte_strecke > 0.0:
+		var t := clampf((p.z if karte_entlang_z else p.x) / karte_strecke, 0.0, 1.0)
+		return karte_ursprung.lerp(karte_mitte, t).lerp(karte_mitte.lerp(karte_ende, t), t)
+	return karte_ursprung + Vector2(p.x, p.z) / karte_meter_pro_pixel
 
 
 ## Die Region, zu der ein Knoten gehört (oder null).

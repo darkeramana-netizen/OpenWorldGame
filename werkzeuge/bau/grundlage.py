@@ -220,6 +220,7 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     E("Script", "res://szenen/welt/lesbar.gd", "16_lesbar")
     E("PackedScene", "res://szenen/oberflaeche/entwickler.tscn", "17_entwickler")
     E("Script", "res://szenen/welt/region.gd", "18_region")
+    E("Script", "res://szenen/welt/uebergang.gd", "20_uebergang")
 
     S('''[sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
     sky_top_color = Color(0.32, 0.42, 0.56, 1)
@@ -315,3 +316,30 @@ def pferd(name, eltern, x, y, z, gier=0.0, farbe="Material_holz"):
     box("Kopf", pfad, 1.5, 2.35, 0, 0.7, 0.35, 0.35, farbe, kollision=False)
     for k, (bx, bz) in enumerate([(-0.8, -0.28), (-0.8, 0.28), (0.8, -0.28), (0.8, 0.28)]):
         box(f"Bein{k}", pfad, bx, 0.45, bz, 0.2, 0.9, 0.2, farbe, kollision=False)
+
+
+
+def uebergang(name, mitte, groesse, ziel, ankunft, rueckweg, stunden=0.0, zeit_nur_von="", text="",
+              bedingung="eid_waechter", text_gesperrt="Ein Anwärter verlässt die Burgfeste nicht ohne Auftrag."):
+    """Bereich am Ende eines Weges, der in eine andere Region führt (szenen/welt/uebergang.gd)."""
+    if "Uebergaenge" not in [k.split('"')[1] for k in knoten if k.startswith('[node name="Uebergaenge"')]:
+        N("Uebergaenge", "Node3D", ".")
+    bereich(f"Form_{name}", *groesse)
+    N(name, "Area3D", "Uebergaenge", f'''{T(*mitte)}
+script = ExtResource("20_uebergang")
+ziel = "{ziel}"
+ankunft = "{ankunft}"
+stunden = {stunden}
+zeit_nur_von = "{zeit_nur_von}"
+text = "{text}"
+bedingung = "{bedingung}"
+text_gesperrt = "{text_gesperrt}"
+rueckweg = Vector3({rueckweg[0]}, {rueckweg[1]}, {rueckweg[2]})''')
+    N("Form", "CollisionShape3D", f"Uebergaenge/{name}", f'shape = SubResource("Form_{name}")')
+
+
+def ankunft(name, x, z, gier=0.0, hoch=0.3):
+    """Ankunftsort (Marker in der Gruppe "ankunft") auf dem Gelände."""
+    if "Ankuenfte" not in [k.split('"')[1] for k in knoten if k.startswith('[node name="Ankuenfte"')]:
+        N("Ankuenfte", "Node3D", ".")
+    N(name, "Marker3D", "Ankuenfte", T(x, round(H(x, z) + hoch, 2), z, gier), extra='groups=["ankunft"]')
