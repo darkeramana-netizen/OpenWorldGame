@@ -3,7 +3,12 @@ extends Node
 ## (unter Windows: %APPDATA%/Godot/app_userdata/Sorrowland_ In Silentio/speicher).
 
 const STANDARD_ORDNER := "user://speicher/"
-const WELT := "res://szenen/welt/region_drachenstein.tscn"
+## Die Regionen der Welt. Neue Spiele beginnen in der ersten.
+const REGIONEN := {
+	"drachenstein": "res://szenen/welt/region_drachenstein.tscn",
+	"riverlock": "res://szenen/welt/region_riverlock.tscn",
+}
+const START_REGION := "drachenstein"
 const HAUPTMENUE := "res://szenen/oberflaeche/hauptmenue.tscn"
 ## Manuelle Plätze im Pausemenü. "auto" und "schnell" kommen dazu.
 const PLAETZE: Array[String] = ["1", "2", "3"]
@@ -18,6 +23,8 @@ var ordner: String = STANDARD_ORDNER:
 	set(wert):
 		ordner = wert
 		DirAccess.make_dir_recursive_absolute(ordner)
+## Die Region, in der der Spieler gerade ist. Setzt die Region selbst beim Betreten (region.gd).
+var region: String = START_REGION
 ## Wahr, solange die alte Szene abgebaut wird. Posten werten das Verlassen dann nicht als Fehler.
 var wechselt_szene: bool = false
 
@@ -57,7 +64,23 @@ func neues_spiel(name: String) -> void:
 	Spielstand.zuruecksetzen(name if name.strip_edges() != "" else "Vertriebener")
 	Spielzeit.zuruecksetzen()
 	ausstehender_spieler = {}
-	_wechsle_zu(WELT)
+	region = START_REGION
+	_wechsle_zu(REGIONEN[region])
+
+
+## Reist in eine andere Region, z. B. per Schiff mit der Lotsin. Die Zeit läuft weiter,
+## nach der Ankunft erscheint eine Blende (und danach wird automatisch gespeichert).
+func reise(ziel: String, ankunft: String, stunden: float = 0.0, text: String = "") -> void:
+	if not REGIONEN.has(ziel):
+		push_error("Unbekannte Region: " + ziel)
+		return
+	Dialog.beende()
+	Spielzeit.vorspulen(stunden)
+	ausstehender_spieler = {"ankunft": ankunft}
+	region = ziel
+	await _wechsle_zu(REGIONEN[ziel])
+	if text != "":
+		Spielstand.blende.emit(text, "zwischen")
 
 
 func kann_speichern() -> bool:
@@ -73,6 +96,7 @@ func speichern(platz: String) -> bool:
 		"spielstand": Spielstand.als_dict(),
 		"spielzeit": Spielzeit.als_dict(),
 		"spieler": _spieler_daten(),
+		"region": region,
 	}
 	var datei := FileAccess.open(_pfad(platz), FileAccess.WRITE)
 	if datei == null:
@@ -92,7 +116,10 @@ func laden(platz: String) -> bool:
 	Spielstand.aus_dict(daten.get("spielstand", {}))
 	Spielzeit.aus_dict(daten.get("spielzeit", {}))
 	ausstehender_spieler = daten.get("spieler", {})
-	_wechsle_zu(WELT)
+	region = daten.get("region", START_REGION)
+	if not REGIONEN.has(region):
+		region = START_REGION
+	_wechsle_zu(REGIONEN[region])
 	return true
 
 

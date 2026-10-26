@@ -1,0 +1,37 @@
+{
+	"knoten": {
+		"start": {
+			"text": "…",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Der Beobachter des Ordens sieht dich lange an. Dann spricht er, leise, damit der Zollherr es nicht hört.",
+			"optionen": [
+				{
+					"text": "Was tut ein Beobachter?",
+					"weiter": "aufgabe"
+				},
+				{
+					"text": "Was hört man aus Valdrenn?",
+					"weiter": "berichte"
+				},
+				{
+					"text": "Ich lasse dich zuhören.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"aufgabe": {
+			"text": "Zuhören. Bei jeder Verhandlung sitze ich hier und sage nichts. Was ich höre, geht an den Rat. Und was die Späher drüben sehen, kommt über Händler zu mir und von mir nach Drachenstein. Eine Woche, wenn das Wetter hält.",
+			"weiter": "fragen"
+		},
+		"berichte": {
+			"text": "Mehr Gesandte als früher. Sie bleiben länger. Sie fragen, wie viele Wachen auf der Brücke stehen und wann die Kette fällt. Das steht alles in meinen Berichten. Ob der Rat sie liest, weiß ich nicht.",
+			"akte": "Der Beobachter in Riverlock berichtet: Die Gesandten aus Valdrenn fragen nach den Wachen auf der Brücke und nach der Kette.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Er wendet sich wieder dem Tisch zu und schweigt."
+		}
+	}
+}

@@ -1,0 +1,36 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Ordenstracht. Dann hast du nichts zu verzollen. Alle anderen zahlen hier, an diesem Tisch, vor der Kette.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Noch etwas?",
+			"optionen": [
+				{
+					"text": "Was wird verzollt?",
+					"weiter": "zoll"
+				},
+				{
+					"text": "Was kommt nicht durch?",
+					"weiter": "verboten"
+				},
+				{
+					"text": "Danke.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"zoll": {
+			"text": "Alles, was über die Brücke oder unter ihr durch geht. Erz, Salz, Holz und Pelze von drüben, Fisch, Getreide und Torf von euch. Die Händler lagern unten in der Hafenhalle, bis wir die Ladung gesehen haben.",
+			"weiter": "fragen"
+		},
+		"verboten": {
+			"text": "Kriegsgüter. Waffen, Pulver, Rüstungen, Pferde. Wer so etwas unter Fisch versteckt, verliert Boot und Ladung, und der Zollherr verliert keinen Schlaf darüber.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Weiter, der Nächste wartet."
+		}
+	}
+}

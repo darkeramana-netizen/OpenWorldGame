@@ -1,4 +1,4 @@
-[gd_scene load_steps=53 format=3]
+[gd_scene load_steps=54 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://szenen/welt/tor.gd" id="15_tor"]
 [ext_resource type="Script" path="res://szenen/welt/lesbar.gd" id="16_lesbar"]
 [ext_resource type="PackedScene" path="res://szenen/oberflaeche/entwickler.tscn" id="17_entwickler"]
+[ext_resource type="Script" path="res://szenen/welt/region.gd" id="18_region"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
 sky_top_color = Color(0.32, 0.42, 0.56, 1)
@@ -154,6 +155,7 @@ size = Vector3(240, 60, 240)
 size = Vector3(140, 40, 46)
 
 [node name="Region" type="Node3D"]
+script = ExtResource("18_region")
 
 [node name="Umgebung" type="WorldEnvironment" parent="."]
 environment = SubResource("Umgebung")
@@ -174,6 +176,7 @@ mond = NodePath("../Mond")
 [node name="Gelaende" type="Node3D" parent="."]
 script = ExtResource("2_gelaende")
 material = SubResource("Material_gelaende")
+daten = "res://daten/gelaende/"
 
 [node name="Meer" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -20, 0)
@@ -4916,6 +4919,11 @@ metadata/anzeige = "Gravecrest, Unterer Hof"
 [node name="Gravecrest_Palas" type="Marker3D" parent="Sprungpunkte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -735, 70.5, -365.5)
 metadata/anzeige = "Gravecrest, Palas"
+
+[node name="Ankuenfte" type="Node3D" parent="."]
+
+[node name="von_riverlock" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 125, -17.5, 23)
 
 [node name="Spieler" parent="." instance=ExtResource("5_spieler")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0, 46)

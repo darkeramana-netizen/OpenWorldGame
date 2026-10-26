@@ -1,0 +1,45 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Ein Wächter. Setz dich nicht, die Stühle sind für Gesandte. Ich bin Hendrik Falk, Zollherr von Riverlock. Was über diese Brücke geht, geht über meinen Tisch.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du?",
+			"optionen": [
+				{
+					"text": "Wem gehört Riverlock?",
+					"weiter": "unabhaengig"
+				},
+				{
+					"text": "Was will Valdrenn?",
+					"weiter": "valdrenn"
+				},
+				{
+					"text": "Man erzählt von Edmar Lund.",
+					"weiter": "lund"
+				},
+				{
+					"text": "Ich gehe.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"unabhaengig": {
+			"text": "Sich selbst. Wir zahlen eurem Orden einen Beitrag, und dafür lässt er uns in Ruhe. Ich verhandle in meinem eigenen Namen, mit jedem, der kommt. Euer Beobachter hört zu. Er sagt nie etwas. Das ist der Handel.",
+			"weiter": "fragen"
+		},
+		"valdrenn": {
+			"text": "Getreide. Die Ernten waren schlecht drüben, zwei Jahre hintereinander. Und ihr junger König will mehr als Getreide. Seine Gesandten reden von offenen Brücken und von Gold. Ich höre zu. Zuhören kostet nichts.",
+			"weiter": "fragen"
+		},
+		"lund": {
+			"text": "Jeder Zollherr hört diesen Namen, bevor er seinen ersten Zoll nimmt. Lund ließ ein Heer gegen Zoll durch, und euer Orden hat dafür Burg Sorrow verloren. Seitdem hängt die Kette nachts im Wasser. Ob sie das immer tut, hängt nicht nur von mir ab.",
+			"akte": "Zollherr Hendrik Falk weicht bei Valdrenn aus. Seine Gesandten reden von offenen Brücken und von Gold.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Der Saal ist für Verhandlungen. Wenn du nichts zu verhandeln hast, ist er für dich zu groß."
+		}
+	}
+}

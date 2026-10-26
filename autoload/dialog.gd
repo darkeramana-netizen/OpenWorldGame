@@ -16,6 +16,8 @@ var _gespraechspartner: String = ""
 var _daten: Dictionary = {}
 var _knoten: Dictionary = {}
 var _sichtbare_optionen: Array = []
+## Eine Reise aus dem Gespräch (Feld "reise"), die beim Ende des Gesprächs beginnt.
+var _ausstehende_reise: Dictionary = {}
 
 
 func starte(dialog_id: String, gespraechspartner: String) -> void:
@@ -28,6 +30,7 @@ func starte(dialog_id: String, gespraechspartner: String) -> void:
 		push_error("Dialog ist kein gültiges JSON: " + pfad)
 		return
 	_id = dialog_id
+	_ausstehende_reise = {}
 	_gespraechspartner = gespraechspartner
 	_daten = daten
 	aktiv = true
@@ -60,6 +63,11 @@ func beende() -> void:
 		return
 	aktiv = false
 	beendet.emit(_id)
+	if not _ausstehende_reise.is_empty():
+		var reise := _ausstehende_reise
+		_ausstehende_reise = {}
+		Speicher.reise.call_deferred(reise["ziel"], reise["ankunft"], float(reise.get("stunden", 0.0)),
+				Spielstand.text_einsetzen(reise.get("text", "")))
 
 
 func _zeige(knoten_id: String) -> void:
@@ -117,3 +125,6 @@ func _wende_wirkungen_an(eintrag: Dictionary) -> void:
 		Spielstand.blende.emit(Spielstand.text_einsetzen(eintrag["akt_ende"]), "akt_ende")
 	if eintrag.has("spielende"):
 		Spielstand.blende.emit(Spielstand.text_einsetzen(eintrag["spielende"]), "spielende")
+	if eintrag.has("reise"):
+		# Abfahrt erst, wenn das Gespräch zu Ende ist (siehe beende).
+		_ausstehende_reise = eintrag["reise"]

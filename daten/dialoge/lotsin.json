@@ -20,6 +20,21 @@
 					"weiter": "riverlock"
 				},
 				{
+					"text": "Bring mich nach Riverlock.",
+					"bedingung": "region=drachenstein,eid_waechter",
+					"weiter": "ueberfahrt_hin"
+				},
+				{
+					"text": "Bring mich nach Riverlock.",
+					"bedingung": "region=drachenstein,!eid_waechter",
+					"weiter": "nicht_ohne_auftrag"
+				},
+				{
+					"text": "Bring mich zurück nach Drachenkai.",
+					"bedingung": "region=riverlock",
+					"weiter": "ueberfahrt_zurueck"
+				},
+				{
 					"text": "Gute Fahrt.",
 					"weiter": "ende"
 				}
@@ -39,6 +54,38 @@
 		},
 		"ende": {
 			"text": "Gute Wache, Wächter."
+		},
+		"start_riverlock": {
+			"text": "Riverlock. Hier bin ich zu Hause, Wächter. Die Boote liegen in der Hafenhalle, bis die Zöllner sie freigeben.",
+			"weiter": "fragen"
+		},
+		"ueberfahrt_hin": {
+			"text": "Ein Wächter in Riverlock. Das sieht der Zollherr gern, und der Beobachter noch lieber. Steig ein, wir legen ab, sobald der Wind dreht.",
+			"reise": {
+				"ziel": "riverlock",
+				"ankunft": "von_drachenstein",
+				"stunden": 54,
+				"text": "Zwei Tage über das Wächtermeer, dann einen Tag die Valn hinauf durch die Schlucht. Am dritten Abend gleitet das Boot unter den Bögen hindurch in die Hafenhalle von Riverlock."
+			}
+		},
+		"nicht_ohne_auftrag": {
+			"text": "Ein Anwärter verlässt die Burgfeste nicht ohne Auftrag. Komm wieder, wenn du den Eid geleistet hast.",
+			"weiter": "fragen"
+		},
+		"ueberfahrt_zurueck": {
+			"text": "Flussabwärts geht es schneller. Halt dich fest, wenn wir aus der Schlucht kommen, da steht immer Wind.",
+			"reise": {
+				"ziel": "drachenstein",
+				"ankunft": "von_riverlock",
+				"stunden": 44,
+				"text": "Die Valn hinab, aus der Schlucht hinaus und zwei Tage über das Wächtermeer. Am Morgen liegt der Schwarze Bergfried vor dem Bug, dann die Molen von Drachenkai."
+			}
 		}
-	}
+	},
+	"einstieg": [
+		{
+			"bedingung": "region=riverlock",
+			"knoten": "start_riverlock"
+		}
+	]
 }

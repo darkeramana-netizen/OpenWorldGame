@@ -1,0 +1,1977 @@
+[gd_scene load_steps=43 format=3]
+
+[ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
+[ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
+[ext_resource type="PackedScene" path="res://szenen/welt/burg_hof.tscn" id="3_hof"]
+[ext_resource type="PackedScene" path="res://szenen/figuren/person.tscn" id="4_person"]
+[ext_resource type="PackedScene" path="res://szenen/spieler/spieler.tscn" id="5_spieler"]
+[ext_resource type="PackedScene" path="res://szenen/oberflaeche/hud.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://szenen/oberflaeche/pausemenue.tscn" id="7_pause"]
+[ext_resource type="Shader" path="res://szenen/welt/gelaende.gdshader" id="8_gelaende_shader"]
+[ext_resource type="Texture2D" path="res://daten/gelaende_riverlock/maske.png" id="9_maske"]
+[ext_resource type="Shader" path="res://szenen/welt/wasser.gdshader" id="10_wasser"]
+[ext_resource type="Script" path="res://szenen/welt/auf_gelaende.gd" id="11_auf_gelaende"]
+[ext_resource type="PackedScene" path="res://szenen/welt/haus.tscn" id="12_haus"]
+[ext_resource type="Script" path="res://szenen/welt/ort.gd" id="13_ort"]
+[ext_resource type="Script" path="res://szenen/welt/turm.gd" id="14_turm"]
+[ext_resource type="Script" path="res://szenen/welt/tor.gd" id="15_tor"]
+[ext_resource type="Script" path="res://szenen/welt/lesbar.gd" id="16_lesbar"]
+[ext_resource type="PackedScene" path="res://szenen/oberflaeche/entwickler.tscn" id="17_entwickler"]
+[ext_resource type="Script" path="res://szenen/welt/region.gd" id="18_region"]
+
+[sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
+sky_top_color = Color(0.32, 0.42, 0.56, 1)
+sky_horizon_color = Color(0.68, 0.68, 0.66, 1)
+ground_bottom_color = Color(0.12, 0.11, 0.1, 1)
+ground_horizon_color = Color(0.68, 0.68, 0.66, 1)
+
+[sub_resource type="Sky" id="Himmel"]
+sky_material = SubResource("Himmel_material")
+
+[sub_resource type="Environment" id="Umgebung"]
+background_mode = 2
+sky = SubResource("Himmel")
+ambient_light_source = 3
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.62, 0.64, 0.68, 1)
+fog_density = 0.0015
+
+[sub_resource type="ShaderMaterial" id="Material_gelaende"]
+shader = ExtResource("8_gelaende_shader")
+shader_parameter/maske = ExtResource("9_maske")
+
+[sub_resource type="ShaderMaterial" id="Material_wasser"]
+shader = ExtResource("10_wasser")
+shader_parameter/loch_radius = 0.0
+
+[sub_resource type="PlaneMesh" id="Mesh_meer"]
+material = SubResource("Material_wasser")
+size = Vector2(700, 500)
+subdivide_width = 120
+subdivide_depth = 100
+
+[sub_resource type="StandardMaterial3D" id="Material_mauer"]
+albedo_color = Color(0.3, 0.29, 0.28, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_basalt"]
+albedo_color = Color(0.12, 0.12, 0.14, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Material_holz"]
+albedo_color = Color(0.36, 0.25, 0.16, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Material_eis"]
+albedo_color = Color(0.5, 0.53, 0.57, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="Material_hell"]
+albedo_color = Color(0.55, 0.52, 0.47, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_feuer"]
+albedo_color = Color(0.85, 0.45, 0.15, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Material_kai"]
+albedo_color = Color(0.38, 0.36, 0.33, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_boden"]
+albedo_color = Color(0.42, 0.4, 0.37, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_wasser_becken"]
+albedo_color = Color(0.12, 0.22, 0.3, 1)
+roughness = 0.1
+
+[sub_resource type="StandardMaterial3D" id="Material_stoff"]
+albedo_color = Color(0.45, 0.12, 0.1, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Material_papier"]
+albedo_color = Color(0.82, 0.76, 0.6, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Material_metall"]
+albedo_color = Color(0.25, 0.25, 0.27, 1)
+roughness = 0.4
+
+[sub_resource type="BoxShape3D" id="Form_ort1"]
+size = Vector3(340, 80, 170)
+
+[sub_resource type="BoxShape3D" id="Form_ort2"]
+size = Vector3(100, 20, 145)
+
+[sub_resource type="BoxShape3D" id="Form_ort3"]
+size = Vector3(110, 20, 145)
+
+[sub_resource type="BoxShape3D" id="Form_ort4"]
+size = Vector3(108, 5.6, 38)
+
+[sub_resource type="BoxShape3D" id="Form_ort5"]
+size = Vector3(106, 6, 38)
+
+[sub_resource type="BoxShape3D" id="Form_ort6"]
+size = Vector3(58, 6, 22)
+
+[node name="Region" type="Node3D"]
+script = ExtResource("18_region")
+region_id = "riverlock"
+wasserspiegel = -10.0
+wasser_meldung = "Die Valn ist zu reißend zum Schwimmen."
+grenze_min = Vector2(-290, -190)
+grenze_max = Vector2(290, 190)
+grenze_meldung = "Hier endet die Valnschlucht. Weiter geht es nur mit Erlaubnis des Landkomturs."
+karte_ursprung = Vector2(1016, 494)
+karte_meter_pro_pixel = 60.0
+
+[node name="Umgebung" type="WorldEnvironment" parent="."]
+environment = SubResource("Umgebung")
+
+[node name="Mond" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, 0, -0.5, 0.35, 0.714, 0.606, 0.357, -0.7, 0.618, 0, 60, 0)
+light_color = Color(0.55, 0.65, 0.95, 1)
+light_energy = 0.0
+
+[node name="Sonne" type="DirectionalLight3D" parent="." node_paths=PackedStringArray("umgebung", "mond")]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.8660254, 0, -0.8660254, 0.5, 0, 60, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 250.0
+script = ExtResource("1_tageslicht")
+umgebung = NodePath("../Umgebung")
+mond = NodePath("../Mond")
+
+[node name="Gelaende" type="Node3D" parent="."]
+script = ExtResource("2_gelaende")
+material = SubResource("Material_gelaende")
+daten = "res://daten/gelaende_riverlock/"
+
+[node name="Valn" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -10, 0)
+mesh = SubResource("Mesh_meer")
+
+[node name="Westburg" type="Node3D" parent="."]
+
+[node name="Mauer1" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, -121.58, 3.5, -76.25)
+use_collision = true
+size = Vector3(14.05, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer2" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, -108.72, 3.5, -76.25)
+use_collision = true
+size = Vector3(14.05, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer3" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, -95.88, 3.5, -76.25)
+use_collision = true
+size = Vector3(14.05, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer4" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, -83.03, 3.5, -76.25)
+use_collision = true
+size = Vector3(14.05, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer5" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, -70.17, 3.5, -76.25)
+use_collision = true
+size = Vector3(14.05, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer6" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, -63.75, 3.5, -69.62)
+use_collision = true
+size = Vector3(14.45, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer7" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, -63.75, 3.5, -56.38)
+use_collision = true
+size = Vector3(14.45, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer8" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, -63.75, 3.5, -43.12)
+use_collision = true
+size = Vector3(14.45, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer9" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, -63.75, 3.5, -29.88)
+use_collision = true
+size = Vector3(14.45, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer10" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, -63.75, 3.5, -16.62)
+use_collision = true
+size = Vector3(14.45, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer11" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.030015, 0, -0.99955, 0, 1, 0, 0.99955, 0, -0.030015, -63.89, 3.5, -5.25)
+use_collision = true
+size = Vector3(9.51, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer12" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.030015, 0, -0.99955, 0, 1, 0, 0.99955, 0, -0.030015, -64.36, 3.5, 10.25)
+use_collision = true
+size = Vector3(9.51, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer13" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.19047, 0, -0.98169, 0, 1, 0, 0.98169, 0, -0.19047, -65.83, 3.5, 21.88)
+use_collision = true
+size = Vector3(15.21, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer14" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.19047, 0, -0.98169, 0, 1, 0, 0.98169, 0, -0.19047, -68.5, 3.5, 35.62)
+use_collision = true
+size = Vector3(15.21, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer15" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.19047, 0, -0.98169, 0, 1, 0, 0.98169, 0, -0.19047, -71.17, 3.5, 49.38)
+use_collision = true
+size = Vector3(15.21, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer16" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.99959, 0, 0.028619, 0, 1, 0, -0.028619, 0, -0.99959, -76.86, 3.5, 56.13)
+use_collision = true
+size = Vector3(9.93, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer17" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.99959, 0, 0.028619, 0, 1, 0, -0.028619, 0, -0.99959, -85.59, 3.5, 55.88)
+use_collision = true
+size = Vector3(8.73, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer18" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.99959, 0, 0.028619, 0, 1, 0, -0.028619, 0, -0.99959, -96.85, 3.5, 55.55)
+use_collision = true
+size = Vector3(3.8, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer19" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.76199, 0, 0.64759, 0, 1, 0, -0.64759, 0, -0.76199, -101.25, 3.5, 53.38)
+use_collision = true
+size = Vector3(7.76, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer20" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.068364, 0, 0.99766, 0, 1, 0, -0.99766, 0, -0.068364, -104.06, 3.5, 46.69)
+use_collision = true
+size = Vector3(10.35, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer21" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.068364, 0, 0.99766, 0, 1, 0, -0.99766, 0, -0.068364, -104.69, 3.5, 37.56)
+use_collision = true
+size = Vector3(10.35, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer22" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.99737, 0, 0.072542, 0, 1, 0, -0.072542, 0, -0.99737, -111.88, 3.5, 32.5)
+use_collision = true
+size = Vector3(14.99, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer23" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.99737, 0, 0.072542, 0, 1, 0, -0.072542, 0, -0.99737, -125.62, 3.5, 31.5)
+use_collision = true
+size = Vector3(14.99, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer24" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.99737, 0, 0.072542, 0, 1, 0, -0.072542, 0, -0.99737, -139.38, 3.5, 30.5)
+use_collision = true
+size = Vector3(14.99, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer25" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(0.057564, 0, 0.99834, 0, 1, 0, -0.99834, 0, 0.057564, -145.88, 3.5, 23.5)
+use_collision = true
+size = Vector3(14.22, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer26" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(0.057564, 0, 0.99834, 0, 1, 0, -0.99834, 0, 0.057564, -145.12, 3.5, 10.5)
+use_collision = true
+size = Vector3(14.22, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer27" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(0.057564, 0, 0.99834, 0, 1, 0, -0.99834, 0, 0.057564, -144.38, 3.5, -2.5)
+use_collision = true
+size = Vector3(14.22, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer28" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(0.057564, 0, 0.99834, 0, 1, 0, -0.99834, 0, 0.057564, -143.62, 3.5, -15.5)
+use_collision = true
+size = Vector3(14.22, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer29" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(0.057564, 0, 0.99834, 0, 1, 0, -0.99834, 0, 0.057564, -142.88, 3.5, -28.5)
+use_collision = true
+size = Vector3(14.22, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer30" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(0.9615, 0, 0.2748, 0, 1, 0, -0.2748, 0, 0.9615, -137.25, 3.5, -36.5)
+use_collision = true
+size = Vector3(12.12, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer31" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(0.10401, 0, 0.99458, 0, 1, 0, -0.99458, 0, 0.10401, -131.33, 3.5, -44.38)
+use_collision = true
+size = Vector3(14.02, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer32" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(0.10401, 0, 0.99458, 0, 1, 0, -0.99458, 0, 0.10401, -130, 3.5, -57.12)
+use_collision = true
+size = Vector3(14.02, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer33" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(0.10401, 0, 0.99458, 0, 1, 0, -0.99458, 0, 0.10401, -128.67, 3.5, -69.88)
+use_collision = true
+size = Vector3(14.02, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Turm0" type="CSGCylinder3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -128, 5.5, -76.25)
+use_collision = true
+radius = 4.0
+height = 15
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Turm1" type="CSGCylinder3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -63.75, 5.5, -76.25)
+use_collision = true
+radius = 4.0
+height = 15
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Turm4" type="CSGCylinder3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -72.5, 5.5, 56.25)
+use_collision = true
+radius = 4.0
+height = 15
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Turm8" type="CSGCylinder3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -146.25, 5.5, 30)
+use_collision = true
+radius = 4.0
+height = 15
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Tor0Turm0" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.99959, 0, 0.028619, 0, 1, 0, -0.028619, 0, -0.99959, -87.95, 4.5, 55.81)
+use_collision = true
+size = Vector3(4, 17.0, 6)
+material = SubResource("Material_mauer")
+
+[node name="Tor0Turm2" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.99959, 0, 0.028619, 0, 1, 0, -0.028619, 0, -0.99959, -96.95, 4.5, 55.55)
+use_collision = true
+size = Vector3(4, 17.0, 6)
+material = SubResource("Material_mauer")
+
+[node name="Tor0Bogen" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.99959, 0, 0.028619, 0, 1, 0, -0.028619, 0, -0.99959, -92.45, 9.5, 55.68)
+use_collision = true
+size = Vector3(5.4, 3, 6)
+material = SubResource("Material_mauer")
+
+[node name="Tor1Turm0" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.030015, 0, -0.99955, 0, 1, 0, 0.99955, 0, -0.030015, -63.97, 4.5, -2.5)
+use_collision = true
+size = Vector3(4, 17.0, 6)
+material = SubResource("Material_mauer")
+
+[node name="Tor1Turm2" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.030015, 0, -0.99955, 0, 1, 0, 0.99955, 0, -0.030015, -64.27, 4.5, 7.5)
+use_collision = true
+size = Vector3(4, 17.0, 6)
+material = SubResource("Material_mauer")
+
+[node name="Tor1Bogen" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(-0.030015, 0, -0.99955, 0, 1, 0, 0.99955, 0, -0.030015, -64.12, 9.5, 2.5)
+use_collision = true
+size = Vector3(6.4, 3, 6)
+material = SubResource("Material_mauer")
+
+[node name="Eckturm" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -142.5, 5, -35)
+use_collision = true
+size = Vector3(7, 14, 7)
+material = SubResource("Material_mauer")
+
+[node name="SchildEckturm" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -142.5, 14, -35)
+billboard = 1
+pixel_size = 0.02
+text = "8 · Eckturm"
+font_size = 36
+outline_size = 14
+
+[node name="SchildTor" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -92.45, 13, 58.68)
+billboard = 1
+pixel_size = 0.02
+text = "1 · Äußere Toranlage"
+font_size = 40
+outline_size = 14
+
+[node name="Bergfried" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -94, 14.5, -31)
+use_collision = true
+size = Vector3(16, 31, 16)
+material = SubResource("Material_mauer")
+
+[node name="SchildBergfried" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -94, 32, -31)
+billboard = 1
+pixel_size = 0.02
+text = "13 · Bergfried"
+font_size = 40
+outline_size = 14
+
+[node name="GrosserSaal" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -94, 4.5, -14)
+use_collision = true
+size = Vector3(22, 11, 10)
+material = SubResource("Material_hell")
+
+[node name="SchildGrosserSaal" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -94, 12, -14)
+billboard = 1
+pixel_size = 0.02
+text = "10 · Großer Saal"
+font_size = 40
+outline_size = 14
+
+[node name="Kuechen" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -110, 3, -22)
+use_collision = true
+size = Vector3(8, 8, 16)
+material = SubResource("Material_holz")
+
+[node name="SchildKuechen" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -110, 9, -22)
+billboard = 1
+pixel_size = 0.02
+text = "11 · Küchen & Vorräte"
+font_size = 40
+outline_size = 14
+
+[node name="Kapelle" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -75, 4, -45)
+use_collision = true
+size = Vector3(8, 10, 12)
+material = SubResource("Material_hell")
+
+[node name="SchildKapelle" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -75, 11, -45)
+billboard = 1
+pixel_size = 0.02
+text = "9 · Kapelle"
+font_size = 40
+outline_size = 14
+
+[node name="KapelleTurm" type="CSGCylinder3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -75, 8, -50)
+use_collision = true
+radius = 1.5
+height = 16
+sides = 8
+material = SubResource("Material_hell")
+
+[node name="Stall1" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -104, 2.5, -65)
+use_collision = true
+size = Vector3(14, 7, 7)
+material = SubResource("Material_holz")
+
+[node name="SchildStall1" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -104, 8, -65)
+billboard = 1
+pixel_size = 0.02
+text = "4 · Außenhöfe / Stallungen"
+font_size = 40
+outline_size = 14
+
+[node name="Stall2" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -78, 2.5, -64)
+use_collision = true
+size = Vector3(12, 7, 8)
+material = SubResource("Material_holz")
+
+[node name="Stall3" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -127, 2.5, -56)
+use_collision = true
+size = Vector3(7, 7, 10)
+material = SubResource("Material_holz")
+
+[node name="Stall4" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -127, 2.5, -44)
+use_collision = true
+size = Vector3(7, 7, 10)
+material = SubResource("Material_holz")
+
+[node name="InnereWache" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -118, 3, 14)
+use_collision = true
+size = Vector3(8, 8, 10)
+material = SubResource("Material_mauer")
+
+[node name="SchildInnereWache" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -118, 9, 14)
+billboard = 1
+pixel_size = 0.02
+text = "12 · Innere Wache"
+font_size = 40
+outline_size = 14
+
+[node name="Zielscheibe0" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -136, 1, -6)
+use_collision = true
+size = Vector3(0.3, 2.0, 1.6)
+material = SubResource("Material_stoff")
+
+[node name="Zielscheibe1" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -136, 1, -2)
+use_collision = true
+size = Vector3(0.3, 2.0, 1.6)
+material = SubResource("Material_stoff")
+
+[node name="Zielscheibe2" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -136, 1, 2)
+use_collision = true
+size = Vector3(0.3, 2.0, 1.6)
+material = SubResource("Material_stoff")
+
+[node name="Zielscheibe3" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -136, 1, 6)
+use_collision = true
+size = Vector3(0.3, 2.0, 1.6)
+material = SubResource("Material_stoff")
+
+[node name="SchildWaffenhof" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -128, 4, 0)
+billboard = 1
+pixel_size = 0.02
+text = "3 · Waffenhof"
+font_size = 36
+outline_size = 14
+
+[node name="SchildTorhof" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -88, 4, 36)
+billboard = 1
+pixel_size = 0.02
+text = "2 · Torhof"
+font_size = 36
+outline_size = 14
+
+[node name="VorwerkWand0" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -59.6, 3.5, -1.25)
+use_collision = true
+size = Vector3(9.8, 11, 1.5)
+material = SubResource("Material_mauer")
+
+[node name="VorwerkWand1" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -59.6, 3.5, 6.25)
+use_collision = true
+size = Vector3(9.8, 11, 1.5)
+material = SubResource("Material_mauer")
+
+[node name="VorwerkDach" type="CSGBox3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -59.6, 6.5, 2.5)
+use_collision = true
+size = Vector3(9.8, 1, 9)
+material = SubResource("Material_mauer")
+
+[node name="SchildVorwerk" type="Label3D" parent="Westburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -59.6, 9.5, 2.5)
+billboard = 1
+pixel_size = 0.02
+text = "5 · Vorwerk"
+font_size = 36
+outline_size = 14
+
+[node name="Ostburg" type="Node3D" parent="."]
+
+[node name="Mauer34" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 75.5, 3.5, -61.25)
+use_collision = true
+size = Vector3(17.2, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer35" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 91.5, 3.5, -61.25)
+use_collision = true
+size = Vector3(17.2, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer36" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 107.5, 3.5, -61.25)
+use_collision = true
+size = Vector3(17.2, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer37" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 123.5, 3.5, -61.25)
+use_collision = true
+size = Vector3(17.2, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer38" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 139.5, 3.5, -61.25)
+use_collision = true
+size = Vector3(17.2, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer39" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(0.090459, 0, -0.9959, 0, 1, 0, 0.9959, 0, 0.090459, 148.12, 3.5, -54.38)
+use_collision = true
+size = Vector3(15.01, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer40" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(0.66157, 0, -0.74988, 0, 1, 0, 0.74988, 0, 0.66157, 153.44, 3.5, -42.19)
+use_collision = true
+size = Vector3(15.37, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer41" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(0.66157, 0, -0.74988, 0, 1, 0, 0.74988, 0, 0.66157, 162.81, 3.5, -31.56)
+use_collision = true
+size = Vector3(15.37, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer42" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(0.030364, 0, -0.99954, 0, 1, 0, 0.99954, 0, 0.030364, 167.71, 3.5, -19.38)
+use_collision = true
+size = Vector3(14.96, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer43" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(0.030364, 0, -0.99954, 0, 1, 0, 0.99954, 0, 0.030364, 168.12, 3.5, -5.62)
+use_collision = true
+size = Vector3(14.96, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer44" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(0.030364, 0, -0.99954, 0, 1, 0, 0.99954, 0, 0.030364, 168.54, 3.5, 8.12)
+use_collision = true
+size = Vector3(14.96, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer45" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.035772, 0, -0.99936, 0, 1, 0, 0.99936, 0, -0.035772, 168.54, 3.5, 20.83)
+use_collision = true
+size = Vector3(12.87, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer46" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.035772, 0, -0.99936, 0, 1, 0, 0.99936, 0, -0.035772, 168.12, 3.5, 32.5)
+use_collision = true
+size = Vector3(12.87, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer47" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.035772, 0, -0.99936, 0, 1, 0, 0.99936, 0, -0.035772, 167.71, 3.5, 44.17)
+use_collision = true
+size = Vector3(12.87, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer48" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.35119, 0, -0.9363, 0, 1, 0, 0.9363, 0, -0.35119, 165.62, 3.5, 55)
+use_collision = true
+size = Vector3(11.88, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer49" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.35119, 0, -0.9363, 0, 1, 0, 0.9363, 0, -0.35119, 161.88, 3.5, 65)
+use_collision = true
+size = Vector3(11.88, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer50" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.99388, 0, 0.11043, 0, 1, 0, -0.11043, 0, -0.99388, 152.51, 3.5, 69.17)
+use_collision = true
+size = Vector3(15.07, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer51" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.99388, 0, 0.11043, 0, 1, 0, -0.11043, 0, -0.99388, 133.05, 3.5, 67.01)
+use_collision = true
+size = Vector3(14.1, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer52" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.99388, 0, 0.11043, 0, 1, 0, -0.11043, 0, -0.99388, 119.04, 3.5, 65.45)
+use_collision = true
+size = Vector3(15.3, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer53" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.99388, 0, 0.11043, 0, 1, 0, -0.11043, 0, -0.99388, 105.03, 3.5, 63.89)
+use_collision = true
+size = Vector3(15.3, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer54" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.99388, 0, 0.11043, 0, 1, 0, -0.11043, 0, -0.99388, 91.02, 3.5, 62.34)
+use_collision = true
+size = Vector3(15.3, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer55" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.99388, 0, 0.11043, 0, 1, 0, -0.11043, 0, -0.99388, 77.01, 3.5, 60.78)
+use_collision = true
+size = Vector3(15.3, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer56" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 69.86, 3.5, 53.19)
+use_collision = true
+size = Vector3(14.82, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer57" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 69.58, 3.5, 39.57)
+use_collision = true
+size = Vector3(14.82, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer58" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 69.3, 3.5, 25.95)
+use_collision = true
+size = Vector3(14.82, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer59" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 69.02, 3.5, 12.34)
+use_collision = true
+size = Vector3(13.62, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer60" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 68.6, 3.5, -8.07)
+use_collision = true
+size = Vector3(15.2, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer61" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 68.28, 3.5, -23.26)
+use_collision = true
+size = Vector3(16.4, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer62" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 67.97, 3.5, -38.46)
+use_collision = true
+size = Vector3(16.4, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Mauer63" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 67.66, 3.5, -53.65)
+use_collision = true
+size = Vector3(16.4, 11, 2.5)
+material = SubResource("Material_mauer")
+
+[node name="Turm0" type="CSGCylinder3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 67.5, 5.5, -61.25)
+use_collision = true
+radius = 4.0
+height = 15
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Turm1" type="CSGCylinder3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 147.5, 5.5, -61.25)
+use_collision = true
+radius = 4.0
+height = 15
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Turm3" type="CSGCylinder3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 167.5, 5.5, -26.25)
+use_collision = true
+radius = 4.0
+height = 15
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Turm4" type="CSGCylinder3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 168.75, 5.5, 15)
+use_collision = true
+radius = 4.0
+height = 15
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Turm5" type="CSGCylinder3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 167.5, 5.5, 50)
+use_collision = true
+radius = 4.0
+height = 15
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Turm7" type="CSGCylinder3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 70, 5.5, 60)
+use_collision = true
+radius = 4.0
+height = 15
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Tor0Turm0" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.99388, 0, 0.11043, 0, 1, 0, -0.11043, 0, -0.99388, 147.01, 4.5, 68.56)
+use_collision = true
+size = Vector3(4, 17.0, 6)
+material = SubResource("Material_mauer")
+
+[node name="Tor0Turm2" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.99388, 0, 0.11043, 0, 1, 0, -0.11043, 0, -0.99388, 138.07, 4.5, 67.56)
+use_collision = true
+size = Vector3(4, 17.0, 6)
+material = SubResource("Material_mauer")
+
+[node name="Tor0Bogen" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.99388, 0, 0.11043, 0, 1, 0, -0.11043, 0, -0.99388, 142.54, 9.5, 68.06)
+use_collision = true
+size = Vector3(5.4, 3, 6)
+material = SubResource("Material_mauer")
+
+[node name="Tor1Turm0" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 68.91, 4.5, 7.53)
+use_collision = true
+size = Vector3(4, 17.0, 6)
+material = SubResource("Material_mauer")
+
+[node name="Tor1Turm2" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 68.71, 4.5, -2.47)
+use_collision = true
+size = Vector3(4, 17.0, 6)
+material = SubResource("Material_mauer")
+
+[node name="Tor1Bogen" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(-0.020593, 0, 0.99979, 0, 1, 0, -0.99979, 0, -0.020593, 68.81, 9.5, 2.53)
+use_collision = true
+size = Vector3(6.4, 3, 6)
+material = SubResource("Material_mauer")
+
+[node name="SchildTor" type="Label3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 142.54, 13, 71.06)
+billboard = 1
+pixel_size = 0.02
+text = "23 · Äußere Toranlage"
+font_size = 40
+outline_size = 14
+
+[node name="Bergfried" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 108.75, 14.5, -22)
+use_collision = true
+size = Vector3(16, 31, 16)
+material = SubResource("Material_mauer")
+
+[node name="SchildBergfried" type="Label3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 108.75, 32, -22)
+billboard = 1
+pixel_size = 0.02
+text = "35 · Bergfried"
+font_size = 40
+outline_size = 14
+
+[node name="GrosserSaal" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 108.75, 4.5, -5)
+use_collision = true
+size = Vector3(22, 11, 10)
+material = SubResource("Material_hell")
+
+[node name="SchildGrosserSaal" type="Label3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 108.75, 12, -5)
+billboard = 1
+pixel_size = 0.02
+text = "32 · Großer Saal"
+font_size = 40
+outline_size = 14
+
+[node name="Kuechen" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 125, 3, -20)
+use_collision = true
+size = Vector3(8, 8, 16)
+material = SubResource("Material_holz")
+
+[node name="SchildKuechen" type="Label3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 125, 9, -20)
+billboard = 1
+pixel_size = 0.02
+text = "33 · Küchen & Vorräte"
+font_size = 40
+outline_size = 14
+
+[node name="Kapelle" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 116, 4, 37.5)
+use_collision = true
+size = Vector3(8, 10, 14)
+material = SubResource("Material_hell")
+
+[node name="SchildKapelle" type="Label3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 116, 11, 37.5)
+billboard = 1
+pixel_size = 0.02
+text = "31 · Kapelle"
+font_size = 40
+outline_size = 14
+
+[node name="KapelleTurm" type="CSGCylinder3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 116, 8, 31)
+use_collision = true
+radius = 1.5
+height = 16
+sides = 8
+material = SubResource("Material_hell")
+
+[node name="InnereWache" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 121, 3, 20)
+use_collision = true
+size = Vector3(10, 8, 8)
+material = SubResource("Material_mauer")
+
+[node name="SchildInnereWache" type="Label3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 121, 9, 20)
+billboard = 1
+pixel_size = 0.02
+text = "34 · Innere Wache"
+font_size = 40
+outline_size = 14
+
+[node name="Stall1" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 80, 2.5, -12)
+use_collision = true
+size = Vector3(8, 7, 14)
+material = SubResource("Material_holz")
+
+[node name="SchildStall1" type="Label3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 80, 8, -12)
+billboard = 1
+pixel_size = 0.02
+text = "26 · Außenhöfe / Stallungen"
+font_size = 40
+outline_size = 14
+
+[node name="Stall2" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 100, 2.5, -50)
+use_collision = true
+size = Vector3(12, 7, 7)
+material = SubResource("Material_holz")
+
+[node name="Stall3" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 130, 2.5, -50)
+use_collision = true
+size = Vector3(10, 7, 7)
+material = SubResource("Material_holz")
+
+[node name="Waffenstaender0" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 152, 1, -18)
+use_collision = true
+size = Vector3(0.4, 2.0, 2.0)
+material = SubResource("Material_metall")
+
+[node name="Waffenstaender1" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 152, 1, -14)
+use_collision = true
+size = Vector3(0.4, 2.0, 2.0)
+material = SubResource("Material_metall")
+
+[node name="Waffenstaender2" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 152, 1, -10)
+use_collision = true
+size = Vector3(0.4, 2.0, 2.0)
+material = SubResource("Material_metall")
+
+[node name="Waffenstaender3" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 152, 1, -6)
+use_collision = true
+size = Vector3(0.4, 2.0, 2.0)
+material = SubResource("Material_metall")
+
+[node name="SchildWaffenhof" type="Label3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 149, 4, -12)
+billboard = 1
+pixel_size = 0.02
+text = "25 · Waffenhof"
+font_size = 36
+outline_size = 14
+
+[node name="SchildTorhof" type="Label3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 140, 4, 58)
+billboard = 1
+pixel_size = 0.02
+text = "24 · Torhof"
+font_size = 36
+outline_size = 14
+
+[node name="VorwerkWand0" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 61.7, 3.5, -1.25)
+use_collision = true
+size = Vector3(13.4, 11, 1.5)
+material = SubResource("Material_mauer")
+
+[node name="VorwerkWand1" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 61.7, 3.5, 6.25)
+use_collision = true
+size = Vector3(13.4, 11, 1.5)
+material = SubResource("Material_mauer")
+
+[node name="VorwerkDach" type="CSGBox3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 61.7, 6.5, 2.5)
+use_collision = true
+size = Vector3(13.4, 1, 9)
+material = SubResource("Material_mauer")
+
+[node name="SchildVorwerk" type="Label3D" parent="Ostburg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 61.7, 9.5, 2.5)
+billboard = 1
+pixel_size = 0.02
+text = "27 · Vorwerk"
+font_size = 36
+outline_size = 14
+
+[node name="Mittelbau" type="Node3D" parent="."]
+
+[node name="Nordwand" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -4, -19.25)
+use_collision = true
+size = Vector3(110, 20, 1.5)
+material = SubResource("Material_mauer")
+
+[node name="Suedwand" type="CSGCombiner3D" parent="Mittelbau"]
+use_collision = true
+
+[node name="Wand" type="CSGBox3D" parent="Mittelbau/Suedwand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -4, 19.25)
+
+size = Vector3(110, 20, 1.5)
+material = SubResource("Material_mauer")
+
+[node name="Bogen0" type="CSGBox3D" parent="Mittelbau/Suedwand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -24, -9, 19.25)
+operation = 2
+size = Vector3(9, 10, 3)
+
+[node name="Bogen1" type="CSGBox3D" parent="Mittelbau/Suedwand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -12, -9, 19.25)
+operation = 2
+size = Vector3(9, 10, 3)
+
+[node name="Bogen2" type="CSGBox3D" parent="Mittelbau/Suedwand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -9, 19.25)
+operation = 2
+size = Vector3(9, 10, 3)
+
+[node name="Bogen3" type="CSGBox3D" parent="Mittelbau/Suedwand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 12, -9, 19.25)
+operation = 2
+size = Vector3(9, 10, 3)
+
+[node name="Bogen4" type="CSGBox3D" parent="Mittelbau/Suedwand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 24, -9, 19.25)
+operation = 2
+size = Vector3(9, 10, 3)
+
+[node name="SchildBoegen" type="Label3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -2.5, 21.5)
+billboard = 1
+pixel_size = 0.02
+text = "15 · Einfahrbogen / Schiffsdurchfahrt"
+font_size = 36
+outline_size = 14
+
+[node name="Westwand" type="CSGCombiner3D" parent="Mittelbau"]
+use_collision = true
+
+[node name="Wand" type="CSGBox3D" parent="Mittelbau/Westwand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -54.25, -4, 0)
+
+size = Vector3(1.5, 20, 40)
+material = SubResource("Material_mauer")
+
+[node name="Tor" type="CSGBox3D" parent="Mittelbau/Westwand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -54.25, 2.25, 2.5)
+operation = 2
+size = Vector3(3, 4.5, 5)
+
+[node name="SchildWestwand" type="Label3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -56.25, 6.8, 2.5)
+billboard = 1
+pixel_size = 0.02
+text = "14 · Westliches Tor (Kettensperre)"
+font_size = 32
+outline_size = 14
+
+[node name="Ostwand" type="CSGCombiner3D" parent="Mittelbau"]
+use_collision = true
+
+[node name="Wand" type="CSGBox3D" parent="Mittelbau/Ostwand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 54.25, -4, 0)
+
+size = Vector3(1.5, 20, 40)
+material = SubResource("Material_mauer")
+
+[node name="Tor" type="CSGBox3D" parent="Mittelbau/Ostwand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 54.25, 2.25, 2.5)
+operation = 2
+size = Vector3(3, 4.5, 5)
+
+[node name="SchildOstwand" type="Label3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 56.25, 6.8, 2.5)
+billboard = 1
+pixel_size = 0.02
+text = "22 · Östliches Tor (Kettensperre)"
+font_size = 32
+outline_size = 14
+
+[node name="Eckturm0" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -52.5, 2, -19.5)
+use_collision = true
+radius = 4.5
+height = 32
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Eckturm1" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 51, 2, -19.5)
+use_collision = true
+radius = 4.5
+height = 32
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Eckturm2" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -52, 2, 18.75)
+use_collision = true
+radius = 4.5
+height = 32
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="Eckturm3" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 50.5, 2, 18.75)
+use_collision = true
+radius = 4.5
+height = 32
+sides = 12
+material = SubResource("Material_mauer")
+
+[node name="KaiWest" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -43.75, -11.25, 0)
+use_collision = true
+size = Vector3(19.5, 5.5, 37)
+material = SubResource("Material_kai")
+
+[node name="KaiOst" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 43.75, -11.25, 0)
+use_collision = true
+size = Vector3(19.5, 5.5, 37)
+material = SubResource("Material_kai")
+
+[node name="KaiNord" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -11.25, -16.75)
+use_collision = true
+size = Vector3(68, 5.5, 3.5)
+material = SubResource("Material_kai")
+
+[node name="Steg0" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -10, -8.8, -2.5)
+use_collision = true
+size = Vector3(3, 0.6, 25)
+material = SubResource("Material_holz")
+
+[node name="Pfahl0_0" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -8.4, -11.5, -8)
+use_collision = true
+radius = 0.25
+height = 6
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="Pfahl0_1" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -8.4, -11.5, 2)
+use_collision = true
+radius = 0.25
+height = 6
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="Pfahl0_2" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -8.4, -11.5, 9)
+use_collision = true
+radius = 0.25
+height = 6
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="Steg1" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 10, -8.8, -2.5)
+use_collision = true
+size = Vector3(3, 0.6, 25)
+material = SubResource("Material_holz")
+
+[node name="Pfahl1_0" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 11.6, -11.5, -8)
+use_collision = true
+radius = 0.25
+height = 6
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="Pfahl1_1" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 11.6, -11.5, 2)
+use_collision = true
+radius = 0.25
+height = 6
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="Pfahl1_2" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 11.6, -11.5, 9)
+use_collision = true
+radius = 0.25
+height = 6
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="SchildHafenhalle" type="Label3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -3, -12)
+billboard = 1
+pixel_size = 0.02
+text = "16 · Hafenhalle (unteres Geschoss)"
+font_size = 40
+outline_size = 14
+
+[node name="LichtUnten0" type="OmniLight3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -40, -3, 0)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 22
+
+[node name="LichtUnten1" type="OmniLight3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -3, 0)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 22
+
+[node name="LichtUnten2" type="OmniLight3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 40, -3, 0)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 22
+
+[node name="Boot0" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 0, -9.7, -1)
+use_collision = true
+size = Vector3(12, 1.6, 3.4)
+material = SubResource("Material_holz")
+
+[node name="Mast0" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -5.5, -1)
+
+radius = 0.2
+height = 7
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="Boot1" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, -21, -9.7, -3)
+use_collision = true
+size = Vector3(12, 1.6, 3.4)
+material = SubResource("Material_holz")
+
+[node name="Mast1" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -21, -5.5, -3)
+
+radius = 0.2
+height = 7
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="Fass0" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -48, -7.9, -14)
+use_collision = true
+size = Vector3(1.2, 1.2, 1.2)
+material = SubResource("Material_holz")
+
+[node name="Fass1" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -48, -7.9, -10)
+use_collision = true
+size = Vector3(1.2, 1.2, 1.2)
+material = SubResource("Material_holz")
+
+[node name="Fass2" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -50, -7.9, -12)
+use_collision = true
+size = Vector3(1.2, 1.2, 1.2)
+material = SubResource("Material_holz")
+
+[node name="Fass3" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 47, -7.9, 12)
+use_collision = true
+size = Vector3(1.2, 1.2, 1.2)
+material = SubResource("Material_holz")
+
+[node name="Fass4" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 49, -7.9, 12)
+use_collision = true
+size = Vector3(1.2, 1.2, 1.2)
+material = SubResource("Material_holz")
+
+[node name="Fass5" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 48, -7.9, 9)
+use_collision = true
+size = Vector3(1.2, 1.2, 1.2)
+material = SubResource("Material_holz")
+
+[node name="RampeUnten" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(5.8201e-17, -1.9027e-17, 1, 0.31074, 0.9505, 0, -0.9505, 0.31074, 6.1232e-17, -40, -4.488, 0.922)
+use_collision = true
+size = Vector3(27.55, 0.5, 3.2)
+material = SubResource("Material_holz")
+
+[node name="BodenMitte" type="CSGCombiner3D" parent="Mittelbau"]
+use_collision = true
+
+[node name="Platte" type="CSGBox3D" parent="Mittelbau/BodenMitte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -0.3, 0)
+
+size = Vector3(107.0, 0.6, 37.0)
+material = SubResource("Material_boden")
+
+[node name="Loch" type="CSGBox3D" parent="Mittelbau/BodenMitte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -40, -0.3, -7.5)
+operation = 2
+size = Vector3(3.6, 2, 9)
+
+[node name="GelaenderW" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -42.05, 0.55, -7.35)
+use_collision = true
+size = Vector3(0.3, 1.1, 9.3)
+material = SubResource("Material_holz")
+
+[node name="GelaenderO" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -37.95, 0.55, -7.35)
+use_collision = true
+size = Vector3(0.3, 1.1, 9.3)
+material = SubResource("Material_holz")
+
+[node name="GelaenderS" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -40, 0.55, -2.85)
+use_collision = true
+size = Vector3(4.4, 1.1, 0.3)
+material = SubResource("Material_holz")
+
+[node name="Trennwand0" type="CSGCombiner3D" parent="Mittelbau"]
+use_collision = true
+
+[node name="Wand" type="CSGBox3D" parent="Mittelbau/Trennwand0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -30, 3, 0)
+
+size = Vector3(0.6, 6, 37.0)
+material = SubResource("Material_hell")
+
+[node name="Tuer" type="CSGBox3D" parent="Mittelbau/Trennwand0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -30, 1.5, 2.5)
+operation = 2
+size = Vector3(2, 3, 3)
+
+[node name="Trennwand1" type="CSGCombiner3D" parent="Mittelbau"]
+use_collision = true
+
+[node name="Wand" type="CSGBox3D" parent="Mittelbau/Trennwand1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -16, 3, 0)
+
+size = Vector3(0.6, 6, 37.0)
+material = SubResource("Material_hell")
+
+[node name="Tuer" type="CSGBox3D" parent="Mittelbau/Trennwand1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -16, 1.5, 2.5)
+operation = 2
+size = Vector3(2, 3, 3)
+
+[node name="Trennwand2" type="CSGCombiner3D" parent="Mittelbau"]
+use_collision = true
+
+[node name="Wand" type="CSGBox3D" parent="Mittelbau/Trennwand2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 16, 3, 0)
+
+size = Vector3(0.6, 6, 37.0)
+material = SubResource("Material_hell")
+
+[node name="Tuer" type="CSGBox3D" parent="Mittelbau/Trennwand2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 16, 1.5, 2.5)
+operation = 2
+size = Vector3(2, 3, 3)
+
+[node name="Trennwand3" type="CSGCombiner3D" parent="Mittelbau"]
+use_collision = true
+
+[node name="Wand" type="CSGBox3D" parent="Mittelbau/Trennwand3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 30, 3, 2.25)
+
+size = Vector3(0.6, 6, 32.5)
+material = SubResource("Material_hell")
+
+[node name="Tuer" type="CSGBox3D" parent="Mittelbau/Trennwand3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 30, 1.5, 2.5)
+operation = 2
+size = Vector3(2, 3, 3)
+
+[node name="SchildLager" type="Label3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -42, 4.6, 10)
+billboard = 1
+pixel_size = 0.02
+text = "17 · Lager & Kontrollräume"
+font_size = 32
+outline_size = 14
+
+[node name="LichtLager" type="OmniLight3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -42, 4.6, 6)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 16
+
+[node name="SchildWachstube" type="Label3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -23, 4.6, 10)
+billboard = 1
+pixel_size = 0.02
+text = "18 · Wachstube"
+font_size = 32
+outline_size = 14
+
+[node name="LichtWachstube" type="OmniLight3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -23, 4.6, 6)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 16
+
+[node name="SchildVerwaltung" type="Label3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 4.6, 10)
+billboard = 1
+pixel_size = 0.02
+text = "19 · Zoll & Verwaltung"
+font_size = 32
+outline_size = 14
+
+[node name="LichtVerwaltung" type="OmniLight3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 4.6, 6)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 16
+
+[node name="SchildKontrolle" type="Label3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 23, 4.6, 10)
+billboard = 1
+pixel_size = 0.02
+text = "17 · Kontrollraum"
+font_size = 32
+outline_size = 14
+
+[node name="LichtKontrolle" type="OmniLight3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 23, 4.6, 6)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 16
+
+[node name="SchildLagerOst" type="Label3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 42, 4.6, 10)
+billboard = 1
+pixel_size = 0.02
+text = "17 · Lager"
+font_size = 32
+outline_size = 14
+
+[node name="LichtLagerOst" type="OmniLight3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 42, 4.6, 6)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 16
+
+[node name="Kiste0" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -50, 0.6, 12)
+use_collision = true
+size = Vector3(1.6, 1.2, 1.6)
+material = SubResource("Material_holz")
+
+[node name="Kiste1" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -48, 0.6, 15)
+use_collision = true
+size = Vector3(1.6, 1.2, 1.6)
+material = SubResource("Material_holz")
+
+[node name="Kiste2" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -46, 0.6, 12)
+use_collision = true
+size = Vector3(1.6, 1.2, 1.6)
+material = SubResource("Material_holz")
+
+[node name="Kiste3" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -50, 0.6, -15)
+use_collision = true
+size = Vector3(1.6, 1.2, 1.6)
+material = SubResource("Material_holz")
+
+[node name="Kiste4" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 36, 0.6, 12)
+use_collision = true
+size = Vector3(1.6, 1.2, 1.6)
+material = SubResource("Material_holz")
+
+[node name="Kiste5" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 38, 0.6, 15)
+use_collision = true
+size = Vector3(1.6, 1.2, 1.6)
+material = SubResource("Material_holz")
+
+[node name="Kiste6" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 48, 0.6, 14)
+use_collision = true
+size = Vector3(1.6, 1.2, 1.6)
+material = SubResource("Material_holz")
+
+[node name="Wachtisch" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -23, 0.45, -8)
+use_collision = true
+size = Vector3(3, 0.9, 1.4)
+material = SubResource("Material_holz")
+
+[node name="Waffenregal" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -28.5, 1, -12)
+use_collision = true
+size = Vector3(0.5, 2.0, 4)
+material = SubResource("Material_metall")
+
+[node name="Zolltisch" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.45, -4.5)
+use_collision = true
+size = Vector3(6, 0.9, 1.2)
+material = SubResource("Material_holz")
+
+[node name="Waage" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 23, 0.6, -6)
+use_collision = true
+size = Vector3(2.0, 1.2, 2.0)
+material = SubResource("Material_metall")
+
+[node name="RampeOben" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(0.97439, -0.22486, 0, 0.22486, 0.97439, 0, 0, 0, 1, 33.056, 2.756, -16)
+use_collision = true
+size = Vector3(26.88, 0.5, 3.2)
+material = SubResource("Material_holz")
+
+[node name="BodenOben" type="CSGCombiner3D" parent="Mittelbau"]
+use_collision = true
+
+[node name="Platte" type="CSGBox3D" parent="Mittelbau/BodenOben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 5.7, 0)
+
+size = Vector3(107.0, 0.6, 37.0)
+material = SubResource("Material_boden")
+
+[node name="Loch" type="CSGBox3D" parent="Mittelbau/BodenOben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 40.1, 5.7, -16)
+operation = 2
+size = Vector3(12.2, 2, 3.8)
+
+[node name="GelaenderObenS" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 40, 6.55, -13.95)
+use_collision = true
+size = Vector3(12.4, 1.1, 0.3)
+material = SubResource("Material_holz")
+
+[node name="GelaenderObenW" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 33.85, 6.55, -16.2)
+use_collision = true
+size = Vector3(0.3, 1.1, 4.5)
+material = SubResource("Material_holz")
+
+[node name="BrustwehrNord" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 6.6, -19.6)
+use_collision = true
+size = Vector3(110, 1.2, 0.8)
+material = SubResource("Material_mauer")
+
+[node name="BrustwehrSued" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 6.6, 19.6)
+use_collision = true
+size = Vector3(110, 1.2, 0.8)
+material = SubResource("Material_mauer")
+
+[node name="BrustwehrWest" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -54.6, 6.6, 0)
+use_collision = true
+size = Vector3(0.8, 1.2, 40)
+material = SubResource("Material_mauer")
+
+[node name="BrustwehrOst" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 54.6, 6.6, 0)
+use_collision = true
+size = Vector3(0.8, 1.2, 40)
+material = SubResource("Material_mauer")
+
+[node name="SchildWehrgang" type="Label3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -42, 9, 10)
+billboard = 1
+pixel_size = 0.02
+text = "21 · Wehrgang"
+font_size = 36
+outline_size = 14
+
+[node name="Oben" type="Node3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 6, 0)
+
+[node name="GrosserSaal" type="CSGCombiner3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0, 0)
+use_collision = true
+
+[node name="Aussen" type="CSGBox3D" parent="Mittelbau/Oben/GrosserSaal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3.5, 0)
+
+size = Vector3(60, 7, 24)
+material = SubResource("Material_hell")
+
+[node name="Innen" type="CSGBox3D" parent="Mittelbau/Oben/GrosserSaal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3.1, 0)
+operation = 2
+size = Vector3(58.8, 6.6, 22.8)
+
+[node name="Tuer0" type="CSGBox3D" parent="Mittelbau/Oben/GrosserSaal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -30, 1.3, 0)
+operation = 2
+size = Vector3(1.8, 2.8, 2.2)
+
+[node name="Tuer1" type="CSGBox3D" parent="Mittelbau/Oben/GrosserSaal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 30, 1.3, 0)
+operation = 2
+size = Vector3(1.8, 2.8, 2.2)
+
+[node name="Boden" type="CSGBox3D" parent="Mittelbau/Oben/GrosserSaal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.04, 0)
+
+size = Vector3(58.8, 0.08, 22.8)
+material = SubResource("Material_boden")
+
+[node name="SchildGrosserSaal" type="Label3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 8.5, 0)
+billboard = 1
+pixel_size = 0.02
+text = "20 · Großer Saal / Ratssaal"
+font_size = 40
+outline_size = 14
+
+[node name="LichtGrosserSaal" type="OmniLight3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 5.8, 0)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 54.0
+
+[node name="Ratstisch" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.45, -3)
+use_collision = true
+size = Vector3(14, 0.9, 3)
+material = SubResource("Material_holz")
+
+[node name="StuhlN0" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 0.55, -5.2)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlS0" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 0.55, -0.8)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlN1" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -3.6, 0.55, -5.2)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlS1" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -3.6, 0.55, -0.8)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlN2" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -1.2, 0.55, -5.2)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlS2" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -1.2, 0.55, -0.8)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlN3" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.2, 0.55, -5.2)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlS3" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.2, 0.55, -0.8)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlN4" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 3.6, 0.55, -5.2)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlS4" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 3.6, 0.55, -0.8)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlN5" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 6, 0.55, -5.2)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="StuhlS5" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 6, 0.55, -0.8)
+use_collision = true
+size = Vector3(0.8, 1.1, 0.8)
+material = SubResource("Material_holz")
+
+[node name="Wandteppich" type="CSGBox3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3.5, -11.3)
+
+size = Vector3(8, 3, 0.1)
+material = SubResource("Material_stoff")
+
+[node name="LichtSaal2" type="OmniLight3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 18, 5.5, 0)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 16
+
+[node name="LichtSaal3" type="OmniLight3D" parent="Mittelbau/Oben"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -18, 5.5, 0)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 16
+
+[node name="Kette0" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(-0.15386, -0.017243, -0.98794, -0.11137, 0.99378, 0, 0.9818, 0.11002, -0.15483, -57.25, -5.8, 52.5)
+size = Vector3(68.24, 0.35, 0.35)
+material = SubResource("Material_metall")
+
+[node name="Anker0" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -62.5, -8.5, 86)
+use_collision = true
+radius = 0.8
+height = 3
+sides = 8
+material = SubResource("Material_mauer")
+
+[node name="Kette1" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(0.10326, 0.011649, -0.99459, -0.11211, 0.9937, 0, 0.98832, 0.1115, 0.10391, 54, -5.8, 52.5)
+size = Vector3(67.79, 0.35, 0.35)
+material = SubResource("Material_metall")
+
+[node name="Anker1" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 57.5, -8.5, 86)
+use_collision = true
+radius = 0.8
+height = 3
+sides = 8
+material = SubResource("Material_mauer")
+
+[node name="Flussboot0" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(0.17365, 0, 0.98481, 0, 1, 0, -0.98481, 0, 0.17365, -18, -9.7, 55)
+use_collision = true
+size = Vector3(12, 1.6, 3.4)
+material = SubResource("Material_holz")
+
+[node name="FlussbootMast0" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -18, -5.5, 55)
+
+radius = 0.2
+height = 7
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="Flussboot1" type="CSGBox3D" parent="Mittelbau"]
+transform = Transform3D(-0.17365, 0, 0.98481, 0, 1, 0, -0.98481, 0, -0.17365, 24, -9.7, 72)
+use_collision = true
+size = Vector3(12, 1.6, 3.4)
+material = SubResource("Material_holz")
+
+[node name="FlussbootMast1" type="CSGCylinder3D" parent="Mittelbau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 24, -5.5, 72)
+
+radius = 0.2
+height = 7
+sides = 6
+material = SubResource("Material_holz")
+
+[node name="Personen" type="Node3D" parent="."]
+
+[node name="Lotsin" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, -44, -8.5, 8)
+anzeige_name = "Lotsin Wenna Kroll"
+dialog_id = "lotsin"
+kordel = 0
+tracht = Color(0.2, 0.24, 0.3, 1)
+
+[node name="TorwacheWestburg" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, -89, 0, 49)
+anzeige_name = "Torwächter Joost Mahr"
+dialog_id = "torwache_riverlock"
+kordel = 0
+tracht = Color(0.35, 0.3, 0.15, 1)
+
+[node name="Zoellnerin" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, 0, 0, -6.6)
+anzeige_name = "Zöllnerin Mette Ruhl"
+dialog_id = "zoellnerin_riverlock"
+kordel = 0
+tracht = Color(0.3, 0.32, 0.2, 1)
+
+[node name="ZollherrFalk" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, 0, 6, -6.4)
+anzeige_name = "Zollherr Hendrik Falk"
+dialog_id = "zollherr_falk"
+kordel = 0
+tracht = Color(0.4, 0.3, 0.12, 1)
+
+[node name="Beobachter" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, -9, 6, -6.4)
+anzeige_name = "Beobachter Aldo Venn"
+dialog_id = "beobachter_riverlock"
+kordel = 2
+tracht = Color(0.1, 0.1, 0.12, 1)
+
+[node name="Orte" type="Node3D" parent="."]
+
+[node name="Ort1" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 10, 0, 0)
+script = ExtResource("13_ort")
+ortsname = "Riverlock"
+untertitel = "Tor und Mund. Die Brücke ist der einzige Übergang."
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort1"]
+shape = SubResource("Form_ort1")
+
+[node name="Ort2" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -100, 2, -10)
+script = ExtResource("13_ort")
+ortsname = "Westburg"
+untertitel = "Riverlock, Westufer"
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort2"]
+shape = SubResource("Form_ort2")
+
+[node name="Ort3" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 115, 2, 5)
+script = ExtResource("13_ort")
+ortsname = "Ostburg"
+untertitel = "Riverlock, Ostufer. Hier beginnt die Straße nach Valdrenn."
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort3"]
+shape = SubResource("Form_ort3")
+
+[node name="Ort4" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3, 0)
+script = ExtResource("13_ort")
+ortsname = "Mittelbau"
+untertitel = "Zoll und Kontrolle über der Valn"
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort4"]
+shape = SubResource("Form_ort4")
+
+[node name="Ort5" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, -6, 0)
+script = ExtResource("13_ort")
+ortsname = "Hafenhalle"
+untertitel = "Unter der Brücke legen die Boote an."
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort5"]
+shape = SubResource("Form_ort5")
+
+[node name="Ort6" type="Area3D" parent="Orte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 9, 0)
+script = ExtResource("13_ort")
+ortsname = "Großer Saal"
+untertitel = "Hier verhandelt der Zollherr. Der Beobachter des Ordens hört zu."
+
+[node name="Form" type="CollisionShape3D" parent="Orte/Ort6"]
+shape = SubResource("Form_ort6")
+
+[node name="Sprungpunkte" type="Node3D" parent="."]
+
+[node name="Hafenhalle_Ankunft" type="Marker3D" parent="Sprungpunkte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -46, -8, 4)
+metadata/anzeige = "Hafenhalle (Ankunft)"
+
+[node name="Mittelbau_Zoll" type="Marker3D" parent="Sprungpunkte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.5, 8)
+metadata/anzeige = "Mittelbau, Zoll"
+
+[node name="Großer_Saal" type="Marker3D" parent="Sprungpunkte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -20, 6.5, 6)
+metadata/anzeige = "Großer Saal"
+
+[node name="Westburg_Tor" type="Marker3D" parent="Sprungpunkte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -90, 0.5, 46)
+metadata/anzeige = "Westburg, Tor"
+
+[node name="Westburg_Hof" type="Marker3D" parent="Sprungpunkte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -80, 0.5, 0)
+metadata/anzeige = "Westburg, Hof"
+
+[node name="Ostburg_Hof" type="Marker3D" parent="Sprungpunkte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 90, 0.5, 22)
+metadata/anzeige = "Ostburg, Hof"
+
+[node name="Ostburg_Tor" type="Marker3D" parent="Sprungpunkte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 141, 0.5, 64)
+metadata/anzeige = "Ostburg, Tor"
+
+[node name="Ankuenfte" type="Node3D" parent="."]
+
+[node name="von_drachenstein" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, -46, -8.3, 4)
+
+[node name="Spieler" parent="." instance=ExtResource("5_spieler")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -80, 0, 0)
+
+[node name="HUD" parent="." node_paths=PackedStringArray("spieler") instance=ExtResource("6_hud")]
+spieler = NodePath("../Spieler")
+
+[node name="Pausemenue" parent="." instance=ExtResource("7_pause")]
+
+[node name="Entwickler" parent="." instance=ExtResource("17_entwickler")]

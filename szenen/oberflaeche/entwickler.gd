@@ -1,5 +1,5 @@
 extends CanvasLayer
-## Entwicklermenü (F10): Sprungpunkte, Tageszeit, Tore öffnen, Akt I überspringen.
+## Entwicklermenü (F10): Sprungpunkte, Tageszeit, Reisen, Tore öffnen, Akt I überspringen.
 ## Nur verfügbar, wenn das Spiel aus dem Editor läuft (Debug-Build), nicht im fertigen Spiel.
 
 @onready var _fenster: Control = %Fenster
@@ -43,6 +43,9 @@ func _fuelle() -> void:
 	for eintrag in [["06:00", 6.0], ["12:00", 12.0], ["19:00", 19.0], ["22:00", 22.0]]:
 		zeiten.add_child(_knopf(eintrag[0], setze_zeit.bind(eintrag[1]), 100))
 	_liste.add_child(zeiten)
+	for region: String in Speicher.REGIONEN:
+		if region != Speicher.region:
+			_liste.add_child(_knopf("Reise nach " + region.capitalize(), reise.bind(region)))
 	_liste.add_child(_knopf("Alle Tore öffnen", oeffne_tore))
 	_liste.add_child(_knopf("Akt I überspringen (Wächter)", ueberspringe_akt1))
 	_liste.add_child(_knopf("Schließen (F10)", _schliessen))
@@ -66,6 +69,12 @@ func setze_zeit(stunde: float) -> void:
 	Spielzeit.minuten = stunde * 60.0
 	Spielzeit.vorspulen(0.0)
 	_schliessen()
+
+
+## Reist ohne Zeitverlust in eine andere Region, an den Ort, an dem auch das Schiff ankommt.
+func reise(region: String) -> void:
+	_schliessen()
+	Speicher.reise(region, "von_" + Speicher.region)
 
 
 func oeffne_tore() -> void:

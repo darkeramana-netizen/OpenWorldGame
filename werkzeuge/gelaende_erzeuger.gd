@@ -14,11 +14,17 @@ class_name GelaendeErzeuger
 ## Ausführen: in Godot werkzeuge/gelaende_erzeugen.gd öffnen und Datei → Ausführen
 ## (Strg+Umschalt+X). Danach die Szene neu öffnen.
 
-const ZIELORDNER := "res://daten/gelaende/"
 const URSPRUNG := Vector2(-900, -650)
 const GROESSE := Vector2(1350, 1000)
 const ABSTAND := 2.5
 const MEERESSPIEGEL := -20.0
+
+## Ausdehnung und Zielordner. Andere Regionen (z. B. gelaende_riverlock.gd) setzen eigene Werte.
+var zielordner := "res://daten/gelaende/"
+var ursprung := URSPRUNG
+var groesse := GROESSE
+var abstand := ABSTAND
+var wasserspiegel := MEERESSPIEGEL
 
 const GRAVEMARCH := Vector2(-600, -205)
 const BERGFRIED := Vector2(250, 135)
@@ -73,8 +79,8 @@ func _init() -> void:
 
 ## Erzeugt alle Dateien und gibt die Anzahl der Höhenpunkte zurück.
 func erzeuge() -> int:
-	var breite := int(GROESSE.x / ABSTAND) + 1
-	var tiefe := int(GROESSE.y / ABSTAND) + 1
+	var breite := int(groesse.x / abstand) + 1
+	var tiefe := int(groesse.y / abstand) + 1
 	var hoehen := PackedFloat32Array()
 	hoehen.resize(breite * tiefe)
 	var maske := Image.create(breite, tiefe, false, Image.FORMAT_RGB8)
@@ -82,27 +88,27 @@ func erzeuge() -> int:
 
 	for iz in tiefe:
 		for ix in breite:
-			var p := URSPRUNG + Vector2(ix, iz) * ABSTAND
+			var p := ursprung + Vector2(ix, iz) * abstand
 			var h := hoehe(p)
 			hoehen[iz * breite + ix] = h
 			var m := maske_bei(p)
 			maske.set_pixel(ix, iz, m)
 			vorschau.set_pixel(ix, iz, _vorschaufarbe(h, m))
 
-	DirAccess.make_dir_recursive_absolute(ZIELORDNER)
-	var datei := FileAccess.open(ZIELORDNER + "hoehen.r32", FileAccess.WRITE)
+	DirAccess.make_dir_recursive_absolute(zielordner)
+	var datei := FileAccess.open(zielordner + "hoehen.r32", FileAccess.WRITE)
 	datei.store_buffer(hoehen.to_byte_array())
 	datei.close()
 	var info := {
-		"breite": breite, "tiefe": tiefe, "abstand": ABSTAND,
-		"ursprung_x": URSPRUNG.x, "ursprung_z": URSPRUNG.y,
-		"meeresspiegel": MEERESSPIEGEL,
+		"breite": breite, "tiefe": tiefe, "abstand": abstand,
+		"ursprung_x": ursprung.x, "ursprung_z": ursprung.y,
+		"meeresspiegel": wasserspiegel,
 	}
-	datei = FileAccess.open(ZIELORDNER + "hoehen.json", FileAccess.WRITE)
+	datei = FileAccess.open(zielordner + "hoehen.json", FileAccess.WRITE)
 	datei.store_string(JSON.stringify(info, "\t"))
 	datei.close()
-	maske.save_png(ZIELORDNER + "maske.png")
-	vorschau.save_png(ZIELORDNER + "vorschau.png")
+	maske.save_png(zielordner + "maske.png")
+	vorschau.save_png(zielordner + "vorschau.png")
 	return breite * tiefe
 
 
@@ -317,8 +323,8 @@ func _rechteck_abstand(p: Vector2, minimum: Vector2, maximum: Vector2) -> float:
 
 func _vorschaufarbe(h: float, m: Color) -> Color:
 	var farbe: Color
-	if h < MEERESSPIEGEL:
-		farbe = Color(0.25, 0.4, 0.55).darkened(clampf((MEERESSPIEGEL - h) / 20.0, 0.0, 0.6))
+	if h < wasserspiegel:
+		farbe = Color(0.25, 0.4, 0.55).darkened(clampf((wasserspiegel - h) / 20.0, 0.0, 0.6))
 	elif h > 100.0:
 		farbe = Color(0.9, 0.92, 0.95)
 	elif h > 40.0:

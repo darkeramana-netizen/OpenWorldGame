@@ -1,0 +1,36 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Westburg von Riverlock. Wir sind Wachen des Zollherrn, nicht eures Ordens. Das merkt man sich hier besser.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du?",
+			"optionen": [
+				{
+					"text": "Wie komme ich zum Zollherrn?",
+					"weiter": "weg"
+				},
+				{
+					"text": "Und die Ostburg?",
+					"weiter": "ostburg"
+				},
+				{
+					"text": "Nichts weiter.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"weg": {
+			"text": "Durch das Vorwerk in den Mittelbau. Unten im Mittelgeschoss sitzen die Zöllner, die Rampe im östlichen Lager führt hinauf in den Großen Saal. Dort verhandelt er.",
+			"weiter": "fragen"
+		},
+		"ostburg": {
+			"text": "Sieht aus wie unsere, nur andersherum. Von dort geht die Straße nach Valdrenn. Wer von drüben kommt, kommt zuerst dort an und zahlt zuerst dort.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Halt dich an die Wege."
+		}
+	}
+}

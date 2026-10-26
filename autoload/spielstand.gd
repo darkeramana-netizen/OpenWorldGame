@@ -117,6 +117,9 @@ func pruefe_bedingung(bedingung: String) -> bool:
 			var wert := rang if name == "rang" else zaehler_wert(name)
 			if wert < int(stuecke[1]):
 				return false
+		elif teil.begins_with("region="):
+			if Speicher.region != teil.substr(7):
+				return false
 		elif teil.begins_with("abschnitt="):
 			if String(Spielzeit.abschnitt) != teil.substr(10):
 				return false

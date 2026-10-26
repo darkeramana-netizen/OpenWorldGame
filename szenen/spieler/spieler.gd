@@ -17,14 +17,11 @@ const KORDELFARBEN := {
 	"doppelt golden": Color(1.0, 0.8, 0.3),
 }
 
-## Wasser und Rand der Region: Wer hineingerät, wird zur letzten sicheren Stelle zurückgesetzt.
-const MEERESSPIEGEL := -20.0
-const GRENZE_MIN := Vector2(-880.0, -630.0)
-const GRENZE_MAX := Vector2(430.0, 330.0)
-
 ## Das Objekt, das mit E angesprochen wird (Person oder Gegenstand).
 var ziel: Node = null
 var _sichere_position := Vector3.ZERO
+## Wasser und Rand kommen von der Region: Wer hineingerät, wird zur letzten sicheren Stelle zurückgesetzt.
+var _region: Region = null
 
 var _schwerkraft: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -39,9 +36,13 @@ func _ready() -> void:
 	Dialog.beendet.connect(_bei_dialogende)
 	Spielstand.rang_geaendert.connect(func(_r: int) -> void: _zeige_kordel())
 	_zeige_kordel()
-	# Nach dem Laden eines Spielstands an die gespeicherte Stelle setzen.
+	_region = Region.von(self)
+	# Nach dem Laden eines Spielstands an die gespeicherte Stelle setzen, nach einer Reise an den Ankunftsort.
 	if not Speicher.ausstehender_spieler.is_empty():
-		aus_dict(Speicher.ausstehender_spieler)
+		if Speicher.ausstehender_spieler.has("ankunft"):
+			_setze_an_ankunft(Speicher.ausstehender_spieler["ankunft"])
+		else:
+			aus_dict(Speicher.ausstehender_spieler)
 		Speicher.ausstehender_spieler = {}
 	# Nie unter der Geländeoberfläche beginnen, sonst kann die Figur durchfallen.
 	var gelaende := get_tree().get_first_node_in_group("gelaende")
@@ -103,18 +104,29 @@ func _in_wasserdichtem_bau(p: Vector3) -> bool:
 
 
 func _pruefe_grenzen() -> void:
+	if _region == null:
+		return
 	var p := global_position
-	var draussen := p.x < GRENZE_MIN.x or p.z < GRENZE_MIN.y or p.x > GRENZE_MAX.x or p.z > GRENZE_MAX.y
-	var unter_wasser := p.y < MEERESSPIEGEL - 1.0 and not _in_wasserdichtem_bau(p)
+	var r := _region
+	var draussen := p.x < r.grenze_min.x or p.z < r.grenze_min.y or p.x > r.grenze_max.x or p.z > r.grenze_max.y
+	var unter_wasser := p.y < r.wasserspiegel - 1.0 and not _in_wasserdichtem_bau(p)
 	if unter_wasser or draussen:
 		global_position = _sichere_position
 		velocity = Vector3.ZERO
-		if draussen:
-			Spielstand.meldung.emit("Hier endet die Region. Dahinter liegt nur Fels.")
-		else:
-			Spielstand.meldung.emit("Das Wächtermeer ist zu kalt zum Schwimmen.")
-	elif is_on_floor() and p.y > MEERESSPIEGEL + 0.3:
+		Spielstand.meldung.emit(r.grenze_meldung if draussen else r.wasser_meldung)
+	elif is_on_floor() and p.y > r.wasserspiegel + 0.3:
 		_sichere_position = p
+
+
+## Stellt die Figur an einen Ankunftsort (Marker3D in der Gruppe "ankunft") und dreht sie in seine Richtung.
+func _setze_an_ankunft(name: String) -> void:
+	for marke: Node3D in get_tree().get_nodes_in_group("ankunft"):
+		if marke.name == name:
+			global_position = marke.global_position
+			_koerper.rotation.y = marke.global_rotation.y
+			_kamera_drehpunkt.rotation = Vector3(deg_to_rad(-10.0), marke.global_rotation.y, 0.0)
+			return
+	push_warning("Ankunftsort fehlt: " + name)
 
 
 func als_dict() -> Dictionary:

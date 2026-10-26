@@ -23,7 +23,6 @@ extends CanvasLayer
 @onready var _karte_marke: Label = %KarteMarke
 
 ## Lage von Drachenstein auf der Karte (Pixel) und Maßstab: 1 Kartenpixel = 5 m im Spiel.
-const KARTE_URSPRUNG := Vector2(272, 491)
 const KARTE_METER_PRO_PIXEL := 5.0
 
 var _meldung_tween: Tween
@@ -102,7 +101,8 @@ func _process(_delta: float) -> void:
 	if _karte.visible and spieler:
 		# Spielerposition auf der Karte: Pfeil zeigt in Blickrichtung.
 		var p: Vector3 = spieler.global_position
-		var pixel := KARTE_URSPRUNG + Vector2(p.x, p.z) / KARTE_METER_PRO_PIXEL
+		var region := Region.von(self)
+		var pixel := region.karte_ursprung + Vector2(p.x, p.z) / region.karte_meter_pro_pixel
 		var faktor := _karte_bild.size / _karte_bild.texture.get_size()
 		var massstab := minf(faktor.x, faktor.y)
 		var versatz := (_karte_bild.size - _karte_bild.texture.get_size() * massstab) / 2.0

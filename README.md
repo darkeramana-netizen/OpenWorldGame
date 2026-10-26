@@ -12,6 +12,29 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Riverlock: die zweite Region
+
+Riverlock liegt laut Karte rund 190 km Seeweg entfernt am Ostrand von Sorrowland. Deshalb ist es eine **eigene Region** mit eigenem Gelände, der **Valnschlucht**. Die Valn fließt von Norden nach Süden, dahinter steigen die Felswände an. Gebaut ist Riverlock nach deinem Grundriss, ohne Drehung.
+
+- **Hinkommen:** Als Wächter (nach Akt I) bringt dich die **Lotsin Wenna Kroll** vom Südkai in Drachenkai nach Riverlock. Die Fahrt dauert gut zwei Tage Spielzeit, und am Ende kommt eine Blende. Zurück geht es ebenso mit ihr. Als Anwärter nimmt sie dich nicht mit.
+- **Westburg (A) und Ostburg (C):**
+  - Ringmauern mit runden Türmen, Äußere Toranlagen (1, 23) und Vorwerke (5, 27) zum Mittelbau.
+  - In beiden Burgen: Bergfried, Großer Saal, Küchen, Kapelle, Innere Wache, Ställe, Waffenhof und Torhof.
+  - Von der Ostburg geht die Straße nach Valdrenn ab.
+- **Mittelbau über der Valn (B), drei Geschosse, alle begehbar, über Rampen verbunden:**
+  - **unten die Hafenhalle (16):** Hier kommst du an. Kais, Stege und Boote, die Schiffsdurchfahrt durch fünf Bögen (15).
+  - **in der Mitte Zoll und Kontrolle:** Lager, Wachstube und Zoll, durch sie führt der Weg vom Westlichen zum Östlichen Tor (14, 22).
+  - **oben der Große Saal (20)** mit dem Ratstisch, rundum der Wehrgang (21).
+  - Kettensperren von den Tortürmen zu den Ufern.
+- **Personen:**
+  - **Zollherr Hendrik Falk** (aus der Lore) und der **Beobachter des Ordens** im Großen Saal.
+  - eine Zöllnerin im Mittelgeschoss, ein Torwächter an der Westburg, die Lotsin in der Hafenhalle.
+- **Karte (M):** Der Pfeil steht in Riverlock auf Riverlock.
+
+| Riverlock von Süden | Von oben (Norden oben) | Hafenhalle |
+|---|---|---|
+| ![Riverlock](docs/bilder/region-riverlock.png) | ![Draufsicht](docs/bilder/riverlock-draufsicht.png) | ![Hafenhalle](docs/bilder/riverlock-hafenhalle.png) |
+
 ### Gravemarch nach Grundriss
 
 Gebaut nach deinem Grundriss der Talburg, um 180° gedreht: Das **Äußere Torhaus (A)** zeigt nach Nordosten zum Weg aus Drachenstein, die **Kernburg (G)** liegt im Süden.
@@ -171,7 +194,7 @@ Dazu kommen diese Systeme:
 | T | eine Stunde vorspulen (praktisch für Nachtwachen) |
 | Esc | Pausemenü: Speichern, Laden, Hauptmenü |
 | F5 / F9 | schnell speichern / schnell laden (im laufenden Spiel) |
-| F10 | Entwicklermenü (nur beim Start aus dem Editor): zu Orten springen, Uhrzeit, alle Tore öffnen, Akt I überspringen |
+| F10 | Entwicklermenü (nur beim Start aus dem Editor): zu Orten springen, Uhrzeit, in die andere Region reisen, alle Tore öffnen, Akt I überspringen |
 
 Den Wehrgang erreichst du über die Holzrampe an der Südmauer, westlich vom Tor. Von dort führt die Westmauer zur zweiten Rampe hinauf auf den Wachturm in der Nordwestecke.
 
@@ -183,7 +206,7 @@ Wege durch die Region: Vom Tor des Hofs führt der Weg nach Osten über den Mark
 - **Pausemenü (Esc):** drei Speicherplätze, Laden aus allen Plätzen.
 - **Automatisch** wird nach jedem Rangwechsel und jedem Zeitsprung gespeichert.
 - **Schnellspeichern** mit F5, schnell laden mit F9.
-- Gespeichert werden Name, Rang, Akte, Flags, Zähler, Ziel, Uhrzeit und Jahr, Position und Blickrichtung sowie aufgehobene Gegenstände.
+- Gespeichert werden Name, Rang, Akte, Flags, Zähler, Ziel, Uhrzeit und Jahr, die Region, Position und Blickrichtung sowie aufgehobene Gegenstände.
 - Die Dateien liegen als lesbares JSON im Godot-Benutzerordner unter `speicher/`. Unter Windows ist das `%APPDATA%\Godot\app_userdata\Sorrowland_ In Silentio\speicher\`. In Godot öffnest du den Ordner über **Projekt → Benutzerdatenordner öffnen**.
 
 ## Projektaufbau
@@ -194,14 +217,16 @@ autoload/                  immer geladene Spielsysteme
   spielzeit.gd             Uhrzeit, Jahr, Tagesabschnitte, Stille-Stunde, Zeitsprünge
   spielstand.gd            Name, Rang, Akte, Verweise, Flags, Zähler, Ziel, Bedingungen
   dialog.gd                liest und führt die Gespräche aus daten/dialoge/
-  speicher.gd              Speichern, Laden, neues Spiel, Szenenwechsel
+  speicher.gd              Speichern, Laden, neues Spiel, Reisen zwischen Regionen
 szenen/
   oberflaeche/hauptmenue.tscn  Startszene
   oberflaeche/pausemenue.tscn  Esc-Menü
   oberflaeche/hud.tscn     Uhr, Ziel, Hinweise, Gesprächsfenster, Akte, Blenden
-  welt/region_drachenstein.tscn  die Region: Gelände, Meer, Burgen, Brücken, Orte, Personen
+  welt/region_drachenstein.tscn  Region Drachenstein: Gelände, Meer, Burgen, Brücken, Orte, Personen
+  welt/region_riverlock.tscn     Region Riverlock: Valnschlucht, Westburg, Mittelbau, Ostburg
+  welt/region.gd           Wurzel einer Region: Wasser, Rand, Lage auf der Karte
+  welt/gelaende.gd         baut Gelände und Kollision aus daten/gelaende*/
   welt/burg_hof.tscn       der Hof aus Akt I mit seinen Personen und Posten
-  welt/gelaende.gd         baut Gelände und Kollision aus daten/gelaende/
   welt/gelaende.gdshader   Farben des Geländes: Strand, Gras, Fels, Schnee, Wege, Sumpf
   welt/wasser.gdshader     das Wächtermeer
   welt/auf_gelaende.gd     setzt Häuser und Personen auf die Geländehöhe
@@ -219,9 +244,11 @@ szenen/
   figuren/bruchstein.tscn  Gegenstand zum Aufheben
   figuren/werkbank.tscn    Arbeitsstelle (kostet Spielzeit)
 daten/dialoge/             Gespräche als JSON-Dateien
-daten/gelaende/            Höhen (hoehen.r32), Wege und Sumpf (maske.png), Vorschau
+daten/gelaende/            Höhen (hoehen.r32), Wege und Sumpf (maske.png), Vorschau der Region Drachenstein
+daten/gelaende_riverlock/  dasselbe für Riverlock
 daten/karten/              die Karte von Sorrowland für die Taste M
-werkzeuge/                 Gelände-Generator (in Godot ausführbar)
+werkzeuge/                 Gelände-Generatoren (in Godot ausführbar)
+werkzeuge/bau/             Bauskripte (Python), aus denen die Regionsszenen entstehen
 tests/                     automatische Tests
 docs/                      Lore-Bibel, Spielkonzept, Karten, Bilder (von Godot ignoriert)
 ```
@@ -238,15 +265,28 @@ docs/                      Lore-Bibel, Spielkonzept, Karten, Bilder (von Godot i
    - optional **Sichtbar Wenn**, eine Bedingung, solange die Person da ist
 4. Eine Datei `daten/dialoge/<dialog_id>.json` anlegen (siehe unten).
 
+Die beiden Regionsszenen werden aus den Bauskripten erzeugt (siehe „Die Regionsszenen neu bauen“). Eine Person, die du dort im Editor hinzufügst, bleibt nur bis zum nächsten Neubau. Soll sie dauerhaft bleiben, gehört sie in das Bauskript der Region.
+
 ## Das Gelände verändern
 
-Das Gelände wird aus `werkzeuge/gelaende_erzeuger.gd` erzeugt. Dort stehen die Lage der Orte, die Wege, das Gebirge, der Felssporn, die Küste und die Inseln, jeweils mit Kommentar.
+Das Gelände von Drachenstein wird aus `werkzeuge/gelaende_erzeuger.gd` erzeugt, das von Riverlock aus `werkzeuge/gelaende_riverlock.gd`. Dort stehen die Lage der Orte, die Wege, das Gebirge, der Felssporn, die Küste und die Inseln, jeweils mit Kommentar.
 
 1. Werte im Erzeuger ändern, z. B. einen Weg oder die Höhe des Felssporns.
 2. `werkzeuge/gelaende_erzeugen.gd` öffnen und **Datei → Ausführen** wählen (Strg+Umschalt+X).
 3. Die Szene `region_drachenstein.tscn` neu öffnen.
 
-`daten/gelaende/vorschau.png` zeigt das Ergebnis von oben. Signaltürme und Personen unter einem Knoten mit `auf_gelaende.gd` (Signaltuerme, PersonenAmBoden) folgen der neuen Geländehöhe von selbst. Die Bauten von Drachenstein (Ringmauer, Stadthäuser, Kirche) haben feste Höhen, die beim Bau der Szene aus dem Gelände gelesen wurden. Wer das Gelände um Drachenstein ändert, verschiebt sie im Editor mit oder sagt mir Bescheid, dann baue ich die Szene neu.
+`daten/gelaende/vorschau.png` (und `daten/gelaende_riverlock/vorschau.png`) zeigt das Ergebnis von oben. Signaltürme und Personen unter einem Knoten mit `auf_gelaende.gd` (Signaltuerme, PersonenAmBoden) folgen der neuen Geländehöhe von selbst. Die Bauten von Drachenstein (Ringmauer, Stadthäuser, Kirche) haben feste Höhen, die beim Bau der Szene aus dem Gelände gelesen wurden. Wer das Gelände um Drachenstein ändert, verschiebt sie im Editor mit oder baut die Szene neu (siehe unten).
+
+## Die Regionsszenen neu bauen
+
+Die großen Bauten (Burgen nach Grundriss, Ringmauern, Stadthäuser, Mittelbau) entstehen nicht von Hand, sondern aus Python-Skripten in `werkzeuge/bau/`. Sie schreiben die Szenendateien neu:
+
+```
+python3 werkzeuge/bau/region_drachenstein.py   # schreibt szenen/welt/region_drachenstein.tscn
+python3 werkzeuge/bau/region_riverlock.py      # schreibt szenen/welt/region_riverlock.tscn
+```
+
+Dafür braucht es Python 3 mit `numpy`. `grundlage.py` enthält die gemeinsamen Bausteine (Mauerzug, Tor, Raum, Rampe ...), die `teil_*.py` die einzelnen Burgen. Die Skripte lesen die Geländehöhen, also zuerst das Gelände erzeugen, dann bauen. **Achtung:** Was du in diesen beiden Szenen im Editor änderst, ist nach dem Neubau weg. Größere Änderungen gehören deshalb in die Skripte.
 
 ## Einen Turm bauen
 
@@ -319,18 +359,20 @@ Jede Datei hat Knoten. Begonnen wird beim Knoten `start`, außer ein Eintrag in 
 | `blende` | schwarze Blende mit Text, danach geht es weiter |
 | `akt_ende` | lange Blende zum Ende eines Akts |
 | `spielende` | Blende, danach zurück ins Hauptmenü |
+| `reise` | `{ "ziel": "riverlock", "ankunft": "von_drachenstein", "stunden": 54, "text": "..." }`: Am Ende des Gesprächs geht es in die andere Region, an den Marker mit diesem Namen (Gruppe `ankunft`), die Zeit läuft weiter, dann kommt die Blende mit dem Text |
 
-**Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `rang>=2`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht). Mehrere werden durch Komma getrennt und müssen alle gelten.
+**Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `rang>=2`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht), `region=riverlock` (die Region, in der man gerade ist). Mehrere werden durch Komma getrennt und müssen alle gelten.
 
 ## Testen
 
-Vier automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
+Fünf automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
 
 | Test | Prüft |
 |---|---|
 | `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
 | `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
 | `tests/test_innen.gd` | die Innenräume, 25 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü, in Gravemarch Donjon, Archivarin und Scheintore |
+| `tests/test_riverlock.gd` | Riverlock und das Reisen, 21 Punkte: Lotsin lehnt Anwärter ab, Überfahrt hin und zurück mit Zeitverlust, Rampen durch alle drei Geschosse des Mittelbaus, Zollherr in der Akte, Personen, Wege durch beide Burgen bis vor die Tore, Wasser, Speichern und Laden in Riverlock, Reise über das Entwicklermenü |
 | `tests/test_region.gd` | die Region, 30 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, die Wege zur Oberer Burg, zum Kai und durchs Vorburgtor, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
 
 ```
@@ -338,10 +380,11 @@ godot --headless --path . --script res://tests/test_akt1.gd
 godot --headless --path . --script res://tests/test_eingabe.gd
 godot --headless --path . --script res://tests/test_region.gd
 godot --headless --path . --script res://tests/test_innen.gd
+godot --headless --path . --script res://tests/test_riverlock.gd
 ```
 
 Am Ende steht jeweils `Fehler: 0`, wenn alles stimmt.
 
 ## Nächste Schritte
 
-Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Offen in Stufe 3 sind Riverlock und Ashenveil (die Grundrisse liegen vor, sie brauchen aber eigene Regionen) sowie echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.
+Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Offen in Stufe 3 sind Ashenveil (Grundriss liegt vor, braucht eine eigene Region im Nebelmoor), die Wege über Land zwischen den Regionen sowie echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.

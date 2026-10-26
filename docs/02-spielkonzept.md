@@ -114,7 +114,7 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 | **0 – Lernen** | Godot installieren, ein offizielles 3D-Einsteigertutorial durcharbeiten | 2–4 Wochen |
 | **1 – Graubox „Die Schwelle“** ✅ | Spielfigur, Kamera, ein Hof aus Klötzen, Tageszyklus mit Stille-Stunde, drei NPCs mit Dialog | 1–2 Monate |
 | **2 – Akt I spielbar** ✅ | Haus der Schwelle in Drachenstein, Knappenprüfung, Nachtwache, Eid, Namensstein auf der Ordenswand, Speichern und Laden | 3–6 Monate |
-| **3 – Die erste Region** 🔶 | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände. Begehbar als Graybox, Bergfried und Gravecrest mit Innenräumen. Drachenstein (Hafen im Osten) und Gravemarch nach Grundriss. Offen: Riverlock, Ashenveil, Modelle | 6+ Monate |
+| **3 – Die erste Region** 🔶 | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände. Begehbar als Graybox, Bergfried und Gravecrest mit Innenräumen. Drachenstein (Hafen im Osten) und Gravemarch nach Grundriss. Riverlock als zweite Region (Valnschlucht), per Schiff mit der Lotsin erreichbar. Offen: Ashenveil, Landwege, Modelle | 6+ Monate |
 | **4 – Systeme** | Kampf, Ansehen, Akte und Verfahren, Alarmstufen | laufend |
 | **5 – Das ganze Becken** | Ashenveil, Nord- und Südstraße, Riverlock, Akt II | später |
 | **6 – Akt III** | Ende der Stille, Kriegszustand, Enden | später |
@@ -161,6 +161,9 @@ Entscheidungen beim Bau von Akt I:
 | Grete Lohm | Händlerin am Marktplatz (Bürgerin, kein Ordensmitglied) |
 | Esme Rauh | Wächterin an der Brückenpforte von Gravemarch |
 | Ysolde Brack | Archivarin in der Bibliothek von Gravemarch |
+| Joost Mahr | Torwächter der Westburg von Riverlock (Wache des Zollherrn) |
+| Mette Ruhl | Zöllnerin im Mittelbau von Riverlock |
+| Aldo Venn | Beobachter des Ordens in Riverlock |
 | Ulf Haskel | Kammbrecher an der Zugbrücke von Gravecrest |
 | Hollmoor | Bezirksfestung |
 | Kellbrück | abgebranntes Heimatdorf (Herkunftsoption) |

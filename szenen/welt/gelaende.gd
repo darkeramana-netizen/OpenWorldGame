@@ -1,16 +1,17 @@
 @tool
 extends Node3D
-## Lädt die Höhendaten aus daten/gelaende/ und baut daraus Gelände und Kollision.
+## Lädt die Höhendaten (daten/gelaende/ oder der Ordner einer anderen Region) und baut daraus Gelände und Kollision.
 ## Läuft auch im Editor (@tool), damit man das Gelände beim Bauen sieht.
 ## Neu erzeugen: werkzeuge/gelaende_erzeugen.gd ausführen.
 
-const DATEN := "res://daten/gelaende/"
 ## Quadrate pro Kachel. Kleinere Kacheln = feineres Ausblenden außerhalb des Blickfelds.
 const KACHEL := 64
 ## Bis zu dieser Höhe reichen die Wände am Rand des Geländes hinunter.
 const RAND_UNTEN := -45.0
 
 @export var material: Material
+## Ordner mit hoehen.r32 und hoehen.json, für jede Region ein eigener.
+@export_dir var daten: String = "res://daten/gelaende/"
 
 var breite: int = 0
 var tiefe: int = 0
@@ -54,7 +55,7 @@ func _h(ix: int, iz: int) -> float:
 
 
 func _lade() -> bool:
-	var info: Variant = JSON.parse_string(FileAccess.get_file_as_string(DATEN + "hoehen.json"))
+	var info: Variant = JSON.parse_string(FileAccess.get_file_as_string(daten.path_join("hoehen.json")))
 	if not info is Dictionary:
 		push_error("Geländedaten fehlen. Bitte werkzeuge/gelaende_erzeugen.gd ausführen.")
 		return false
@@ -63,7 +64,7 @@ func _lade() -> bool:
 	abstand = float(info["abstand"])
 	ursprung = Vector2(info["ursprung_x"], info["ursprung_z"])
 	meeresspiegel = float(info["meeresspiegel"])
-	_hoehen = FileAccess.get_file_as_bytes(DATEN + "hoehen.r32").to_float32_array()
+	_hoehen = FileAccess.get_file_as_bytes(daten.path_join("hoehen.r32")).to_float32_array()
 	return _hoehen.size() == breite * tiefe
 
 
