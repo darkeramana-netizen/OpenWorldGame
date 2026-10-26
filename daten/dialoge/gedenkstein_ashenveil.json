@@ -1,0 +1,14 @@
+{
+	"knoten": {
+		"start": {
+			"sprecher": "Gedenkstein",
+			"text": "In den Stein ist ein Turm mit Flügeln und Halbmond gemeißelt, das alte Wappen aus der Zeit, als der Orden noch Ordnung von Sorrow hieß. Darunter steht:",
+			"weiter": "inschrift"
+		},
+		"inschrift": {
+			"sprecher": "Gedenkstein",
+			"text": "Im Jahr 1065 öffnete der Kastellan Odric Hale den Nebeneingang. Komtur Hedric Vane befahl den Sieg durch Asche. Ashenveil brannte und wurde neu erbaut. Wir schweigen für die, die in dieser Nacht starben. Im Sumpf geboren, im Sumpf unbesiegt.",
+			"akte": "Kapelle der Stille in Ashenveil: Gedenkstein für den Verrat von 1065 (Kastellan Odric Hale) und den Sieg durch Asche."
+		}
+	}
+}

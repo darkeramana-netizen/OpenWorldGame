@@ -1,0 +1,45 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Komtur Arvid Rask. Willkommen in Ashenveil, Wächter. Im Sumpf geboren, im Sumpf unbesiegt. So steht es über dem Tor, und so meinen wir es.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du wissen?",
+			"optionen": [
+				{
+					"text": "Was ist 1065 hier geschehen?",
+					"weiter": "verrat"
+				},
+				{
+					"text": "Was hat der Orden daraus gelernt?",
+					"weiter": "lehren"
+				},
+				{
+					"text": "Wozu der überdachte Hof?",
+					"weiter": "hof"
+				},
+				{
+					"text": "Ich störe nicht länger.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"verrat": {
+			"text": "Der Kastellan Odric Hale war ein Rufer. Er öffnete nachts den Nebeneingang im Osten, und Isarn Holts Leute kamen herein. Komtur Hedric Vane befahl den Sieg durch Asche. Die Burg brannte. Was du heute siehst, wurde um 1080 neu gebaut, mit dem Unterbau darunter.",
+			"weiter": "fragen"
+		},
+		"lehren": {
+			"text": "Schlüsselposten werden alle sieben Jahre versetzt, damit niemand zu lange an einer Tür sitzt. Nebeneingänge werden nachts doppelt bewacht, von zwei verschiedenen Wachgruppen. Und wer eintritt, braucht einen Bürgen. Das alles haben wir mit einer Burg bezahlt.",
+			"akte": "Lehren aus Ashenveil: Schlüsselposten alle sieben Jahre versetzen, Nebeneingänge nachts doppelt bewachen (zwei Wachgruppen), Bürgschaft.",
+			"weiter": "fragen"
+		},
+		"hof": {
+			"text": "Gegen Wind, Regen und Feuer. Hier wird bei jedem Wetter geritten, angetreten und ausgegeben. Und unter dem Hof liegt die Kapelle der Stille. Geh hinunter, wenn du den Stein lesen willst.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Halt dich an die Wege, auch innerhalb der Mauern."
+		}
+	}
+}

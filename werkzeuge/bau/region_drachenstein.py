@@ -70,6 +70,9 @@ person("ArchivarinGravemarch", "Personen", *ARCHIVARIN, "Archivarin Ysolde Brack
 person("TorwacheGravecrest", "Personen", -608, 70, -359, "Kammbrecher Ulf Haskel", "torwache_gravecrest", 2, "0.2, 0.2, 0.22, 1", gier=-90)
 N("PersonenAmBoden", "Node3D", "Personen", '''script = ExtResource("11_auf_gelaende")
 gelaende = NodePath("../../Gelaende")''', extra='node_paths=PackedStringArray("gelaende")')
+# Reiterin aus Ashenveil vor dem Vorburgtor: nimmt Wächter über den Küstenweg mit
+person("Reiterin", "Personen/PersonenAmBoden", -22, 0, 92, "Reiterin Ilka Sand", "reiterin_ashenveil", 2, "0.25, 0.22, 0.18, 1", gier=-54)
+pferd("PferdReiterin", "Personen", -25.5, round(H(-25.5, 94), 2), 94, 36)
 person("Haendlerin", "Personen/PersonenAmBoden", 64, 0, -4, "Händlerin Grete Lohm", "haendlerin", 0, "0.45, 0.3, 0.2, 1")
 
 
@@ -88,6 +91,7 @@ for name, x, y, z in [("Hof der Burgfeste", 0, 0.5, 20), ("Vor dem Tor", 0, 0.5,
 # ---------- Ankunft per Schiff, Spieler und Oberfläche ----------
 N("Ankuenfte", "Node3D", ".")
 N("von_riverlock", "Marker3D", "Ankuenfte", T(125, -17.5, 23), extra='groups=["ankunft"]')
+N("von_ashenveil", "Marker3D", "Ankuenfte", T(-18.5, round(H(-18.5, 89) + 0.2, 2), 89, -53.4), extra='groups=["ankunft"]')
 spieler_und_oberflaeche(0, 0, 46)
 
 # Person "kordel": person.tscn nutzt KEINE=0, SCHWARZ=1, GRAU=2, GOLDEN=3

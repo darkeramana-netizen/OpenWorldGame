@@ -200,7 +200,7 @@ def gebaeude_lokal(name, eltern, x, z, sx, sz, hoehe, mat="Material_hell", gier=
 
 
 def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", wasser_hoehe=-20,
-                 wasser_groesse=(2600, 2200), wasser_parameter=""):
+                 wasser_groesse=(2600, 2200), wasser_parameter="", nebel=0.0015, gelaende_parameter=""):
     """Gemeinsame Ressourcen und die Wurzel einer Region: Himmel, Licht, Gelände und Wasserfläche."""
     E("Script", "res://szenen/welt/tageslicht.gd", "1_tageslicht")
     E("Script", "res://szenen/welt/gelaende.gd", "2_gelaende")
@@ -228,17 +228,21 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     ground_horizon_color = Color(0.68, 0.68, 0.66, 1)''')
     S('''[sub_resource type="Sky" id="Himmel"]
     sky_material = SubResource("Himmel_material")''')
-    S('''[sub_resource type="Environment" id="Umgebung"]
+    S(f'''[sub_resource type="Environment" id="Umgebung"]
     background_mode = 2
     sky = SubResource("Himmel")
     ambient_light_source = 3
     tonemap_mode = 2
     fog_enabled = true
     fog_light_color = Color(0.62, 0.64, 0.68, 1)
-    fog_density = 0.0015''')
-    S('''[sub_resource type="ShaderMaterial" id="Material_gelaende"]
+    fog_density = {nebel}''')
+    groesse = ((HOEHEN["breite"] - 1) * HOEHEN["abstand"], (HOEHEN["tiefe"] - 1) * HOEHEN["abstand"])
+    S(f'''[sub_resource type="ShaderMaterial" id="Material_gelaende"]
     shader = ExtResource("8_gelaende_shader")
-    shader_parameter/maske = ExtResource("9_maske")''')
+    shader_parameter/maske = ExtResource("9_maske")
+    shader_parameter/welt_ursprung = Vector2({HOEHEN["ursprung_x"]}, {HOEHEN["ursprung_z"]})
+    shader_parameter/welt_groesse = Vector2({groesse[0]}, {groesse[1]})
+    shader_parameter/meeresspiegel = {HOEHEN["meeresspiegel"]}{gelaende_parameter}''')
     S(f'''[sub_resource type="ShaderMaterial" id="Material_wasser"]
     shader = ExtResource("10_wasser"){wasser_parameter}''')
     S(f'''[sub_resource type="PlaneMesh" id="Mesh_meer"]
@@ -280,3 +284,34 @@ def spieler_und_oberflaeche(x, y, z):
     N("HUD", None, ".", 'spieler = NodePath("../Spieler")', instanz="6_hud", extra='node_paths=PackedStringArray("spieler")')
     N("Pausemenue", None, ".", "", instanz="7_pause")
     N("Entwickler", None, ".", "", instanz="17_entwickler")
+
+
+def rampe(name, eltern, a, b, breite, dicke=0.5, mat="Material_holz"):
+    """Schräge, begehbare Rampe von a nach b (je x, y, z). Die Oberfläche läuft genau durch a und b."""
+    dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
+    waag = math.hypot(dx, dz)
+    neigung = math.atan2(dy, waag)
+    ux, uz = dx / waag, dz / waag
+    mx, my, mz = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2
+    # Mitte des Quaders liegt eine halbe Dicke unter der Oberfläche, senkrecht zur Neigung.
+    mx += ux * math.sin(neigung) * dicke / 2
+    mz += uz * math.sin(neigung) * dicke / 2
+    my -= math.cos(neigung) * dicke / 2
+    N(name, "CSGBox3D", eltern, f"""{T_kipp(round(mx, 3), round(my, 3), round(mz, 3), gier_zu(ux, uz), math.degrees(neigung))}
+use_collision = true
+size = Vector3({round(math.hypot(waag, dy) + 0.2, 2)}, {dicke}, {breite})
+material = SubResource("{mat}")""")
+
+def licht(name, eltern, x, y, z, reichweite=14.0):
+    N(name, "OmniLight3D", eltern, f"{T(x, y, z)}\nlight_color = Color(1, 0.82, 0.6, 1)\nomni_range = {reichweite}")
+
+
+def pferd(name, eltern, x, y, z, gier=0.0, farbe="Material_holz"):
+    """Einfaches Pferd aus Quadern (Rumpf, Hals mit Kopf, vier Beine), Kopf in Richtung der lokalen x-Achse."""
+    N(name, "Node3D", eltern, T(x, y, z, gier))
+    pfad = f"{eltern}/{name}"
+    box("Rumpf", pfad, 0, 1.35, 0, 2.1, 0.9, 0.8, farbe)
+    box("Hals", pfad, 1.15, 1.95, 0, 0.5, 0.9, 0.4, farbe, kollision=False)
+    box("Kopf", pfad, 1.5, 2.35, 0, 0.7, 0.35, 0.35, farbe, kollision=False)
+    for k, (bx, bz) in enumerate([(-0.8, -0.28), (-0.8, 0.28), (0.8, -0.28), (0.8, 0.28)]):
+        box(f"Bein{k}", pfad, bx, 0.45, bz, 0.2, 0.9, 0.2, farbe, kollision=False)

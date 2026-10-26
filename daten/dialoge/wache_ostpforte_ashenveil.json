@@ -1,0 +1,36 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Ostpforte. Wir sind zwei, aus zwei verschiedenen Wachgruppen. Einer allein öffnet hier gar nichts.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Noch etwas?",
+			"optionen": [
+				{
+					"text": "Warum zwei Gruppen?",
+					"weiter": "warum"
+				},
+				{
+					"text": "Wohin führt der Pfad draußen?",
+					"weiter": "pfad"
+				},
+				{
+					"text": "Gute Wache.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"warum": {
+			"text": "Wegen 1065. Ein einziger Mann hat damals diese Pforte geöffnet. Seitdem müssen sich zwei, die sich nicht aussuchen, wer neben ihnen steht, einig sein. Und keiner von uns steht länger als sieben Jahre hier.",
+			"weiter": "fragen"
+		},
+		"pfad": {
+			"text": "Nach Osten, durch den Sumpf zur Südstraße. Von dort sind es noch hundertachtzig Kilometer bis Riverlock.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Gute Wache."
+		}
+	}
+}

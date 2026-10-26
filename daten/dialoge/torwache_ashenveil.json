@@ -1,0 +1,36 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Halt. Wachführer Henk Brask, Haupttor von Ashenveil. Das ist der einzige Weg durch die Sümpfe. Wer ihn verlässt, kommt nicht wieder.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du?",
+			"optionen": [
+				{
+					"text": "Lass mich hinein.",
+					"weiter": "hinein"
+				},
+				{
+					"text": "Gibt es keinen anderen Weg?",
+					"weiter": "andere"
+				},
+				{
+					"text": "Nichts weiter.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"hinein": {
+			"text": "Wächter des Ordens dürfen durch, das Fallgitter ist für dich oben. Alle anderen warten hier, bis der Kastellan sie sehen will.",
+			"weiter": "fragen"
+		},
+		"andere": {
+			"text": "Den Nebeneingang im Osten. Den benutzt nachts niemand, ohne dass zwei Wachgruppen es wissen. Und was unter der Burg liegt, geht dich nichts an.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Bleib auf dem Damm."
+		}
+	}
+}

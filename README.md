@@ -12,6 +12,32 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Ashenveil: die dritte Region
+
+Ashenveil, die Reiter- und Rüstburg im **Nebelmoor**, ist eine eigene Region mit dichtem Nebel. Gebaut ist sie nach deinem Grundriss, ohne Drehung.
+
+- **Hinkommen:**
+  - Vor dem Vorburgtor von Drachenstein wartet die **Reiterin Ilka Sand** aus Ashenveil. Sie nimmt Wächter über den Küstenweg mit: anderthalb Tage Spielzeit, dann eine Blende. Zurück geht es ebenso mit ihr. Anwärter nimmt sie nicht mit.
+  - Du kommst am Anfang des Damms an.
+- **Nur ein Weg:** Der Damm führt durch den Sumpf zur Zugbrücke am Haupttor. Wer ihn verlässt und in einen Tümpel gerät, wird zurückgesetzt: „Der Morast verschluckt jeden, der den Weg verlässt.“
+- **Die Burg nach Plan:**
+  - Ecktürme 27–30 und die Offenen Gänge entlang der Mauern
+  - Torhaus (14) mit Fallgitter, das nur für Wächter oben ist
+  - Westtrakt: Große Reithalle (1) und Marstall (2) mit Pferden, beide begehbar; dazu Futterkammern (3–5) und Heuboden (6)
+  - Nordreihe: Sattlerei, Waffen- und Zeugkammer, Waffenschmiede (7–9, 19)
+  - Mitte: der Überdachte Große Innenhof (10)
+  - Osttrakt: Rüstkammern (11, 20), Schmieden (16, 21), Mannschaftsunterkünfte (22) und Kernspeicher (23)
+  - Südtrakt: Küche (12), Vorratslager (13) und Waffenlager (15)
+- **Nebeneingang im Osten:** Er hat eine Zugbrücke, ist aber verriegelt. Zwei Wachen aus zwei verschiedenen Wachgruppen stehen dort, eine Lehre aus dem Verrat von 1065.
+- **Unterirdisch:**
+  - Vom Innenhof führt eine Rampe hinunter zur **Kapelle der Stille (A)**. Dort steht ein Gedenkstein für den Verrat von 1065.
+  - Von der Kapelle läuft der **Fluchttunnel (B)** unter Mauer und Graben hindurch bis zu einem verdeckten Ausgang im Moor.
+- **Personen:** Komtur Arvid Rask im Innenhof (erzählt von 1065 und den Lehren daraus), Wachführer Henk Brask am Haupttor, die beiden Wachen am Nebeneingang und die Reiterin.
+
+| Ashenveil vom Damm | Von oben (Norden oben) | Fluchttunnel |
+|---|---|---|
+| ![Ashenveil](docs/bilder/region-ashenveil.png) | ![Draufsicht](docs/bilder/ashenveil-draufsicht.png) | ![Fluchttunnel](docs/bilder/ashenveil-fluchttunnel.png) |
+
 ### Riverlock: die zweite Region
 
 Riverlock liegt laut Karte rund 190 km Seeweg entfernt am Ostrand von Sorrowland. Deshalb ist es eine **eigene Region** mit eigenem Gelände, der **Valnschlucht**. Die Valn fließt von Norden nach Süden, dahinter steigen die Felswände an. Gebaut ist Riverlock nach deinem Grundriss, ohne Drehung.
@@ -224,6 +250,8 @@ szenen/
   oberflaeche/hud.tscn     Uhr, Ziel, Hinweise, Gesprächsfenster, Akte, Blenden
   welt/region_drachenstein.tscn  Region Drachenstein: Gelände, Meer, Burgen, Brücken, Orte, Personen
   welt/region_riverlock.tscn     Region Riverlock: Valnschlucht, Westburg, Mittelbau, Ostburg
+  welt/region_ashenveil.tscn     Region Ashenveil: Nebelmoor, Burg, Kapelle der Stille, Fluchttunnel
+  welt/wasserdicht.gd      Bereich unter dem Wasserspiegel, in dem niemand zurückgesetzt wird (Keller, Tunnel)
   welt/region.gd           Wurzel einer Region: Wasser, Rand, Lage auf der Karte
   welt/gelaende.gd         baut Gelände und Kollision aus daten/gelaende*/
   welt/burg_hof.tscn       der Hof aus Akt I mit seinen Personen und Posten
@@ -246,6 +274,7 @@ szenen/
 daten/dialoge/             Gespräche als JSON-Dateien
 daten/gelaende/            Höhen (hoehen.r32), Wege und Sumpf (maske.png), Vorschau der Region Drachenstein
 daten/gelaende_riverlock/  dasselbe für Riverlock
+daten/gelaende_ashenveil/  dasselbe für Ashenveil
 daten/karten/              die Karte von Sorrowland für die Taste M
 werkzeuge/                 Gelände-Generatoren (in Godot ausführbar)
 werkzeuge/bau/             Bauskripte (Python), aus denen die Regionsszenen entstehen
@@ -265,11 +294,11 @@ docs/                      Lore-Bibel, Spielkonzept, Karten, Bilder (von Godot i
    - optional **Sichtbar Wenn**, eine Bedingung, solange die Person da ist
 4. Eine Datei `daten/dialoge/<dialog_id>.json` anlegen (siehe unten).
 
-Die beiden Regionsszenen werden aus den Bauskripten erzeugt (siehe „Die Regionsszenen neu bauen“). Eine Person, die du dort im Editor hinzufügst, bleibt nur bis zum nächsten Neubau. Soll sie dauerhaft bleiben, gehört sie in das Bauskript der Region.
+Die Regionsszenen werden aus den Bauskripten erzeugt (siehe „Die Regionsszenen neu bauen“). Eine Person, die du dort im Editor hinzufügst, bleibt nur bis zum nächsten Neubau. Soll sie dauerhaft bleiben, gehört sie in das Bauskript der Region.
 
 ## Das Gelände verändern
 
-Das Gelände von Drachenstein wird aus `werkzeuge/gelaende_erzeuger.gd` erzeugt, das von Riverlock aus `werkzeuge/gelaende_riverlock.gd`. Dort stehen die Lage der Orte, die Wege, das Gebirge, der Felssporn, die Küste und die Inseln, jeweils mit Kommentar.
+Das Gelände von Drachenstein wird aus `werkzeuge/gelaende_erzeuger.gd` erzeugt, das von Riverlock aus `werkzeuge/gelaende_riverlock.gd`, das von Ashenveil aus `werkzeuge/gelaende_ashenveil.gd`. `werkzeuge/gelaende_erzeugen.gd` erzeugt alle drei. Dort stehen die Lage der Orte, die Wege, das Gebirge, der Felssporn, die Küste und die Inseln, jeweils mit Kommentar.
 
 1. Werte im Erzeuger ändern, z. B. einen Weg oder die Höhe des Felssporns.
 2. `werkzeuge/gelaende_erzeugen.gd` öffnen und **Datei → Ausführen** wählen (Strg+Umschalt+X).
@@ -284,9 +313,10 @@ Die großen Bauten (Burgen nach Grundriss, Ringmauern, Stadthäuser, Mittelbau) 
 ```
 python3 werkzeuge/bau/region_drachenstein.py   # schreibt szenen/welt/region_drachenstein.tscn
 python3 werkzeuge/bau/region_riverlock.py      # schreibt szenen/welt/region_riverlock.tscn
+python3 werkzeuge/bau/region_ashenveil.py      # schreibt szenen/welt/region_ashenveil.tscn
 ```
 
-Dafür braucht es Python 3 mit `numpy`. `grundlage.py` enthält die gemeinsamen Bausteine (Mauerzug, Tor, Raum, Rampe ...), die `teil_*.py` die einzelnen Burgen. Die Skripte lesen die Geländehöhen, also zuerst das Gelände erzeugen, dann bauen. **Achtung:** Was du in diesen beiden Szenen im Editor änderst, ist nach dem Neubau weg. Größere Änderungen gehören deshalb in die Skripte.
+Dafür braucht es Python 3 mit `numpy`. `grundlage.py` enthält die gemeinsamen Bausteine (Mauerzug, Tor, Raum, Rampe ...), die `teil_*.py` die einzelnen Burgen. Die Skripte lesen die Geländehöhen, also zuerst das Gelände erzeugen, dann bauen. **Achtung:** Was du in diesen Szenen im Editor änderst, ist nach dem Neubau weg. Größere Änderungen gehören deshalb in die Skripte.
 
 ## Einen Turm bauen
 
@@ -361,17 +391,18 @@ Jede Datei hat Knoten. Begonnen wird beim Knoten `start`, außer ein Eintrag in 
 | `spielende` | Blende, danach zurück ins Hauptmenü |
 | `reise` | `{ "ziel": "riverlock", "ankunft": "von_drachenstein", "stunden": 54, "text": "..." }`: Am Ende des Gesprächs geht es in die andere Region, an den Marker mit diesem Namen (Gruppe `ankunft`), die Zeit läuft weiter, dann kommt die Blende mit dem Text |
 
-**Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `rang>=2`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht), `region=riverlock` (die Region, in der man gerade ist). Mehrere werden durch Komma getrennt und müssen alle gelten.
+**Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `rang>=2`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht), `region=riverlock` (die Region, in der man gerade ist: drachenstein, riverlock, ashenveil). Mehrere werden durch Komma getrennt und müssen alle gelten.
 
 ## Testen
 
-Fünf automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
+Sechs automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
 
 | Test | Prüft |
 |---|---|
 | `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
 | `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
 | `tests/test_innen.gd` | die Innenräume, 25 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü, in Gravemarch Donjon, Archivarin und Scheintore |
+| `tests/test_ashenveil.gd` | Ashenveil, 24 Punkte: Reiterin lehnt Anwärter ab, Ritt hin und zurück mit Zeitverlust, Morast, über den Damm und durch das Fallgitter, Rampe hinunter in die Kapelle, Gedenkstein, durch den Fluchttunnel ins Moor, Personen, verriegelter Nebeneingang, Speichern und Laden |
 | `tests/test_riverlock.gd` | Riverlock und das Reisen, 21 Punkte: Lotsin lehnt Anwärter ab, Überfahrt hin und zurück mit Zeitverlust, Rampen durch alle drei Geschosse des Mittelbaus, Zollherr in der Akte, Personen, Wege durch beide Burgen bis vor die Tore, Wasser, Speichern und Laden in Riverlock, Reise über das Entwicklermenü |
 | `tests/test_region.gd` | die Region, 30 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, die Wege zur Oberer Burg, zum Kai und durchs Vorburgtor, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
 
@@ -381,10 +412,11 @@ godot --headless --path . --script res://tests/test_eingabe.gd
 godot --headless --path . --script res://tests/test_region.gd
 godot --headless --path . --script res://tests/test_innen.gd
 godot --headless --path . --script res://tests/test_riverlock.gd
+godot --headless --path . --script res://tests/test_ashenveil.gd
 ```
 
 Am Ende steht jeweils `Fehler: 0`, wenn alles stimmt.
 
 ## Nächste Schritte
 
-Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Offen in Stufe 3 sind Ashenveil (Grundriss liegt vor, braucht eine eigene Region im Nebelmoor), die Wege über Land zwischen den Regionen sowie echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.
+Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Alle Burgen aus deinen Grundrissen stehen jetzt. Offen in Stufe 3 sind die Wege über Land zwischen den Regionen (Nordstraße, Südstraße, Küstenweg als begehbare Strecken) und echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.

@@ -1,0 +1,75 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "region=ashenveil",
+			"knoten": "start_ashenveil"
+		}
+	],
+	"knoten": {
+		"start": {
+			"text": "Ilka Sand, Reiterin aus Ashenveil. Ich bringe Meldungen über den Küstenweg nach Drachenstein und zurück. Siebzig Kilometer, zu Fuß drei Tage. Im Sattel weniger.",
+			"weiter": "fragen"
+		},
+		"start_ashenveil": {
+			"text": "Ashenveil. Bleib auf dem Damm, Wächter. Der Morast sieht fest aus, bis er es nicht mehr ist.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was brauchst du?",
+			"optionen": [
+				{
+					"text": "Was ist Ashenveil?",
+					"weiter": "burg"
+				},
+				{
+					"text": "Nimm mich mit nach Ashenveil.",
+					"bedingung": "region=drachenstein,eid_waechter",
+					"weiter": "ritt_hin"
+				},
+				{
+					"text": "Nimm mich mit nach Ashenveil.",
+					"bedingung": "region=drachenstein,!eid_waechter",
+					"weiter": "nicht_ohne_eid"
+				},
+				{
+					"text": "Bring mich zurück nach Drachenstein.",
+					"bedingung": "region=ashenveil",
+					"weiter": "ritt_zurueck"
+				},
+				{
+					"text": "Gute Wache.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"burg": {
+			"text": "Die Reiter- und Rüstburg des Ordens, mitten im Nebelmoor. Reithalle, Marstall, Rüstkammern. Wir reiten mit Karabiner, Säbel und Pistolen. Und wir tragen Wachsmäntel und Sumpfstiefel, das erkennst du an uns, bevor du uns hörst.",
+			"weiter": "fragen"
+		},
+		"nicht_ohne_eid": {
+			"text": "Ein Anwärter? Ohne Eid nehme ich niemanden mit nach Ashenveil. Dort fragt man zuerst, wer für dich bürgt, und dann noch einmal.",
+			"weiter": "fragen"
+		},
+		"ritt_hin": {
+			"text": "Dann steig auf. Wir reiten bei Tag, durch das Moor geht niemand im Dunkeln.",
+			"reise": {
+				"ziel": "ashenveil",
+				"ankunft": "von_drachenstein",
+				"stunden": 36,
+				"text": "Anderthalb Tage den Küstenweg nach Süden, immer das Wächtermeer zur Linken. Dann wird das Land weich, der Nebel steigt auf, und am Ende des Damms steht Ashenveil."
+			}
+		},
+		"ritt_zurueck": {
+			"text": "Dann los, solange der Nebel dünn ist.",
+			"reise": {
+				"ziel": "drachenstein",
+				"ankunft": "von_ashenveil",
+				"stunden": 36,
+				"text": "Aus dem Nebel hinaus, den Küstenweg nach Norden. Am zweiten Tag tauchen die Türme von Drachenstein über den Hügeln auf."
+			}
+		},
+		"ende": {
+			"text": "Gute Wache."
+		}
+	}
+}

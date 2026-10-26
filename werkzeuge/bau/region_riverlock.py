@@ -25,25 +25,6 @@ def P(px, py):
 def lerp2(a, b, t):
     return (round(a[0] + (b[0] - a[0]) * t, 2), round(a[1] + (b[1] - a[1]) * t, 2))
 
-def rampe(name, eltern, a, b, breite, dicke=0.5, mat="Material_holz"):
-    """Schräge, begehbare Rampe von a nach b (je x, y, z). Die Oberfläche läuft genau durch a und b."""
-    dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
-    waag = math.hypot(dx, dz)
-    neigung = math.atan2(dy, waag)
-    ux, uz = dx / waag, dz / waag
-    mx, my, mz = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2
-    # Mitte des Quaders liegt eine halbe Dicke unter der Oberfläche, senkrecht zur Neigung.
-    mx += ux * math.sin(neigung) * dicke / 2
-    mz += uz * math.sin(neigung) * dicke / 2
-    my -= math.cos(neigung) * dicke / 2
-    N(name, "CSGBox3D", eltern, f"""{T_kipp(round(mx, 3), round(my, 3), round(mz, 3), gier_zu(ux, uz), math.degrees(neigung))}
-use_collision = true
-size = Vector3({round(math.hypot(waag, dy) + 0.2, 2)}, {dicke}, {breite})
-material = SubResource("{mat}")""")
-
-def licht(name, eltern, x, y, z, reichweite=14.0):
-    N(name, "OmniLight3D", eltern, f"{T(x, y, z)}\nlight_color = Color(1, 0.82, 0.6, 1)\nomni_range = {reichweite}")
-
 def torhaus(name, eltern, a, b, anteil, breite=5.0, hoehe=13.0):
     """Zwei Tortürme und ein Bogen über einer Lücke in der Mauerkante a-b."""
     mx, mz = lerp2(a, b, anteil)
@@ -252,5 +233,6 @@ for name, x, y, z in [("Hafenhalle (Ankunft)", -46, -8.0, 4), ("Mittelbau, Zoll"
 # ---------- Ankunft per Schiff, Spieler und Oberfläche ----------
 N("Ankuenfte", "Node3D", ".")
 N("von_drachenstein", "Marker3D", "Ankuenfte", T(-46, KAI + 0.2, 4, 180), extra='groups=["ankunft"]')
+N("von_ashenveil", "Marker3D", "Ankuenfte", T(-92.4, round(H(-92.4, 70) + 0.2, 2), 70), extra='groups=["ankunft"]')
 spieler_und_oberflaeche(-80, 0, 0)
 schreibe("region_riverlock.tscn")

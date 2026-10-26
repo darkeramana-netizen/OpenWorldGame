@@ -7,6 +7,7 @@ const STANDARD_ORDNER := "user://speicher/"
 const REGIONEN := {
 	"drachenstein": "res://szenen/welt/region_drachenstein.tscn",
 	"riverlock": "res://szenen/welt/region_riverlock.tscn",
+	"ashenveil": "res://szenen/welt/region_ashenveil.tscn",
 }
 const START_REGION := "drachenstein"
 const HAUPTMENUE := "res://szenen/oberflaeche/hauptmenue.tscn"

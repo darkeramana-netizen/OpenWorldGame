@@ -40,6 +40,9 @@ fog_density = 0.0015
 [sub_resource type="ShaderMaterial" id="Material_gelaende"]
 shader = ExtResource("8_gelaende_shader")
 shader_parameter/maske = ExtResource("9_maske")
+shader_parameter/welt_ursprung = Vector2(-300.0, -200.0)
+shader_parameter/welt_groesse = Vector2(600.0, 400.0)
+shader_parameter/meeresspiegel = -10.0
 
 [sub_resource type="ShaderMaterial" id="Material_wasser"]
 shader = ExtResource("10_wasser")
@@ -1965,6 +1968,9 @@ metadata/anzeige = "Ostburg, Tor"
 
 [node name="von_drachenstein" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
 transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, -46, -8.3, 4)
+
+[node name="von_ashenveil" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -92.4, 0.49, 70)
 
 [node name="Spieler" parent="." instance=ExtResource("5_spieler")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -80, 0, 0)

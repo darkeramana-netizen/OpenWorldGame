@@ -40,6 +40,9 @@ fog_density = 0.0015
 [sub_resource type="ShaderMaterial" id="Material_gelaende"]
 shader = ExtResource("8_gelaende_shader")
 shader_parameter/maske = ExtResource("9_maske")
+shader_parameter/welt_ursprung = Vector2(-900.0, -650.0)
+shader_parameter/welt_groesse = Vector2(1350.0, 1000.0)
+shader_parameter/meeresspiegel = -20.0
 
 [sub_resource type="ShaderMaterial" id="Material_wasser"]
 shader = ExtResource("10_wasser")
@@ -4851,6 +4854,58 @@ tracht = Color(0.2, 0.2, 0.22, 1)
 script = ExtResource("11_auf_gelaende")
 gelaende = NodePath("../../Gelaende")
 
+[node name="Reiterin" parent="Personen/PersonenAmBoden" instance=ExtResource("4_person")]
+transform = Transform3D(0.58779, 0, -0.80902, 0, 1, 0, 0.80902, 0, 0.58779, -22, 0, 92)
+anzeige_name = "Reiterin Ilka Sand"
+dialog_id = "reiterin_ashenveil"
+kordel = 2
+tracht = Color(0.25, 0.22, 0.18, 1)
+
+[node name="PferdReiterin" type="Node3D" parent="Personen"]
+transform = Transform3D(0.80902, 0, 0.58779, 0, 1, 0, -0.58779, 0, 0.80902, -25.5, 1.24, 94)
+
+[node name="Rumpf" type="CSGBox3D" parent="Personen/PferdReiterin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 1.35, 0)
+use_collision = true
+size = Vector3(2.1, 0.9, 0.8)
+material = SubResource("Material_holz")
+
+[node name="Hals" type="CSGBox3D" parent="Personen/PferdReiterin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.15, 1.95, 0)
+
+size = Vector3(0.5, 0.9, 0.4)
+material = SubResource("Material_holz")
+
+[node name="Kopf" type="CSGBox3D" parent="Personen/PferdReiterin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.5, 2.35, 0)
+
+size = Vector3(0.7, 0.35, 0.35)
+material = SubResource("Material_holz")
+
+[node name="Bein0" type="CSGBox3D" parent="Personen/PferdReiterin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, -0.28)
+
+size = Vector3(0.2, 0.9, 0.2)
+material = SubResource("Material_holz")
+
+[node name="Bein1" type="CSGBox3D" parent="Personen/PferdReiterin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, 0.28)
+
+size = Vector3(0.2, 0.9, 0.2)
+material = SubResource("Material_holz")
+
+[node name="Bein2" type="CSGBox3D" parent="Personen/PferdReiterin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, -0.28)
+
+size = Vector3(0.2, 0.9, 0.2)
+material = SubResource("Material_holz")
+
+[node name="Bein3" type="CSGBox3D" parent="Personen/PferdReiterin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, 0.28)
+
+size = Vector3(0.2, 0.9, 0.2)
+material = SubResource("Material_holz")
+
 [node name="Haendlerin" parent="Personen/PersonenAmBoden" instance=ExtResource("4_person")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 64, 0, -4)
 anzeige_name = "Händlerin Grete Lohm"
@@ -4924,6 +4979,9 @@ metadata/anzeige = "Gravecrest, Palas"
 
 [node name="von_riverlock" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 125, -17.5, 23)
+
+[node name="von_ashenveil" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
+transform = Transform3D(0.59622, 0, -0.80282, 0, 1, 0, 0.80282, 0, 0.59622, -18.5, 0.42, 89)
 
 [node name="Spieler" parent="." instance=ExtResource("5_spieler")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0, 46)
