@@ -1,0 +1,53 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Leise, bitte. Hier liegen die Pläne von tausend Jahren. Wer nach Gravemarch kommt, versteht sie nicht. Wer bleibt, lernt sie.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Was willst du wissen?",
+			"optionen": [
+				{
+					"text": "Wie ist Gravemarch entstanden?",
+					"weiter": "phase1"
+				},
+				{
+					"text": "Warum gibt es keinen geraden Weg?",
+					"weiter": "prinzip"
+				},
+				{
+					"text": "Gibt es Wege unter der Burg?",
+					"weiter": "unten"
+				},
+				{
+					"text": "Ich störe nicht länger.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"phase1": {
+			"text": "Um 950 war hier nur ein kleiner befestigter Hof auf einem künstlichen Hügel im Sumpf. Holzbau, eine Palisade, ein Wohnturm.",
+			"weiter": "phase2"
+		},
+		"phase2": {
+			"text": "Um 1100 kam die erste Steinmauer, der erste Wohnbau außerhalb und ein einfaches Tor. So entstand der Innenhof. Um 1250 wuchs die Burg nach allen Seiten: mehrere Höfe, neue Mauerringe, die Siedlung der Handwerker.",
+			"weiter": "phase3"
+		},
+		"phase3": {
+			"text": "Um 1450 kamen die Türme, die Kapelle und der Palas, die Wehranlagen wurden verwickelter. Um 1700 hat man sie verstärkt und die inneren Wege verändert. Seitdem sieht sie aus wie heute. Niemand hat Gravemarch geplant. Sie ist gewachsen.",
+			"akte": "Gravemarch: um 950 ein Hof auf einem Hügel im Sumpf, seit etwa 1700 in ihrer heutigen Gestalt. Sie wurde nie geplant, sie ist gewachsen.",
+			"weiter": "fragen"
+		},
+		"prinzip": {
+			"text": "Jeder Zugang ist mehrstufig und geknickt. Die Mauern folgen dem Gelände und den alten Strukturen. Alte Tore sind zugemauert oder nur Schein. Wir kennen die Wege und die Abkürzungen, der Feind nicht. Wasser und Sumpf machen ihn langsam. Gravemarch ist schwer zu verstehen, und genau das ist ihr Schutz.",
+			"weiter": "fragen"
+		},
+		"unten": {
+			"text": "Ein Geheimgang zur Entwässerung, ein Fluchtgang, eine verdeckte Poterne und die Zisternen. Mehr steht in keinem Buch, das ich dir zeigen darf.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Und fass die Regale nicht an."
+		}
+	}
+}

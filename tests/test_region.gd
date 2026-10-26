@@ -109,6 +109,16 @@ func _initialize() -> void:
 	pruefe(hinab and absf(spieler().global_position.y + 17.8) < 0.5, "Durch die Stadt über den Markt hinunter zum Kai gelaufen")
 	await setze(Vector3(0, 0.3, 56))
 	pruefe(await gehe_ueber([Vector2(-14, 83.5), Vector2(-30, 95)]), "Durch das Vorburgtor hinaus gelaufen")
+	# Gravemarch nach dem Grundriss: von der Brückenpforte bis in den Burghof, durch Zwinger und geknicktes Tor
+	var esme: Node3D = current_scene.get_node("Personen/TorwacheGravemarch")
+	await setze(esme.global_position + Vector3(-2, 0.3, 0))
+	var gm_mitte := Vector2(-600, -205)
+	var labyrinth := []
+	for punkt in [Vector2(58, -44), Vector2(45, -28), Vector2(35, -8), Vector2(32.5, 18), Vector2(20, 16), Vector2(0, 10),
+			Vector2(-11, 8), Vector2(-11, 14.2), Vector2(-17.5, 14.2), Vector2(-17.5, 19), Vector2(-10, 24)]:
+		labyrinth.append(gm_mitte + punkt)
+	var im_hof := await gehe_ueber([Vector2(esme.global_position.x - 4, esme.global_position.z + 4)] + labyrinth)
+	pruefe(im_hof and absf(spieler().global_position.y + 4.0) < 0.6, "Gravemarch: über die Brücke durch das Labyrinth bis in den Burghof")
 	await setze(Vector3(-560, g.hoehe_bei(-560, -200) + 0.5, -200))
 	pruefe(orte.has("Gravemarch"), "Ortsname beim Betreten: Gravemarch")
 	await setze(Vector3(-650, 70.5, -364))
@@ -138,7 +148,7 @@ func _initialize() -> void:
 	# Personen der Region mit echter Taste E
 	for eintrag in [["Bergwaechter", Vector3(-1.5, 0, 0)], ["Lotsin", Vector3(0, 0, 1.5)],
 			["TorwacheGravecrest", Vector3(1.5, 0, 0)], ["PersonenAmBoden/Haendlerin", Vector3(0, 0, 1.6)],
-			["PersonenAmBoden/TorwacheGravemarch", Vector3(1.5, 0, 0)]]:
+			["TorwacheGravemarch", Vector3(1.0, 0, 1.0)], ["ArchivarinGravemarch", Vector3(0, 0, -1.4)]]:
 		var person = current_scene.get_node("Personen/" + eintrag[0])
 		var ziel: Vector3 = person.global_position + eintrag[1]
 		ziel.y = maxf(ziel.y, g.hoehe_bei(ziel.x, ziel.z)) + 0.3

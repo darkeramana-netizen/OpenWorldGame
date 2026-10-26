@@ -6,7 +6,8 @@ class_name GelaendeErzeuger
 ##   Burgfeste Drachenstein   (0, 0)        Hof (Mittlere Burg) auf Höhe 0, nach dem Grundriss
 ##                                          gedreht: Oberer Burg im Westen, Hafen im Osten
 ##   Schwarzer Bergfried       (250, 135)    Insel, von der Südmole über zwei Inseln erreichbar
-##   Gravemarch                (-600, -205)  im Tal unter dem Felssporn
+##   Gravemarch                (-600, -205)  im Tal unter dem Felssporn, nach dem Grundriss um 180°
+##                                          gedreht: Torhaus im Nordosten, Kernburg im Süden
 ##   Gravecrest                (-675, -365)  auf dem eisigen Felssporn, Höhe 70
 ## Der Meeresspiegel liegt bei -20.
 ##
@@ -21,6 +22,14 @@ const MEERESSPIEGEL := -20.0
 
 const GRAVEMARCH := Vector2(-600, -205)
 const BERGFRIED := Vector2(250, 135)
+## Umriss der Hauptmauer von Gravemarch (mit dem Verfallenen Vorhof im Osten), relativ zur Mitte.
+const GRAVEMARCH_UMRISS := [Vector2(51, -48.1), Vector2(64, -37.7), Vector2(41, -6.5), Vector2(60, -2),
+	Vector2(60, 24), Vector2(33, 26), Vector2(31, 37.7), Vector2(22, 50.7), Vector2(4, 54.6), Vector2(-26, 52),
+	Vector2(-43, 44.2), Vector2(-54, 39), Vector2(-60, 23.4), Vector2(-63, -11.7), Vector2(-65, -32.5),
+	Vector2(-48, -40.3), Vector2(-36, -35), Vector2(-19, -37.7), Vector2(4, -45.5), Vector2(22, -35), Vector2(39, -45.5)]
+## Inseln im Graben für das Südliche Vorwerk und das unechte Südtor: [Mitte relativ, Radius].
+const GRAVEMARCH_INSELN := [[Vector2(-8, -59), 7.0], [Vector2(-35, -63), 8.0]]
+const GRABEN_SOHLE := -13.0
 ## Inseln zwischen Drachenkai und Bergfried: [Mitte, Radius].
 const INSELN := [[Vector2(185, 60), 10.0], [Vector2(212, 95), 9.0], [BERGFRIED, 40.0]]
 const INSEL_HOEHE := -17.8
@@ -42,7 +51,7 @@ const MOLE_ENDE := 166.0
 const WEG_HAFEN := [Vector2(0, 40), Vector2(0, 56), Vector2(44, 46), Vector2(58, 22), Vector2(75, 4), Vector2(98, 0)]
 const WEG_DRACHENHORST := [Vector2(0, 56), Vector2(-25, 52), Vector2(-50, 18), Vector2(-50, 8)]
 const WEG_GRAVEMARCH := [Vector2(0, 80), Vector2(-60, 95), Vector2(-150, 70), Vector2(-260, 10),
-	Vector2(-360, -70), Vector2(-460, -150), Vector2(-548, -200)]
+	Vector2(-360, -70), Vector2(-460, -150), Vector2(-490, -215), Vector2(-528.8, -265.1)]
 ## Der Weg nach Gravecrest steigt vom Tal bis zur Zugbrücke auf Höhe 70.
 const WEG_GRAVECREST := [Vector2(-460, -150), Vector2(-470, -240), Vector2(-500, -310),
 	Vector2(-560, -345), Vector2(-612, -363)]
@@ -165,7 +174,7 @@ func hoehe(p: Vector2) -> float:
 	# Gravemarch auf einem aufgeschütteten Hügel im Sumpf.
 	var gm := p.distance_to(GRAVEMARCH)
 	h = lerpf(h, -9.0 + fein * 0.6, 1.0 - smoothstep(110.0, 145.0, gm))  # Sumpfsenke
-	h = lerpf(h, -4.0, 1.0 - smoothstep(68.0, 78.0, gm))  # Hügel der Burg
+	h = _gravemarch(h, p)
 
 	# Wege glätten das Gelände.
 	h = _weg_einebnen(h, p, WEG_HAFEN)
@@ -210,13 +219,42 @@ func _stadthang(h: float, p: Vector2) -> float:
 	return h
 
 
+## Gravemarch: aufgeschütteter Hügel in der Form der Hauptmauer, darum ein Wassergraben.
+## Auf der Seite der Kernburg (Süden) gibt es keinen Graben, wie im Grundriss.
+func _gravemarch(h: float, p: Vector2) -> float:
+	var lokal := p - GRAVEMARCH
+	if lokal.length() > 120.0:
+		return h
+	var d := _polygon_abstand(lokal, GRAVEMARCH_UMRISS)
+	h = lerpf(h, -4.0, 1.0 - smoothstep(6.0, 14.0, d))
+	var graben := 1.0 - smoothstep(0.0, 3.0, absf(d - 11.5) - 2.0)
+	graben *= 1.0 - smoothstep(25.0, 40.0, lokal.y)
+	h = lerpf(h, minf(h, GRABEN_SOHLE), graben)
+	for insel: Array in GRAVEMARCH_INSELN:
+		var r: float = insel[1]
+		h = lerpf(h, -4.0, 1.0 - smoothstep(r, r + 3.0, lokal.distance_to(insel[0])))
+	return h
+
+
+## Abstand zu einem geschlossenen Vieleck, innen 0.
+func _polygon_abstand(p: Vector2, ecken: Array) -> float:
+	if Geometry2D.is_point_in_polygon(p, PackedVector2Array(ecken)):
+		return 0.0
+	var bester := INF
+	for i in ecken.size():
+		var a: Vector2 = ecken[i]
+		var b: Vector2 = ecken[(i + 1) % ecken.size()]
+		bester = minf(bester, p.distance_to(Geometry2D.get_closest_point_to_segment(p, a, b)))
+	return bester
+
+
 ## Farbmaske für den Gelände-Shader: Rot = Weg, Grün = Sumpf.
 func maske_bei(p: Vector2) -> Color:
 	var weg := INF
 	for linie in [WEG_HAFEN, WEG_DRACHENHORST, WEG_GRAVEMARCH, WEG_GRAVECREST]:
 		weg = minf(weg, _abstand_zu(linie, p))
 	var gm := p.distance_to(GRAVEMARCH)
-	var sumpf := (1.0 - smoothstep(115.0, 140.0, gm)) * smoothstep(74.0, 84.0, gm)
+	var sumpf := (1.0 - smoothstep(115.0, 140.0, gm)) * smoothstep(17.0, 26.0, _polygon_abstand(p - GRAVEMARCH, GRAVEMARCH_UMRISS))
 	sumpf *= clampf(0.6 + _fein.get_noise_2dv(p * 0.5), 0.0, 1.0)
 	return Color(1.0 - smoothstep(2.5, 4.5, weg), sumpf, 0.0)
 

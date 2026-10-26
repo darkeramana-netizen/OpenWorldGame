@@ -196,5 +196,22 @@ func _initialize() -> void:
 	await setze(torben.global_position + Vector3(1.2, 0.2, 0))
 	pruefe(await rede([KEY_1, KEY_4]), "Mit Komtur Torben Wick im Audienzsaal gesprochen")
 
+	# --- Gravemarch: Donjon in der Kernburg, Scheintore ---
+	var gm_donjon = current_scene.get_node("Gravemarch/Kernburg/Donjon")
+	var gd: Vector3 = gm_donjon.global_position
+	var gw: float = gm_donjon.treppen_winkel
+	await setze(polar(gd, 12, gw, 0.3))
+	var hinein := await gehe_ueber([polar(gd, 8, gw, 0), polar(gd, 2.4, gw, 0)])
+	pruefe(hinein, "Gravemarch: in den Donjon bis ins Treppenhaus gegangen")
+	var ausguck := await wendel(gd, 1, gd.y + 22.0, 40.0)
+	pruefe(ausguck >= gd.y + 21.5, "Gravemarch: Donjon hinauf bis aufs Dach (Höhe %.1f)" % (ausguck - gd.y))
+	var archivarin = current_scene.get_node("Personen/ArchivarinGravemarch")
+	await setze(archivarin.global_position + Vector3(0, 0.3, -1.4))
+	await rede([KEY_1])
+	pruefe(S.akte.any(func(e): return "um 950" in str(e)), "Gravemarch: Archivarin erzählt die Bauphasen (Akte)")
+	for pfad in ["Gravemarch/AlteMauer/Scheintor", "Gravemarch/Aussenwerke/Scheintor", "Gravemarch/Kernburg/VerborgenePforte"]:
+		var tor = current_scene.get_node(pfad)
+		pruefe(tor.visible and tor.is_in_group("interagierbar"), "Gravemarch: %s bleibt zu" % tor.anzeige_name)
+
 	print("\nFehler: ", fehler)
 	quit(fehler)

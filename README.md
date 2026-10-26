@@ -12,13 +12,45 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Gravemarch nach Grundriss
+
+Gebaut nach deinem Grundriss der Talburg, um 180° gedreht: Das **Äußere Torhaus (A)** zeigt nach Nordosten zum Weg aus Drachenstein, die **Kernburg (G)** liegt im Süden.
+
+- **Aufbau:** ein aufgeschütteter Hügel im Sumpf mit Wassergraben an drei Seiten. An der Seite der Kernburg gibt es keinen Graben, wie im Plan.
+- **Zugang:** Über die **Brückenpforte (2)** und die Brücke kommt man zum Torhaus.
+- **Drei Ringe:**
+  - die Hauptmauer mit Nordost-Bastei,
+  - die **Alte Mauer (M)** mit einem Tor am **Zwinger (5)**,
+  - der **Innere Wehrgang (F)** mit dem **Geknickten Tor (6)**. Hinter diesem Tor steht eine Prallwand, an der man abbiegen muss.
+- **Kein gerader Weg:** Vom Torhaus geht es an der Mauer entlang durch die enge Gasse am Zwinger. Danach führt der Weg am Kapellenbezirk vorbei zum geknickten Tor und in den Burghof.
+- **Viertel und Bauten:**
+  - Vorburg (B), Handwerkergasse (7), Mittlerer Hof (D) mit Brunnen, Schmiedegasse (11)
+  - Alter Markt (C), Mühle mit Wasserrad (22), Wachhaus (8), Speicherhof (10)
+  - Kapelle St. Alriks (16), Wasserwerk (K), Zisternenhof (21), Alter Wehrturm (4)
+- **Kernburg:**
+  - **begehbarer Donjon (18)**, 22 m hoch, mit vier Ebenen
+  - Palas mit Großer Halle (14, 15), Treppenturm (12), offene Halle im Vorhof (3)
+  - **Bibliothek (17)** mit der Archivarin Ysolde Brack, die die fünf Bauphasen aus deinem Plan erzählt
+- **Täuschungen:**
+  - Das **unechte Südtor (23)** steht prächtig auf einer Insel im Graben, dahinter ist nur Stein.
+  - Das **Tor in der Alten Mauer** am Mittleren Hof ist zugemauert.
+  - Das **Südliche Vorwerk (I)** führt zu einem vermauerten Tor.
+  - Die **Verborgene Pforte (19)** hinter dem Palas ist verriegelt.
+  - Der **Verfallene Vorhof (L)** liegt als Ruine vor der Ostmauer.
+
+| Gravemarch von Nordosten | Von oben (Norden oben) |
+|---|---|
+| ![Gravemarch](docs/bilder/region-gravemarch.png) | ![Draufsicht](docs/bilder/gravemarch-draufsicht.png) |
+
+Deine Grundrisse liegen in [`docs/bilder/`](docs/bilder/) (`grundriss-*.webp`), auch die von Riverlock und Ashenveil.
+
 ### Burgfeste Drachenstein nach Grundriss
 
 Gebaut nach deinem Grundriss, **gedreht**: Der Süden des Plans liegt jetzt im Osten, der Hafen öffnet sich zum Wächtermeer.
 
 - **Mittlere Burg:** der Hof aus Akt I, unverändert.
 - **Oberer Burg (Drachenhorst)** im Westen, auf Höhe der Hofmauerkrone (8 m), mit eigener Ringmauer, Tor im Süden, Urkern, Aussichtsplattform, Palas, Kapelle und Zeughaus. Von der Hofmauer führt ein Durchlass hinüber.
-- **Stadt:** Die Ringmauer (Löwenward) umschließt alles, mit dem **Vorburgtor** am Weg nach Gravemarch und dem **Ölturm** an der Nordspitze. Darin liegen 58 Stadthäuser, der **Marktplatz** mit Brunnen und Ständen, die **Kirche St. Georg** und das **Rathaus**.
+- **Stadt:** Die Ringmauer (Löwenward) umschließt alles, mit dem **Vorburgtor** am Weg nach Gravemarch und dem **Ölturm** an der Nordspitze. Darin liegen gut 50 Stadthäuser, die **Terrassengärten** an der Ringmauer im Süden, der **Marktplatz** mit Brunnen und Ständen, die **Kirche St. Georg** und das **Rathaus** am Hafen.
 - **Drachenkai:** Hafenbecken mit Kaimauern zwischen Nord- und Südmole, an den Molenköpfen **Hafentor** und **Schiffstor**. Dazu Zollhaus, Dockspeicher und drei Schiffe.
 - **Zum Bergfried:** Von der Südmole führen drei Brücken über zwei Inseln zum Tor des Bergfrieds.
 
@@ -70,7 +102,7 @@ Die erste begehbare Region, gebaut nach deiner Karte im Maßstab **1:50** (1 km 
 | **Drachenkai** | Hafenbecken im Osten, Molen mit Hafentor und Schiffstor, Zollhaus, Schiffe, Lotsin aus Riverlock |
 | **Brücken zum Bergfried** | drei Brücken von der Südmole über zwei Inseln |
 | **Schwarzer Bergfried** | 100 m hoher achteckiger Turm mit Krone und äußerer Mauer, Bergwächter am Tor |
-| **Gravemarch** | im Sumpftal unter dem Felssporn, drei Mauerringe mit versetzten Toren, Scheintore, Kapelle St. Alriks, Donjon |
+| **Gravemarch** | nach Grundriss (siehe oben): Talburg im Sumpf mit Wassergraben, drei Ringen, Scheintoren und begehbarem Donjon |
 | **Gravecrest** | auf dem eisigen Felssporn (Höhe 70), Weg hinauf, Zugbrücke über den Abgrund, Torhaus, achteckiger Donjon, Palas |
 | **Eisgrat** | Gebirge ringsum, Signaltürme an der Küste |
 
@@ -143,7 +175,7 @@ Dazu kommen diese Systeme:
 
 Den Wehrgang erreichst du über die Holzrampe an der Südmauer, westlich vom Tor. Von dort führt die Westmauer zur zweiten Rampe hinauf auf den Wachturm in der Nordwestecke.
 
-Wege durch die Region: Vom Tor des Hofs führt der Weg nach Osten über den Marktplatz zum Drachenkai und von der Südmole über die Brücken zum Bergfried. Ein zweiter Weg steigt nach Westen zum Tor der Oberer Burg. Nach Westen führt er ins Tal nach Gravemarch. Kurz vor Gravemarch zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
+Wege durch die Region: Vom Tor des Hofs führt der Weg nach Osten über den Marktplatz zum Drachenkai und von der Südmole über die Brücken zum Bergfried. Ein zweiter Weg steigt nach Westen zum Tor der Oberer Burg. Der Weg nach Westen führt aus dem Vorburgtor ins Tal bis zur Brückenpforte von Gravemarch. Kurz vor Gravemarch zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
 
 ## Speichern und Laden
 
@@ -298,8 +330,8 @@ Vier automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstä
 |---|---|
 | `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
 | `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
-| `tests/test_innen.gd` | die Innenräume, 19 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü |
-| `tests/test_region.gd` | die Region, 29 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, die Wege zur Oberer Burg, zum Kai und durchs Vorburgtor, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
+| `tests/test_innen.gd` | die Innenräume, 25 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü, in Gravemarch Donjon, Archivarin und Scheintore |
+| `tests/test_region.gd` | die Region, 30 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, die Wege zur Oberer Burg, zum Kai und durchs Vorburgtor, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
 
 ```
 godot --headless --path . --script res://tests/test_akt1.gd
@@ -312,4 +344,4 @@ Am Ende steht jeweils `Fehler: 0`, wenn alles stimmt.
 
 ## Nächste Schritte
 
-Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Offen in Stufe 3 sind Drachenstein und Gravemarch nach ihren Grundrissen, Riverlock und Ashenveil sowie echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.
+Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Offen in Stufe 3 sind Riverlock und Ashenveil (die Grundrisse liegen vor, sie brauchen aber eigene Regionen) sowie echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.

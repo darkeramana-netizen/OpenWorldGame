@@ -16,6 +16,10 @@
 					"weiter": "weg"
 				},
 				{
+					"text": "Und das große Tor im Norden?",
+					"weiter": "suedtor"
+				},
+				{
 					"text": "Wach gut.",
 					"weiter": "ende"
 				}
@@ -26,11 +30,15 @@
 			"weiter": "fragen"
 		},
 		"weg": {
-			"text": "Durch das Osttor. Dann außen herum nach Norden, durch das Tor im mittleren Ring. Dann innen herum bis ganz nach Westen. Mehr verrate ich nicht. Merk es dir oder verlauf dich.",
+			"text": "Über die Brücke und durch das Torhaus. Dahinter halte dich an die Mauer zur Linken, bis die Gasse eng wird. Das ist der Zwinger. Am Ende kommt das Tor in der Alten Mauer. Das andere Tor in der Alten Mauer, das vom Mittleren Hof aus, ist zugemauert. Dann am Kapellenbezirk vorbei zum geknickten Tor. Dahinter liegt der Burghof mit dem Donjon. Mehr verrate ich nicht.",
 			"weiter": "fragen"
 		},
 		"ende": {
 			"text": "Wach gut."
+		},
+		"suedtor": {
+			"text": "Das Südtor? Das heißt so, seit die Burg einmal andersherum gedacht war. Es ist nur Schein. Dahinter ist Stein. Wer es angreift, steht im Graben und verliert Zeit. Zeit ist das, was Gravemarch schützt.",
+			"weiter": "fragen"
 		}
 	}
 }
