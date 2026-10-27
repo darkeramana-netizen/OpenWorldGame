@@ -237,7 +237,7 @@ func zahlenwert(name: String) -> int:
 
 ## Prüft eine Bedingung aus den Dialogdateien.
 ## Erlaubt: "flag", "!flag", "zaehler>=3", "rang>=2", "alarm<2", "ansehen_doerfer>=10",
-## "verfahren_stufe>=4", "abschnitt=nacht", "region=riverlock",
+## "verfahren_stufe>=4", "abschnitt=nacht", "abschnitt!=nacht", "region=riverlock",
 ## mehrere durch Komma getrennt (alle müssen gelten). Eine leere Bedingung gilt immer.
 func pruefe_bedingung(bedingung: String) -> bool:
 	for teil in bedingung.split(",", false):
@@ -252,6 +252,9 @@ func pruefe_bedingung(bedingung: String) -> bool:
 				return false
 		elif teil.begins_with("region="):
 			if Speicher.region != teil.substr(7):
+				return false
+		elif teil.begins_with("abschnitt!="):
+			if String(Spielzeit.abschnitt) == teil.substr(11):
 				return false
 		elif teil.begins_with("abschnitt="):
 			if String(Spielzeit.abschnitt) != teil.substr(10):

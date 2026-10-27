@@ -1,8 +1,33 @@
 {
 	"einstieg": [
-		{ "bedingung": "eid_waechter", "knoten": "nach_eid" },
-		{ "bedingung": "zustimmung_hueter,zustimmung_wachfuehrer,turmwache_erledigt", "knoten": "eid" },
-		{ "bedingung": "geselle", "knoten": "noch_nicht" }
+		{
+			"bedingung": "kette_abgeschlossen",
+			"knoten": "nach_kette"
+		},
+		{
+			"bedingung": "kette_entschieden,!kette_abgeschlossen",
+			"knoten": "kette_bericht"
+		},
+		{
+			"bedingung": "akt2_begonnen,!kette_entschieden",
+			"knoten": "kette_laeuft"
+		},
+		{
+			"bedingung": "akt1_ende,!akt2_begonnen",
+			"knoten": "akt2_start"
+		},
+		{
+			"bedingung": "eid_waechter",
+			"knoten": "nach_eid"
+		},
+		{
+			"bedingung": "zustimmung_hueter,zustimmung_wachfuehrer,turmwache_erledigt",
+			"knoten": "eid"
+		},
+		{
+			"bedingung": "geselle",
+			"knoten": "noch_nicht"
+		}
 	],
 	"knoten": {
 		"start": {
@@ -14,8 +39,14 @@
 		"eid": {
 			"text": "Die Mannschaft ist im Hof versammelt. Hüterin Sell und Wachführer Grend haben zugestimmt, und du hast allein auf dem Turm gewacht. Drei Jahre, {name}. Bist du bereit?",
 			"optionen": [
-				{ "text": "Ich bin bereit.", "weiter": "eid_2" },
-				{ "text": "Noch nicht.", "weiter": "spaeter" }
+				{
+					"text": "Ich bin bereit.",
+					"weiter": "eid_2"
+				},
+				{
+					"text": "Noch nicht.",
+					"weiter": "spaeter"
+				}
 			]
 		},
 		"spaeter": {
@@ -26,7 +57,9 @@
 			"optionen": [
 				{
 					"text": "„Ich schwöre bei Stein und Schweigen: Ich diene dem Orden, keinem Herrn. Ich sehe und bewahre, ich greife nicht ein. In silentio vigilamus. Aber wenn die Stille endet, handle ich.“",
-					"setze": ["eid_waechter"],
+					"setze": [
+						"eid_waechter"
+					],
 					"rang": 4,
 					"akte": "Haupteid im Hof gesprochen. Der Name {name} ist in den Namensstein geschlagen und in die Ordenswand gesetzt.",
 					"weiter": "stein"
@@ -37,23 +70,160 @@
 			"blende": "Der Steinmetz schlägt deinen Namen in den Stein.\n\n{name}\n\nDer Stein wird in die Ordenswand gesetzt.",
 			"text": "Dein Stein bleibt, Wächter {name}. In silentio.",
 			"optionen": [
-				{ "text": "Vigilamus.", "weiter": "akt_ende" }
+				{
+					"text": "Vigilamus.",
+					"weiter": "akt_ende"
+				}
 			]
 		},
 		"akt_ende": {
 			"akt_ende": "Ende von Akt I · Die Schwelle\n\nHerbst 1753. Die Stille hält. Noch.\n\nIn Valdrenn lässt König Marek Karvane Kanonen nach Tarnwacht ziehen. Am Ufer von Riverlock wägt Zollherr Hendrik Falk ein Angebot aus Gold.",
-			"setze": ["akt1_ende"],
+			"setze": [
+				"akt1_ende"
+			],
 			"ziel": "Akt I ist abgeschlossen. Sieh dir deinen Stein in der Ordenswand an.",
 			"text": "Wach gut."
 		},
 		"nach_eid": {
 			"text": "In silentio, Wächter {name}.",
 			"optionen": [
-				{ "text": "Vigilamus.", "weiter": "ende" }
+				{
+					"text": "Vigilamus.",
+					"weiter": "ende"
+				}
 			]
 		},
 		"ende": {
 			"text": "Wach gut."
+		},
+		"akt2_start": {
+			"text": "Wächter {name}. Gut, dass du da bist. Der Winter war lang.",
+			"zeitsprung": {
+				"jahre": 1,
+				"text": "Akt II · Wachsamkeit\n\nFrühjahr 1754. Der Rat hat Wachsamkeit beschlossen, die Stille hält.\n\nAber Nachrichten aus Valdrenn kommen nur noch über Riverlock, und nicht alle kommen so an, wie sie geschrieben wurden."
+			},
+			"weiter": "akt2_bericht"
+		},
+		"akt2_bericht": {
+			"text": "Im Herbst kam über Riverlock ein Späherbericht aus Valdrenn: Die Geschütze würden von Tarnwacht abgezogen, das Heer gehe ins Winterlager. Der Rat hat aufgeatmet. Aber auf einem zweiten Weg, den ich dir nicht nenne, hören wir das Gegenteil. Jemand in der Nachrichtenkette lügt.",
+			"weiter": "akt2_auftrag"
+		},
+		"akt2_auftrag": {
+			"text": "Späher, Bote, Riverlock, Rat. Finde heraus, wo der Bericht verändert wurde. Fang bei der Hüterin der Stille an. Leofa Marsh hat die Siegelhülse im Archiv des Bergfrieds.",
+			"setze": [
+				"akt2_begonnen"
+			],
+			"ziel": "Sprich mit Leofa Marsh in den Archiven des Schwarzen Bergfrieds über den verfälschten Späherbericht.",
+			"akte": "Auftrag von Komtur Aldric Hayn: herausfinden, wo in der Nachrichtenkette (Späher, Bote, Riverlock, Rat) ein Späherbericht aus Valdrenn verfälscht wurde."
+		},
+		"kette_laeuft": {
+			"text": "Was bringst du von der Nachrichtenkette?",
+			"optionen": [
+				{
+					"text": "Ich habe den Beweis. Der Schreiber des Zollherrn hat gefälscht. Entscheidet Ihr.",
+					"bedingung": "beweis_entwurf",
+					"weiter": "komtur_entscheidet"
+				},
+				{
+					"text": "Noch nichts.",
+					"weiter": "weiter_suchen"
+				}
+			]
+		},
+		"weiter_suchen": {
+			"text": "Dann such weiter. Leise."
+		},
+		"komtur_entscheidet": {
+			"text": "Dann schreibt der Rat an Falk, mit Siegel. Er wird seinen Schreiber ausliefern, weil er muss, nicht weil er will. Das wird er uns nicht vergessen.",
+			"setze": [
+				"kette_entschieden",
+				"dorn_ausgeliefert",
+				"rat_entschied"
+			],
+			"ansehen": {
+				"riverlock": -3,
+				"treue": 3
+			},
+			"weiter": "kette_bericht"
+		},
+		"kette_bericht": {
+			"text": "Erzähl.",
+			"optionen": [
+				{
+					"text": "Falk hat seinen Schreiber selbst ausgeliefert.",
+					"bedingung": "dorn_ausgeliefert,!rat_entschied",
+					"weiter": "ende_ausgeliefert"
+				},
+				{
+					"text": "Wie geht es weiter?",
+					"bedingung": "rat_entschied",
+					"weiter": "ende_rat"
+				},
+				{
+					"text": "Dorn ist über die Brücke nach Valdrenn geflohen.",
+					"bedingung": "dorn_geflohen",
+					"weiter": "ende_geflohen"
+				},
+				{
+					"text": "Ich habe nichts gefunden.",
+					"bedingung": "dorn_bestochen",
+					"weiter": "ende_gelogen"
+				}
+			]
+		},
+		"ende_ausgeliefert": {
+			"setze": [
+				"kette_abgeschlossen"
+			],
+			"ziel": "",
+			"meldung": "Der erste Faden von Akt II ist abgeschlossen: die Nachrichtenkette.",
+			"text": "Falk hat geliefert, ohne dass der Rat ihn zwingen musste. Das ist mehr wert als der Schreiber selbst. Riverlock schwankt, aber es fällt nicht. Noch nicht. Der Rat bekommt den echten Bericht: Die Geschütze ziehen nach Tarnwacht.",
+			"ansehen": {
+				"treue": 5
+			},
+			"akte": "Nachrichtenkette: Zollherr Falk lieferte den Fälscher Lukas Dorn aus. Der echte Bericht erreicht den Rat: Die Geschütze ziehen nach Tarnwacht."
+		},
+		"ende_rat": {
+			"setze": [
+				"kette_abgeschlossen"
+			],
+			"ziel": "",
+			"meldung": "Der erste Faden von Akt II ist abgeschlossen: die Nachrichtenkette.",
+			"text": "Er hat ihn ausgeliefert. Mit verschränkten Armen, schreibt der Beobachter. Wir haben den Fälscher, und Falk hat einen Grund mehr, mit Valdrenn zu reden. So ist das mit Siegeln.",
+			"akte": "Nachrichtenkette: Auf Schreiben des Rats lieferte Riverlock den Fälscher Lukas Dorn aus. Falk fühlt sich übergangen."
+		},
+		"ende_geflohen": {
+			"setze": [
+				"kette_abgeschlossen"
+			],
+			"ziel": "",
+			"meldung": "Der erste Faden von Akt II ist abgeschlossen: die Nachrichtenkette.",
+			"text": "Dann weiß Valdrenn jetzt, dass wir es wissen. Das ist nicht nichts, aber es ist weniger, als ich wollte. Der Rat bekommt den echten Bericht trotzdem.",
+			"ansehen": {
+				"treue": 2
+			},
+			"akte": "Nachrichtenkette: Der Fälscher Lukas Dorn ist nach Valdrenn geflohen. Der echte Bericht erreicht den Rat trotzdem."
+		},
+		"ende_gelogen": {
+			"setze": [
+				"kette_abgeschlossen"
+			],
+			"ziel": "",
+			"meldung": "Der erste Faden von Akt II ist abgeschlossen: die Nachrichtenkette.",
+			"text": "Nichts. Die Hüterin hat die Hülse gesehen, der Beobachter den Weg, und du findest nichts. Gut. Dann schreibe ich das so auf.",
+			"ansehen": {
+				"treue": -5
+			},
+			"akte": "Dem Komtur gemeldet: in Riverlock nichts gefunden."
+		},
+		"nach_kette": {
+			"text": "In silentio, Wächter {name}. Die Kette hält wieder, soweit wir wissen.",
+			"optionen": [
+				{
+					"text": "Vigilamus.",
+					"weiter": "ende"
+				}
+			]
 		}
 	}
 }

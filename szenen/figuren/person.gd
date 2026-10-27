@@ -29,6 +29,7 @@ func _ready() -> void:
 	$Kordel.material_override = _material(KORDELFARBEN[kordel])
 	Spielstand.flag_geaendert.connect(func(_f: String) -> void: _pruefe_sichtbarkeit())
 	Spielstand.alarm_geaendert.connect(func(_s: int) -> void: _pruefe_sichtbarkeit())
+	Spielzeit.abschnitt_gewechselt.connect(func(_a: StringName) -> void: _pruefe_sichtbarkeit())
 	_pruefe_sichtbarkeit()
 
 

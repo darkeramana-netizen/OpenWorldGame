@@ -224,6 +224,7 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     E("Script", "res://szenen/welt/bedingt_sichtbar.gd", "21_bedingt")
     E("PackedScene", "res://szenen/figuren/gegner.tscn", "22_gegner")
     E("Script", "res://szenen/welt/gespraech.gd", "23_gespraech")
+    E("Script", "res://szenen/welt/durchsuchbar.gd", "24_durchsuchbar")
     S('''[sub_resource type="StandardMaterial3D" id="Material_flamme"]
     shading_mode = 0
     albedo_color = Color(1, 0.62, 0.18, 1)''')

@@ -12,6 +12,30 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Akt II, erster Faden: „Riverlock schwankt“ (die Nachrichtenkette)
+
+Akt II hat begonnen. Wer Akt I abgeschlossen hat und den Komtur anspricht, erlebt einen Zeitsprung: **Akt II · Wachsamkeit, Frühjahr 1754.**
+
+**Der Auftrag:** Ein Späherbericht aus Valdrenn kam über Riverlock und sagte, die Geschütze würden von Tarnwacht abgezogen. Auf einem zweiten Weg hört der Orden das Gegenteil. Irgendwo in der Kette Späher → Bote → Riverlock → Rat lügt jemand.
+
+**Der Weg:**
+1. **Leofa Marsh** im Archiv des Schwarzen Bergfrieds zeigt die Siegelhülse. Unter dem Wachs des Spähers liegt ein zweiter, blasser Ring: Zollwachs aus Riverlock.
+2. **Beobachter Aldo Venn** im Großen Saal von Riverlock weiß, wer die Papiere der Händler liest: Lukas Dorn, der Schreiber des Zollherrn. Dessen Pult steht im Zoll im Mittelgeschoss.
+3. **Das Pult heimlich durchsuchen.** Tagsüber sitzt die Zöllnerin Mette Ruhl daneben; solange sie herübersieht, heißt es „Nicht jetzt“. Nachts (ab 20 Uhr) ist der Zoll geschlossen und die Zöllnerin fort. Im Pult liegen ein Siegelstempel ohne Wappen und Dorns Entwurf („abgezogen“ statt „aufgezogen“).
+
+**Die Entscheidung, vier Ausgänge:**
+- **Zu Zollherr Falk gehen.** Steht Riverlock gut zu dir (Ansehen ≥ 0), liefert Falk seinen Schreiber selbst aus (Riverlock +5). Misstraut Riverlock dir, weigert er sich, und Dorn flieht über die Brücke (Riverlock −5).
+- **Dem Komtur den Beweis geben.** Der Rat zwingt Falk mit Siegel. Dorn wird ausgeliefert, aber Falk vergisst es dem Orden nicht (Riverlock −3, Treue +3).
+- **Dorn selbst stellen.** Er bietet fünf Gulden. Lehnst du ab, flieht er nach Valdrenn. Nimmst du das Gold, hast du nichts gefunden …
+- **… und die Prüfer finden es nach fünf Tagen heraus:** Anzeige auf Stufe 5, Verbannung („Hilfe für Valdrenn“). Wer vorher dem Kammerhüter gesteht und das Gold abgibt, kommt mit Stufe 3 davon.
+
+Zum Schluss berichtet man dem Komtur, und der Faden ist abgeschlossen. Was dabei geschah, steht in der Akte.
+
+**Neu dafür:**
+- `szenen/welt/durchsuchbar.gd` für Dinge, die man heimlich durchsucht. Jemand kann sie bewachen.
+- Die Bedingung `abschnitt!=nacht`.
+- Personen prüfen ihre Sichtbarkeit jetzt auch beim Wechsel des Tagesabschnitts.
+
 ### Sold, Spähwesen und Bürgschaft
 
 Damit ist Stufe 4 vollständig.
@@ -363,6 +387,7 @@ szenen/
   welt/region_nordstrasse.tscn, region_suedstrasse.tscn, region_kuestenweg.tscn  die Landstraßen
   welt/uebergang.gd        Übergang am Ende eines Weges in die nächste Region
   welt/gespraech.gd        belauschbares Gespräch zwischen zwei Personen
+  welt/durchsuchbar.gd     heimlich durchsuchbar (z. B. ein Pult), solange niemand herübersieht
   welt/bedingt_sichtbar.gd sichtbar unter einer Bedingung, z. B. Signalfeuer ab Alarmstufe 2
   welt/wasserdicht.gd      Bereich unter dem Wasserspiegel, in dem niemand zurückgesetzt wird (Keller, Tunnel)
   welt/region.gd           Wurzel einer Region: Wasser, Rand, Lage auf der Karte
@@ -513,17 +538,18 @@ Jede Datei hat Knoten. Begonnen wird beim Knoten `start`, außer ein Eintrag in 
 | `merke_tag` | Name eines Zählers, der den heutigen Tag festhält, z. B. für Fristen in `autoload/ereignisse.gd` |
 | `reise` | `{ "ziel": "riverlock", "ankunft": "von_drachenstein", "stunden": 54, "text": "..." }`: Am Ende des Gesprächs geht es in die andere Region, an den Marker mit diesem Namen (Gruppe `ankunft`), die Zeit läuft weiter, dann kommt die Blende mit dem Text |
 
-**Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `zaehler<3`, `rang>=2`, `alarm>=2`, `ansehen_rufer>=10`, `verfahren_stufe>=4`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht), `region=riverlock` (die Region, in der man gerade ist: drachenstein, riverlock, ashenveil, nordstrasse, suedstrasse, kuestenweg). Mehrere werden durch Komma getrennt und müssen alle gelten.
+**Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `zaehler<3`, `rang>=2`, `alarm>=2`, `ansehen_rufer>=10`, `verfahren_stufe>=4`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht), `abschnitt!=nacht`, `region=riverlock` (die Region, in der man gerade ist: drachenstein, riverlock, ashenveil, nordstrasse, suedstrasse, kuestenweg). Mehrere werden durch Komma getrennt und müssen alle gelten.
 
 ## Testen
 
-Neun automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
+Zehn automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
 
 | Test | Prüft |
 |---|---|
 | `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
 | `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
 | `tests/test_innen.gd` | die Innenräume, 25 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü, in Gravemarch Donjon, Archivarin und Scheintore |
+| `tests/test_akt2.gd` | Akt II, Nachrichtenkette, 36 Punkte: Zeitsprung beim Komtur, Leofa und die Siegelhülse, der Beobachter, das Pult tagsüber bewacht und nachts durchsucht, Speichern und Laden, alle Ausgänge (Falk liefert aus, der Rat entscheidet, Falk verweigert, Gold genommen und nach fünf Tagen angezeigt, gestanden) |
 | `tests/test_spaehwesen.gd` | Sold, Spähwesen und Bürgschaft, 22 Punkte: Sold zum Monatsanfang und doppelt im Krieg, Bürgschaft für Kerrin, offen von vorn bemerkt werden, schleichend alles hören, Kerrin als Bürge melden, Gold vom Gesandten, Gespräch über die Kette belauschen und berichten, Gold melden, Speichern und Laden, Anzeige durch die Prüfer bei nicht gemeldetem Gold, Verweis für den schweigenden Bürgen |
 | `tests/test_stufe4.gd` | Stufe 4, 28 Punkte: Alarmstufe 1 zu Beginn, Ansehen durch Antworten, Auftrag und Kampf gegen die Gesetzlosen (Treffer, Block, Sieg, bleiben nach dem Laden liegen), Verwundung, Ring der Feuer und leere Märkte, keine Boote bei Alarm, Säbel, Schuss, Bajonett, Nachladen, Verweise und Verfahren bis zur Degradierung, Waffe gegen die Händlerin bis zur Ausstoßung |
 | `tests/test_landwege.gd` | die Landwege, 26 Punkte: Anwärter bleiben drin, durch das Nordtor, einmal um das Meer (Nordstraße, Südstraße, Küstenweg) mit den richtigen Reisetagen, Umkehren kostet nichts, Karte, Wald, Personen an der Straße, Speichern und Laden unterwegs, über den Pass und durch das Südtor zurück in die Stadt |
@@ -541,10 +567,11 @@ godot --headless --path . --script res://tests/test_ashenveil.gd
 godot --headless --path . --script res://tests/test_landwege.gd
 godot --headless --path . --script res://tests/test_stufe4.gd
 godot --headless --path . --script res://tests/test_spaehwesen.gd
+godot --headless --path . --script res://tests/test_akt2.gd
 ```
 
 Am Ende steht jeweils `Fehler: 0`, wenn alles stimmt.
 
 ## Nächste Schritte
 
-Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Alle Burgen aus deinen Grundrissen stehen, die Landwege verbinden sie, und die Systeme aus Stufe 4 laufen. Stufe 4 ist damit vollständig. Offen sind echte Modelle statt Klötzen (Stufe 3) und die Geschichte von Akt II mit ihren Hauptfäden.
+Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Alle Burgen aus deinen Grundrissen stehen, die Landwege verbinden sie, und die Systeme aus Stufe 4 laufen. Stufe 4 ist damit vollständig. Akt II hat begonnen: Der erste Hauptfaden, die Nachrichtenkette in Riverlock, ist spielbar. Offen sind die übrigen Fäden von Akt II (die zwei im Rat, Silas Holt, das Archiv) und echte Modelle statt Klötzen (Stufe 3).

@@ -36,7 +36,7 @@ Du bist ein Vertriebener, der 1750 an die Schwelle des Ordens tritt und um Arbei
 ### Akt II – Wachsamkeit (Wächter bis Unterhüter)
 - Aufträge im ganzen Land: Botenlinien, Signaltürme, Bezirksfestungen, Riverlock.
 - Hauptfäden:
-  - **Riverlock schwankt.** Hendrik Falk wird Gold angeboten. Ein Späherbericht kommt verfälscht an. Wer sitzt in der Nachrichtenkette?
+  - **Riverlock schwankt.** Hendrik Falk wird Gold angeboten. Ein Späherbericht kommt verfälscht an. Wer sitzt in der Nachrichtenkette? ✅ spielbar: Leofa → Beobachter → Pult des Schreibers → Falk, Komtur oder Dorn selbst
   - **Die zwei im Rat.** Wer sind die beiden Ratsmeister, die den Rufern zuneigen?
   - **Silas Holt** wirbt in den Dörfern. Seine Argumente sind nicht falsch.
   - **Das Archiv** zeigt, was 1130 wirklich geschah (Tamsin Orr, Jorun Teck).
@@ -116,7 +116,7 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 | **2 – Akt I spielbar** ✅ | Haus der Schwelle in Drachenstein, Knappenprüfung, Nachtwache, Eid, Namensstein auf der Ordenswand, Speichern und Laden | 3–6 Monate |
 | **3 – Die erste Region** 🔶 | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände. Begehbar als Graybox, Bergfried und Gravecrest mit Innenräumen. Drachenstein (Hafen im Osten) und Gravemarch nach Grundriss. Riverlock als zweite Region (Valnschlucht), per Schiff mit der Lotsin erreichbar. Ashenveil als dritte Region (Nebelmoor) mit Kapelle der Stille und Fluchttunnel, mit der Reiterin erreichbar. Landwege (Nordstraße, Südstraße, Küstenweg) als begehbare Strecken im Maßstab 1:100 mit Signaltürmen, Bezirksfestungen und Dörfern. Offen: Modelle | 6+ Monate |
 | **4 – Systeme** ✅ | Kampf, Ansehen, Akte und Verfahren, Alarmstufen. Erste Fassung steht: Säbel, Muskete, Bajonett, Gesetzlose als Auftrag, Verwundung, sechs Ansehensgruppen, Verfahren beim Kammerhüter mit allen Strafstufen, Ring der Feuer. Dazu Sold nach Rang, Schleichen und Belauschen mit Beobachtungen und Berichten, Gold über dem Sold und die Prüfer, Bürgschaft für einen Bewerber | laufend |
-| **5 – Das ganze Becken** | Ashenveil, Nord- und Südstraße, Riverlock, Akt II | später |
+| **5 – Das ganze Becken** | Ashenveil, Nord- und Südstraße, Riverlock stehen. Akt II hat begonnen: erster Hauptfaden „Riverlock schwankt“ (Nachrichtenkette) spielbar | laufend |
 | **6 – Akt III** | Ende der Stille, Kriegszustand, Enden | später |
 
 **Bewusst weggelassen, mindestens bis Stufe 5:** Reiten, selbst Segeln, Sprachausgabe, große Schlachten, begehbares Valdrenn.
@@ -138,7 +138,7 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 **Stufe 1 und Stufe 2 sind fertig: Akt I ist durchspielbar**, mit Speichern und Laden (Ablauf siehe README.md).
 
 Entscheidungen beim Bau von Akt I:
-- **Akt I dauert drei Spieljahre (1750 bis 1753),** weil die Ordensregel für den Wächter drei Dienstjahre verlangt. Probejahr und Lehrjahre werden als Zeitsprung mit Blende erzählt. Akt II beginnt also im Herbst 1753, nicht 1750.
+- **Akt I dauert drei Spieljahre (1750 bis 1753),** weil die Ordensregel für den Wächter drei Dienstjahre verlangt. Probejahr und Lehrjahre werden als Zeitsprung mit Blende erzählt. Akt I endet im Herbst 1753. Akt II beginnt nach einem Winter mit einem weiteren Zeitsprung im Frühjahr 1754.
 - **Die Ränge folgen exakt den Bedingungen aus dem Dokument „Ränge und Eide“:** Gelöbnis, Knappenprüfung (Lesen, Handwerk, Nachtwache neben einem Hüter, Zustimmung der Versammlung), Gesellen-Eid nach zwei Jahren und Haupteid nach der Nachtwache allein auf dem Turm mit Zustimmung von Hüter und Wachführer und Aufnahme durch den Komtur.
 - **Fenn ist ein Rufer-Werber.** Melden ist sauber. Schweigen bringt einen Verweis, und der Bürge wird mitverhandelt. Helfen führt zur Verbannung (Strafstufe 5) und zum Spielende.
 

@@ -201,11 +201,13 @@ for k, (x, z, g) in enumerate([(-18, 55, 80), (24, 72, 100)]):
 N("Personen", "Node3D", ".")
 person("Lotsin", "Personen", -44, KAI, 8, "Lotsin Wenna Kroll", "lotsin", 0, "0.2, 0.24, 0.3, 1", gier=-90)
 person("TorwacheWestburg", "Personen", -89, 0, 49, "Torwächter Joost Mahr", "torwache_riverlock", 0, "0.35, 0.3, 0.15, 1", gier=180)
-person("Zoellnerin", "Personen", 0, 0, -6.6, "Zöllnerin Mette Ruhl", "zoellnerin_riverlock", 0, "0.3, 0.32, 0.2, 1", gier=180)
+person("Zoellnerin", "Personen", 0, 0, -6.6, "Zöllnerin Mette Ruhl", "zoellnerin_riverlock", 0, "0.3, 0.32, 0.2, 1", gier=180,
+       sichtbar_wenn="abschnitt!=nacht")  # nachts ist der Zoll geschlossen
 person("ZollherrFalk", "Personen", 0, 6, -6.4, "Zollherr Hendrik Falk", "zollherr_falk", 0, "0.4, 0.3, 0.12, 1", gier=180)
 # Ein Gesandter aus Valdrenn (als Salzhändler) verhandelt in der Ostburg mit dem Schreiber des Zollherrn.
 person("Gesandter", "Personen", 140, 0, 20, "Orm Velsch, Händler aus Salzhain", "gesandter_valdrenn", 0, "0.45, 0.38, 0.22, 1")
-person("Schreiber", "Personen", 140, 0, 22.2, "Schreiber Lukas Dorn", "schreiber_falk", 0, "0.3, 0.28, 0.24, 1")
+person("Schreiber", "Personen", 140, 0, 22.2, "Schreiber Lukas Dorn", "schreiber_falk", 0, "0.3, 0.28, 0.24, 1",
+       sichtbar_wenn="!kette_entschieden")
 gespraech("GesandterUndSchreiber", "Gesandter", "Schreiber", [
     ("a", "Der König zahlt in Gold, nicht in Versprechen. Hundert Gulden für eine Nacht, in der die Kette im Wasser liegt."),
     ("b", "Der Zollherr sagt weder ja noch nein. Er will wissen, wann."),
@@ -215,6 +217,20 @@ gespraech("GesandterUndSchreiber", "Gesandter", "Schreiber", [
    "Belauscht in Riverlock: Ein Gesandter aus Valdrenn bietet hundert Gulden für eine Nacht, in der die Kette im Wasser liegt. Der Schreiber des Zollherrn verhandelt mit.",
    (140, 1, 21.1))
 person("Beobachter", "Personen", -9, 6, -6.4, "Beobachter Aldo Venn", "beobachter_riverlock", 2, "0.1, 0.1, 0.12, 1", gier=180)
+
+# Akt II, Nachrichtenkette: Das Pult des Schreibers im Zollraum. Tagsüber sitzt die Zöllnerin daneben.
+N("PultDorn", "StaticBody3D", "Personen", f"""{T(-6, 0, -1)}
+script = ExtResource("24_durchsuchbar")
+anzeige_name = "Pult des Schreibers"
+aktion_text = "Heimlich durchsuchen"
+dialog_id = "pult_dorn"
+bedingung = "kette_beobachter,!beweis_entwurf"
+waechter = NodePath("../Zoellnerin")""")
+box("Platte", "Personen/PultDorn", 0, 0.5, 0, 1.4, 1.0, 0.8, "Material_holz", kollision=False)
+S('''[sub_resource type="BoxShape3D" id="PultForm"]
+size = Vector3(1.4, 1.0, 0.8)''')
+N("Form", "CollisionShape3D", "Personen/PultDorn", f"""{T(0, 0.5, 0)}
+shape = SubResource("PultForm")""")
 
 # ---------- Orte ----------
 N("Orte", "Node3D", ".")

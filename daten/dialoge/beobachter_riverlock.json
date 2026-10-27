@@ -8,6 +8,11 @@
 			"text": "Der Beobachter des Ordens sieht dich lange an. Dann spricht er, leise, damit der Zollherr es nicht hört.",
 			"optionen": [
 				{
+					"text": "Der Späherbericht wurde hier in Riverlock neu gesiegelt.",
+					"bedingung": "siegel_gesehen,!kette_beobachter",
+					"weiter": "kette_spur"
+				},
+				{
 					"text": "Was tut ein Beobachter?",
 					"weiter": "aufgabe"
 				},
@@ -65,6 +70,19 @@
 				"treue": 3
 			},
 			"akte": "Geschenk über dem Sold (ein Gulden von Orm Velsch) beim Beobachter in Riverlock gemeldet und abgegeben.",
+			"weiter": "fragen"
+		},
+		"kette_spur": {
+			"text": "Neu gesiegelt? Dann kann es nur an einer Stelle gewesen sein. Alles, was Händler über die Brücke tragen, geht durch den Zoll, auch die Hülsen, die sie für uns tragen, ohne es zu wissen. Und die Papiere der Händler liest der Schreiber des Zollherrn. Lukas Dorn.",
+			"weiter": "kette_spur_2"
+		},
+		"kette_spur_2": {
+			"text": "Ich kann ihn nicht festnehmen, Riverlock ist nicht unser. Aber sein Pult steht im Zoll im Mittelgeschoss. Tagsüber sitzt die Zöllnerin daneben. Nachts ist der Zoll geschlossen.",
+			"setze": [
+				"kette_beobachter"
+			],
+			"akte": "Beobachter Aldo Venn: Händlerpapiere und Späherhülsen gehen durch den Zoll und durch die Hände des Schreibers Lukas Dorn.",
+			"ziel": "Durchsuche das Schreibpult von Lukas Dorn im Zoll des Mittelbaus, ohne dass Zöllnerin Mette Ruhl es sieht. Nachts ist der Zoll geschlossen.",
 			"weiter": "fragen"
 		}
 	}

@@ -140,6 +140,11 @@
 					"weiter": "gold_melden"
 				},
 				{
+					"text": "Ich habe fünf Gulden von einem Fälscher genommen, damit ich schweige.",
+					"bedingung": "dorn_bestochen,!dorn_gestanden,!dorn_angezeigt",
+					"weiter": "dorn_gestehen"
+				},
+				{
 					"text": "Nichts. Ich gehe an die Arbeit.",
 					"weiter": "gruss"
 				}
@@ -261,6 +266,18 @@
 				"treue": 3
 			},
 			"akte": "Geschenk über dem Sold (ein Gulden von einem Gesandten aus Valdrenn) gemeldet und abgegeben.",
+			"weiter": "danach"
+		},
+		"dorn_gestehen": {
+			"text": "Gold eines Fälschers aus Valdrenn. Dafür gibt es Verbannung. Dass du es selbst sagst, ist der einzige Grund, warum ich es nicht so aufschreibe. Gib es her.",
+			"geld": -1200,
+			"setze": [
+				"dorn_gestanden"
+			],
+			"anzeige": {
+				"stufe": 3,
+				"grund": "Bestechung durch den Fälscher Lukas Dorn angenommen, selbst gestanden"
+			},
 			"weiter": "danach"
 		}
 	}

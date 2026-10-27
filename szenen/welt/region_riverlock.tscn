@@ -1,4 +1,4 @@
-[gd_scene load_steps=50 format=3]
+[gd_scene load_steps=52 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -22,6 +22,7 @@
 [ext_resource type="Script" path="res://szenen/welt/bedingt_sichtbar.gd" id="21_bedingt"]
 [ext_resource type="PackedScene" path="res://szenen/figuren/gegner.tscn" id="22_gegner"]
 [ext_resource type="Script" path="res://szenen/welt/gespraech.gd" id="23_gespraech"]
+[ext_resource type="Script" path="res://szenen/welt/durchsuchbar.gd" id="24_durchsuchbar"]
 
 [sub_resource type="StandardMaterial3D" id="Material_flamme"]
 shading_mode = 0
@@ -109,6 +110,9 @@ roughness = 0.9
 [sub_resource type="StandardMaterial3D" id="Material_metall"]
 albedo_color = Color(0.25, 0.25, 0.27, 1)
 roughness = 0.4
+
+[sub_resource type="BoxShape3D" id="PultForm"]
+size = Vector3(1.4, 1.0, 0.8)
 
 [sub_resource type="BoxShape3D" id="Form_ort1"]
 size = Vector3(340, 80, 170)
@@ -1877,6 +1881,7 @@ anzeige_name = "Zöllnerin Mette Ruhl"
 dialog_id = "zoellnerin_riverlock"
 kordel = 0
 tracht = Color(0.3, 0.32, 0.2, 1)
+sichtbar_wenn = "abschnitt!=nacht"
 
 [node name="ZollherrFalk" parent="Personen" instance=ExtResource("4_person")]
 transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, 0, 6, -6.4)
@@ -1898,6 +1903,7 @@ anzeige_name = "Schreiber Lukas Dorn"
 dialog_id = "schreiber_falk"
 kordel = 0
 tracht = Color(0.3, 0.28, 0.24, 1)
+sichtbar_wenn = "!kette_entschieden"
 
 [node name="Gespraeche" type="Node3D" parent="."]
 
@@ -1917,6 +1923,25 @@ anzeige_name = "Beobachter Aldo Venn"
 dialog_id = "beobachter_riverlock"
 kordel = 2
 tracht = Color(0.1, 0.1, 0.12, 1)
+
+[node name="PultDorn" type="StaticBody3D" parent="Personen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 0, -1)
+script = ExtResource("24_durchsuchbar")
+anzeige_name = "Pult des Schreibers"
+aktion_text = "Heimlich durchsuchen"
+dialog_id = "pult_dorn"
+bedingung = "kette_beobachter,!beweis_entwurf"
+waechter = NodePath("../Zoellnerin")
+
+[node name="Platte" type="CSGBox3D" parent="Personen/PultDorn"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.5, 0)
+
+size = Vector3(1.4, 1.0, 0.8)
+material = SubResource("Material_holz")
+
+[node name="Form" type="CollisionShape3D" parent="Personen/PultDorn"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.5, 0)
+shape = SubResource("PultForm")
 
 [node name="Orte" type="Node3D" parent="."]
 

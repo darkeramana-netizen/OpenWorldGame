@@ -1,0 +1,18 @@
+{
+	"knoten": {
+		"start": {
+			"sprecher": "Schreibpult",
+			"text": "Zolllisten, Frachtbriefe, ein Tintenfass. Unter einem losen Brett im Boden des Pults liegen ein Siegelstempel ohne Wappen und ein Blatt in Dorns Hand.",
+			"weiter": "entwurf"
+		},
+		"entwurf": {
+			"sprecher": "Schreibpult",
+			"text": "„Die Geschütze werden von Tarnwacht abgezogen, das Heer geht ins Winterlager.“ Durchgestrichen steht darüber, in anderer Tinte abgeschrieben: „Die Geschütze werden nach Tarnwacht aufgezogen.“ Der Bericht des Spähers, und daneben das, was im Rat angekommen ist.",
+			"setze": [
+				"beweis_entwurf"
+			],
+			"akte": "Im Pult des Schreibers Lukas Dorn gefunden: ein Siegelstempel ohne Wappen und sein Entwurf des gefälschten Späherberichts („abgezogen“ statt „aufgezogen“).",
+			"ziel": "Du hast den Beweis. Bring ihn zu Zollherr Falk, stell den Schreiber selbst oder melde es Komtur Hayn in Drachenstein."
+		}
+	}
+}

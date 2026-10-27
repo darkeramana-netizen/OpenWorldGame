@@ -8,6 +8,16 @@
 			"text": "Was willst du?",
 			"optionen": [
 				{
+					"text": "Euer Schreiber hat einen Späherbericht des Ordens gefälscht.",
+					"bedingung": "beweis_entwurf,!kette_entschieden,ansehen_riverlock>=0",
+					"weiter": "falk_liefert"
+				},
+				{
+					"text": "Euer Schreiber hat einen Späherbericht des Ordens gefälscht.",
+					"bedingung": "beweis_entwurf,!kette_entschieden,ansehen_riverlock<0",
+					"weiter": "falk_verweigert"
+				},
+				{
 					"text": "Wem gehört Riverlock?",
 					"weiter": "unabhaengig"
 				},
@@ -71,6 +81,31 @@
 				"treue": 3
 			},
 			"weiter": "fragen"
+		},
+		"falk_liefert": {
+			"text": "Zeig her. … Dorn. Ausgerechnet. Riverlock verkauft Zoll, keine Lügen. Ich lasse ihn holen und schicke ihn mit Siegel nach Drachenstein. Sag deinem Komtur, das tue ich nicht für den Orden, sondern für die Brücke.",
+			"setze": [
+				"kette_entschieden",
+				"dorn_ausgeliefert"
+			],
+			"ansehen": {
+				"riverlock": 5
+			},
+			"akte": "Zollherr Falk liefert seinen Schreiber Lukas Dorn an den Orden aus.",
+			"ziel": "Berichte Komtur Aldric Hayn in der Burgfeste Drachenstein, was in Riverlock geschehen ist.",
+			"weiter": "fragen"
+		},
+		"falk_verweigert": {
+			"text": "Ein Blatt Papier, gebracht von einem Wächter, der mir in meinem eigenen Saal gedroht hat. Nein. Riverlock liefert niemanden aus, weil der Orden es will. Geh.",
+			"setze": [
+				"kette_entschieden",
+				"dorn_geflohen"
+			],
+			"ansehen": {
+				"riverlock": -5
+			},
+			"akte": "Zollherr Falk weigert sich, seinen Schreiber auszuliefern. Noch in derselben Stunde geht Lukas Dorn über die Brücke nach Osten.",
+			"ziel": "Berichte Komtur Aldric Hayn in der Burgfeste Drachenstein, was in Riverlock geschehen ist."
 		}
 	}
 }

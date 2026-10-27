@@ -8,6 +8,11 @@
 			"text": "Noch etwas?",
 			"optionen": [
 				{
+					"text": "Ich habe Euren Entwurf gefunden.",
+					"bedingung": "beweis_entwurf,!kette_entschieden",
+					"weiter": "dorn_gestellt"
+				},
+				{
 					"text": "Mit wem habt Ihr eben gesprochen?",
 					"weiter": "wer"
 				},
@@ -23,6 +28,41 @@
 		},
 		"ende": {
 			"text": "Guten Tag."
+		},
+		"dorn_gestellt": {
+			"text": "… Leise. Hier hören alle zu. Fünf Gulden, Wächter. Mehr, als du in drei Jahren Sold siehst. Du hast nichts gefunden, und ich bin morgen fort.",
+			"optionen": [
+				{
+					"text": "Ich nehme das Gold.",
+					"weiter": "dorn_bestochen"
+				},
+				{
+					"text": "Behalte dein Gold. Du gehst nirgendwohin.",
+					"weiter": "dorn_flieht"
+				}
+			]
+		},
+		"dorn_bestochen": {
+			"text": "Klug. Wir haben uns nie gesehen.",
+			"geld": 1200,
+			"setze": [
+				"kette_entschieden",
+				"dorn_bestochen"
+			],
+			"merke_tag": "dorn_tag",
+			"ziel": "Berichte Komtur Aldric Hayn in der Burgfeste Drachenstein, was in Riverlock geschehen ist."
+		},
+		"dorn_flieht": {
+			"text": "Er stößt den Tisch um und ist zur Tür hinaus, bevor du um den Tisch herum bist. Am Abend heißt es, er sei über die Brücke nach Osten gegangen.",
+			"setze": [
+				"kette_entschieden",
+				"dorn_geflohen"
+			],
+			"ansehen": {
+				"treue": 2
+			},
+			"akte": "Den Schreiber Lukas Dorn mit dem Beweis gestellt. Er hat Gold geboten und ist, als du ablehntest, nach Valdrenn geflohen.",
+			"ziel": "Berichte Komtur Aldric Hayn in der Burgfeste Drachenstein, was in Riverlock geschehen ist."
 		}
 	}
 }

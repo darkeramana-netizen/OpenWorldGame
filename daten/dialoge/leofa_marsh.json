@@ -47,6 +47,25 @@
 		},
 		"ende": {
 			"text": "Wach gut. Und wenn du durch die leere Ebene gehst: Bleib einen Moment stehen."
+		},
+		"siegel": {
+			"text": "Du kommst wegen der Hülse. Hier. Das Wachs ist das des Spähers, aber darunter liegt ein zweiter Ring, dünner und blasser. Jemand hat sie geöffnet und neu gesiegelt, mit Zollwachs aus Riverlock. Das riecht man sogar.",
+			"weiter": "siegel_2"
+		},
+		"siegel_2": {
+			"text": "Der Bote, der sie gebracht hat, ist ein Fuhrmann aus Hollmar, ehrlich wie Brot. Frag den Beobachter in Riverlock, durch wessen Hände die Hülse dort ging.",
+			"setze": [
+				"siegel_gesehen"
+			],
+			"akte": "Leofa Marsh: Die Siegelhülse des Späherberichts wurde mit Zollwachs aus Riverlock neu gesiegelt.",
+			"ziel": "Frag Beobachter Aldo Venn in Riverlock, durch wessen Hände der Späherbericht ging.",
+			"weiter": "fragen"
 		}
-	}
+	},
+	"einstieg": [
+		{
+			"bedingung": "akt2_begonnen,!siegel_gesehen",
+			"knoten": "siegel"
+		}
+	]
 }

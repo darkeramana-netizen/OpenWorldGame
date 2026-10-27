@@ -1,7 +1,7 @@
 extends Node
 ## Was mit der Zeit geschieht, auch wenn der Spieler nicht hinsieht: der Sold zum Monatsanfang,
 ## die Prüfer, die Gold über dem Sold bemerken, und die Folgen einer Bürgschaft.
-## Lore: Sold und Versorgung (3.8), Spähwesen und Prüfung (3.11), Bürgschaft (3.7).
+## Lore: Sold und Versorgung (3.8), Spähwesen und Prüfung (3.11), Bürgschaft (3.7), Disziplin (3.7).
 
 ## Sold im Monat in Schillingen, Index = Rang (Anwärter keiner, Knappe und Geselle 1, Wächter 3,
 ## Unteroffiziere 4–6, Offiziere 6–12, Marschall und Komtur 15–20, Ordensleitung 30).
@@ -9,6 +9,8 @@ const SOLD: Array[int] = [0, 0, 1, 1, 3, 4, 5, 6, 6, 6, 8, 10, 12, 15, 20, 30, 3
 const MONAT := 30
 ## Nach so vielen Tagen bemerken die Prüfer Gold, das nicht gemeldet wurde.
 const PRUEFER_TAGE := 3
+## Nach so vielen Tagen findet der Oberste Prüfer heraus, wer Gold vom Fälscher in Riverlock nahm.
+const BESTECHUNG_TAGE := 5
 ## Nach so vielen Tagen wird ein Bewerber, der nach den Fluchtgängen fragt, von den Prüfern gefasst.
 const BEWERBER_TAGE := 4
 
@@ -22,6 +24,7 @@ func _bei_neuem_tag(_tag: int) -> void:
 		_zahle_sold()
 	_pruefe_gold()
 	_pruefe_bewerber()
+	_pruefe_bestechung()
 
 
 func _zahle_sold() -> void:
@@ -52,3 +55,12 @@ func _pruefe_bewerber() -> void:
 		Spielstand.verweis("Als Bürge für Kerrin Fahl mitverhandelt: Er hat nach den Fluchtgängen gefragt, und du hast es nicht gemeldet.")
 		Spielstand.ansehen_aendern("treue", -5)
 		Spielstand.meldung.emit("Die Prüfer haben Kerrin Fahl festgenommen. Als sein Bürge stehst du mit in der Akte.")
+
+
+## Akt II, Nachrichtenkette: Wer das Gold des Fälschers nimmt und nicht gesteht, hilft Valdrenn (Stufe 5).
+func _pruefe_bestechung() -> void:
+	if not Spielstand.hat_flag("dorn_bestochen") or Spielstand.hat_flag("dorn_gestanden") or Spielstand.hat_flag("dorn_angezeigt"):
+		return
+	if Spielzeit.gesamttag() - Spielstand.zaehler_wert("dorn_tag") >= BESTECHUNG_TAGE:
+		Spielstand.setze_flag("dorn_angezeigt")
+		Spielstand.anzeige(5, "Gold vom Fälscher Lukas Dorn angenommen und geschwiegen: Hilfe für Valdrenn")
