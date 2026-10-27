@@ -1,0 +1,106 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Guten Tag, Wächter.",
+				"Ah, einer vom Orden. Ist etwas passiert?",
+				"Schönes Wetter für den Markt, nicht wahr?",
+				{
+					"text": "Wächter {name}. Man kennt dich inzwischen im Viertel.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Ist es wahr, dass es Krieg gibt? Sag es mir ehrlich.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Nicht jetzt, ich muss nach Hause, bevor es dunkel wird.",
+					"bedingung": "abschnitt=nachmittag"
+				}
+			],
+			"optionen": [
+				{
+					"text": "Was hört man in der Stadt?",
+					"weiter": "geruecht"
+				},
+				{
+					"text": "Wie lebt es sich in Drachenstein?",
+					"weiter": "thema"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fragen": {
+			"text": [
+				"Sonst noch etwas?",
+				"Noch etwas?",
+				"Was noch?"
+			],
+			"optionen": [
+				{
+					"text": "Was hört man in der Stadt?",
+					"weiter": "geruecht"
+				},
+				{
+					"text": "Wie lebt es sich in Drachenstein?",
+					"weiter": "thema"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"geruecht": {
+			"text": [
+				"Man sagt, in Valdrenn rüstet der junge König. Aber das sagt man seit Jahren.",
+				"Die Fischer sagen, draußen vor den Inseln liegen fremde Boote. Ohne Lotsen. Die Hafenaufsicht hat nichts gesehen, sagt sie.",
+				"Mein Vetter fährt Korn nach Riverlock. Er sagt, dort wird mehr geflüstert als gehandelt.",
+				"Der Bürgermeister war wieder oben in der Burg. Wenn Joris Brandt zur Burg hinaufsteigt, wird hinterher irgendwas teurer.",
+				{
+					"text": "Hast du die Signalfeuer gesehen? Die ganze Küste brennt. Meine Mutter hat die Fensterläden vernagelt.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Die Händler aus Velmund sind abgereist, alle an einem Tag. Das ist nie ein gutes Zeichen.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Es heißt, in Riverlock hat einer Briefe gefälscht. Für Gold aus Valdrenn. Ein Schreiber, sagen sie.",
+					"bedingung": "kette_abgeschlossen"
+				},
+				{
+					"text": "Der Zollherr von Riverlock hat seinen eigenen Schreiber ausgeliefert, hört man. Das hätte ich ihm nicht zugetraut.",
+					"bedingung": "dorn_ausgeliefert"
+				},
+				{
+					"text": "Einer aus Riverlock ist über die Brücke nach Osten geflohen, und der Orden hat ihn laufen lassen. So erzählt man es jedenfalls.",
+					"bedingung": "dorn_geflohen"
+				},
+				{
+					"text": "Seit dem Winter sieht man mehr Wächter auf der Straße. Wachsamkeit, sagt der Rat. Ich sage: Angst.",
+					"bedingung": "akt2_begonnen"
+				}
+			],
+			"weiter": "fragen"
+		},
+		"thema": {
+			"text": [
+				"Eng, laut und teuer. Aber sicher. Solange oben in der Burg die Lichter brennen, schläft man hier gut.",
+				"Die Häuser steigen den Berg hinauf wie Treppenstufen. Wer unten am Kai wohnt, riecht nach Fisch, wer oben wohnt, nach Geld.",
+				"Zwanzigtausend Leute und eine Burg voller Leute, die nicht reden dürfen. Man gewöhnt sich an alles."
+			],
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": [
+				"Pass auf dich auf.",
+				"Vigilamus, sagt ihr doch, oder?",
+				"Grüß die Burg von mir."
+			]
+		}
+	}
+}

@@ -87,8 +87,26 @@ func _zeige(knoten_id: String) -> void:
 			texte.append(option["text"])
 	zeile_gezeigt.emit(
 		knoten.get("sprecher", _gespraechspartner),
-		Spielstand.text_einsetzen(knoten.get("text", "")),
+		Spielstand.text_einsetzen(_waehle_text(knoten.get("text", ""))),
 		Array(texte).map(Spielstand.text_einsetzen))
+
+
+## "text" darf eine Liste sein: aus den Einträgen, deren Bedingung gilt, wird einer gewählt, fest je
+## Gesprächspartner und Tag. So sagen Leute desselben Schlags Verschiedenes, und morgen etwas anderes.
+## Ein Eintrag ist ein Text oder {"text": ..., "bedingung": ...}.
+func _waehle_text(text: Variant) -> String:
+	if typeof(text) != TYPE_ARRAY:
+		return str(text)
+	var passend: Array[String] = []
+	for eintrag: Variant in text:
+		if typeof(eintrag) == TYPE_DICTIONARY:
+			if Spielstand.pruefe_bedingung(eintrag.get("bedingung", "")):
+				passend.append(eintrag["text"])
+		else:
+			passend.append(str(eintrag))
+	if passend.is_empty():
+		return ""
+	return passend[absi(hash(_gespraechspartner + str(Spielzeit.gesamttag()))) % passend.size()]
 
 
 func _gehe_weiter(eintrag: Dictionary) -> void:

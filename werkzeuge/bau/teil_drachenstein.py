@@ -165,6 +165,7 @@ SH = DS + "/Stadthaeuser"
 N("Stadthaeuser", "Node3D", DS)
 random.seed(1750)
 anzahl = 0
+HAEUSER = []   # (x, y, z, gier, Abstand zum Weg) für die Wohnungen der Stadtleute (teil_stadtleben.py)
 gaerten = 0
 GARTENMAUER = [(-86, 11), (-40.6, 47.6), (-8.4, 91), (64.4, 127.4)]
 S('''[sub_resource type="StandardMaterial3D" id="Material_garten"]
@@ -197,6 +198,7 @@ for gx in range(-80, 160, 13):
             box(f"Garten{gaerten}", SH, round(x, 2), round(lo - 0.6 + 0.35, 2), round(z, 2), 9, 1.2, 9, "Material_garten", gier=gier)
             continue
         anzahl += 1
+        HAEUSER.append((x, y, z, gier, best[0]))
         N(f"Haus{anzahl}", None, SH, T(round(x, 2), round(y, 2), round(z, 2), gier, 1, 1 + 0.15*(anzahl % 3), 1),
           instanz="12_haus")
 print("Stadthäuser:", anzahl, "Gärten:", gaerten)

@@ -92,6 +92,7 @@ person("Reiterin", "Personen/PersonenAmBoden", -22, 0, 92, "Reiterin Ilka Sand",
 pferd("PferdReiterin", "Personen", -25.5, round(H(-25.5, 94), 2), 94, 36)
 # Bei Alarm leeren sich die Märkte (Konzept: Eine Welt, die kippen kann).
 person("Haendlerin", "Personen/PersonenAmBoden", 64, 0, -4, "Händlerin Grete Lohm", "haendlerin", 0, "0.45, 0.3, 0.2, 1", sichtbar_wenn="alarm<2")
+teil("teil_stadtleben.py")
 
 
 # ---------- Sprungpunkte (Entwicklermenü, F10) ----------

@@ -1,0 +1,101 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Pass auf, wo du hintrittst, Wächter. Hier ist alles nass.",
+				"Die Netze flicken sich nicht von allein.",
+				"Heute kein guter Fang. Das Meer ist unruhig.",
+				{
+					"text": "Das Schiff aus Riverlock ist überfällig. Wieder einmal.",
+					"bedingung": "akt2_begonnen"
+				},
+				{
+					"text": "Alle Boote bleiben im Hafen. Befehl des Ordens.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"optionen": [
+				{
+					"text": "Was hört man in der Stadt?",
+					"weiter": "geruecht"
+				},
+				{
+					"text": "Wie ist die Arbeit am Kai?",
+					"weiter": "thema"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fragen": {
+			"text": [
+				"Sonst noch etwas?",
+				"Noch etwas?",
+				"Was noch?"
+			],
+			"optionen": [
+				{
+					"text": "Was hört man in der Stadt?",
+					"weiter": "geruecht"
+				},
+				{
+					"text": "Wie ist die Arbeit am Kai?",
+					"weiter": "thema"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"geruecht": {
+			"text": [
+				"Man sagt, in Valdrenn rüstet der junge König. Aber das sagt man seit Jahren.",
+				"Die Fischer sagen, draußen vor den Inseln liegen fremde Boote. Ohne Lotsen. Die Hafenaufsicht hat nichts gesehen, sagt sie.",
+				"Mein Vetter fährt Korn nach Riverlock. Er sagt, dort wird mehr geflüstert als gehandelt.",
+				"Der Bürgermeister war wieder oben in der Burg. Wenn Joris Brandt zur Burg hinaufsteigt, wird hinterher irgendwas teurer.",
+				{
+					"text": "Hast du die Signalfeuer gesehen? Die ganze Küste brennt. Meine Mutter hat die Fensterläden vernagelt.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Die Händler aus Velmund sind abgereist, alle an einem Tag. Das ist nie ein gutes Zeichen.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Es heißt, in Riverlock hat einer Briefe gefälscht. Für Gold aus Valdrenn. Ein Schreiber, sagen sie.",
+					"bedingung": "kette_abgeschlossen"
+				},
+				{
+					"text": "Der Zollherr von Riverlock hat seinen eigenen Schreiber ausgeliefert, hört man. Das hätte ich ihm nicht zugetraut.",
+					"bedingung": "dorn_ausgeliefert"
+				},
+				{
+					"text": "Einer aus Riverlock ist über die Brücke nach Osten geflohen, und der Orden hat ihn laufen lassen. So erzählt man es jedenfalls.",
+					"bedingung": "dorn_geflohen"
+				},
+				{
+					"text": "Seit dem Winter sieht man mehr Wächter auf der Straße. Wachsamkeit, sagt der Rat. Ich sage: Angst.",
+					"bedingung": "akt2_begonnen"
+				}
+			],
+			"weiter": "fragen"
+		},
+		"thema": {
+			"text": [
+				"Hart und früh. Wer bei Morgengrauen nicht draußen ist, fängt nichts.",
+				"Der Orden nimmt den Zehnten vom Fang und gibt uns dafür die Mole und die Lotsen. Ein fairer Handel, sagt mein Vater. Ich weiß nicht.",
+				"Jorin war ein Fischer, weißt du. Der erste Name auf eurer Ordenswand. Daran denken hier alle, wenn sie über den Orden fluchen."
+			],
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": [
+				"Und jetzt geh mir aus dem Licht.",
+				"Guten Fang, sagt man bei uns."
+			]
+		}
+	}
+}

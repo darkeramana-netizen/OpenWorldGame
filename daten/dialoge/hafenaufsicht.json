@@ -1,0 +1,59 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Hafenaufsicht. Kein Schiff legt hier an, ohne dass ich es weiß.",
+				{
+					"text": "Wächter {name}. Ruhiger Tag am Kai.",
+					"bedingung": "rang>=4"
+				}
+			],
+			"optionen": [
+				{
+					"text": "Wer kommt alles in den Hafen?",
+					"weiter": "wer"
+				},
+				{
+					"text": "Der Kaufmann aus Velmund?",
+					"weiter": "velmund"
+				},
+				{
+					"text": "Vigilamus.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fragen": {
+			"text": [
+				"Sonst noch etwas?",
+				"Noch etwas?",
+				"Was noch?"
+			],
+			"optionen": [
+				{
+					"text": "Wer kommt alles in den Hafen?",
+					"weiter": "wer"
+				},
+				{
+					"text": "Der Kaufmann aus Velmund?",
+					"weiter": "velmund"
+				},
+				{
+					"text": "Vigilamus.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"wer": {
+			"text": "Unsere Fischer, die Kornschiffe aus Riverlock und zweimal im Monat ein Kaufmann aus Velmund mit Lotsen. Fremde bleiben am Kai. Wer weiter will, braucht die Erlaubnis des Landkomturs.",
+			"weiter": "fragen"
+		},
+		"velmund": {
+			"text": "Teodor Vass. Kommt seit zwölf Jahren. Ich traue ihm, soweit ich seine Kisten durchsucht habe, und das habe ich gründlich.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "In silentio."
+		}
+	}
+}

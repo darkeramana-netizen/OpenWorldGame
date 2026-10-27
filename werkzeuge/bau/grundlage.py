@@ -65,12 +65,23 @@ text = "{text}"
 font_size = {groesse}
 outline_size = 14""")
 
-def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0, sichtbar_wenn=""):
+def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0, sichtbar_wenn="", ablauf=None, tempo=None):
+    """ablauf: {abschnitt: (punkte, zusätze)} mit punkte = [(x, y, z), ...] und zusätze z. B. ["weg"],
+    ["runde"] oder ["blick=180"] (siehe person.gd, tagesablauf)."""
+    zusatz = f'\nsichtbar_wenn = "{sichtbar_wenn}"' if sichtbar_wenn else ""
+    if ablauf:
+        zeilen = []
+        for abschnitt, (punkte, extra) in ablauf.items():
+            teile = ["; ".join(",".join(f"{v:.5g}" for v in p) for p in punkte)] + list(extra)
+            zeilen.append(f'"{abschnitt}: ' + " | ".join(teile) + '"')
+        zusatz += "\ntagesablauf = PackedStringArray(" + ", ".join(zeilen) + ")"
+    if tempo:
+        zusatz += f"\ntempo = {tempo}"
     N(name, None, parent, f"""{T(x,y,z,gier)}
 anzeige_name = "{anzeige}"
 dialog_id = "{dialog}"
 kordel = {kordel}
-tracht = Color({tracht})""" + (f'\nsichtbar_wenn = "{sichtbar_wenn}"' if sichtbar_wenn else ""), instanz="4_person")
+tracht = Color({tracht})""" + zusatz, instanz="4_person")
 
 HOEHEN = {}
 

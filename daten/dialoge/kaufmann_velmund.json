@@ -1,0 +1,62 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Ein Wächter. Ich habe meine Lotsenmarke, sie liegt beim Hafenwächter.",
+				"Drachenkai, weiter darf ich nicht. Ich kenne die Regeln, Wächter."
+			],
+			"optionen": [
+				{
+					"text": "Was führt Euch hierher?",
+					"weiter": "handel"
+				},
+				{
+					"text": "Wie steht es in Velmund?",
+					"weiter": "velmund"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fragen": {
+			"text": [
+				"Sonst noch etwas?",
+				"Noch etwas?",
+				"Was noch?"
+			],
+			"optionen": [
+				{
+					"text": "Was führt Euch hierher?",
+					"weiter": "handel"
+				},
+				{
+					"text": "Wie steht es in Velmund?",
+					"weiter": "velmund"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"handel": {
+			"text": "Salz und Pelze aus Valdrenn, dafür Fisch und Torf zurück. Keine Waffen, kein Pulver, keine Pferde. Ich weiß, was verboten ist, und meine Ladung wurde zweimal durchsucht.",
+			"weiter": "fragen"
+		},
+		"velmund": {
+			"text": [
+				"Die Handelshäuser verdienen gut, solange Frieden ist. Darum wollen sie Frieden. Der König will etwas anderes, aber der König kauft nichts bei uns.",
+				{
+					"text": "Man spricht in Velmund von Geschützen, die nach Westen gezogen werden. Ich sage nur, was man spricht.",
+					"bedingung": "akt2_begonnen"
+				}
+			],
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Möge die Stille halten. Für uns beide."
+		}
+	}
+}

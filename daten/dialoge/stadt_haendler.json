@@ -1,0 +1,100 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Frische Ware, Wächter! Ach, ihr dürft ja nichts kaufen.",
+				"Schau ruhig, schauen kostet nichts.",
+				{
+					"text": "Heute läuft es schlecht. Die Leute halten ihr Geld fest.",
+					"bedingung": "akt2_begonnen"
+				},
+				{
+					"text": "Der halbe Markt ist schon zu. Ich bleibe, bis der Orden mich fortschickt.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"optionen": [
+				{
+					"text": "Was hört man in der Stadt?",
+					"weiter": "geruecht"
+				},
+				{
+					"text": "Wie läuft der Handel?",
+					"weiter": "thema"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fragen": {
+			"text": [
+				"Sonst noch etwas?",
+				"Noch etwas?",
+				"Was noch?"
+			],
+			"optionen": [
+				{
+					"text": "Was hört man in der Stadt?",
+					"weiter": "geruecht"
+				},
+				{
+					"text": "Wie läuft der Handel?",
+					"weiter": "thema"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"geruecht": {
+			"text": [
+				"Man sagt, in Valdrenn rüstet der junge König. Aber das sagt man seit Jahren.",
+				"Die Fischer sagen, draußen vor den Inseln liegen fremde Boote. Ohne Lotsen. Die Hafenaufsicht hat nichts gesehen, sagt sie.",
+				"Mein Vetter fährt Korn nach Riverlock. Er sagt, dort wird mehr geflüstert als gehandelt.",
+				"Der Bürgermeister war wieder oben in der Burg. Wenn Joris Brandt zur Burg hinaufsteigt, wird hinterher irgendwas teurer.",
+				{
+					"text": "Hast du die Signalfeuer gesehen? Die ganze Küste brennt. Meine Mutter hat die Fensterläden vernagelt.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Die Händler aus Velmund sind abgereist, alle an einem Tag. Das ist nie ein gutes Zeichen.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Es heißt, in Riverlock hat einer Briefe gefälscht. Für Gold aus Valdrenn. Ein Schreiber, sagen sie.",
+					"bedingung": "kette_abgeschlossen"
+				},
+				{
+					"text": "Der Zollherr von Riverlock hat seinen eigenen Schreiber ausgeliefert, hört man. Das hätte ich ihm nicht zugetraut.",
+					"bedingung": "dorn_ausgeliefert"
+				},
+				{
+					"text": "Einer aus Riverlock ist über die Brücke nach Osten geflohen, und der Orden hat ihn laufen lassen. So erzählt man es jedenfalls.",
+					"bedingung": "dorn_geflohen"
+				},
+				{
+					"text": "Seit dem Winter sieht man mehr Wächter auf der Straße. Wachsamkeit, sagt der Rat. Ich sage: Angst.",
+					"bedingung": "akt2_begonnen"
+				}
+			],
+			"weiter": "fragen"
+		},
+		"thema": {
+			"text": [
+				"Gut genug. Das Salz kommt über Riverlock, der Fisch aus dem Meer, das Geld von oben.",
+				"Seit Riverlock schwankt, sind die Preise für Salz gestiegen. Die Leute merken es zuerst am Brot.",
+				"Wer handeln will, zahlt Marktgebühr an den Orden und Steuer an die Stadt. Zweimal zahlen für einmal verkaufen."
+			],
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": [
+				"Komm wieder, wenn du einen Freund hast, der kaufen darf.",
+				"Gute Wache, Wächter."
+			]
+		}
+	}
+}

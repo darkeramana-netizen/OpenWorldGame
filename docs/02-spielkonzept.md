@@ -116,7 +116,7 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 | **2 – Akt I spielbar** ✅ | Haus der Schwelle in Drachenstein, Knappenprüfung, Nachtwache, Eid, Namensstein auf der Ordenswand, Speichern und Laden | 3–6 Monate |
 | **3 – Die erste Region** 🔶 | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände. Begehbar als Graybox, Bergfried und Gravecrest mit Innenräumen. Drachenstein (Hafen im Osten) und Gravemarch nach Grundriss. Riverlock als zweite Region (Valnschlucht), per Schiff mit der Lotsin erreichbar. Ashenveil als dritte Region (Nebelmoor) mit Kapelle der Stille und Fluchttunnel, mit der Reiterin erreichbar. Landwege (Nordstraße, Südstraße, Küstenweg) als begehbare Strecken im Maßstab 1:100 mit Signaltürmen, Bezirksfestungen und Dörfern. Offen: Modelle | 6+ Monate |
 | **4 – Systeme** ✅ | Kampf, Ansehen, Akte und Verfahren, Alarmstufen. Erste Fassung steht: Säbel, Muskete, Bajonett, Gesetzlose als Auftrag, Verwundung, sechs Ansehensgruppen, Verfahren beim Kammerhüter mit allen Strafstufen, Ring der Feuer. Dazu Sold nach Rang, Schleichen und Belauschen mit Beobachtungen und Berichten, Gold über dem Sold und die Prüfer, Bürgschaft für einen Bewerber | laufend |
-| **5 – Das ganze Becken** | Ashenveil, Nord- und Südstraße, Riverlock stehen. Akt II hat begonnen: erster Hauptfaden „Riverlock schwankt“ (Nachrichtenkette) spielbar | laufend |
+| **5 – Das ganze Becken** | Ashenveil, Nord- und Südstraße, Riverlock stehen. Weltausbau begonnen: Drachenstein mit über 50 Personen und Tagesabläufen. Akt II hat begonnen: erster Hauptfaden „Riverlock schwankt“ (Nachrichtenkette) spielbar | laufend |
 | **6 – Akt III** | Ende der Stille, Kriegszustand, Enden | später |
 
 **Bewusst weggelassen, mindestens bis Stufe 5:** Reiten, selbst Segeln, Sprachausgabe, große Schlachten, begehbares Valdrenn.
@@ -177,6 +177,18 @@ Entscheidungen beim Bau von Akt I:
 | Orm Velsch | Gesandter aus Valdrenn, tritt in Riverlock als Salzhändler aus Salzhain auf |
 | Lukas Dorn | Schreiber des Zollherrn Hendrik Falk |
 | Kerrin Fahl | Bewerber aus dem Süden Valdrenns, für den der Spieler bürgen kann |
+| Marit Hoff, Benno Kalk, Ansgar Weel | Fischhändlerin, Töpfer und Tuchhändler am Marktplatz von Drachenstein |
+| Hedda Korn, Wilm Asch, Fenja Torb, Gerd Ulm, Liese Braun, Konrad Vehl, Alke Damm, Ruben Stieg | Bürgerinnen und Bürger von Drachenstein |
+| Harm Eckel, Nele Pfriem, Ewald Daube, Lorenz Krume | Schmied, Schusterin, Böttcher und Bäcker in Drachenstein |
+| Pim, Ylva, Mats | Kinder aus dem Markt- und Hafenviertel |
+| Bertolt Hahn, Sanne Kiel, Ivo Marten, Dagny Strom | Streifen des Ordens in der Stadt (Tag und Nacht) |
+| Klaas Wend, Tora Lunk, Hinnerk Saal | Fischer am Drachenkai |
+| Jonte Pahl, Mieke Strand | Hafenträger am Drachenkai |
+| Teodor Vass | Kaufmann aus Velmund, kommt seit zwölf Jahren mit Lotsen bis Drachenkai |
+| Gunnar Fleet | Hafenwächter (Hafenaufsicht des Ordens) |
+| Anselm Rohr | Küster von St. Georg |
+| Oswin Pfahl | Ratsdiener am Rathaus |
+| Jana Brook | Geflüchtete aus dem Süden Valdrenns, ihr Bruder ist Anwärter in der Burg |
 | Tilo Brenn | Knappe im Hof von Drachenstein |
 
 Erfundene Orte an den Straßen: die Dörfer Hollmar, Erlenbrück und Torfwinkel, die Bezirksfestungen Kammfeld, Nordwacht, Erlengrund, Waldtor und Seewacht.

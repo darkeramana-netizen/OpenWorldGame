@@ -12,6 +12,33 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Leben in der Welt: Drachenstein hat Einwohner
+
+Bevor die Geschichte weitergeht, wird die Welt ausgebaut. Den Anfang macht Drachenstein: Die Stadt hat jetzt **32 neue Leute mit Tagesablauf**. In der Region leben damit über 50 Personen.
+
+**Wer dort lebt:**
+- **Händler** gehen bei Morgengrauen zu ihren Ständen und zur Stille-Stunde heim.
+- **Bürger** sind vormittags auf dem Markt und mittags am Brunnen. Nachmittags gehen manche zur Kirche, andere heim.
+- **Kinder** rennen um den Brunnen. **Handwerker** arbeiten vor ihrer Werkstatt.
+- **Fischer** sitzen am Südkai, **Träger** schleppen am Nordkai.
+- Ein **Kaufmann aus Velmund** darf nur bis an den Kai, die **Hafenaufsicht** sieht ihm zu.
+- Außerdem: der **Küster** vor St. Georg, der **Ratsdiener** am Rathaus und eine **Geflüchtete** aus Valdrenn.
+- **Streifen des Ordens:** Zwei Wächter gehen tags ihre Runden, nachts zwei andere. Wachwechsel ist bei Morgengrauen am Burgtor.
+
+**Wie sich der Tag auswirkt:**
+- Nachts sind alle im Haus, außer der Nachtstreife.
+- Bei Alarm (ab Stufe 2) sind Markt und Brunnen leer. Streifen und Handwerker bleiben.
+- Wer angesprochen wird, bleibt stehen und geht danach weiter.
+- Ist der Spieler weit weg (über 45 m), steht eine Person gleich am Ziel. Nach einem Zeitsprung oder beim Laden steht sie dort, wo sie um diese Zeit hingehört.
+
+**Wechselnde Zeilen:** Leute desselben Schlags sagen Verschiedenes, und morgen etwas anderes. Die Gerüchte („Was hört man in der Stadt?“) hängen davon ab, was in der Geschichte geschehen ist, zum Beispiel ob Dorn ausgeliefert wurde oder floh oder ob Alarm herrscht.
+
+**Neu dafür:**
+- `tagesablauf` und `tempo` in `person.gd`.
+- Texte als Liste in den Dialogen (siehe „Dialoge schreiben“).
+- `werkzeuge/bau/teil_stadtleben.py` mit einem Wegenetz über Straßen, Markt und Kais. Die Wege werden gesucht und auf Häuser, Stände und Brunnen geprüft.
+- `werkzeuge/dialoge_stadt.py` für die Alltagsdialoge.
+
 ### Akt II, erster Faden: „Riverlock schwankt“ (die Nachrichtenkette)
 
 Akt II hat begonnen. Wer Akt I abgeschlossen hat und den Komtur anspricht, erlebt einen Zeitsprung: **Akt II · Wachsamkeit, Frühjahr 1754.**
@@ -432,6 +459,11 @@ docs/                      Lore-Bibel, Spielkonzept, Karten, Bilder (von Godot i
    - **Kordel** (Rang)
    - **Tracht** (Farbe)
    - optional **Sichtbar Wenn**, eine Bedingung, solange die Person da ist
+   - optional **Tagesablauf**: eine Zeile je Tagesabschnitt, z. B. `vormittag: 60,-8,24; 64,-8,-1` (Wegpunkte x,y,z), dahinter mit `|` Zusätze:
+     - `weg`: danach ist die Person fort, im Haus
+     - `runde`: die Wegpunkte immer wieder; `runde=2` heißt erst hingehen, dann ab dem dritten Punkt
+     - `blick=180`: Blickrichtung am Ziel
+   - optional **Tempo** in m/s
 4. Eine Datei `daten/dialoge/<dialog_id>.json` anlegen (siehe unten).
 
 Die Regionsszenen werden aus den Bauskripten erzeugt (siehe „Die Regionsszenen neu bauen“). Eine Person, die du dort im Editor hinzufügst, bleibt nur bis zum nächsten Neubau. Soll sie dauerhaft bleiben, gehört sie in das Bauskript der Region.
@@ -455,7 +487,10 @@ python3 werkzeuge/bau/region_drachenstein.py   # schreibt szenen/welt/region_dra
 python3 werkzeuge/bau/region_riverlock.py      # schreibt szenen/welt/region_riverlock.tscn
 python3 werkzeuge/bau/region_ashenveil.py      # schreibt szenen/welt/region_ashenveil.tscn
 python3 werkzeuge/bau/region_strasse.py        # schreibt die drei Landstraßen
+python3 werkzeuge/dialoge_stadt.py             # schreibt die Alltagsdialoge der Stadtleute
 ```
+
+Die Stadtleute von Drachenstein entstehen in `teil_stadtleben.py`: `stadtmensch(...)` mit Wohnung und einem Plan je Tagesabschnitt (Ziel, `"heim"` oder eine `runde(...)`). Die Wege dazwischen sucht das Skript über das Wegenetz. Führt einer durch ein Haus, einen Stand oder den Brunnen, gibt es beim Bauen eine Warnung.
 
 Dafür braucht es Python 3 mit `numpy`. `grundlage.py` enthält die gemeinsamen Bausteine (Mauerzug, Tor, Raum, Rampe ...), die `teil_*.py` die einzelnen Burgen. Die Skripte lesen die Geländehöhen, also zuerst das Gelände erzeugen, dann bauen. **Achtung:** Was du in diesen Szenen im Editor änderst, ist nach dem Neubau weg. Größere Änderungen gehören deshalb in die Skripte.
 
@@ -515,7 +550,7 @@ Jede Datei hat Knoten. Begonnen wird beim Knoten `start`, außer ein Eintrag in 
 
 | Feld | Wirkung |
 |---|---|
-| `text` | gesprochener Text. `{name}` und `{buerge}` werden ersetzt |
+| `text` | gesprochener Text. `{name}` und `{buerge}` werden ersetzt. Als Liste sagt die Person eine der Zeilen, fest je Person und Tag. Ein Eintrag kann `{"text": ..., "bedingung": ...}` sein und zählt dann nur, wenn die Bedingung gilt |
 | `sprecher` | anderer Sprechername als die Person (nur Knoten) |
 | `weiter` | nächster Knoten. Fehlt er, endet das Gespräch |
 | `bedingung` | nur bei Antworten und Einstiegen: wann sie sichtbar oder gültig sind |
@@ -542,13 +577,14 @@ Jede Datei hat Knoten. Begonnen wird beim Knoten `start`, außer ein Eintrag in 
 
 ## Testen
 
-Zehn automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
+Elf automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
 
 | Test | Prüft |
 |---|---|
 | `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
 | `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
 | `tests/test_innen.gd` | die Innenräume, 25 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü, in Gravemarch Donjon, Archivarin und Scheintore |
+| `tests/test_leben.gd` | Leben in der Welt, 30 Punkte: über 50 Personen, Markt am Vormittag, Kinder um den Brunnen dem Boden folgend, nachts im Haus und Nachtstreife, Wachwechsel, Gehen vor den Augen des Spielers ohne zu schweben, Stehenbleiben im Gespräch, wechselnde Zeilen, Gerüchte, leere Märkte bei Alarm, Stille-Stunde, Speichern und Laden |
 | `tests/test_akt2.gd` | Akt II, Nachrichtenkette, 36 Punkte: Zeitsprung beim Komtur, Leofa und die Siegelhülse, der Beobachter, das Pult tagsüber bewacht und nachts durchsucht, Speichern und Laden, alle Ausgänge (Falk liefert aus, der Rat entscheidet, Falk verweigert, Gold genommen und nach fünf Tagen angezeigt, gestanden) |
 | `tests/test_spaehwesen.gd` | Sold, Spähwesen und Bürgschaft, 22 Punkte: Sold zum Monatsanfang und doppelt im Krieg, Bürgschaft für Kerrin, offen von vorn bemerkt werden, schleichend alles hören, Kerrin als Bürge melden, Gold vom Gesandten, Gespräch über die Kette belauschen und berichten, Gold melden, Speichern und Laden, Anzeige durch die Prüfer bei nicht gemeldetem Gold, Verweis für den schweigenden Bürgen |
 | `tests/test_stufe4.gd` | Stufe 4, 28 Punkte: Alarmstufe 1 zu Beginn, Ansehen durch Antworten, Auftrag und Kampf gegen die Gesetzlosen (Treffer, Block, Sieg, bleiben nach dem Laden liegen), Verwundung, Ring der Feuer und leere Märkte, keine Boote bei Alarm, Säbel, Schuss, Bajonett, Nachladen, Verweise und Verfahren bis zur Degradierung, Waffe gegen die Händlerin bis zur Ausstoßung |
@@ -568,6 +604,7 @@ godot --headless --path . --script res://tests/test_landwege.gd
 godot --headless --path . --script res://tests/test_stufe4.gd
 godot --headless --path . --script res://tests/test_spaehwesen.gd
 godot --headless --path . --script res://tests/test_akt2.gd
+godot --headless --path . --script res://tests/test_leben.gd
 ```
 
 Am Ende steht jeweils `Fehler: 0`, wenn alles stimmt.

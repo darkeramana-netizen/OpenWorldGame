@@ -1,0 +1,32 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Bist du ein echter Wächter? Darf ich deinen Säbel sehen?",
+				"Wir spielen Stille-Stunde. Wer redet, verliert! … Oh. Jetzt hab ich verloren.",
+				"Mama sagt, ich soll nicht mit Wächtern reden. Warum eigentlich?",
+				"Ich werde auch Wächter, wenn ich groß bin. Oder Fischer.",
+				{
+					"text": "Hast du die Feuer gesehen? Die sind so hoch wie der Kirchturm!",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"optionen": [
+				{
+					"text": "Geh nach Hause, wenn es dunkel wird.",
+					"weiter": "heim"
+				},
+				{
+					"text": "Spiel weiter.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"heim": {
+			"text": "Jaja. Das sagen alle."
+		},
+		"ende": {
+			"text": "Fang mich doch!"
+		}
+	}
+}

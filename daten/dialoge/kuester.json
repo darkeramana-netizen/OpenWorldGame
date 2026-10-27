@@ -1,0 +1,48 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Willkommen vor St. Georg. Drinnen wird geschwiegen, wie bei euch in der Burg.",
+				"Der Orden führt unsere Kirche als Ort der Stille. Wir beten, ihr schweigt. Es verträgt sich.",
+				{
+					"text": "Es kommen mehr Leute als sonst. Wenn die Angst wächst, wird die Kirche voll.",
+					"bedingung": "akt2_begonnen"
+				}
+			],
+			"optionen": [
+				{
+					"text": "Erzählt mir von der Kirche.",
+					"weiter": "kirche"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fragen": {
+			"text": [
+				"Sonst noch etwas?",
+				"Noch etwas?",
+				"Was noch?"
+			],
+			"optionen": [
+				{
+					"text": "Erzählt mir von der Kirche.",
+					"weiter": "kirche"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"kirche": {
+			"text": "St. Georg, weil er mit dem Drachen kämpfte. Die Stadt hat sich das Wappentier vom Orden geborgt und den Heiligen dazu. Unter der Kirche liegen Gräber aus der Zeit, als hier nur die Burg stand.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Geh in Frieden. Oder in Stille, wie ihr sagt."
+		}
+	}
+}

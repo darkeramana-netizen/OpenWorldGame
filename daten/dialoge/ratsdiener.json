@@ -1,0 +1,47 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Das Rathaus der Stadt Drachenstein. Der Bürgermeister empfängt heute nicht.",
+			"optionen": [
+				{
+					"text": "Was tut der Stadtrat?",
+					"weiter": "rat"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fragen": {
+			"text": [
+				"Sonst noch etwas?",
+				"Noch etwas?",
+				"Was noch?"
+			],
+			"optionen": [
+				{
+					"text": "Was tut der Stadtrat?",
+					"weiter": "rat"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"rat": {
+			"text": [
+				"Er verwaltet den Markt, prägt die Münzen und streitet mit eurer Burg über die Hafengebühren. Bürgermeister Brandt sagt, die Stadt gehört den Bürgern und die Mauern dem Orden.",
+				{
+					"text": "Er tagt jeden Tag, seit es um Riverlock unruhig ist. Die Handelsfamilien fürchten den Krieg mehr als den König.",
+					"bedingung": "akt2_begonnen"
+				}
+			],
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Ich richte aus, dass der Orden gefragt hat."
+		}
+	}
+}

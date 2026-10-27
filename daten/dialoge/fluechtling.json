@@ -1,0 +1,59 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Bitte, ich habe nichts getan. Ich habe einen Schein vom Landkomtur, sieh her.",
+			"optionen": [
+				{
+					"text": "Woher kommst du?",
+					"weiter": "woher"
+				},
+				{
+					"text": "Wie kommst du hier zurecht?",
+					"weiter": "leben"
+				},
+				{
+					"text": "Leb wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fragen": {
+			"text": [
+				"Sonst noch etwas?",
+				"Noch etwas?",
+				"Was noch?"
+			],
+			"optionen": [
+				{
+					"text": "Woher kommst du?",
+					"weiter": "woher"
+				},
+				{
+					"text": "Wie kommst du hier zurecht?",
+					"weiter": "leben"
+				},
+				{
+					"text": "Leb wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"woher": {
+			"text": "Aus dem Süden von Valdrenn. Die Ernte war schlecht, und der König hat das Korn für seine Soldaten genommen. Wir sind über Riverlock gekommen, mein Bruder und ich. Er ist jetzt Anwärter in der Burg.",
+			"weiter": "fragen"
+		},
+		"leben": {
+			"text": [
+				"Ich wasche für die Leute am Markt. Sie bezahlen schlecht und schauen schief. Weil Valdrenn Spione als Flüchtlinge schickt, sagen sie. Vielleicht stimmt es sogar. Aber ich bin keiner.",
+				{
+					"text": "Seit dem Alarm sehen mich alle an, als hätte ich die Feuer selbst angezündet.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Danke, dass du gefragt hast. Das tun nicht viele."
+		}
+	}
+}

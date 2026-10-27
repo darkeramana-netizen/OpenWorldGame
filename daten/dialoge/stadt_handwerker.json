@@ -1,0 +1,100 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Ich hab zu tun, aber frag ruhig.",
+				"Ein Wächter vor meiner Werkstatt. Hat jemand was gegen mich vorgebracht?",
+				{
+					"text": "Die Burg hat wieder bestellt. Mehr als sonst.",
+					"bedingung": "akt2_begonnen"
+				},
+				{
+					"text": "Die Burg nimmt alles, was ich mache. Für den Krieg, heißt es.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"optionen": [
+				{
+					"text": "Was hört man in der Stadt?",
+					"weiter": "geruecht"
+				},
+				{
+					"text": "Was arbeitet Ihr?",
+					"weiter": "thema"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fragen": {
+			"text": [
+				"Sonst noch etwas?",
+				"Noch etwas?",
+				"Was noch?"
+			],
+			"optionen": [
+				{
+					"text": "Was hört man in der Stadt?",
+					"weiter": "geruecht"
+				},
+				{
+					"text": "Was arbeitet Ihr?",
+					"weiter": "thema"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"geruecht": {
+			"text": [
+				"Man sagt, in Valdrenn rüstet der junge König. Aber das sagt man seit Jahren.",
+				"Die Fischer sagen, draußen vor den Inseln liegen fremde Boote. Ohne Lotsen. Die Hafenaufsicht hat nichts gesehen, sagt sie.",
+				"Mein Vetter fährt Korn nach Riverlock. Er sagt, dort wird mehr geflüstert als gehandelt.",
+				"Der Bürgermeister war wieder oben in der Burg. Wenn Joris Brandt zur Burg hinaufsteigt, wird hinterher irgendwas teurer.",
+				{
+					"text": "Hast du die Signalfeuer gesehen? Die ganze Küste brennt. Meine Mutter hat die Fensterläden vernagelt.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Die Händler aus Velmund sind abgereist, alle an einem Tag. Das ist nie ein gutes Zeichen.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Es heißt, in Riverlock hat einer Briefe gefälscht. Für Gold aus Valdrenn. Ein Schreiber, sagen sie.",
+					"bedingung": "kette_abgeschlossen"
+				},
+				{
+					"text": "Der Zollherr von Riverlock hat seinen eigenen Schreiber ausgeliefert, hört man. Das hätte ich ihm nicht zugetraut.",
+					"bedingung": "dorn_ausgeliefert"
+				},
+				{
+					"text": "Einer aus Riverlock ist über die Brücke nach Osten geflohen, und der Orden hat ihn laufen lassen. So erzählt man es jedenfalls.",
+					"bedingung": "dorn_geflohen"
+				},
+				{
+					"text": "Seit dem Winter sieht man mehr Wächter auf der Straße. Wachsamkeit, sagt der Rat. Ich sage: Angst.",
+					"bedingung": "akt2_begonnen"
+				}
+			],
+			"weiter": "fragen"
+		},
+		"thema": {
+			"text": [
+				"Was gebraucht wird. Kessel, Riemen, Fässer, Brot. Der Orden ist der beste Kunde, aber er zahlt spät.",
+				"Meine Lehrlinge sind alle beim Orden gelandet. Ich bilde sie aus, ihr nehmt sie mir weg.",
+				"Seit meinem Großvater stehen wir hier. Die Werkstatt hat drei Brände gesehen und den letzten Krieg."
+			],
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": [
+				"Und jetzt lass mich arbeiten.",
+				"Gute Wache."
+			]
+		}
+	}
+}

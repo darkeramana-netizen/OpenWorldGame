@@ -1,0 +1,111 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				{
+					"text": "Wächter {name}. Ruhige Straßen heute.",
+					"bedingung": "rang>=4"
+				},
+				"Streife. Nichts zu melden, bis jetzt.",
+				{
+					"text": "Halt die Augen offen, Geselle.",
+					"bedingung": "rang<4"
+				},
+				{
+					"text": "Die Hafenaufsicht hat mehr Leute angefordert. Wir gehen doppelte Runden.",
+					"bedingung": "akt2_begonnen"
+				},
+				{
+					"text": "Alarm. Wir räumen die Märkte und schicken die Leute in die Häuser.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Nachtstreife. Wer jetzt noch draußen ist, hat meist einen Grund.",
+					"bedingung": "abschnitt=nacht"
+				}
+			],
+			"optionen": [
+				{
+					"text": "Was hört man in der Stadt?",
+					"weiter": "geruecht"
+				},
+				{
+					"text": "Worauf achtet die Streife?",
+					"weiter": "thema"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"fragen": {
+			"text": [
+				"Sonst noch etwas?",
+				"Noch etwas?",
+				"Was noch?"
+			],
+			"optionen": [
+				{
+					"text": "Was hört man in der Stadt?",
+					"weiter": "geruecht"
+				},
+				{
+					"text": "Worauf achtet die Streife?",
+					"weiter": "thema"
+				},
+				{
+					"text": "Gehabt Euch wohl.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"geruecht": {
+			"text": [
+				"Man sagt, in Valdrenn rüstet der junge König. Aber das sagt man seit Jahren.",
+				"Die Fischer sagen, draußen vor den Inseln liegen fremde Boote. Ohne Lotsen. Die Hafenaufsicht hat nichts gesehen, sagt sie.",
+				"Mein Vetter fährt Korn nach Riverlock. Er sagt, dort wird mehr geflüstert als gehandelt.",
+				"Der Bürgermeister war wieder oben in der Burg. Wenn Joris Brandt zur Burg hinaufsteigt, wird hinterher irgendwas teurer.",
+				{
+					"text": "Hast du die Signalfeuer gesehen? Die ganze Küste brennt. Meine Mutter hat die Fensterläden vernagelt.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Die Händler aus Velmund sind abgereist, alle an einem Tag. Das ist nie ein gutes Zeichen.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Es heißt, in Riverlock hat einer Briefe gefälscht. Für Gold aus Valdrenn. Ein Schreiber, sagen sie.",
+					"bedingung": "kette_abgeschlossen"
+				},
+				{
+					"text": "Der Zollherr von Riverlock hat seinen eigenen Schreiber ausgeliefert, hört man. Das hätte ich ihm nicht zugetraut.",
+					"bedingung": "dorn_ausgeliefert"
+				},
+				{
+					"text": "Einer aus Riverlock ist über die Brücke nach Osten geflohen, und der Orden hat ihn laufen lassen. So erzählt man es jedenfalls.",
+					"bedingung": "dorn_geflohen"
+				},
+				{
+					"text": "Seit dem Winter sieht man mehr Wächter auf der Straße. Wachsamkeit, sagt der Rat. Ich sage: Angst.",
+					"bedingung": "akt2_begonnen"
+				}
+			],
+			"weiter": "fragen"
+		},
+		"thema": {
+			"text": [
+				"Auf Fremde ohne Lotsenmarke, auf Feuer, auf Leute, die zu viel fragen. Und darauf, dass die Stadt sieht, dass wir da sind.",
+				"Die Stadt hat keine eigene Wache. Den Markt verwaltet der Rat, aber die Straßen hüten wir.",
+				"Wer etwas sieht, meldet es dem Kammerhüter. Nicht dem Bürgermeister, nicht dem Zoll. Dem Kammerhüter."
+			],
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": [
+				"Vigilamus.",
+				"In silentio."
+			]
+		}
+	}
+}

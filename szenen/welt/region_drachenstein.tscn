@@ -1,4 +1,4 @@
-[gd_scene load_steps=61 format=3]
+[gd_scene load_steps=62 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -22,6 +22,7 @@
 [ext_resource type="Script" path="res://szenen/welt/bedingt_sichtbar.gd" id="21_bedingt"]
 [ext_resource type="PackedScene" path="res://szenen/figuren/gegner.tscn" id="22_gegner"]
 [ext_resource type="Script" path="res://szenen/welt/gespraech.gd" id="23_gespraech"]
+[ext_resource type="Script" path="res://szenen/welt/durchsuchbar.gd" id="24_durchsuchbar"]
 
 [sub_resource type="StandardMaterial3D" id="Material_flamme"]
 shading_mode = 0
@@ -5046,6 +5047,287 @@ dialog_id = "haendlerin"
 kordel = 0
 tracht = Color(0.45, 0.3, 0.2, 1)
 sichtbar_wenn = "alarm<2"
+
+[node name="Stadtleben" type="Node3D" parent="Personen"]
+
+[node name="Fischhaendlerin" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 20.01, 0.43, 68.54)
+anzeige_name = "Fischhändlerin Marit Hoff"
+dialog_id = "stadt_haendler"
+kordel = 0
+tracht = Color(0.45, 0.4, 0.3, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 20.01,0.43,68.54; 13.49,0.15,71.55; 10,0.19,64; 0,0.66,56; 44,-0.24,46; 58,-7.54,22; 75,-8.15,4; 73.5,-7.99,2; 68.55,-7.9,-2.95; 72,-8.09,-6.4 | blick=180", "stille_stunde: 72,-8.09,-6.4; 68.55,-7.9,-2.95; 73.5,-7.99,2; 75,-8.15,4; 58,-7.54,22; 44,-0.24,46; 0,0.66,56; 10,0.19,64; 13.49,0.15,71.55; 20.01,0.43,68.54 | weg")
+
+[node name="Toepfer" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 64.22, -12.48, -68.22)
+anzeige_name = "Töpfer Benno Kalk"
+dialog_id = "stadt_haendler"
+kordel = 0
+tracht = Color(0.35, 0.28, 0.32, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 64.22,-12.48,-68.22; 33.2,-0.03,-29.44; 45,-1.15,-20; 58,-7.54,22; 63.08,-8.22,16.62; 62,-8.04,15.6 | blick=0", "stille_stunde: 62,-8.04,15.6; 63.08,-8.22,16.62; 58,-7.54,22; 45,-1.15,-20; 33.2,-0.03,-29.44; 64.22,-12.48,-68.22 | weg")
+
+[node name="Tuchhaendler" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 56.6, -4.17, 96.77)
+anzeige_name = "Tuchhändler Ansgar Weel"
+dialog_id = "stadt_haendler"
+kordel = 0
+tracht = Color(0.28, 0.36, 0.28, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 56.6,-4.17,96.77; 27.01,0.63,106.02; 22,0.29,90; 10,0.19,64; 0,0.66,56; 44,-0.24,46; 58,-7.54,22; 68,-8.33,17; 68,-8.23,15.4; 76,-8.45,15.4 | blick=0", "stille_stunde: 76,-8.45,15.4; 68,-8.23,15.4; 68,-8.33,17; 58,-7.54,22; 44,-0.24,46; 0,0.66,56; 10,0.19,64; 22,0.29,90; 27.01,0.63,106.02; 56.6,-4.17,96.77 | weg")
+
+[node name="BuergerHedda" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 126.22, -17.8, 22.43)
+anzeige_name = "Hedda Korn"
+dialog_id = "stadt_buerger"
+kordel = 0
+tracht = Color(0.42, 0.33, 0.24, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 126.22,-17.8,22.43 | weg", "vormittag: 126.22,-17.8,22.43; 126.22,-17.8,19.5; 100,-17.8,19.5; 99,-17.81,12; 98,-17.74,0; 75,-8.15,4; 73.5,-7.99,2; 68,-7.91,-3.5; 64.75,-7.8,-0.25; 64,-7.76,-1", "mittag: 64,-7.76,-1; 64.75,-7.8,-0.25; 63.55,-7.76,0.95; 64.6,-7.84,2", "nachmittag: 64.6,-7.84,2; 63.55,-7.76,0.95; 62.5,-7.74,2; 68,-8.14,7.5; 68,-8.33,17; 58,-7.54,22; 53.72,-4.71,29.34; 60,-6.22,33", "stille_stunde: 60,-6.22,33; 53.72,-4.71,29.34; 58,-7.54,22; 75,-8.15,4; 98,-17.74,0; 99,-17.81,12; 100,-17.8,19.5; 126.22,-17.8,19.5; 126.22,-17.8,22.43 | weg")
+
+[node name="BuergerWilm" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 50.25, -0.76, 51.89)
+anzeige_name = "Wilm Asch"
+dialog_id = "stadt_buerger"
+kordel = 0
+tracht = Color(0.3, 0.35, 0.42, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 50.25,-0.76,51.89 | weg", "vormittag: 50.25,-0.76,51.89; 44,-0.24,46; 58,-7.54,22; 72.1,-8.32,7.07; 71.5,-8.23,6.5", "mittag: 71.5,-8.23,6.5; 72.1,-8.32,7.07; 75,-8.15,4; 73.5,-7.99,2; 68,-7.91,-3.5; 69,-7.97,-5", "nachmittag: 69,-7.97,-5; 68,-7.91,-3.5; 73.5,-7.99,2; 75,-8.15,4; 58,-7.54,22; 44,-0.24,46; 50.25,-0.76,51.89 | weg", "stille_stunde: 50.25,-0.76,51.89 | weg")
+
+[node name="BuergerFenja" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 58.5, -7.39, -21.89)
+anzeige_name = "Fenja Torb"
+dialog_id = "stadt_buerger"
+kordel = 0
+tracht = Color(0.45, 0.4, 0.3, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 58.5,-7.39,-21.89 | weg", "vormittag: 58.5,-7.39,-21.89; 45.65,-1.63,-17.91; 58,-7.54,22; 68,-8.33,17; 68,-8.16,9; 65,-7.96,9", "mittag: 65,-7.96,9; 68,-8.16,9; 68,-8.14,7.5; 69.05,-8.1,6.45; 68,-8.01,5.4", "nachmittag: 68,-8.01,5.4; 69.05,-8.1,6.45; 68,-8.14,7.5; 68,-8.33,17; 58,-7.54,22; 45.65,-1.63,-17.91; 58.5,-7.39,-21.89 | weg", "stille_stunde: 58.5,-7.39,-21.89 | weg")
+
+[node name="BuergerGerd" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 101.82, -17.8, 25.07)
+anzeige_name = "Gerd Ulm"
+dialog_id = "stadt_buerger"
+kordel = 0
+tracht = Color(0.35, 0.28, 0.32, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 101.82,-17.8,25.07 | weg", "vormittag: 101.82,-17.8,25.07; 101.82,-17.8,19.5; 100,-17.8,19.5; 99,-17.81,12; 98,-17.74,0; 75,-8.15,4; 73.5,-7.99,2; 71,-7.84,-0.5; 73,-7.95,-2.5", "mittag: 73,-7.95,-2.5; 71,-7.84,-0.5; 73.5,-7.99,2; 75,-8.15,4; 72.78,-8.29,6.35; 74,-8.4,7.5", "nachmittag: 74,-8.4,7.5; 72.78,-8.29,6.35; 58,-7.54,22; 52.89,-4.09,30.77; 61,-5.71,35.5", "stille_stunde: 61,-5.71,35.5; 52.89,-4.09,30.77; 58,-7.54,22; 75,-8.15,4; 98,-17.74,0; 99,-17.81,12; 100,-17.8,19.5; 101.82,-17.8,19.5; 101.82,-17.8,25.07 | weg")
+
+[node name="BuergerLiese" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 114.02, -17.8, 22.44)
+anzeige_name = "Liese Braun"
+dialog_id = "stadt_buerger"
+kordel = 0
+tracht = Color(0.28, 0.36, 0.28, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 114.02,-17.8,22.44 | weg", "vormittag: 114.02,-17.8,22.44; 114.02,-17.8,19.5; 100,-17.8,19.5; 99,-17.81,12; 98,-17.74,0; 75,-8.15,4; 73.5,-7.99,2; 68,-7.91,-3.5; 69,-7.97,-5", "mittag: 69,-7.97,-5; 68,-7.91,-3.5; 63.55,-7.76,0.95; 64.6,-7.84,2", "nachmittag: 64.6,-7.84,2; 63.55,-7.76,0.95; 68,-7.91,-3.5; 73.5,-7.99,2; 75,-8.15,4; 98,-17.74,0; 99,-17.81,12; 100,-17.8,19.5; 114.02,-17.8,19.5; 114.02,-17.8,22.44 | weg", "stille_stunde: 114.02,-17.8,22.44 | weg")
+
+[node name="BuergerKonrad" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 29.82, 1.39, 80.1)
+anzeige_name = "Konrad Vehl"
+dialog_id = "stadt_buerger"
+kordel = 0
+tracht = Color(0.5, 0.42, 0.34, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 29.82,1.39,80.1 | weg", "vormittag: 29.82,1.39,80.1; 19.61,0.46,84.81; 10,0.19,64; 0,0.66,56; 44,-0.24,46; 58,-7.54,22; 68,-8.33,17; 68,-8.14,7.5; 63.75,-7.84,3.25; 63,-7.86,4", "mittag: 63,-7.86,4; 63.75,-7.84,3.25; 62.5,-7.74,2; 64.75,-7.8,-0.25; 64,-7.76,-1", "nachmittag: 64,-7.76,-1; 64.75,-7.8,-0.25; 62.5,-7.74,2; 68,-8.14,7.5; 68,-8.33,17; 58,-7.54,22; 44,-0.24,46; 0,0.66,56; 10,0.19,64; 19.61,0.46,84.81; 29.82,1.39,80.1 | weg", "stille_stunde: 29.82,1.39,80.1 | weg")
+
+[node name="BuergerAlke" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 25.04, -0.17, -41.98)
+anzeige_name = "Alke Damm"
+dialog_id = "stadt_buerger"
+kordel = 0
+tracht = Color(0.38, 0.3, 0.2, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 25.04,-0.17,-41.98 | weg", "vormittag: 25.04,-0.17,-41.98; 22.11,-0.24,-38.31; 45,-1.15,-20; 58,-7.54,22; 72.78,-8.29,6.35; 74,-8.4,7.5", "mittag: 74,-8.4,7.5; 72.78,-8.29,6.35; 75,-8.15,4; 73.5,-7.99,2; 69.05,-8.1,6.45; 68,-8.01,5.4", "nachmittag: 68,-8.01,5.4; 69.05,-8.1,6.45; 68,-8.14,7.5; 68,-8.33,17; 58,-7.54,22; 54.43,-5.25,28.12; 58.5,-6.55,30.5", "stille_stunde: 58.5,-6.55,30.5; 54.43,-5.25,28.12; 58,-7.54,22; 45,-1.15,-20; 22.11,-0.24,-38.31; 25.04,-0.17,-41.98 | weg")
+
+[node name="BuergerRuben" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 82.58, -10.38, 107.72)
+anzeige_name = "Ruben Stieg"
+dialog_id = "stadt_buerger"
+kordel = 0
+tracht = Color(0.32, 0.32, 0.36, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 82.58,-10.38,107.72 | weg", "vormittag: 82.58,-10.38,107.72; 28,0.7,109.2; 22,0.29,90; 10,0.19,64; 0,0.66,56; 44,-0.24,46; 58,-7.54,22; 69.9,-8.3,9.4", "mittag: 70,-8.32,9.5; 75,-8.15,4; 73.5,-7.99,2; 68,-8.14,7.5; 68,-8.16,9; 65,-7.96,9", "nachmittag: 65,-7.96,9; 68,-8.16,9; 68,-8.33,17; 58,-7.54,22; 44,-0.24,46; 0,0.66,56; 10,0.19,64; 22,0.29,90; 28,0.7,109.2; 82.58,-10.38,107.72 | weg", "stille_stunde: 82.58,-10.38,107.72 | weg")
+
+[node name="Schmied" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 57.91, -6.94, -34.7)
+anzeige_name = "Schmied Harm Eckel"
+dialog_id = "stadt_handwerker"
+kordel = 0
+tracht = Color(0.5, 0.42, 0.34, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 57.91,-6.94,-34.7", "stille_stunde: 57.91,-6.94,-34.7 | weg")
+
+[node name="Schusterin" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 35.56, 0, -40.33)
+anzeige_name = "Schusterin Nele Pfriem"
+dialog_id = "stadt_handwerker"
+kordel = 0
+tracht = Color(0.38, 0.3, 0.2, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 35.56,0,-40.33", "stille_stunde: 35.56,0,-40.33 | weg")
+
+[node name="Boettcher" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 70.31, -7.59, 55.9)
+anzeige_name = "Böttcher Ewald Daube"
+dialog_id = "stadt_handwerker"
+kordel = 0
+tracht = Color(0.32, 0.32, 0.36, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 70.31,-7.59,55.9", "stille_stunde: 70.31,-7.59,55.9 | weg")
+
+[node name="Baecker" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 38.79, 0.87, 64.49)
+anzeige_name = "Bäcker Lorenz Krume"
+dialog_id = "stadt_handwerker"
+kordel = 0
+tracht = Color(0.42, 0.33, 0.24, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 38.79,0.87,64.49", "stille_stunde: 38.79,0.87,64.49 | weg")
+
+[node name="KindPim" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 20.01, 0.43, 68.54)
+anzeige_name = "Pim, ein Junge aus dem Marktviertel"
+dialog_id = "stadt_kind"
+kordel = 0
+tracht = Color(0.42, 0.33, 0.24, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("vormittag: 20.01,0.43,68.54; 13.49,0.15,71.55; 10,0.19,64; 0,0.66,56; 44,-0.24,46; 58,-7.54,22; 68,-8.33,17; 68,-8.14,7.5; 72.95,-8,2.55; 72.4,-7.96,2; 71.11,-8.09,5.11; 68,-8.07,6.4; 64.89,-7.92,5.11; 63.6,-7.79,2; 64.89,-7.81,-1.11; 68,-7.88,-2.4; 71.11,-7.86,-1.11; 72.4,-7.96,2 | runde=9", "mittag: 72.4,-7.96,2; 72.95,-8,2.55; 68,-8.14,7.5; 68,-8.33,17; 58,-7.54,22; 44,-0.24,46; 0,0.66,56; 10,0.19,64; 13.49,0.15,71.55; 20.01,0.43,68.54 | weg", "nachmittag: 20.01,0.43,68.54; 13.49,0.15,71.55; 10,0.19,64; 0,0.66,56; 44,-0.24,46; 58,-7.54,22; 68,-8.33,17; 68,-8.14,7.5; 72.95,-8,2.55; 72.4,-7.96,2; 71.11,-7.86,-1.11; 68,-7.88,-2.4; 64.89,-7.81,-1.11; 63.6,-7.79,2; 64.89,-7.92,5.11; 68,-8.07,6.4; 71.11,-8.09,5.11; 72.4,-7.96,2 | runde=9", "stille_stunde: 72.4,-7.96,2; 72.95,-8,2.55; 68,-8.14,7.5; 68,-8.33,17; 58,-7.54,22; 44,-0.24,46; 0,0.66,56; 10,0.19,64; 13.49,0.15,71.55; 20.01,0.43,68.54 | weg")
+tempo = 2.2
+
+[node name="KindYlva" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 64.22, -12.48, -68.22)
+anzeige_name = "Ylva, ein Mädchen aus dem Marktviertel"
+dialog_id = "stadt_kind"
+kordel = 0
+tracht = Color(0.35, 0.28, 0.32, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("vormittag: 64.22,-12.48,-68.22; 33.2,-0.03,-29.44; 45,-1.15,-20; 58,-7.54,22; 68,-8.33,17; 68,-8.14,7.5; 65.25,-7.92,4.75; 64.89,-7.92,5.11; 63.6,-7.79,2; 64.89,-7.81,-1.11; 68,-7.88,-2.4; 71.11,-7.86,-1.11; 72.4,-7.96,2; 71.11,-8.09,5.11; 68,-8.07,6.4; 64.89,-7.92,5.11 | runde=7", "mittag: 64.89,-7.92,5.11; 65.25,-7.92,4.75; 68,-8.14,7.5; 68,-8.33,17; 58,-7.54,22; 45,-1.15,-20; 33.2,-0.03,-29.44; 64.22,-12.48,-68.22 | weg", "nachmittag: 64.22,-12.48,-68.22; 33.2,-0.03,-29.44; 45,-1.15,-20; 58,-7.54,22; 68,-8.33,17; 68,-8.14,7.5; 65.25,-7.92,4.75; 64.89,-7.92,5.11; 68,-8.07,6.4; 71.11,-8.09,5.11; 72.4,-7.96,2; 71.11,-7.86,-1.11; 68,-7.88,-2.4; 64.89,-7.81,-1.11; 63.6,-7.79,2; 64.89,-7.92,5.11 | runde=7", "stille_stunde: 64.89,-7.92,5.11; 65.25,-7.92,4.75; 68,-8.14,7.5; 68,-8.33,17; 58,-7.54,22; 45,-1.15,-20; 33.2,-0.03,-29.44; 64.22,-12.48,-68.22 | weg")
+tempo = 2.2
+
+[node name="KindMats" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 56.6, -4.17, 96.77)
+anzeige_name = "Mats, ein Junge aus dem Hafenviertel"
+dialog_id = "stadt_kind"
+kordel = 0
+tracht = Color(0.38, 0.3, 0.2, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("vormittag: 56.6,-4.17,96.77; 27.01,0.63,106.02; 22,0.29,90; 10,0.19,64; 0,0.66,56; 44,-0.24,46; 58,-7.54,22; 75,-8.15,4; 73.5,-7.99,2; 68.55,-7.9,-2.95; 68,-7.88,-2.4; 71.11,-7.86,-1.11; 72.4,-7.96,2; 71.11,-8.09,5.11; 68,-8.07,6.4; 64.89,-7.92,5.11; 63.6,-7.79,2; 64.89,-7.81,-1.11; 68,-7.88,-2.4 | runde=10", "mittag: 68,-7.88,-2.4; 68.55,-7.9,-2.95; 73.5,-7.99,2; 75,-8.15,4; 58,-7.54,22; 44,-0.24,46; 0,0.66,56; 10,0.19,64; 22,0.29,90; 27.01,0.63,106.02; 56.6,-4.17,96.77 | weg", "nachmittag: 56.6,-4.17,96.77; 27.01,0.63,106.02; 22,0.29,90; 10,0.19,64; 0,0.66,56; 44,-0.24,46; 58,-7.54,22; 75,-8.15,4; 73.5,-7.99,2; 68.55,-7.9,-2.95; 68,-7.88,-2.4; 64.89,-7.81,-1.11; 63.6,-7.79,2; 64.89,-7.92,5.11; 68,-8.07,6.4; 71.11,-8.09,5.11; 72.4,-7.96,2; 71.11,-7.86,-1.11; 68,-7.88,-2.4 | runde=10", "stille_stunde: 68,-7.88,-2.4; 68.55,-7.9,-2.95; 73.5,-7.99,2; 75,-8.15,4; 58,-7.54,22; 44,-0.24,46; 0,0.66,56; 10,0.19,64; 22,0.29,90; 27.01,0.63,106.02; 56.6,-4.17,96.77 | weg")
+tempo = 2.2
+
+[node name="StreifeHahn" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 0.28, 48)
+anzeige_name = "Wächter Bertolt Hahn"
+dialog_id = "streife"
+kordel = 1
+tracht = Color(0.12, 0.12, 0.14, 1)
+tagesablauf = PackedStringArray("morgengrauen: -6,0.28,48; 0,0.76,48; 0,0.66,56; -25,1.02,52; -50,5.02,18; -25,1.02,52; 0,0.66,56; 10,0.19,64; 22,0.29,90; 10,0.19,64; 0,0.66,56; 0,0.76,48; -6,0.28,48 | runde=0", "stille_stunde: -6,0.28,48 | weg")
+
+[node name="StreifeKiel" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 0.28, 48)
+anzeige_name = "Wächterin Sanne Kiel"
+dialog_id = "streife"
+kordel = 1
+tracht = Color(0.12, 0.12, 0.14, 1)
+tagesablauf = PackedStringArray("morgengrauen: -6,0.28,48; 0,0.76,48; 0,0.66,56; 44,-0.24,46; 58,-7.54,22; 75,-8.15,4; 98,-17.74,0; 99,-17.81,12; 100,-17.8,19.5; 140,-17.8,19.5; 100,-17.8,19.5; 99,-17.81,12; 98,-17.74,0; 75,-8.15,4; 58,-7.54,22; 45,-1.15,-20; 20,-0.13,-40; 45,-1.15,-20; 58,-7.54,22; 44,-0.24,46; 0,0.66,56; 0,0.76,48; -6,0.28,48 | runde=0", "stille_stunde: -6,0.28,48 | weg")
+
+[node name="StreifeMarten" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 0.28, 48)
+anzeige_name = "Wächter Ivo Marten"
+dialog_id = "streife"
+kordel = 1
+tracht = Color(0.12, 0.12, 0.14, 1)
+tagesablauf = PackedStringArray("morgengrauen: -6,0.28,48 | weg", "nacht: -6,0.28,48; 0,0.76,48; 0,0.66,56; -25,1.02,52; -50,5.02,18; -25,1.02,52; 0,0.66,56; 10,0.19,64; 22,0.29,90; 10,0.19,64; 0,0.66,56; 0,0.76,48; -6,0.28,48 | runde=0")
+
+[node name="StreifeStrom" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 0.28, 48)
+anzeige_name = "Wächterin Dagny Strom"
+dialog_id = "streife"
+kordel = 1
+tracht = Color(0.12, 0.12, 0.14, 1)
+tagesablauf = PackedStringArray("morgengrauen: -6,0.28,48 | weg", "nacht: -6,0.28,48; 0,0.76,48; 0,0.66,56; 44,-0.24,46; 58,-7.54,22; 75,-8.15,4; 98,-17.74,0; 99,-17.81,12; 100,-17.8,19.5; 140,-17.8,19.5; 100,-17.8,19.5; 99,-17.81,12; 98,-17.74,0; 75,-8.15,4; 58,-7.54,22; 45,-1.15,-20; 20,-0.13,-40; 45,-1.15,-20; 58,-7.54,22; 44,-0.24,46; 0,0.66,56; 0,0.76,48; -6,0.28,48 | runde=0")
+
+[node name="FischerKlaas" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 126.22, -17.8, 22.43)
+anzeige_name = "Fischer Klaas Wend"
+dialog_id = "hafen"
+kordel = 0
+tracht = Color(0.3, 0.35, 0.42, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 126.22,-17.8,22.43; 126.22,-17.8,19.5; 112,-17.8,19.5; 112,-17.8,20.7 | blick=180", "stille_stunde: 112,-17.8,20.7; 112,-17.8,19.5; 126.22,-17.8,19.5; 126.22,-17.8,22.43 | weg")
+
+[node name="FischerinTora" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 50.25, -0.76, 51.89)
+anzeige_name = "Fischerin Tora Lunk"
+dialog_id = "hafen"
+kordel = 0
+tracht = Color(0.45, 0.4, 0.3, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 50.25,-0.76,51.89; 44,-0.24,46; 58,-7.54,22; 75,-8.15,4; 98,-17.74,0; 99,-17.81,12; 100,-17.8,19.5; 126,-17.8,19.5; 126,-17.8,20.7 | blick=180", "stille_stunde: 126,-17.8,20.7; 126,-17.8,19.5; 100,-17.8,19.5; 99,-17.81,12; 98,-17.74,0; 75,-8.15,4; 58,-7.54,22; 44,-0.24,46; 50.25,-0.76,51.89 | weg")
+
+[node name="FischerHinnerk" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 58.5, -7.39, -21.89)
+anzeige_name = "Fischer Hinnerk Saal"
+dialog_id = "hafen"
+kordel = 0
+tracht = Color(0.35, 0.28, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 58.5,-7.39,-21.89; 45.65,-1.63,-17.91; 58,-7.54,22; 75,-8.15,4; 98,-17.74,0; 99,-17.81,12; 100,-17.8,19.5; 140,-17.8,19.5; 140,-17.8,20.7 | blick=180", "stille_stunde: 140,-17.8,20.7; 140,-17.8,19.5; 100,-17.8,19.5; 99,-17.81,12; 98,-17.74,0; 75,-8.15,4; 58,-7.54,22; 45.65,-1.63,-17.91; 58.5,-7.39,-21.89 | weg")
+
+[node name="TraegerOle" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 101.82, -17.8, 25.07)
+anzeige_name = "Hafenträger Jonte Pahl"
+dialog_id = "hafen"
+kordel = 0
+tracht = Color(0.28, 0.36, 0.28, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 101.82,-17.8,25.07; 101.82,-17.8,19.5; 100,-17.8,19.5; 99,-17.81,12; 98,-17.74,0; 99,-17.79,-12; 100,-17.8,-20.4; 104,-17.8,-20.4; 126,-17.8,-20.4; 104,-17.8,-20.4 | runde=7", "stille_stunde: 104,-17.8,-20.4; 100,-17.8,-20.4; 99,-17.79,-12; 98,-17.74,0; 99,-17.81,12; 100,-17.8,19.5; 101.82,-17.8,19.5; 101.82,-17.8,25.07 | weg")
+
+[node name="TraegerinMieke" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 114.02, -17.8, 22.44)
+anzeige_name = "Hafenträgerin Mieke Strand"
+dialog_id = "hafen"
+kordel = 0
+tracht = Color(0.5, 0.42, 0.34, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 114.02,-17.8,22.44; 114.02,-17.8,19.5; 100,-17.8,19.5; 99,-17.81,12; 98,-17.74,0; 99,-17.79,-12; 100,-17.8,-20.4; 110,-17.8,-20.4; 134,-17.8,-20.4; 110,-17.8,-20.4 | runde=7", "stille_stunde: 110,-17.8,-20.4; 100,-17.8,-20.4; 99,-17.79,-12; 98,-17.74,0; 99,-17.81,12; 100,-17.8,19.5; 114.02,-17.8,19.5; 114.02,-17.8,22.44 | weg")
+
+[node name="KaufmannVelmund" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 132, -17.8, -20.4)
+anzeige_name = "Kaufmann Teodor Vass aus Velmund"
+dialog_id = "kaufmann_velmund"
+kordel = 0
+tracht = Color(0.5, 0.2, 0.18, 1)
+sichtbar_wenn = "alarm<2"
+
+[node name="Hafenaufsicht" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 143, -17.8, -20.4)
+anzeige_name = "Hafenwächter Gunnar Fleet"
+dialog_id = "hafenaufsicht"
+kordel = 1
+tracht = Color(0.12, 0.12, 0.14, 1)
+
+[node name="Kuester" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 29.82, 1.39, 80.1)
+anzeige_name = "Küster Anselm Rohr"
+dialog_id = "kuester"
+kordel = 0
+tracht = Color(0.2, 0.2, 0.22, 1)
+tagesablauf = PackedStringArray("morgengrauen: 29.82,1.39,80.1; 19.61,0.46,84.81; 10,0.19,64; 0,0.66,56; 44,-0.24,46; 53.92,-4.86,28.99; 62.5,-6.46,34 | blick=-110", "nacht: 62.5,-6.46,34; 53.92,-4.86,28.99; 44,-0.24,46; 0,0.66,56; 10,0.19,64; 19.61,0.46,84.81; 29.82,1.39,80.1 | weg")
+
+[node name="Ratsdiener" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 100, -17.8, -36)
+anzeige_name = "Ratsdiener Oswin Pfahl"
+dialog_id = "ratsdiener"
+kordel = 0
+tracht = Color(0.3, 0.2, 0.35, 1)
+
+[node name="Fluechtling" parent="Personen/Stadtleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.64279, 0, -0.76604, 0, 1, 0, 0.76604, 0, -0.64279, 45.5, -1.62, -16.5)
+anzeige_name = "Jana Brook, Flüchtling aus dem Süden"
+dialog_id = "fluechtling"
+kordel = 0
+tracht = Color(0.4, 0.36, 0.3, 1)
 
 [node name="Sprungpunkte" type="Node3D" parent="."]
 
