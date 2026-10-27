@@ -12,6 +12,45 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Stufe 4: Kampf, Ansehen, Akte und Verfahren, Alarmstufen
+
+**Kampf (selten und gefährlich, Bewaffnung nach der Lore):**
+- **F** zieht die Waffe, **Q** wechselt zwischen Säbel und Steinschlossmuskete.
+- **Säbel:** Mit der linken Maustaste schlägst du, mit der rechten blockst du. Ein Block fängt drei Viertel eines Hiebs von vorn ab, gegen Kugeln hilft er nicht.
+- **Muskete:** Ein Schuss über das Fadenkreuz, danach ist sie leer. Mit **R** lädst du nach. Das dauert acht Sekunden, und solange bist du langsam. Ungeladen stößt du mit dem Bajonett zu.
+- **Gegner kündigen sich an:** Wer ausholt oder anlegt, braucht einen Moment. In der Zeit kannst du zurückweichen oder blocken.
+- **Verwundung:** Wer zu Boden geht, stirbt nicht. Wächter bergen dich und bringen dich in die Heilstube, ein halber Tag vergeht, und die Verwundung steht in der Akte.
+- **Übungsplatz** mit zwei Puppen in der Oberer Burg.
+- **Erster Auftrag mit Kampf:** Die Bezirkswache von Erlengrund an der Südstraße schickt dich gegen ein Lager von Gesetzlosen im Wald. Zwei haben Säbel, einer hat eine Muskete. Besiegte bleiben liegen, auch nach dem Laden.
+
+**Ansehen** bei sechs Gruppen: Treue, Zweifler, Rufer, Dörfer, Riverlock und die Stadt Drachenstein.
+- Es ändert sich durch Antworten und Taten:
+  - Haltung gegenüber Zollherr Falk
+  - was du der Dorfvorsteherin über die Rufer sagst
+  - der Auftrag gegen die Gesetzlosen
+  - eine Waffe gegen Unbeteiligte
+- In der Akte (Tab) stehen alle Werte. Dialoge können darauf reagieren (`ansehen_doerfer>=10`).
+
+**Akte und Verfahren (Disziplin 3.7):**
+- Drei Verweise führen zu einer Anzeige.
+- Eine Waffe gegen Ordensleute bringt jedes Mal einen Verweis.
+- Eine Waffe gegen Dorfbewohner bringt beim ersten Mal eine Anzeige, beim zweiten Mal eine Anzeige auf **Ausstoßung**.
+- Ein offenes Verfahren steht in der Akte und als Ziel oben links.
+- Beim Kammerhüter läuft es wie in der Lore: Vorprüfung, Zeugen, Urteil. Der Bürge wird mitverhandelt.
+- Die Urteile:
+  - Degradierung um einen Rang
+  - Strafversetzung
+  - Ausstoßung: Der Namensstein wird geschlagen, das Spiel endet.
+  - Verbannung über Riverlock: Das Spiel endet.
+
+**Alarmstufen 0–3:** Stille, Wachsamkeit, Ende der Stille, Die letzte Linie. 1750 gilt Stufe 1. Die Stufe steht oben rechts.
+- **Ab Stufe 2** brennt auf allen Signaltürmen das Feuer (Ring der Feuer), mit einer Blende.
+  - Die Händlerin verlässt den Markt.
+  - Die Lotsin fährt nicht mehr: Die Kette liegt über der Valn.
+  - Die Bezirkswachen räumen nach den Dorfbüchern.
+- **Stufe 3:** Die Dörfer an den Straßen sind geräumt.
+- Im Entwicklermenü (F10) lässt sich die Stufe umschalten. Dialoge setzen sie mit `"alarm": 2`.
+
 ### Die Landwege: einmal um das Wächtermeer
 
 Die drei Straßen aus der Lore sind jetzt begehbare Strecken. Jede ist eine eigene, lange Region im Maßstab **1:100** (1 km = 10 m):
@@ -253,7 +292,12 @@ Dazu kommen diese Systeme:
 | T | eine Stunde vorspulen (praktisch für Nachtwachen) |
 | Esc | Pausemenü: Speichern, Laden, Hauptmenü |
 | F5 / F9 | schnell speichern / schnell laden (im laufenden Spiel) |
-| F10 | Entwicklermenü (nur beim Start aus dem Editor): zu Orten springen, Uhrzeit, in die andere Region reisen, alle Tore öffnen, Akt I überspringen |
+| F | Waffe ziehen / wegstecken |
+| Q | Säbel oder Muskete |
+| linke Maustaste | Hieb, Schuss, ungeladen Bajonett |
+| rechte Maustaste | blocken (Säbel) |
+| R | Muskete nachladen (acht Sekunden) |
+| F10 | Entwicklermenü (nur beim Start aus dem Editor): zu Orten springen, Uhrzeit, in eine andere Region reisen, Alarmstufe, alle Tore öffnen, Akt I überspringen |
 
 Den Wehrgang erreichst du über die Holzrampe an der Südmauer, westlich vom Tor. Von dort führt die Westmauer zur zweiten Rampe hinauf auf den Wachturm in der Nordwestecke.
 
@@ -286,6 +330,7 @@ szenen/
   welt/region_ashenveil.tscn     Region Ashenveil: Nebelmoor, Burg, Kapelle der Stille, Fluchttunnel
   welt/region_nordstrasse.tscn, region_suedstrasse.tscn, region_kuestenweg.tscn  die Landstraßen
   welt/uebergang.gd        Übergang am Ende eines Weges in die nächste Region
+  welt/bedingt_sichtbar.gd sichtbar unter einer Bedingung, z. B. Signalfeuer ab Alarmstufe 2
   welt/wasserdicht.gd      Bereich unter dem Wasserspiegel, in dem niemand zurückgesetzt wird (Keller, Tunnel)
   welt/region.gd           Wurzel einer Region: Wasser, Rand, Lage auf der Karte
   welt/gelaende.gd         baut Gelände und Kollision aus daten/gelaende*/
@@ -302,7 +347,8 @@ szenen/
   welt/tageslicht.gd       Sonne, Mond, Himmel und Nebel nach Uhrzeit
   welt/ordenswand.gd       Namenssteine, nach dem Haupteid auch deiner
   welt/posten.gd           Wachposten (Torwache, Nachtwachen)
-  spieler/                 Spielfigur und Kamera
+  spieler/                 Spielfigur und Kamera, spieler/kampf.gd: Waffen, Leben, Verwundung
+  figuren/gegner.tscn      Gegner (Gesetzlose mit Säbel oder Muskete, Übungspuppe)
   figuren/person.tscn      ansprechbare Person
   figuren/bruchstein.tscn  Gegenstand zum Aufheben
   figuren/werkbank.tscn    Arbeitsstelle (kostet Spielzeit)
@@ -426,19 +472,24 @@ Jede Datei hat Knoten. Begonnen wird beim Knoten `start`, außer ein Eintrag in 
 | `blende` | schwarze Blende mit Text, danach geht es weiter |
 | `akt_ende` | lange Blende zum Ende eines Akts |
 | `spielende` | Blende, danach zurück ins Hauptmenü |
+| `ansehen` | Ansehen ändern, z. B. `{ "doerfer": 10, "treue": -3 }` (treue, zweifler, rufer, doerfer, riverlock, stadt) |
+| `alarm` | Alarmstufe setzen (0–3) |
+| `anzeige` | `{ "stufe": 2, "grund": "..." }`: Anzeige beim Kammerhüter (2 Degradierung bis 5 Verbannung) |
+| `urteil` | `true`: das Urteil im laufenden Verfahren vollstrecken (nur beim Kammerhüter) |
 | `reise` | `{ "ziel": "riverlock", "ankunft": "von_drachenstein", "stunden": 54, "text": "..." }`: Am Ende des Gesprächs geht es in die andere Region, an den Marker mit diesem Namen (Gruppe `ankunft`), die Zeit läuft weiter, dann kommt die Blende mit dem Text |
 
-**Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `rang>=2`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht), `region=riverlock` (die Region, in der man gerade ist: drachenstein, riverlock, ashenveil, nordstrasse, suedstrasse, kuestenweg). Mehrere werden durch Komma getrennt und müssen alle gelten.
+**Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `zaehler<3`, `rang>=2`, `alarm>=2`, `ansehen_rufer>=10`, `verfahren_stufe>=4`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht), `region=riverlock` (die Region, in der man gerade ist: drachenstein, riverlock, ashenveil, nordstrasse, suedstrasse, kuestenweg). Mehrere werden durch Komma getrennt und müssen alle gelten.
 
 ## Testen
 
-Sieben automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
+Acht automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
 
 | Test | Prüft |
 |---|---|
 | `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
 | `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
 | `tests/test_innen.gd` | die Innenräume, 25 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü, in Gravemarch Donjon, Archivarin und Scheintore |
+| `tests/test_stufe4.gd` | Stufe 4, 28 Punkte: Alarmstufe 1 zu Beginn, Ansehen durch Antworten, Auftrag und Kampf gegen die Gesetzlosen (Treffer, Block, Sieg, bleiben nach dem Laden liegen), Verwundung, Ring der Feuer und leere Märkte, keine Boote bei Alarm, Säbel, Schuss, Bajonett, Nachladen, Verweise und Verfahren bis zur Degradierung, Waffe gegen die Händlerin bis zur Ausstoßung |
 | `tests/test_landwege.gd` | die Landwege, 26 Punkte: Anwärter bleiben drin, durch das Nordtor, einmal um das Meer (Nordstraße, Südstraße, Küstenweg) mit den richtigen Reisetagen, Umkehren kostet nichts, Karte, Wald, Personen an der Straße, Speichern und Laden unterwegs, über den Pass und durch das Südtor zurück in die Stadt |
 | `tests/test_ashenveil.gd` | Ashenveil, 24 Punkte: Reiterin lehnt Anwärter ab, Ritt hin und zurück mit Zeitverlust, Morast, über den Damm und durch das Fallgitter, Rampe hinunter in die Kapelle, Gedenkstein, durch den Fluchttunnel ins Moor, Personen, verriegelter Nebeneingang, Speichern und Laden |
 | `tests/test_riverlock.gd` | Riverlock und das Reisen, 21 Punkte: Lotsin lehnt Anwärter ab, Überfahrt hin und zurück mit Zeitverlust, Rampen durch alle drei Geschosse des Mittelbaus, Zollherr in der Akte, Personen, Wege durch beide Burgen bis vor die Tore, Wasser, Speichern und Laden in Riverlock, Reise über das Entwicklermenü |
@@ -452,10 +503,11 @@ godot --headless --path . --script res://tests/test_innen.gd
 godot --headless --path . --script res://tests/test_riverlock.gd
 godot --headless --path . --script res://tests/test_ashenveil.gd
 godot --headless --path . --script res://tests/test_landwege.gd
+godot --headless --path . --script res://tests/test_stufe4.gd
 ```
 
 Am Ende steht jeweils `Fehler: 0`, wenn alles stimmt.
 
 ## Nächste Schritte
 
-Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Alle Burgen aus deinen Grundrissen stehen, und die Landwege verbinden sie. Offen in Stufe 3 sind echte Modelle statt Klötzen. Danach folgen die Systeme aus Stufe 4: Kampf, Ansehen, Alarmstufen.
+Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Alle Burgen aus deinen Grundrissen stehen, die Landwege verbinden sie, und die Systeme aus Stufe 4 laufen. Offen sind echte Modelle statt Klötzen (Stufe 3), die Heimlichkeit (Beobachten, Belauschen, Berichte), Sold und Bürgschaft für andere, und dann die Geschichte von Akt II.

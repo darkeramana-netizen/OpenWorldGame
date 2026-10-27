@@ -56,7 +56,7 @@ autowrap_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -360.0
+offset_left = -440.0
 offset_top = 16.0
 offset_right = -20.0
 offset_bottom = 140.0
@@ -67,7 +67,8 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 4
 text = "WASD gehen · Umschalt rennen · Leertaste springen
 E sprechen / aufheben · Tab Akte · M Karte · Esc Menü
-T eine Stunde vorspulen · F5 / F9 schnell speichern / laden"
+T eine Stunde vorspulen · F5 / F9 schnell speichern / laden
+F Waffe · Q Säbel/Muskete · Maus links angreifen · rechts blocken · R laden"
 horizontal_alignment = 2
 
 [node name="Stille" type="Label" parent="."]
@@ -256,6 +257,69 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 text = "▲ Du bist hier · M schließt die Karte"
 horizontal_alignment = 1
+
+[node name="Alarm" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -420.0
+offset_top = 150.0
+offset_right = -20.0
+offset_bottom = 180.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 5
+horizontal_alignment = 2
+
+[node name="Leben" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -64.0
+offset_right = 280.0
+offset_bottom = -44.0
+grow_vertical = 0
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="Waffe" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -40.0
+offset_right = 520.0
+offset_bottom = -12.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 5
+
+[node name="Fadenkreuz" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 4
+text = "+"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Blende" type="ColorRect" parent="."]
 unique_name_in_owner = true

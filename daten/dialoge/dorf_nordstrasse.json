@@ -36,10 +36,44 @@
 		"unruhe": {
 			"text": "Im Winter waren Leute hier, die sagten, der Orden warte wieder, wie damals vor Burg Sorrow. Rufer nannten sie sich. Ein Silas Holt schickt sie. Die Jungen hören zu. Ich höre auch zu, aber ich glaube ihnen nicht.",
 			"akte": "In Hollmar an der Nordstraße haben im Winter Rufer im Auftrag von Silas Holt geworben.",
-			"weiter": "fragen"
+			"weiter": "unruhe_antwort"
 		},
 		"ende": {
 			"text": "Gute Straße, Wächter."
+		},
+		"unruhe_antwort": {
+			"text": "Und du? Was sagst du dazu?",
+			"optionen": [
+				{
+					"text": "Wenn sie wiederkommen, meldet es der Bezirksfestung.",
+					"weiter": "melden"
+				},
+				{
+					"text": "Ganz unrecht haben sie nicht. Der Orden wartet wirklich.",
+					"weiter": "recht"
+				},
+				{
+					"text": "Ich sage nichts dazu.",
+					"weiter": "fragen"
+				}
+			]
+		},
+		"melden": {
+			"text": "Das werden wir. Die Jungen werden es mir übelnehmen, aber das tun sie sowieso.",
+			"ansehen": {
+				"treue": 3,
+				"rufer": -5
+			},
+			"weiter": "fragen"
+		},
+		"recht": {
+			"text": "Ein Wächter, der so redet? Pass auf, wem du das sagst. Ich sage es keinem weiter.",
+			"ansehen": {
+				"rufer": 5,
+				"zweifler": 5,
+				"treue": -3
+			},
+			"weiter": "fragen"
 		}
 	}
 }

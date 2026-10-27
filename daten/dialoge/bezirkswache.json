@@ -20,6 +20,16 @@
 					"weiter": "fremde"
 				},
 				{
+					"text": "Gibt es Ärger an der Straße?",
+					"bedingung": "region=suedstrasse,!auftrag_gesetzlose",
+					"weiter": "auftrag"
+				},
+				{
+					"text": "Das Lager im Wald ist geräumt.",
+					"bedingung": "region=suedstrasse,auftrag_gesetzlose,gesetzlose_besiegt>=3,!gesetzlose_gemeldet",
+					"weiter": "erledigt"
+				},
+				{
 					"text": "Gute Wache.",
 					"weiter": "ende"
 				}
@@ -40,6 +50,38 @@
 		},
 		"ende": {
 			"text": "Gute Wache. Die nächste Festung meldet, dass du durchgekommen bist."
+		},
+		"alarm": {
+			"text": "Die Feuer brennen. Wir räumen die Dörfer nach dem Plan im Dorfbuch, die Sammelpunkte sind hier in der Festung. Niemand wird ungewarnt verbrannt. Wenn du helfen willst, geh von Dorf zu Dorf und sag es weiter.",
+			"weiter": "fragen"
+		},
+		"auftrag": {
+			"text": "Gesetzlose. Ein paar Männer, die aus Valdrenn über die Berge gekommen sind und nicht arbeiten wollen. Sie haben ein Lager im Wald östlich von hier und überfallen die Karren nach Erlenbrück. Einer hat eine Muskete. Wir sind zu wenige, um die Festung zu verlassen. Ein Wächter könnte das erledigen.",
+			"setze": [
+				"auftrag_gesetzlose"
+			],
+			"ziel": "Vertreibe die Gesetzlosen aus ihrem Lager im Wald östlich der Bezirksfestung Erlengrund.",
+			"akte": "Auftrag der Bezirksfestung Erlengrund: das Lager der Gesetzlosen an der Südstraße räumen.",
+			"weiter": "fragen"
+		},
+		"erledigt": {
+			"text": "Alle drei? Dann fahren die Karren wieder. Das spricht sich in den Dörfern herum, Wächter, schneller als jeder Bericht.",
+			"setze": [
+				"gesetzlose_gemeldet"
+			],
+			"ansehen": {
+				"doerfer": 10,
+				"treue": 5
+			},
+			"ziel": "",
+			"akte": "Das Lager der Gesetzlosen an der Südstraße geräumt und in Erlengrund gemeldet.",
+			"weiter": "fragen"
 		}
-	}
+	},
+	"einstieg": [
+		{
+			"bedingung": "alarm>=2",
+			"knoten": "alarm"
+		}
+	]
 }

@@ -1,4 +1,4 @@
-[gd_scene load_steps=57 format=3]
+[gd_scene load_steps=60 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -19,6 +19,12 @@
 [ext_resource type="PackedScene" path="res://szenen/oberflaeche/entwickler.tscn" id="17_entwickler"]
 [ext_resource type="Script" path="res://szenen/welt/region.gd" id="18_region"]
 [ext_resource type="Script" path="res://szenen/welt/uebergang.gd" id="20_uebergang"]
+[ext_resource type="Script" path="res://szenen/welt/bedingt_sichtbar.gd" id="21_bedingt"]
+[ext_resource type="PackedScene" path="res://szenen/figuren/gegner.tscn" id="22_gegner"]
+
+[sub_resource type="StandardMaterial3D" id="Material_flamme"]
+shading_mode = 0
+albedo_color = Color(1, 0.62, 0.18, 1)
 
 [sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
 sky_top_color = Color(0.32, 0.42, 0.56, 1)
@@ -332,6 +338,30 @@ radius = 3
 height = 14
 sides = 10
 material = SubResource("Material_mauer")
+
+[node name="Uebungspuppe1" parent="Drachenstein/ObererBurg" instance=ExtResource("22_gegner")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -44, 0, -14)
+anzeige_name = "Übungspuppe"
+waffe = "puppe"
+flag_besiegt = ""
+zaehler = ""
+tracht = Color(0.55, 0.45, 0.3, 1)
+
+[node name="Uebungspuppe2" parent="Drachenstein/ObererBurg" instance=ExtResource("22_gegner")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -39, 0, -14)
+anzeige_name = "Übungspuppe"
+waffe = "puppe"
+flag_besiegt = ""
+zaehler = ""
+tracht = Color(0.55, 0.45, 0.3, 1)
+
+[node name="SchildUebungsplatz" type="Label3D" parent="Drachenstein/ObererBurg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -41.5, 3.5, -10)
+billboard = 1
+pixel_size = 0.02
+text = "Übungsplatz"
+font_size = 40
+outline_size = 14
 
 [node name="Ringmauer" type="Node3D" parent="Drachenstein"]
 
@@ -4781,6 +4811,23 @@ height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
 
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 12.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm1/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm1/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
+
 [node name="Signalturm2" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 85, 0, 200)
 
@@ -4797,6 +4844,23 @@ radius = 1.6
 height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
+
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 12.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm2/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm2/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
 
 [node name="Orte" type="Node3D" parent="."]
 
@@ -4944,6 +5008,7 @@ anzeige_name = "Händlerin Grete Lohm"
 dialog_id = "haendlerin"
 kordel = 0
 tracht = Color(0.45, 0.3, 0.2, 1)
+sichtbar_wenn = "alarm<2"
 
 [node name="Sprungpunkte" type="Node3D" parent="."]
 
@@ -4958,6 +5023,10 @@ metadata/anzeige = "Vor dem Tor"
 [node name="Oberer_Burg" type="Marker3D" parent="Sprungpunkte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -50, 8.5, 0)
 metadata/anzeige = "Oberer Burg"
+
+[node name="Übungsplatz" type="Marker3D" parent="Sprungpunkte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -41.5, 8.5, -9)
+metadata/anzeige = "Übungsplatz"
 
 [node name="Vorburgtor" type="Marker3D" parent="Sprungpunkte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -10, 0.6, 78)
@@ -5020,6 +5089,9 @@ transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, 77.5, 30
 
 [node name="von_kuestenweg" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 83.5, 19.65, 295)
+
+[node name="heilstube" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -10, 0.3, 15)
 
 [node name="SchildNordstrasse" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 72, 29.74, -560)

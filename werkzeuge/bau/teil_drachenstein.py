@@ -27,6 +27,10 @@ box("Kapelle", OB, -76, 3.5, -36, 10, 7, 9, "Material_hell")
 box("Zeughaus", OB, -76, 3, 1, 12, 6, 8, "Material_mauer")
 for i, (x, z) in enumerate([(X0, Z0), (X1, Z0), (X0, Z1), (X1, Z1)]):
     zyl(f"Eckturm{i+1}", OB, x, 4, z, 3, 14, "Material_mauer", 10)
+# Übungsplatz mit zwei Puppen für Säbel und Muskete
+for k, x in enumerate([-44, -39]):
+    gegner(f"Uebungspuppe{k + 1}", OB, x, 0, -14, "Übungspuppe", waffe="puppe", tracht="0.55, 0.45, 0.3, 1")
+schild("SchildUebungsplatz", OB, -41.5, 3.5, -10, "Übungsplatz", 40)
 
 # --- Ringmauer der Stadt (Löwenward) ---
 RM = DS + "/Ringmauer"

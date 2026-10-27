@@ -1,5 +1,5 @@
 extends CanvasLayer
-## Entwicklermenü (F10): Sprungpunkte, Tageszeit, Reisen, Tore öffnen, Akt I überspringen.
+## Entwicklermenü (F10): Sprungpunkte, Tageszeit, Reisen, Alarmstufe, Tore öffnen, Akt I überspringen.
 ## Nur verfügbar, wenn das Spiel aus dem Editor läuft (Debug-Build), nicht im fertigen Spiel.
 
 @onready var _fenster: Control = %Fenster
@@ -46,6 +46,10 @@ func _fuelle() -> void:
 	for region: String in Speicher.REGIONEN:
 		if region != Speicher.region:
 			_liste.add_child(_knopf("Reise nach " + region.capitalize(), reise.bind(region)))
+	var alarm := HBoxContainer.new()
+	for stufe in 4:
+		alarm.add_child(_knopf("Alarm %d" % stufe, setze_alarm.bind(stufe), 100))
+	_liste.add_child(alarm)
 	_liste.add_child(_knopf("Alle Tore öffnen", oeffne_tore))
 	_liste.add_child(_knopf("Akt I überspringen (Wächter)", ueberspringe_akt1))
 	_liste.add_child(_knopf("Schließen (F10)", _schliessen))
@@ -75,6 +79,11 @@ func setze_zeit(stunde: float) -> void:
 func reise(region: String) -> void:
 	_schliessen()
 	Speicher.reise(region, "von_" + Speicher.region)
+
+
+func setze_alarm(stufe: int) -> void:
+	_schliessen()
+	Spielstand.setze_alarmstufe(stufe)
 
 
 func oeffne_tore() -> void:

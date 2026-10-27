@@ -43,6 +43,7 @@ for i,(x,z) in enumerate([(78,-190),(85,200)]):
     N(f"Signalturm{i+1}", "Node3D", "Signaltuerme", T(x,0,z))
     box("Turm", f"Signaltuerme/Signalturm{i+1}", 0, 5, 0, 4, 14, 4, "Material_mauer")
     zyl("Feuerbecken", f"Signaltuerme/Signalturm{i+1}", 0, 12.4, 0, 1.6, 0.8, "Material_feuer", 8, False)
+    signalfeuer(f"Signaltuerme/Signalturm{i+1}", 12.8)
 
 # ---------- Orte ----------
 N("Orte", "Node3D", ".")
@@ -73,13 +74,14 @@ gelaende = NodePath("../../Gelaende")''', extra='node_paths=PackedStringArray("g
 # Reiterin aus Ashenveil vor dem Vorburgtor: nimmt Wächter über den Küstenweg mit
 person("Reiterin", "Personen/PersonenAmBoden", -22, 0, 92, "Reiterin Ilka Sand", "reiterin_ashenveil", 2, "0.25, 0.22, 0.18, 1", gier=-54)
 pferd("PferdReiterin", "Personen", -25.5, round(H(-25.5, 94), 2), 94, 36)
-person("Haendlerin", "Personen/PersonenAmBoden", 64, 0, -4, "Händlerin Grete Lohm", "haendlerin", 0, "0.45, 0.3, 0.2, 1")
+# Bei Alarm leeren sich die Märkte (Konzept: Eine Welt, die kippen kann).
+person("Haendlerin", "Personen/PersonenAmBoden", 64, 0, -4, "Händlerin Grete Lohm", "haendlerin", 0, "0.45, 0.3, 0.2, 1", sichtbar_wenn="alarm<2")
 
 
 # ---------- Sprungpunkte (Entwicklermenü, F10) ----------
 N("Sprungpunkte", "Node3D", ".")
 _bf = lambda r, w, y: (round(250 + r*math.cos(math.radians(BF_WINKEL + w)), 1), y, round(135 + r*math.sin(math.radians(BF_WINKEL + w)), 1))
-for name, x, y, z in [("Hof der Burgfeste", 0, 0.5, 20), ("Vor dem Tor", 0, 0.5, 46), ("Oberer Burg", -50, 8.5, 0),
+for name, x, y, z in [("Hof der Burgfeste", 0, 0.5, 20), ("Vor dem Tor", 0, 0.5, 46), ("Oberer Burg", -50, 8.5, 0), ("Übungsplatz", -41.5, 8.5, -9),
                       ("Vorburgtor", -10, round(H(-10, 78) + 0.5, 1), 78), ("Marktplatz", 66, round(H(66, -2) + 0.5, 1), -2),
                       ("Drachenkai", 125, -17.3, 21), ("Bergfried, Tor", *_bf(24, 0, -17.4)),
                       ("Bergfried, Schwelle (Ebene 0)", *_bf(8.5, 4, -17.4)), ("Bergfried, Archive (Ebene 4)", *_bf(8.6, -53, 11.4)),
@@ -94,6 +96,7 @@ N("von_riverlock", "Marker3D", "Ankuenfte", T(125, -17.5, 23), extra='groups=["a
 N("von_ashenveil", "Marker3D", "Ankuenfte", T(-18.5, round(H(-18.5, 89) + 0.2, 2), 89, -53.4), extra='groups=["ankunft"]')
 ankunft("von_nordstrasse", 77.5, -600, 180)
 ankunft("von_kuestenweg", 83.5, 295, 0)
+ankunft("heilstube", -10, 15)
 schild("SchildNordstrasse", ".", 72, round(H(72, -560) + 3, 2), -560, "Nordstraße → Riverlock 225 km", 48)
 schild("SchildKuestenweg", ".", 78, round(H(78, 280) + 3, 2), 280, "Küstenweg → Ashenveil 70 km", 48)
 # Am Ende der Pässe beginnen die Landstraßen

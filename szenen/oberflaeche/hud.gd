@@ -21,6 +21,12 @@ extends CanvasLayer
 @onready var _karte: Control = %Karte
 @onready var _karte_bild: TextureRect = %KarteBild
 @onready var _karte_marke: Label = %KarteMarke
+@onready var _alarm: Label = %Alarm
+@onready var _leben: ProgressBar = %Leben
+@onready var _waffe: Label = %Waffe
+@onready var _fadenkreuz: Label = %Fadenkreuz
+
+const ALARMFARBEN: Array[Color] = [Color(0.75, 0.85, 0.75), Color(0.95, 0.9, 0.7), Color(1.0, 0.55, 0.2), Color(1.0, 0.25, 0.2)]
 
 ## Lage von Drachenstein auf der Karte (Pixel) und Maßstab: 1 Kartenpixel = 5 m im Spiel.
 const KARTE_METER_PRO_PIXEL := 5.0
@@ -54,8 +60,18 @@ func _ready() -> void:
 	Spielstand.ort_betreten.connect(_zeige_ort)
 	Dialog.zeile_gezeigt.connect(_zeige_zeile)
 	Dialog.beendet.connect(func(_id: String) -> void: _dialog.hide())
+	Spielstand.alarm_geaendert.connect(func(_s: int) -> void:
+		_zeige_alarm()
+		_fuelle_akte())
+	Spielstand.ansehen_geaendert.connect(func(_g: String, _w: int) -> void: _fuelle_akte())
+	Spielstand.verfahren_geaendert.connect(_fuelle_akte)
 	if spieler:
 		spieler.ziel_gewechselt.connect(_zeige_hinweis)
+		var kampf := spieler.get_node("Kampf")
+		kampf.leben_geaendert.connect(func(_l: float) -> void: _zeige_kampf())
+		kampf.zustand_geaendert.connect(_zeige_kampf)
+	_zeige_alarm()
+	_zeige_kampf()
 
 	_zeige_uhr()
 	_zeige_ziel(Spielstand.ziel)
@@ -205,17 +221,51 @@ func _neuer_knopf(beschriftung: String, index: int) -> void:
 	_optionen.add_child(knopf)
 
 
+func _zeige_alarm() -> void:
+	var stufe := Spielstand.alarmstufe
+	_alarm.text = "Alarmstufe %d · %s" % [stufe, Spielstand.ALARMSTUFEN[stufe]]
+	_alarm.add_theme_color_override("font_color", ALARMFARBEN[stufe])
+
+
+func _zeige_kampf() -> void:
+	if spieler == null:
+		_leben.hide()
+		_waffe.hide()
+		_fadenkreuz.hide()
+		return
+	var kampf := spieler.get_node("Kampf")
+	_leben.value = kampf.leben
+	_leben.visible = kampf.gezogen or kampf.leben < kampf.LEBEN_MAX
+	_fadenkreuz.visible = kampf.gezogen and kampf.waffe == "muskete"
+	if not kampf.gezogen:
+		_waffe.text = ""
+	elif kampf.waffe == "saebel":
+		_waffe.text = "Säbel" + (" · blockt" if kampf.blockt else "")
+	elif kampf.nachladen_rest > 0.0:
+		_waffe.text = "Muskete · wird geladen …"
+	else:
+		_waffe.text = "Muskete · " + ("geladen" if kampf.geladen else "leer, R zum Laden, sonst Bajonett")
+
+
 func _fuelle_akte() -> void:
 	var zeilen: PackedStringArray = [
 		"[b]Dienstakte[/b]",
 		"Rang: %s" % Spielstand.rang_name(),
 		"Kordel: %s" % Spielstand.kordel_name(),
 		"Bürge: %s" % Spielstand.buerge,
-		"",
+		"Alarmstufe: %d, %s" % [Spielstand.alarmstufe, Spielstand.ALARMSTUFEN[Spielstand.alarmstufe]],
 	]
+	if not Spielstand.verfahren.is_empty():
+		var stufe: int = Spielstand.verfahren["stufe"]
+		zeilen.append("[color=#e07a5f]Offenes Verfahren (Stufe %d, %s): %s[/color]" % [stufe, Spielstand.STRAFEN[stufe], Spielstand.verfahren["grund"]])
+	var ansehen: PackedStringArray = []
+	for gruppe: String in Spielstand.GRUPPEN:
+		ansehen.append("%s %+d" % [gruppe.capitalize().replace("Doerfer", "Dörfer"), Spielstand.ansehen_wert(gruppe)])
+	zeilen.append("Ansehen: " + " · ".join(ansehen))
+	zeilen.append("")
 	if Spielstand.akte.is_empty():
 		zeilen.append("[i]Noch keine Einträge.[/i]")
 	for eintrag in Spielstand.akte:
-		var farbe := "#e07a5f" if eintrag["art"] == "verweis" else "#e8dcc4"
+		var farbe := "#e07a5f" if eintrag["art"] in ["verweis", "anzeige", "urteil"] else "#e8dcc4"
 		zeilen.append("[color=%s]%s, %s: %s[/color]" % [farbe, eintrag.get("datum", ""), eintrag["uhrzeit"], eintrag["text"]])
 	_akte_text.text = "\n".join(zeilen)

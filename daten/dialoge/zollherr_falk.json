@@ -20,6 +20,16 @@
 					"weiter": "lund"
 				},
 				{
+					"text": "Riverlock ist frei. Der Orden achtet das.",
+					"bedingung": "!falk_haltung",
+					"weiter": "frei"
+				},
+				{
+					"text": "Wer Valdrenn die Brücke öffnet, wird es bereuen.",
+					"bedingung": "!falk_haltung",
+					"weiter": "drohung"
+				},
+				{
 					"text": "Ich gehe.",
 					"weiter": "ende"
 				}
@@ -40,6 +50,27 @@
 		},
 		"ende": {
 			"text": "Der Saal ist für Verhandlungen. Wenn du nichts zu verhandeln hast, ist er für dich zu groß."
+		},
+		"frei": {
+			"text": "Das hört man selten von euch. Gut. Dann behalte ich dich im Kopf, wenn man mich fragt, wer von euch zuhört und wer nur befiehlt.",
+			"setze": [
+				"falk_haltung"
+			],
+			"ansehen": {
+				"riverlock": 8
+			},
+			"weiter": "fragen"
+		},
+		"drohung": {
+			"text": "Eine Drohung, in meinem eigenen Saal. Der Beobachter wird sie aufschreiben, nehme ich an. Ich auch.",
+			"setze": [
+				"falk_haltung"
+			],
+			"ansehen": {
+				"riverlock": -8,
+				"treue": 3
+			},
+			"weiter": "fragen"
 		}
 	}
 }

@@ -212,6 +212,7 @@ N("von_drachenstein", "Marker3D", "Ankuenfte", T(*ANKUNFT), extra='groups=["anku
 ankunft("von_riverlock", 222, 3.5, 90)
 ankunft("von_suedstrasse", 222, 3.5, 90)
 ankunft("von_kuestenweg", -5.4, 188, 0)
+ankunft("heilstube", 10, -10, hoch=0.8)
 uebergang("ZumKuestenweg", (-1, round(H(-1, 196.5) + 2, 2), 196.5), (24, 30, 5), "kuestenweg", "von_ashenveil",
           (-7.2, round(H(-7.2, 180) + 0.5, 2), 180), bedingung="")
 uebergang("ZurSuedstrasse", (236, round(H(236, 5.5) + 2, 2), 5.5), (10, 30, 24), "suedstrasse", "von_ashenveil",

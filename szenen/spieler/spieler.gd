@@ -22,6 +22,8 @@ var ziel: Node = null
 var _sichere_position := Vector3.ZERO
 ## Wasser und Rand kommen von der Region: Wer hineingerät, wird zur letzten sicheren Stelle zurückgesetzt.
 var _region: Region = null
+## Hierhin wird man nach einer schweren Verwundung gebracht, wenn die Region keine Heilstube hat.
+var _startposition := Vector3.ZERO
 
 var _schwerkraft: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -51,6 +53,7 @@ func _ready() -> void:
 		if global_position.y < boden + 0.05:
 			global_position.y = boden + 0.05
 	_sichere_position = global_position
+	_startposition = global_position
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -82,11 +85,12 @@ func _physics_process(delta: float) -> void:
 
 	# Bewegung relativ zur Blickrichtung der Kamera.
 	var richtung := (Basis(Vector3.UP, _kamera_drehpunkt.rotation.y) * Vector3(eingabe.x, 0.0, eingabe.y)).normalized()
-	var tempo := rennen if Input.is_action_pressed("rennen") else gehen
+	var tempo: float = (rennen if Input.is_action_pressed("rennen") else gehen) * $Kampf.tempo_faktor()
 	if richtung != Vector3.ZERO:
 		velocity.x = richtung.x * tempo
 		velocity.z = richtung.z * tempo
-		_koerper.rotation.y = lerp_angle(_koerper.rotation.y, atan2(-richtung.x, -richtung.z), 10.0 * delta)
+		if not $Kampf.gezogen:  # mit gezogener Waffe dreht kampf.gd die Figur zur Kamera
+			_koerper.rotation.y = lerp_angle(_koerper.rotation.y, atan2(-richtung.x, -richtung.z), 10.0 * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, tempo * 10.0 * delta)
 		velocity.z = move_toward(velocity.z, 0.0, tempo * 10.0 * delta)
@@ -134,7 +138,24 @@ func als_dict() -> Dictionary:
 		"position": [global_position.x, global_position.y, global_position.z],
 		"koerper": _koerper.rotation.y,
 		"kamera": [_kamera_drehpunkt.rotation.x, _kamera_drehpunkt.rotation.y],
+		"kampf": $Kampf.als_dict(),
 	}
+
+
+## Getroffen von einem Gegner (siehe kampf.gd).
+func treffer(schaden: float, quelle: Node3D, art: String = "hieb") -> void:
+	$Kampf.treffer(schaden, quelle, art)
+
+
+## Nach einer schweren Verwundung: zur Heilstube der Region (Ankunftsort "heilstube") oder zum Anfang.
+func zur_heilstube() -> void:
+	var ziel := _startposition
+	for marke: Node3D in get_tree().get_nodes_in_group("ankunft"):
+		if marke.name == "heilstube":
+			ziel = marke.global_position
+	global_position = ziel
+	velocity = Vector3.ZERO
+	_sichere_position = ziel
 
 
 func aus_dict(daten: Dictionary) -> void:
@@ -145,6 +166,8 @@ func aus_dict(daten: Dictionary) -> void:
 	var k: Array = daten.get("kamera", [])
 	if k.size() == 2:
 		_kamera_drehpunkt.rotation = Vector3(k[0], k[1], 0.0)
+	if daten.has("kampf"):
+		$Kampf.aus_dict(daten["kampf"])
 
 
 func _bei_dialogstart(_id: String) -> void:

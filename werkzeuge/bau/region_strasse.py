@@ -30,6 +30,7 @@ STRASSEN = {
         untertitel="185 km von Ashenveil nach Riverlock, südlich um das Wächtermeer",
         wald=[(150, 650), (900, 1850)], doerfer=[(380, None), (1150, "Erlenbrück")],
         festungen=[(820, "Bezirksfestung Erlengrund"), (1520, "Bezirksfestung Waldtor")],
+        lager=1350,
         personen=[("Feuerwart", "turm", 4, "Feuerwart Tobias Wern", "feuerwart_suedstrasse", 1, "0.3, 0.2, 0.12, 1"),
                   ("Bezirkswache", "festung", 0, "Bezirkswache Inga Roth", "bezirkswache", 1, "0.15, 0.15, 0.16, 1")]),
     "kuestenweg": dict(
@@ -107,6 +108,7 @@ for k, a in enumerate(range(75, int(L), 150)):
     N(f"Signalturm{k}", "Node3D", "Signaltuerme", T(x, round(y, 2), z))
     box("Turm", f"Signaltuerme/Signalturm{k}", 0, 6, 0, 4, 14, 4, "Material_mauer")
     zyl("Feuerbecken", f"Signaltuerme/Signalturm{k}", 0, 13.4, 0, 1.6, 0.8, "Material_feuer", 8, False)
+    signalfeuer(f"Signaltuerme/Signalturm{k}", 13.8)
     tuerme.append((x, round(y, 2), z, a))
 
 # ---------- Meilensteine mit den echten Entfernungen ----------
@@ -171,6 +173,26 @@ for i, (a, fname) in enumerate(W["festungen"]):
     box("Wohnturm", pfad, 0, 5, 0, 7, 14, 7, "Material_mauer")
     schild("Schild", pfad, 0, 14, 0, fname, 56)
 
+# ---------- Lager der Gesetzlosen (Auftrag der Bezirkswache an der Südstraße) ----------
+if "lager" in W:
+    a = W["lager"]
+    lx, lz = welt(a, strassen_c(a) + LAND * 55)
+    frei.append((lx, lz, 22))
+    N("Lager", "Node3D", ".", T(lx, round(H(lx, lz), 2), lz))
+    zyl("Lagerfeuer", "Lager", 0, 0.3, 0, 0.8, 0.6, "Material_feuer", 8, False)
+    for k, (dx, dz) in enumerate([(-6, -3), (5, -4)]):
+        N(f"Zelt{k}", "CSGCylinder3D", "Lager", f"""{T(dx, round(H(lx + dx, lz + dz) - H(lx, lz) + 1.2, 2), dz)}
+use_collision = true
+radius = 2.2
+height = 2.6
+cone = true
+sides = 6
+material = SubResource("Material_stoff")""")
+    for k, (dx, dz, waffe) in enumerate([(-3, 3, "saebel"), (3, 2, "saebel"), (0, -8, "muskete")]):
+        gegner(f"Gesetzloser{k + 1}", "Lager", dx, round(H(lx + dx, lz + dz) - H(lx, lz), 2), dz,
+               "Gesetzloser" if waffe == "saebel" else "Gesetzloser mit Muskete", waffe, f"gesetzlose_{k + 1}", "gesetzlose_besiegt")
+    lager_mitte = (lx, lz)
+
 # ---------- Wald aus zwei MultiMeshes (Stämme, Kronen), ohne Kollision ----------
 def wald_dichte(x, z):
     return 0.5 + 0.3 * math.sin(x / 37.0) * math.cos(z / 29.0) + 0.2 * math.sin((x + z) / 13.0)
@@ -232,7 +254,9 @@ for knoten_name, wo, index, anzeige, dialog, kordel, tracht in W["personen"]:
     else:   # am Signalturm, drei Meter neben dem Turm in Richtung der Straße
         dx, dz = welt(0, -MEER * 3.5)
         px, pz = tuerme[index][0] + dx, tuerme[index][2] + dz
-    person(knoten_name, "Personen", round(px, 2), round(H(px, pz), 2), round(pz, 2), anzeige, dialog, kordel, tracht)
+    # Bei der letzten Linie werden die Dörfer geräumt (Alarmstufe 3).
+    person(knoten_name, "Personen", round(px, 2), round(H(px, pz), 2), round(pz, 2), anzeige, dialog, kordel, tracht,
+           sichtbar_wenn="alarm<3" if wo == "dorf" else "")
 
 # ---------- Orte ----------
 N("Orte", "Node3D", ".")
@@ -260,6 +284,8 @@ blick_anfang = -90.0 if not W["entlang_z"] else 180.0   # Blick in Richtung wach
 blick_ende = 90.0 if not W["entlang_z"] else 0.0
 ankunft(f"von_{von_a}", ax_, az_, blick_anfang)
 ankunft(f"von_{von_e}", ex_, ez_, blick_ende)
+hx, hz = welt(W["festungen"][0][0], strassen_c(W["festungen"][0][0]))
+ankunft("heilstube", hx, hz)
 zone_a = welt(-10, 0)
 zone_e = welt(L + 10, 0)
 groesse_zone = (12, 60, 120) if not W["entlang_z"] else (120, 60, 12)
@@ -278,6 +304,8 @@ N("Sprungpunkte", "Node3D", ".")
 punkte = [(f"Anfang ({name_a})", ax_, az_), (f"Ende ({name_e})", ex_, ez_)]
 punkte += [(dorfname or f"Dorf {i + 1}", mx + 5, mz) for i, ((mx, mz, a), (_, dorfname)) in enumerate(zip(dorf_mitten, W["doerfer"]))]
 punkte += [(fname, *welt(a, strassen_c(a))) for (mx, mz, a), (_, fname) in zip(festung_mitten, W["festungen"])]
+if "lager" in W:
+    punkte.append(("Lager der Gesetzlosen (Rand)", *welt(W["lager"], strassen_c(W["lager"]) + LAND * 28)))
 for name, x, z in punkte:
     N(name.replace(",", "").replace(" ", "_").replace("(", "").replace(")", ""), "Marker3D", "Sprungpunkte",
       f'{T(round(x, 2), round(H(x, z) + 0.5, 2), round(z, 2))}\nmetadata/anzeige = "{name}"')

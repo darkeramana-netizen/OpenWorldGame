@@ -65,12 +65,12 @@ text = "{text}"
 font_size = {groesse}
 outline_size = 14""")
 
-def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0):
+def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0, sichtbar_wenn=""):
     N(name, None, parent, f"""{T(x,y,z,gier)}
 anzeige_name = "{anzeige}"
 dialog_id = "{dialog}"
 kordel = {kordel}
-tracht = Color({tracht})""", instanz="4_person")
+tracht = Color({tracht})""" + (f'\nsichtbar_wenn = "{sichtbar_wenn}"' if sichtbar_wenn else ""), instanz="4_person")
 
 HOEHEN = {}
 
@@ -221,6 +221,11 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     E("PackedScene", "res://szenen/oberflaeche/entwickler.tscn", "17_entwickler")
     E("Script", "res://szenen/welt/region.gd", "18_region")
     E("Script", "res://szenen/welt/uebergang.gd", "20_uebergang")
+    E("Script", "res://szenen/welt/bedingt_sichtbar.gd", "21_bedingt")
+    E("PackedScene", "res://szenen/figuren/gegner.tscn", "22_gegner")
+    S('''[sub_resource type="StandardMaterial3D" id="Material_flamme"]
+    shading_mode = 0
+    albedo_color = Color(1, 0.62, 0.18, 1)''')
 
     S('''[sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
     sky_top_color = Color(0.32, 0.42, 0.56, 1)
@@ -343,3 +348,21 @@ def ankunft(name, x, z, gier=0.0, hoch=0.3):
     if "Ankuenfte" not in [k.split('"')[1] for k in knoten if k.startswith('[node name="Ankuenfte"')]:
         N("Ankuenfte", "Node3D", ".")
     N(name, "Marker3D", "Ankuenfte", T(x, round(H(x, z) + hoch, 2), z, gier), extra='groups=["ankunft"]')
+
+
+
+def signalfeuer(eltern, y):
+    """Feuer auf einem Signalturm: brennt ab Alarmstufe 2 (Ring der Feuer)."""
+    N("Feuer", "Node3D", eltern, f'{T(0, y, 0)}\nscript = ExtResource("21_bedingt")\nbedingung = "alarm>=2"')
+    box("Flamme", f"{eltern}/Feuer", 0, 0.9, 0, 1.4, 1.8, 1.4, "Material_flamme", kollision=False)
+    box("Spitze", f"{eltern}/Feuer", 0, 2.1, 0, 0.7, 1.0, 0.7, "Material_flamme", kollision=False)
+
+
+def gegner(name, eltern, x, y, z, anzeige, waffe="saebel", flag="", zaehler="", gier=0.0, tracht="0.32, 0.26, 0.2, 1"):
+    """Gegner aus szenen/figuren/gegner.tscn (Gesetzlose, Übungspuppen)."""
+    N(name, None, eltern, f"""{T(x, y, z, gier)}
+anzeige_name = "{anzeige}"
+waffe = "{waffe}"
+flag_besiegt = "{flag}"
+zaehler = "{zaehler}"
+tracht = Color({tracht})""", instanz="22_gegner")

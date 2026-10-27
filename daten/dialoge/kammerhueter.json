@@ -1,6 +1,10 @@
 {
 	"einstieg": [
 		{
+			"bedingung": "verfahren_stufe>=2",
+			"knoten": "verfahren"
+		},
+		{
 			"bedingung": "geloebnis",
 			"knoten": "danach"
 		}
@@ -153,6 +157,68 @@
 			"akte": "Rufer-Werbung gemeldet. Fenn wurde von der Prüfung gefasst.",
 			"ziel": "Sprich mit Hüterin Maren Sell.",
 			"weiter": "gruss"
+		},
+		"verfahren": {
+			"text": "{name}. Gegen dich liegt eine Anzeige vor. Die Vorprüfung ist abgeschlossen, die Sache trägt. Zwei Zeugen deines Ranges haben gehört, was man dir vorwirft. Dein Bürge {buerge} ist geladen und wird mitverhandelt.",
+			"weiter": "verhandlung"
+		},
+		"verhandlung": {
+			"text": "Hast du etwas zu sagen, bevor das Urteil fällt?",
+			"optionen": [
+				{
+					"text": "Ich trage, was ich getan habe.",
+					"weiter": "urteil_frage"
+				},
+				{
+					"text": "Es war ein Irrtum.",
+					"weiter": "irrtum"
+				}
+			]
+		},
+		"irrtum": {
+			"text": "Irrtümer stehen auch in der Akte. Die Zeugen haben gesprochen.",
+			"weiter": "urteil_frage"
+		},
+		"urteil_frage": {
+			"text": "Dann höre das Urteil.",
+			"optionen": [
+				{
+					"text": "Ich höre.",
+					"bedingung": "verfahren_stufe<3",
+					"weiter": "urteil2"
+				},
+				{
+					"text": "Ich höre.",
+					"bedingung": "verfahren_stufe>=3,verfahren_stufe<4",
+					"weiter": "urteil3"
+				},
+				{
+					"text": "Ich höre.",
+					"bedingung": "verfahren_stufe>=4,verfahren_stufe<5",
+					"weiter": "urteil4"
+				},
+				{
+					"text": "Ich höre.",
+					"bedingung": "verfahren_stufe>=5",
+					"weiter": "urteil5"
+				}
+			]
+		},
+		"urteil2": {
+			"text": "Degradierung um einen Rang. Das Urteil wird im Hof verlesen, ins Archiv eingetragen und gesiegelt. Dein Bürge trägt seinen Teil. Geh und mach es besser.",
+			"urteil": true
+		},
+		"urteil3": {
+			"text": "Strafversetzung. Du dienst bis auf Weiteres dort, wohin der Landkomtur dich schickt, und dein Name wird in Drachenstein nicht mehr genannt. Das Urteil wird verlesen und gesiegelt.",
+			"urteil": true
+		},
+		"urteil4": {
+			"text": "Ausstoßung. Du hast die Waffe gegen die erhoben, die zu schützen du geschworen hast. Dein Namensstein wird geschlagen. Geh, und komm nicht wieder.",
+			"urteil": true
+		},
+		"urteil5": {
+			"text": "Verbannung über Riverlock. Man bringt dich noch heute zur Brücke.",
+			"urteil": true
 		}
 	}
 }

@@ -28,6 +28,7 @@ func _ready() -> void:
 	$Kordel.visible = kordel != Kordel.KEINE
 	$Kordel.material_override = _material(KORDELFARBEN[kordel])
 	Spielstand.flag_geaendert.connect(func(_f: String) -> void: _pruefe_sichtbarkeit())
+	Spielstand.alarm_geaendert.connect(func(_s: int) -> void: _pruefe_sichtbarkeit())
 	_pruefe_sichtbarkeit()
 
 
@@ -45,8 +46,33 @@ func _pruefe_sichtbarkeit() -> void:
 	$Kollision.set_deferred("disabled", not da)
 	if da:
 		add_to_group("interagierbar")
+		add_to_group("treffbar")
 	else:
 		remove_from_group("interagierbar")
+		remove_from_group("treffbar")
+
+
+## Der Spieler hebt die Waffe gegen diese Person (kampf.gd). Personen wehren ab und werden nicht verletzt,
+## aber es hat Folgen (Disziplin 3.7): gegen Ordensleute ein Verweis, gegen Leute ohne Kordel erst eine
+## Anzeige, beim zweiten Mal eine Anzeige auf Ausstoßung ("Waffe gegen Dorfbewohner").
+func treffer(_schaden: float, quelle: Node3D, _art: String) -> void:
+	if quelle == null or not quelle.is_in_group("spieler"):
+		return
+	_schaue_zu(quelle.global_position)
+	if kordel != Kordel.KEINE:
+		Spielstand.meldung.emit("%s pariert: „Steck das weg, sonst stehst du vor dem Kammerhüter.“" % anzeige_name)
+		Spielstand.verweis("Waffe gegen %s erhoben." % anzeige_name)
+		Spielstand.ansehen_aendern("treue", -5)
+		return
+	var gruppe := {"drachenstein": "stadt", "riverlock": "riverlock"}.get(Speicher.region, "doerfer") as String
+	Spielstand.ansehen_aendern(gruppe, -15)
+	if Spielstand.hat_flag("zivilist_bedroht"):
+		Spielstand.meldung.emit("%s schreit um Hilfe. Das wird dich teuer zu stehen kommen." % anzeige_name)
+		Spielstand.anzeige(4, "Waffe gegen Dorfbewohner erhoben (%s)" % anzeige_name)
+	else:
+		Spielstand.setze_flag("zivilist_bedroht")
+		Spielstand.meldung.emit("%s weicht zurück: „Bist du von Sinnen? Ich zeige dich an!“" % anzeige_name)
+		Spielstand.anzeige(2, "Waffe gegen %s gezogen" % anzeige_name)
 
 
 func _schaue_zu(punkt: Vector3) -> void:

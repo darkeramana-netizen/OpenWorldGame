@@ -21,7 +21,7 @@
 				},
 				{
 					"text": "Bring mich nach Riverlock.",
-					"bedingung": "region=drachenstein,eid_waechter",
+					"bedingung": "region=drachenstein,eid_waechter,alarm<2",
 					"weiter": "ueberfahrt_hin"
 				},
 				{
@@ -31,8 +31,13 @@
 				},
 				{
 					"text": "Bring mich zurück nach Drachenkai.",
-					"bedingung": "region=riverlock",
+					"bedingung": "region=riverlock,alarm<2",
 					"weiter": "ueberfahrt_zurueck"
+				},
+				{
+					"text": "Fahren noch Boote?",
+					"bedingung": "alarm>=2",
+					"weiter": "kette"
 				},
 				{
 					"text": "Gute Fahrt.",
@@ -80,6 +85,10 @@
 				"stunden": 44,
 				"text": "Die Valn hinab, aus der Schlucht hinaus und zwei Tage über das Wächtermeer. Am Morgen liegt der Schwarze Bergfried vor dem Bug, dann die Molen von Drachenkai."
 			}
+		},
+		"kette": {
+			"text": "Nicht, solange die Feuer brennen. Die Kette liegt über der Valn, und kein Lotse fährt ein Boot in einen Krieg. Nimm die Straße, wenn du musst.",
+			"weiter": "fragen"
 		}
 	},
 	"einstieg": [

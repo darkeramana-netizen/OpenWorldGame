@@ -125,6 +125,16 @@ func _wende_wirkungen_an(eintrag: Dictionary) -> void:
 		Spielstand.blende.emit(Spielstand.text_einsetzen(eintrag["akt_ende"]), "akt_ende")
 	if eintrag.has("spielende"):
 		Spielstand.blende.emit(Spielstand.text_einsetzen(eintrag["spielende"]), "spielende")
+	var ansehen: Dictionary = eintrag.get("ansehen", {})
+	for gruppe: String in ansehen:
+		Spielstand.ansehen_aendern(gruppe, int(ansehen[gruppe]))
+	if eintrag.has("alarm"):
+		Spielstand.setze_alarmstufe(int(eintrag["alarm"]))
+	if eintrag.has("anzeige"):
+		Spielstand.anzeige(int(eintrag["anzeige"]["stufe"]), Spielstand.text_einsetzen(eintrag["anzeige"]["grund"]))
+	if eintrag.has("urteil"):
+		# Erst nach dem Gespräch, damit die Blende (bei Ausstoßung) nicht mitten im Text kommt.
+		Spielstand.urteil_vollstrecken.call_deferred()
 	if eintrag.has("reise"):
 		# Abfahrt erst, wenn das Gespräch zu Ende ist (siehe beende).
 		_ausstehende_reise = eintrag["reise"]

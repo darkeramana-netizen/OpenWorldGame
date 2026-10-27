@@ -1,4 +1,4 @@
-[gd_scene load_steps=49 format=3]
+[gd_scene load_steps=52 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -19,6 +19,12 @@
 [ext_resource type="PackedScene" path="res://szenen/oberflaeche/entwickler.tscn" id="17_entwickler"]
 [ext_resource type="Script" path="res://szenen/welt/region.gd" id="18_region"]
 [ext_resource type="Script" path="res://szenen/welt/uebergang.gd" id="20_uebergang"]
+[ext_resource type="Script" path="res://szenen/welt/bedingt_sichtbar.gd" id="21_bedingt"]
+[ext_resource type="PackedScene" path="res://szenen/figuren/gegner.tscn" id="22_gegner"]
+
+[sub_resource type="StandardMaterial3D" id="Material_flamme"]
+shading_mode = 0
+albedo_color = Color(1, 0.62, 0.18, 1)
 
 [sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
 sky_top_color = Color(0.32, 0.42, 0.56, 1)
@@ -209,6 +215,23 @@ height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
 
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm0/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm0/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
+
 [node name="Signalturm1" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 225, -1.7, 64.11)
 
@@ -225,6 +248,23 @@ radius = 1.6
 height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
+
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm1/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm1/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
 
 [node name="Signalturm2" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 375, -14.37, 73.95)
@@ -243,6 +283,23 @@ height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
 
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm2/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm2/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
+
 [node name="Signalturm3" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 525, 0.25, 42.33)
 
@@ -259,6 +316,23 @@ radius = 1.6
 height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
+
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm3/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm3/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
 
 [node name="Signalturm4" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 675, 4.28, 25.87)
@@ -277,6 +351,23 @@ height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
 
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm4/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm4/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
+
 [node name="Signalturm5" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 825, -0.68, 18.55)
 
@@ -293,6 +384,23 @@ radius = 1.6
 height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
+
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm5/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm5/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
 
 [node name="Signalturm6" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 975, 1.28, 26.47)
@@ -311,6 +419,23 @@ height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
 
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm6/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm6/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
+
 [node name="Signalturm7" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1125, -0.59, 60.42)
 
@@ -327,6 +452,23 @@ radius = 1.6
 height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
+
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm7/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm7/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
 
 [node name="Signalturm8" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1275, -10.44, 63.34)
@@ -345,6 +487,23 @@ height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
 
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm8"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm8/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm8/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
+
 [node name="Signalturm9" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1425, -17.06, 78.03)
 
@@ -361,6 +520,23 @@ radius = 1.6
 height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
+
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm9"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm9/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm9/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
 
 [node name="Signalturm10" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1575, 3.72, 40.54)
@@ -379,6 +555,23 @@ height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
 
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm10"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm10/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm10/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
+
 [node name="Signalturm11" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1725, 2.04, 34.63)
 
@@ -395,6 +588,23 @@ radius = 1.6
 height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
+
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm11"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm11/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm11/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
 
 [node name="Signalturm12" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1875, 0.37, 10.44)
@@ -413,6 +623,23 @@ height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
 
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm12"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm12/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm12/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
+
 [node name="Signalturm13" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 2025, 1.26, 32.33)
 
@@ -430,6 +657,23 @@ height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
 
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm13"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm13/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm13/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
+
 [node name="Signalturm14" type="Node3D" parent="Signaltuerme"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 2175, -3.51, 49.56)
 
@@ -446,6 +690,23 @@ radius = 1.6
 height = 0.8
 sides = 8
 material = SubResource("Material_feuer")
+
+[node name="Feuer" type="Node3D" parent="Signaltuerme/Signalturm14"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 13.8, 0)
+script = ExtResource("21_bedingt")
+bedingung = "alarm>=2"
+
+[node name="Flamme" type="CSGBox3D" parent="Signaltuerme/Signalturm14/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.9, 0)
+
+size = Vector3(1.4, 1.8, 1.4)
+material = SubResource("Material_flamme")
+
+[node name="Spitze" type="CSGBox3D" parent="Signaltuerme/Signalturm14/Feuer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.1, 0)
+
+size = Vector3(0.7, 1.0, 0.7)
+material = SubResource("Material_flamme")
 
 [node name="Meilensteine" type="Node3D" parent="."]
 
@@ -854,6 +1115,7 @@ anzeige_name = "Dorfvorsteherin Berit Haag"
 dialog_id = "dorf_nordstrasse"
 kordel = 0
 tracht = Color(0.35, 0.3, 0.22, 1)
+sichtbar_wenn = "alarm<3"
 
 [node name="Bezirkswache" parent="Personen" instance=ExtResource("4_person")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 760, 0.04, -45.37)
@@ -907,6 +1169,9 @@ transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 8, 2.33, 0
 
 [node name="von_riverlock" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
 transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 2242, 3.4, 0.36)
+
+[node name="heilstube" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 760, 1.04, -18.37)
 
 [node name="Uebergaenge" type="Node3D" parent="."]
 
