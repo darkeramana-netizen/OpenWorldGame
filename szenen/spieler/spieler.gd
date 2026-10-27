@@ -17,6 +17,8 @@ const KORDELFARBEN := {
 	"doppelt golden": Color(1.0, 0.8, 0.3),
 }
 
+## Geduckt und leise (Strg): langsamer, aber man wird beim Belauschen nicht so leicht bemerkt.
+var schleicht: bool = false
 ## Das Objekt, das mit E angesprochen wird (Person oder Gegenstand).
 var ziel: Node = null
 var _sichere_position := Vector3.ZERO
@@ -85,7 +87,9 @@ func _physics_process(delta: float) -> void:
 
 	# Bewegung relativ zur Blickrichtung der Kamera.
 	var richtung := (Basis(Vector3.UP, _kamera_drehpunkt.rotation.y) * Vector3(eingabe.x, 0.0, eingabe.y)).normalized()
-	var tempo: float = (rennen if Input.is_action_pressed("rennen") else gehen) * $Kampf.tempo_faktor()
+	schleicht = not Dialog.aktiv and not Spielstand.eingabe_gesperrt and Input.is_action_pressed("schleichen")
+	_koerper.scale.y = 0.8 if schleicht else 1.0
+	var tempo: float = (gehen * 0.45 if schleicht else (rennen if Input.is_action_pressed("rennen") else gehen)) * $Kampf.tempo_faktor()
 	if richtung != Vector3.ZERO:
 		velocity.x = richtung.x * tempo
 		velocity.z = richtung.z * tempo

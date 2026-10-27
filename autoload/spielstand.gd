@@ -17,6 +17,9 @@ signal ort_betreten(name: String, untertitel: String)
 signal ansehen_geaendert(gruppe: String, wert: int)
 signal alarm_geaendert(stufe: int)
 signal verfahren_geaendert
+signal geld_geaendert(heller: int)
+## Eine belauschte Zeile (szenen/welt/gespraech.gd), unten im Bild.
+signal belauscht(text: String)
 
 ## Index = Stufe der Waffenlinie. Stufe 0 ist der Bewerber vor dem Gelöbnis.
 const RAENGE: Array[String] = [
@@ -37,6 +40,9 @@ const ALARMSTUFEN: Array[String] = ["Stille", "Wachsamkeit", "Ende der Stille", 
 ## Strafen nach Stufe (Disziplin 3.7), Index = Stufe.
 const STRAFEN: Array[String] = ["", "Verweis", "Degradierung", "Strafversetzung", "Ausstoßung", "Verbannung über Riverlock"]
 const START_ALARM := 1
+## Münzen der Stadt Drachenstein (Sold 3.8): 1 Gulden = 20 Schillinge, 1 Schilling = 12 Heller.
+const HELLER_PRO_SCHILLING := 12
+const HELLER_PRO_GULDEN := 240
 
 var spieler_name: String = "Vertriebener"
 var rang: int = 0
@@ -55,6 +61,8 @@ var ansehen: Dictionary = {}
 var alarmstufe: int = START_ALARM
 ## Offenes Verfahren beim Kammerhüter: { "stufe": int, "grund": String }, leer wenn keines läuft.
 var verfahren: Dictionary = {}
+## Geld in Hellern.
+var geld: int = 0
 
 
 func rang_name() -> String:
@@ -120,6 +128,26 @@ func verweis(text: String) -> void:
 	# Wer immer wieder auffällt, kommt vor den Kammerhüter.
 	if zaehler_wert("verweise") % 3 == 0:
 		anzeige(2, "Drei Verweise")
+
+
+func geld_aendern(heller: int) -> void:
+	geld = maxi(geld + heller, 0)
+	geld_geaendert.emit(geld)
+
+
+## z. B. "1 Gulden, 3 Schillinge, 4 Heller"
+func geld_text() -> String:
+	var teile: PackedStringArray = []
+	var gulden := geld / HELLER_PRO_GULDEN
+	var schillinge := (geld % HELLER_PRO_GULDEN) / HELLER_PRO_SCHILLING
+	var heller := geld % HELLER_PRO_SCHILLING
+	if gulden > 0:
+		teile.append("%d Gulden" % gulden)
+	if schillinge > 0:
+		teile.append("%d Schilling%s" % [schillinge, "" if schillinge == 1 else "e"])
+	if heller > 0 or teile.is_empty():
+		teile.append("%d Heller" % heller)
+	return ", ".join(teile)
 
 
 func ansehen_wert(gruppe: String) -> int:
@@ -264,6 +292,7 @@ func zuruecksetzen(name: String = "Vertriebener") -> void:
 	ansehen = {}
 	alarmstufe = START_ALARM
 	verfahren = {}
+	geld = 0
 
 
 func als_dict() -> Dictionary:
@@ -280,6 +309,7 @@ func als_dict() -> Dictionary:
 		"ansehen": ansehen,
 		"alarmstufe": alarmstufe,
 		"verfahren": verfahren,
+		"geld": geld,
 	}
 
 
@@ -303,5 +333,6 @@ func aus_dict(daten: Dictionary) -> void:
 		ansehen[gruppe] = int(gespeichertes_ansehen[gruppe])
 	alarmstufe = int(daten.get("alarmstufe", START_ALARM))
 	verfahren = daten.get("verfahren", {})
+	geld = int(daten.get("geld", 0))
 	if verfahren.has("stufe"):
 		verfahren["stufe"] = int(verfahren["stufe"])

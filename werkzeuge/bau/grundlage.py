@@ -223,6 +223,7 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     E("Script", "res://szenen/welt/uebergang.gd", "20_uebergang")
     E("Script", "res://szenen/welt/bedingt_sichtbar.gd", "21_bedingt")
     E("PackedScene", "res://szenen/figuren/gegner.tscn", "22_gegner")
+    E("Script", "res://szenen/welt/gespraech.gd", "23_gespraech")
     S('''[sub_resource type="StandardMaterial3D" id="Material_flamme"]
     shading_mode = 0
     albedo_color = Color(1, 0.62, 0.18, 1)''')
@@ -366,3 +367,20 @@ waffe = "{waffe}"
 flag_besiegt = "{flag}"
 zaehler = "{zaehler}"
 tracht = Color({tracht})""", instanz="22_gegner")
+
+
+
+def gespraech(name, a, b, zeilen, bedingung, flag, akte_text, mitte):
+    """Belauschbares Gespräch zwischen zwei Personen unter "Personen" (szenen/welt/gespraech.gd).
+    zeilen: Liste von ("a" oder "b", Text)."""
+    if "Gespraeche" not in [k.split('"')[1] for k in knoten if k.startswith('[node name="Gespraeche"')]:
+        N("Gespraeche", "Node3D", ".")
+    texte = ", ".join('"%s: %s"' % (wer, text.replace('"', "'")) for wer, text in zeilen)
+    N(name, "Node3D", "Gespraeche", f"""{T(*mitte)}
+script = ExtResource("23_gespraech")
+sprecher_a = NodePath("../../Personen/{a}")
+sprecher_b = NodePath("../../Personen/{b}")
+zeilen = PackedStringArray({texte})
+bedingung = "{bedingung}"
+flag_gehoert = "{flag}"
+akte_text = "{akte_text}\"""")

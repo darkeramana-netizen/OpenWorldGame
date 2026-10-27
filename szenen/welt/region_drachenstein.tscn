@@ -1,4 +1,4 @@
-[gd_scene load_steps=60 format=3]
+[gd_scene load_steps=61 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -21,6 +21,7 @@
 [ext_resource type="Script" path="res://szenen/welt/uebergang.gd" id="20_uebergang"]
 [ext_resource type="Script" path="res://szenen/welt/bedingt_sichtbar.gd" id="21_bedingt"]
 [ext_resource type="PackedScene" path="res://szenen/figuren/gegner.tscn" id="22_gegner"]
+[ext_resource type="Script" path="res://szenen/welt/gespraech.gd" id="23_gespraech"]
 
 [sub_resource type="StandardMaterial3D" id="Material_flamme"]
 shading_mode = 0
@@ -4949,6 +4950,42 @@ tracht = Color(0.2, 0.2, 0.22, 1)
 [node name="PersonenAmBoden" type="Node3D" parent="Personen" node_paths=PackedStringArray("gelaende")]
 script = ExtResource("11_auf_gelaende")
 gelaende = NodePath("../../Gelaende")
+
+[node name="KerrinVorTor" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, -4, 0, 40)
+anzeige_name = "Bewerber Kerrin Fahl"
+dialog_id = "bewerber_kerrin"
+kordel = 0
+tracht = Color(0.4, 0.33, 0.25, 1)
+sichtbar_wenn = "eid_waechter,!kerrin_entschieden"
+
+[node name="KerrinImHof" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 22, 0, 0)
+anzeige_name = "Anwärter Kerrin Fahl"
+dialog_id = "bewerber_kerrin"
+kordel = 0
+tracht = Color(0.27, 0.24, 0.2, 1)
+sichtbar_wenn = "kerrin_anwaerter,!kerrin_gefasst"
+
+[node name="TiloBrenn" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 22, 0, 2.2)
+anzeige_name = "Knappe Tilo Brenn"
+dialog_id = "knappe_tilo"
+kordel = 1
+tracht = Color(0.27, 0.24, 0.2, 1)
+sichtbar_wenn = "kerrin_anwaerter,!kerrin_gefasst"
+
+[node name="Gespraeche" type="Node3D" parent="."]
+
+[node name="KerrinUndTilo" type="Node3D" parent="Gespraeche"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 22, 1, 1.1)
+script = ExtResource("23_gespraech")
+sprecher_a = NodePath("../../Personen/KerrinImHof")
+sprecher_b = NodePath("../../Personen/TiloBrenn")
+zeilen = PackedStringArray("a: Du warst doch schon im Bergfried. Stimmt es, dass es unter Ashenveil Gänge bis in die Sümpfe gibt?", "b: Woher soll ich das wissen? Und warum willst du das wissen?", "a: Nur so. Und hier in Drachenstein? Unter der Oberer Burg, wo kommt man da heraus?", "b: Frag den Kammerhüter, wenn du es so genau wissen willst.")
+bedingung = "kerrin_anwaerter,!kerrin_gefasst"
+flag_gehoert = "beobachtung_kerrin"
+akte_text = "Belauscht im Hof: Kerrin Fahl, für den du bürgst, fragt den Knappen Tilo Brenn nach den Fluchtgängen. Ein Warnzeichen."
 
 [node name="Reiterin" parent="Personen/PersonenAmBoden" instance=ExtResource("4_person")]
 transform = Transform3D(0.58779, 0, -0.80902, 0, 1, 0, 0.80902, 0, 0.58779, -22, 0, 92)

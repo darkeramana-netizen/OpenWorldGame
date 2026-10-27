@@ -16,6 +16,16 @@
 					"weiter": "berichte"
 				},
 				{
+					"text": "Ich habe etwas belauscht: Gold für die Kette.",
+					"bedingung": "beobachtung_kette,!bericht_kette",
+					"weiter": "bericht_kette"
+				},
+				{
+					"text": "Der Händler aus Salzhain hat mir einen Gulden gegeben.",
+					"bedingung": "gold_angenommen,!gold_gemeldet,!gold_angezeigt",
+					"weiter": "gold_melden"
+				},
+				{
 					"text": "Ich lasse dich zuhören.",
 					"weiter": "ende"
 				}
@@ -32,6 +42,30 @@
 		},
 		"ende": {
 			"text": "Er wendet sich wieder dem Tisch zu und schweigt."
+		},
+		"bericht_kette": {
+			"text": "Hundert Gulden für eine Nacht, in der die Kette im Wasser liegt. Und der Schreiber des Zollherrn hört zu. Das geht noch heute nach Drachenstein, mit deinem Namen darunter. Und ich bleibe hier, egal wer mich ruft.",
+			"setze": [
+				"bericht_kette"
+			],
+			"ansehen": {
+				"treue": 5,
+				"riverlock": -3
+			},
+			"akte": "Bericht an den Beobachter in Riverlock: Ein Gesandter aus Valdrenn bietet Gold für die Kette, der Schreiber des Zollherrn verhandelt mit.",
+			"weiter": "fragen"
+		},
+		"gold_melden": {
+			"text": "Orm Velsch, Salzhändler. Natürlich. Gib mir den Gulden, er kommt mit meinem Bericht ins Archiv. Du hast richtig gehandelt, bevor es ein Prüfer für dich tun musste.",
+			"setze": [
+				"gold_gemeldet"
+			],
+			"geld": -240,
+			"ansehen": {
+				"treue": 3
+			},
+			"akte": "Geschenk über dem Sold (ein Gulden von Orm Velsch) beim Beobachter in Riverlock gemeldet und abgegeben.",
+			"weiter": "fragen"
 		}
 	}
 }

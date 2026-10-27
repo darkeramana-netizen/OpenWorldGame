@@ -71,6 +71,22 @@ person("ArchivarinGravemarch", "Personen", *ARCHIVARIN, "Archivarin Ysolde Brack
 person("TorwacheGravecrest", "Personen", -608, 70, -359, "Kammbrecher Ulf Haskel", "torwache_gravecrest", 2, "0.2, 0.2, 0.22, 1", gier=-90)
 N("PersonenAmBoden", "Node3D", "Personen", '''script = ExtResource("11_auf_gelaende")
 gelaende = NodePath("../../Gelaende")''', extra='node_paths=PackedStringArray("gelaende")')
+# Bürgschaft (Regel 10): Nach dem Haupteid wartet ein Bewerber an der Schwelle. Bürgt man für ihn, steht er
+# im Hof und fragt einen Knappen nach den Fluchtgängen aus. Wer das belauscht, kann ihn melden.
+person("KerrinVorTor", "Personen", -4, 0, 40, "Bewerber Kerrin Fahl", "bewerber_kerrin", 0, "0.4, 0.33, 0.25, 1", gier=180,
+       sichtbar_wenn="eid_waechter,!kerrin_entschieden")
+person("KerrinImHof", "Personen", 22, 0, 0, "Anwärter Kerrin Fahl", "bewerber_kerrin", 0, "0.27, 0.24, 0.2, 1",
+       sichtbar_wenn="kerrin_anwaerter,!kerrin_gefasst")
+person("TiloBrenn", "Personen", 22, 0, 2.2, "Knappe Tilo Brenn", "knappe_tilo", 1, "0.27, 0.24, 0.2, 1",
+       sichtbar_wenn="kerrin_anwaerter,!kerrin_gefasst")
+gespraech("KerrinUndTilo", "KerrinImHof", "TiloBrenn", [
+    ("a", "Du warst doch schon im Bergfried. Stimmt es, dass es unter Ashenveil Gänge bis in die Sümpfe gibt?"),
+    ("b", "Woher soll ich das wissen? Und warum willst du das wissen?"),
+    ("a", "Nur so. Und hier in Drachenstein? Unter der Oberer Burg, wo kommt man da heraus?"),
+    ("b", "Frag den Kammerhüter, wenn du es so genau wissen willst."),
+], "kerrin_anwaerter,!kerrin_gefasst", "beobachtung_kerrin",
+   "Belauscht im Hof: Kerrin Fahl, für den du bürgst, fragt den Knappen Tilo Brenn nach den Fluchtgängen. Ein Warnzeichen.",
+   (22, 1, 1.1))
 # Reiterin aus Ashenveil vor dem Vorburgtor: nimmt Wächter über den Küstenweg mit
 person("Reiterin", "Personen/PersonenAmBoden", -22, 0, 92, "Reiterin Ilka Sand", "reiterin_ashenveil", 2, "0.25, 0.22, 0.18, 1", gier=-54)
 pferd("PferdReiterin", "Personen", -25.5, round(H(-25.5, 94), 2), 94, 36)

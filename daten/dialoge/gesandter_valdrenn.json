@@ -1,0 +1,65 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Orm Velsch, Händler aus Salzhain. Ein Wächter des Ordens in Riverlock, wie selten. Man trifft hier nicht oft jemanden, mit dem man vernünftig reden kann.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Womit kann ich dienen?",
+			"optionen": [
+				{
+					"text": "Was handelt Ihr?",
+					"weiter": "handel"
+				},
+				{
+					"text": "Was wollt Ihr von mir?",
+					"bedingung": "!gold_angeboten",
+					"weiter": "angebot"
+				},
+				{
+					"text": "Auf Wiedersehen.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"handel": {
+			"text": "Salz, ein wenig Erz. Und Nachrichten, wenn man so will. Die sind in diesen Tagen mehr wert als Salz.",
+			"weiter": "fragen"
+		},
+		"angebot": {
+			"text": "Nichts Großes. Ein Freund in Drachenstein, der mir sagt, wann der Rat tagt. Mehr nicht. Für die Mühe einen Gulden, jetzt gleich. Gold vergisst man nicht so schnell wie ein Gespräch.",
+			"setze": [
+				"gold_angeboten"
+			],
+			"optionen": [
+				{
+					"text": "Ich nehme den Gulden.",
+					"weiter": "genommen"
+				},
+				{
+					"text": "Behaltet Euer Gold.",
+					"weiter": "abgelehnt"
+				}
+			]
+		},
+		"genommen": {
+			"text": "Ein kluger Mann. Ich melde mich, wenn ich etwas wissen will.",
+			"setze": [
+				"gold_angenommen"
+			],
+			"geld": 240,
+			"merke_tag": "gold_tag",
+			"weiter": "fragen"
+		},
+		"abgelehnt": {
+			"text": "Wie Ihr wollt. Das Angebot vergesse ich trotzdem nicht so schnell.",
+			"ansehen": {
+				"treue": 2
+			},
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Gute Reise, Wächter."
+		}
+	}
+}

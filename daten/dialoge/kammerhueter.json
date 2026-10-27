@@ -125,6 +125,21 @@
 					"weiter": "fenn_fort"
 				},
 				{
+					"text": "Kerrin Fahl fragt nach den Fluchtgängen. Ich bürge für ihn, und ich melde es.",
+					"bedingung": "beobachtung_kerrin,!kerrin_gefasst",
+					"weiter": "kerrin_melden"
+				},
+				{
+					"text": "Wie macht sich Kerrin Fahl?",
+					"bedingung": "kerrin_anwaerter,!kerrin_gefasst,!beobachtung_kerrin",
+					"weiter": "kerrin_hinweis"
+				},
+				{
+					"text": "Ein Gesandter aus Valdrenn hat mir einen Gulden gegeben.",
+					"bedingung": "gold_angenommen,!gold_gemeldet,!gold_angezeigt",
+					"weiter": "gold_melden"
+				},
+				{
 					"text": "Nichts. Ich gehe an die Arbeit.",
 					"weiter": "gruss"
 				}
@@ -219,6 +234,34 @@
 		"urteil5": {
 			"text": "Verbannung über Riverlock. Man bringt dich noch heute zur Brücke.",
 			"urteil": true
+		},
+		"kerrin_melden": {
+			"text": "Das ist schwer, für den zu sprechen, für den man gebürgt hat. Genau deshalb zählt es. Die Prüfer nehmen ihn noch heute fest. Gegen dich gibt es kein Verfahren, du hast getan, was die Regel verlangt.",
+			"setze": [
+				"kerrin_gefasst",
+				"kerrin_gemeldet"
+			],
+			"ansehen": {
+				"treue": 5
+			},
+			"akte": "Als Bürge den eigenen Bewerber Kerrin Fahl gemeldet (Warnzeichen: Fragen nach den Fluchtgängen). Kein Verfahren.",
+			"weiter": "danach"
+		},
+		"kerrin_hinweis": {
+			"text": "Er arbeitet. Er fragt viel. Du bist sein Bürge, also hör hin, was er fragt, und wen. Was er tut, trifft dich mit.",
+			"weiter": "danach"
+		},
+		"gold_melden": {
+			"text": "Gold über dem Sold. Gut, dass du es bringst, bevor die Prüfer es finden. Gib es her, es geht ins Archiv, zusammen mit dem Namen des Gesandten.",
+			"setze": [
+				"gold_gemeldet"
+			],
+			"geld": -240,
+			"ansehen": {
+				"treue": 3
+			},
+			"akte": "Geschenk über dem Sold (ein Gulden von einem Gesandten aus Valdrenn) gemeldet und abgegeben.",
+			"weiter": "danach"
 		}
 	}
 }

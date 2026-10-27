@@ -128,6 +128,12 @@ func _wende_wirkungen_an(eintrag: Dictionary) -> void:
 	var ansehen: Dictionary = eintrag.get("ansehen", {})
 	for gruppe: String in ansehen:
 		Spielstand.ansehen_aendern(gruppe, int(ansehen[gruppe]))
+	if eintrag.has("geld"):
+		Spielstand.geld_aendern(int(eintrag["geld"]))
+	if eintrag.has("merke_tag"):
+		# Merkt sich den heutigen Tag in einem Zähler, z. B. für Fristen (ereignisse.gd).
+		var name: String = eintrag["merke_tag"]
+		Spielstand.zaehler_aendern(name, Spielzeit.gesamttag() - Spielstand.zaehler_wert(name))
 	if eintrag.has("alarm"):
 		Spielstand.setze_alarmstufe(int(eintrag["alarm"]))
 	if eintrag.has("anzeige"):

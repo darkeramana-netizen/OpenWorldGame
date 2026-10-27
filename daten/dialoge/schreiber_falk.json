@@ -1,0 +1,28 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Lukas Dorn, Schreiber des Zollherrn. Ich habe zu tun, Wächter. Die Listen schreiben sich nicht von selbst.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Noch etwas?",
+			"optionen": [
+				{
+					"text": "Mit wem habt Ihr eben gesprochen?",
+					"weiter": "wer"
+				},
+				{
+					"text": "Nichts weiter.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"wer": {
+			"text": "Mit einem Händler aus Salzhain. Zollsachen. Langweilig, glaubt mir.",
+			"weiter": "fragen"
+		},
+		"ende": {
+			"text": "Guten Tag."
+		}
+	}
+}

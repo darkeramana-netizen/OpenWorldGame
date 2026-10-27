@@ -1,0 +1,79 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "kerrin_anwaerter",
+			"knoten": "anwaerter"
+		}
+	],
+	"knoten": {
+		"start": {
+			"text": "Wächter! Kerrin Fahl, aus dem Süden Valdrenns. Die Ernte ist zweimal ausgefallen, ich habe nichts mehr außer meinen Händen. Der Kammerhüter sagt, ohne Bürgen geht niemand über die Schwelle.",
+			"weiter": "fragen"
+		},
+		"fragen": {
+			"text": "Würdet Ihr für mich bürgen?",
+			"optionen": [
+				{
+					"text": "Ich bürge für dich.",
+					"bedingung": "rang>=4",
+					"weiter": "buergen"
+				},
+				{
+					"text": "Ich kenne dich nicht. Such dir einen anderen Bürgen.",
+					"weiter": "nein"
+				},
+				{
+					"text": "Ich denke darüber nach.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"buergen": {
+			"text": "Ich werde Euch keine Schande machen. Das schwöre ich.",
+			"setze": [
+				"kerrin_entschieden",
+				"kerrin_anwaerter"
+			],
+			"merke_tag": "kerrin_tag",
+			"ansehen": {
+				"doerfer": 3
+			},
+			"akte": "Bürgschaft für den Bewerber Kerrin Fahl übernommen. Was er tut, trifft dich mit (Regel 10).",
+			"meldung": "Kerrin Fahl tritt als Anwärter in den Hof. Du bist sein Bürge.",
+			"weiter": "ende_buerge"
+		},
+		"ende_buerge": {
+			"text": "Ich gehe gleich zum Kammerhüter."
+		},
+		"nein": {
+			"text": "Dann versuche ich es in Hollmoor. Vielleicht nimmt mich dort jemand.",
+			"setze": [
+				"kerrin_entschieden"
+			]
+		},
+		"anwaerter": {
+			"text": "Mein Bürge! Die Arbeit ist hart, aber das Brot ist gut. Ich lerne schnell.",
+			"weiter": "anwaerter_fragen"
+		},
+		"anwaerter_fragen": {
+			"text": "Wollt Ihr etwas wissen?",
+			"optionen": [
+				{
+					"text": "Wie geht es dir hier?",
+					"weiter": "wie"
+				},
+				{
+					"text": "Bis später.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"wie": {
+			"text": "Gut. Man fragt viel und antwortet wenig, das bin ich nicht gewohnt. Aber ich gewöhne mich daran.",
+			"weiter": "anwaerter_fragen"
+		},
+		"ende": {
+			"text": "Gute Wache."
+		}
+	}
+}

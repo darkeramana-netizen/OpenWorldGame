@@ -25,6 +25,8 @@ extends CanvasLayer
 @onready var _leben: ProgressBar = %Leben
 @onready var _waffe: Label = %Waffe
 @onready var _fadenkreuz: Label = %Fadenkreuz
+@onready var _belauscht: Label = %Belauscht
+var _belauscht_tween: Tween
 
 const ALARMFARBEN: Array[Color] = [Color(0.75, 0.85, 0.75), Color(0.95, 0.9, 0.7), Color(1.0, 0.55, 0.2), Color(1.0, 0.25, 0.2)]
 
@@ -65,6 +67,9 @@ func _ready() -> void:
 		_fuelle_akte())
 	Spielstand.ansehen_geaendert.connect(func(_g: String, _w: int) -> void: _fuelle_akte())
 	Spielstand.verfahren_geaendert.connect(_fuelle_akte)
+	Spielstand.geld_geaendert.connect(func(_h: int) -> void: _fuelle_akte())
+	Spielstand.belauscht.connect(_zeige_belauscht)
+	_belauscht.modulate.a = 0.0
 	if spieler:
 		spieler.ziel_gewechselt.connect(_zeige_hinweis)
 		var kampf := spieler.get_node("Kampf")
@@ -221,6 +226,17 @@ func _neuer_knopf(beschriftung: String, index: int) -> void:
 	_optionen.add_child(knopf)
 
 
+## Eine belauschte Zeile, kursiv in Anführungszeichen, verblasst nach ein paar Sekunden.
+func _zeige_belauscht(text: String) -> void:
+	_belauscht.text = "„%s“" % text
+	if _belauscht_tween:
+		_belauscht_tween.kill()
+	_belauscht.modulate.a = 1.0
+	_belauscht_tween = create_tween()
+	_belauscht_tween.tween_interval(3.0)
+	_belauscht_tween.tween_property(_belauscht, "modulate:a", 0.0, 0.5)
+
+
 func _zeige_alarm() -> void:
 	var stufe := Spielstand.alarmstufe
 	_alarm.text = "Alarmstufe %d · %s" % [stufe, Spielstand.ALARMSTUFEN[stufe]]
@@ -254,6 +270,7 @@ func _fuelle_akte() -> void:
 		"Kordel: %s" % Spielstand.kordel_name(),
 		"Bürge: %s" % Spielstand.buerge,
 		"Alarmstufe: %d, %s" % [Spielstand.alarmstufe, Spielstand.ALARMSTUFEN[Spielstand.alarmstufe]],
+		"Geld: %s" % Spielstand.geld_text(),
 	]
 	if not Spielstand.verfahren.is_empty():
 		var stufe: int = Spielstand.verfahren["stufe"]
@@ -266,6 +283,6 @@ func _fuelle_akte() -> void:
 	if Spielstand.akte.is_empty():
 		zeilen.append("[i]Noch keine Einträge.[/i]")
 	for eintrag in Spielstand.akte:
-		var farbe := "#e07a5f" if eintrag["art"] in ["verweis", "anzeige", "urteil"] else "#e8dcc4"
+		var farbe := "#e07a5f" if eintrag["art"] in ["verweis", "anzeige", "urteil"] else ("#9ec5e8" if eintrag["art"] == "beobachtung" else "#e8dcc4")
 		zeilen.append("[color=%s]%s, %s: %s[/color]" % [farbe, eintrag.get("datum", ""), eintrag["uhrzeit"], eintrag["text"]])
 	_akte_text.text = "\n".join(zeilen)

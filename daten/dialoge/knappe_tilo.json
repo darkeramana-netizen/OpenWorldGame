@@ -1,0 +1,11 @@
+{
+	"knoten": {
+		"start": {
+			"text": "Knappe Tilo Brenn. Der Neue fragt mir Löcher in den Bauch. Hast du mit ihm zu tun?",
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Dann sag ihm, er soll weniger fragen und mehr Steine schleppen."
+		}
+	}
+}

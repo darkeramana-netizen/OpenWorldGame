@@ -12,6 +12,36 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Sold, Spähwesen und Bürgschaft
+
+Damit ist Stufe 4 vollständig.
+
+**Sold (3.8):** Zum Monatsanfang zahlt der Orden Sold nach Rang.
+- Anwärter bekommen keinen, Knappen und Gesellen 1 Schilling, Wächter 3, Offiziere mehr. Im Krieg (ab Alarmstufe 2) gibt es das Doppelte.
+- Das Geld steht in der Akte. Es gilt die Währung der Stadt Drachenstein: 1 Gulden = 20 Schillinge = 240 Heller.
+- Handel ist Mitgliedern verboten, Geschenke über einem Schilling sind meldepflichtig.
+
+**Schleichen und Belauschen (3.11):**
+- Mit **Strg** duckst du dich und gehst leise.
+- Manche Leute führen Gespräche, die man belauschen kann. Wer in Hörweite ist, ohne bemerkt zu werden, sieht ihre Sätze unten im Bild.
+- Wer alles am Stück gehört hat, bekommt eine **Beobachtung** in die Akte (blau).
+- Bemerkt wirst du so:
+  - immer, wenn du ihnen zu nahe kommst;
+  - offen gehend von vorn schon auf sieben Meter;
+  - schleichend erst auf dreieinhalb.
+- Wer bemerkt wird, vor dem verstummen sie und reden erst nach einer Weile weiter.
+
+**Riverlock: Gold für die Kette**
+- In der Ostburg spricht ein „Salzhändler“ aus Valdrenn, Orm Velsch, mit Lukas Dorn, dem Schreiber des Zollherrn. Wer sie belauscht, hört ein Angebot: hundert Gulden für eine Nacht, in der die Kette im Wasser liegt. Das kannst du dem Beobachter des Ordens berichten.
+- Spricht man den Gesandten selbst an, bietet er auch dir einen Gulden, für einen Freund in Drachenstein.
+- Gold über dem Sold ist ein **Warnzeichen**. Wer es dem Beobachter oder dem Kammerhüter meldet, gibt es ab und hat nichts zu befürchten. Wer schweigt, wird nach drei Tagen von den Prüfern angezeigt (Stufe 3, Strafversetzung).
+
+**Bürgschaft für andere (Regel 10):**
+- Nach dem Haupteid wartet an der Schwelle der Bewerber Kerrin Fahl, ein Flüchtling aus dem hungernden Süden Valdrenns. Als Wächter kannst du für ihn bürgen.
+- Dann arbeitet er im Hof und fragt dort einen Knappen nach den Fluchtgängen aus. Wer das belauscht und ihn beim Kammerhüter meldet, hat getan, was die Regel verlangt: Kerrin wird gefasst, gegen dich gibt es kein Verfahren.
+- Wer nichts merkt oder schweigt, für den fassen ihn nach vier Tagen die Prüfer, und du bekommst als sein Bürge einen Verweis.
+- Es ist dieselbe Lage wie mit Fenn in Akt I, nur stehst du jetzt auf der anderen Seite.
+
 ### Stufe 4: Kampf, Ansehen, Akte und Verfahren, Alarmstufen
 
 **Kampf (selten und gefährlich, Bewaffnung nach der Lore):**
@@ -297,6 +327,7 @@ Dazu kommen diese Systeme:
 | linke Maustaste | Hieb, Schuss, ungeladen Bajonett |
 | rechte Maustaste | blocken (Säbel) |
 | R | Muskete nachladen (acht Sekunden) |
+| Strg | schleichen (zum Belauschen) |
 | F10 | Entwicklermenü (nur beim Start aus dem Editor): zu Orten springen, Uhrzeit, in eine andere Region reisen, Alarmstufe, alle Tore öffnen, Akt I überspringen |
 
 Den Wehrgang erreichst du über die Holzrampe an der Südmauer, westlich vom Tor. Von dort führt die Westmauer zur zweiten Rampe hinauf auf den Wachturm in der Nordwestecke.
@@ -321,6 +352,7 @@ autoload/                  immer geladene Spielsysteme
   spielstand.gd            Name, Rang, Akte, Verweise, Flags, Zähler, Ziel, Bedingungen
   dialog.gd                liest und führt die Gespräche aus daten/dialoge/
   speicher.gd              Speichern, Laden, neues Spiel, Reisen zwischen Regionen
+  ereignisse.gd            was mit der Zeit geschieht: Sold, Prüfer, Folgen einer Bürgschaft
 szenen/
   oberflaeche/hauptmenue.tscn  Startszene
   oberflaeche/pausemenue.tscn  Esc-Menü
@@ -330,6 +362,7 @@ szenen/
   welt/region_ashenveil.tscn     Region Ashenveil: Nebelmoor, Burg, Kapelle der Stille, Fluchttunnel
   welt/region_nordstrasse.tscn, region_suedstrasse.tscn, region_kuestenweg.tscn  die Landstraßen
   welt/uebergang.gd        Übergang am Ende eines Weges in die nächste Region
+  welt/gespraech.gd        belauschbares Gespräch zwischen zwei Personen
   welt/bedingt_sichtbar.gd sichtbar unter einer Bedingung, z. B. Signalfeuer ab Alarmstufe 2
   welt/wasserdicht.gd      Bereich unter dem Wasserspiegel, in dem niemand zurückgesetzt wird (Keller, Tunnel)
   welt/region.gd           Wurzel einer Region: Wasser, Rand, Lage auf der Karte
@@ -476,19 +509,22 @@ Jede Datei hat Knoten. Begonnen wird beim Knoten `start`, außer ein Eintrag in 
 | `alarm` | Alarmstufe setzen (0–3) |
 | `anzeige` | `{ "stufe": 2, "grund": "..." }`: Anzeige beim Kammerhüter (2 Degradierung bis 5 Verbannung) |
 | `urteil` | `true`: das Urteil im laufenden Verfahren vollstrecken (nur beim Kammerhüter) |
+| `geld` | Geld in Hellern ändern, z. B. `240` (ein Gulden) oder `-240` |
+| `merke_tag` | Name eines Zählers, der den heutigen Tag festhält, z. B. für Fristen in `autoload/ereignisse.gd` |
 | `reise` | `{ "ziel": "riverlock", "ankunft": "von_drachenstein", "stunden": 54, "text": "..." }`: Am Ende des Gesprächs geht es in die andere Region, an den Marker mit diesem Namen (Gruppe `ankunft`), die Zeit läuft weiter, dann kommt die Blende mit dem Text |
 
 **Bedingungen:** `flag` (gesetzt), `!flag` (nicht gesetzt), `zaehler>=3`, `zaehler<3`, `rang>=2`, `alarm>=2`, `ansehen_rufer>=10`, `verfahren_stufe>=4`, `abschnitt=mittag` (morgengrauen, vormittag, mittag, nachmittag, stille_stunde, nacht), `region=riverlock` (die Region, in der man gerade ist: drachenstein, riverlock, ashenveil, nordstrasse, suedstrasse, kuestenweg). Mehrere werden durch Komma getrennt und müssen alle gelten.
 
 ## Testen
 
-Acht automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
+Neun automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstände unberührt bleiben:
 
 | Test | Prüft |
 |---|---|
 | `tests/test_akt1.gd` | Akt I komplett, 42 Punkte: falsche Antworten, zu früh verlassener Posten, Speichern und Laden, alle drei Ausgänge des Fenn-Strangs |
 | `tests/test_eingabe.gd` | echte Tastendrücke: E zum Ansprechen und Aufheben, Zifferntasten im Gespräch |
 | `tests/test_innen.gd` | die Innenräume, 25 Punkte, mit echtem Gehen: Bergfried-Tor zu und auf, Wendelrampe hinauf aufs Dach und hinunter bis Ebene −4, Namensbuch, Hüterin, Feuerbecken, Fallgatter, Torhaus, durch den Donjon und hinauf, Torben Wick, Entwicklermenü, in Gravemarch Donjon, Archivarin und Scheintore |
+| `tests/test_spaehwesen.gd` | Sold, Spähwesen und Bürgschaft, 22 Punkte: Sold zum Monatsanfang und doppelt im Krieg, Bürgschaft für Kerrin, offen von vorn bemerkt werden, schleichend alles hören, Kerrin als Bürge melden, Gold vom Gesandten, Gespräch über die Kette belauschen und berichten, Gold melden, Speichern und Laden, Anzeige durch die Prüfer bei nicht gemeldetem Gold, Verweis für den schweigenden Bürgen |
 | `tests/test_stufe4.gd` | Stufe 4, 28 Punkte: Alarmstufe 1 zu Beginn, Ansehen durch Antworten, Auftrag und Kampf gegen die Gesetzlosen (Treffer, Block, Sieg, bleiben nach dem Laden liegen), Verwundung, Ring der Feuer und leere Märkte, keine Boote bei Alarm, Säbel, Schuss, Bajonett, Nachladen, Verweise und Verfahren bis zur Degradierung, Waffe gegen die Händlerin bis zur Ausstoßung |
 | `tests/test_landwege.gd` | die Landwege, 26 Punkte: Anwärter bleiben drin, durch das Nordtor, einmal um das Meer (Nordstraße, Südstraße, Küstenweg) mit den richtigen Reisetagen, Umkehren kostet nichts, Karte, Wald, Personen an der Straße, Speichern und Laden unterwegs, über den Pass und durch das Südtor zurück in die Stadt |
 | `tests/test_ashenveil.gd` | Ashenveil, 24 Punkte: Reiterin lehnt Anwärter ab, Ritt hin und zurück mit Zeitverlust, Morast, über den Damm und durch das Fallgitter, Rampe hinunter in die Kapelle, Gedenkstein, durch den Fluchttunnel ins Moor, Personen, verriegelter Nebeneingang, Speichern und Laden |
@@ -504,10 +540,11 @@ godot --headless --path . --script res://tests/test_riverlock.gd
 godot --headless --path . --script res://tests/test_ashenveil.gd
 godot --headless --path . --script res://tests/test_landwege.gd
 godot --headless --path . --script res://tests/test_stufe4.gd
+godot --headless --path . --script res://tests/test_spaehwesen.gd
 ```
 
 Am Ende steht jeweils `Fehler: 0`, wenn alles stimmt.
 
 ## Nächste Schritte
 
-Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Alle Burgen aus deinen Grundrissen stehen, die Landwege verbinden sie, und die Systeme aus Stufe 4 laufen. Offen sind echte Modelle statt Klötzen (Stufe 3), die Heimlichkeit (Beobachten, Belauschen, Berichte), Sold und Bürgschaft für andere, und dann die Geschichte von Akt II.
+Siehe Fahrplan in [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md), Abschnitt 8. Alle Burgen aus deinen Grundrissen stehen, die Landwege verbinden sie, und die Systeme aus Stufe 4 laufen. Stufe 4 ist damit vollständig. Offen sind echte Modelle statt Klötzen (Stufe 3) und die Geschichte von Akt II mit ihren Hauptfäden.

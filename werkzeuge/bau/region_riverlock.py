@@ -203,6 +203,17 @@ person("Lotsin", "Personen", -44, KAI, 8, "Lotsin Wenna Kroll", "lotsin", 0, "0.
 person("TorwacheWestburg", "Personen", -89, 0, 49, "Torwächter Joost Mahr", "torwache_riverlock", 0, "0.35, 0.3, 0.15, 1", gier=180)
 person("Zoellnerin", "Personen", 0, 0, -6.6, "Zöllnerin Mette Ruhl", "zoellnerin_riverlock", 0, "0.3, 0.32, 0.2, 1", gier=180)
 person("ZollherrFalk", "Personen", 0, 6, -6.4, "Zollherr Hendrik Falk", "zollherr_falk", 0, "0.4, 0.3, 0.12, 1", gier=180)
+# Ein Gesandter aus Valdrenn (als Salzhändler) verhandelt in der Ostburg mit dem Schreiber des Zollherrn.
+person("Gesandter", "Personen", 140, 0, 20, "Orm Velsch, Händler aus Salzhain", "gesandter_valdrenn", 0, "0.45, 0.38, 0.22, 1")
+person("Schreiber", "Personen", 140, 0, 22.2, "Schreiber Lukas Dorn", "schreiber_falk", 0, "0.3, 0.28, 0.24, 1")
+gespraech("GesandterUndSchreiber", "Gesandter", "Schreiber", [
+    ("a", "Der König zahlt in Gold, nicht in Versprechen. Hundert Gulden für eine Nacht, in der die Kette im Wasser liegt."),
+    ("b", "Der Zollherr sagt weder ja noch nein. Er will wissen, wann."),
+    ("a", "Wenn das Korn reif ist. Und wenn der Beobachter des Ordens in Drachenstein sitzt statt hier."),
+    ("b", "Dann sorgt dafür, dass er gerufen wird. Ich habe nichts gesagt."),
+], "", "beobachtung_kette",
+   "Belauscht in Riverlock: Ein Gesandter aus Valdrenn bietet hundert Gulden für eine Nacht, in der die Kette im Wasser liegt. Der Schreiber des Zollherrn verhandelt mit.",
+   (140, 1, 21.1))
 person("Beobachter", "Personen", -9, 6, -6.4, "Beobachter Aldo Venn", "beobachter_riverlock", 2, "0.1, 0.1, 0.12, 1", gier=180)
 
 # ---------- Orte ----------

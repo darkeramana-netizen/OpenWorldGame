@@ -115,7 +115,7 @@ Realistisch gesagt: Ein vollständiges Open-World-Rollenspiel ist für eine Pers
 | **1 – Graubox „Die Schwelle“** ✅ | Spielfigur, Kamera, ein Hof aus Klötzen, Tageszyklus mit Stille-Stunde, drei NPCs mit Dialog | 1–2 Monate |
 | **2 – Akt I spielbar** ✅ | Haus der Schwelle in Drachenstein, Knappenprüfung, Nachtwache, Eid, Namensstein auf der Ordenswand, Speichern und Laden | 3–6 Monate |
 | **3 – Die erste Region** 🔶 | Drachenstein, die Brücken zum Bergfried, Weg nach Gravecrest und Gravemarch, Gelände. Begehbar als Graybox, Bergfried und Gravecrest mit Innenräumen. Drachenstein (Hafen im Osten) und Gravemarch nach Grundriss. Riverlock als zweite Region (Valnschlucht), per Schiff mit der Lotsin erreichbar. Ashenveil als dritte Region (Nebelmoor) mit Kapelle der Stille und Fluchttunnel, mit der Reiterin erreichbar. Landwege (Nordstraße, Südstraße, Küstenweg) als begehbare Strecken im Maßstab 1:100 mit Signaltürmen, Bezirksfestungen und Dörfern. Offen: Modelle | 6+ Monate |
-| **4 – Systeme** 🔶 | Kampf, Ansehen, Akte und Verfahren, Alarmstufen. Erste Fassung steht: Säbel, Muskete, Bajonett, Gesetzlose als Auftrag, Verwundung, sechs Ansehensgruppen, Verfahren beim Kammerhüter mit allen Strafstufen, Ring der Feuer. Offen: Heimlichkeit, Sold, Bürgschaft für andere | laufend |
+| **4 – Systeme** ✅ | Kampf, Ansehen, Akte und Verfahren, Alarmstufen. Erste Fassung steht: Säbel, Muskete, Bajonett, Gesetzlose als Auftrag, Verwundung, sechs Ansehensgruppen, Verfahren beim Kammerhüter mit allen Strafstufen, Ring der Feuer. Dazu Sold nach Rang, Schleichen und Belauschen mit Beobachtungen und Berichten, Gold über dem Sold und die Prüfer, Bürgschaft für einen Bewerber | laufend |
 | **5 – Das ganze Becken** | Ashenveil, Nord- und Südstraße, Riverlock, Akt II | später |
 | **6 – Akt III** | Ende der Stille, Kriegszustand, Enden | später |
 
@@ -174,6 +174,10 @@ Entscheidungen beim Bau von Akt I:
 | Inga Roth | Bezirkswache in der Bezirksfestung Erlengrund (Südstraße) |
 | Mara Lind | Torfstecherin aus Torfwinkel am Küstenweg |
 | Ole Brandt | Bezirkswache in der Bezirksfestung Seewacht (Küstenweg) |
+| Orm Velsch | Gesandter aus Valdrenn, tritt in Riverlock als Salzhändler aus Salzhain auf |
+| Lukas Dorn | Schreiber des Zollherrn Hendrik Falk |
+| Kerrin Fahl | Bewerber aus dem Süden Valdrenns, für den der Spieler bürgen kann |
+| Tilo Brenn | Knappe im Hof von Drachenstein |
 
 Erfundene Orte an den Straßen: die Dörfer Hollmar, Erlenbrück und Torfwinkel, die Bezirksfestungen Kammfeld, Nordwacht, Erlengrund, Waldtor und Seewacht.
 | Ulf Haskel | Kammbrecher an der Zugbrücke von Gravecrest |

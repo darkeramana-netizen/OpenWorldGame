@@ -5,6 +5,8 @@ extends Node
 signal minute_vergangen(minute: int)
 signal abschnitt_gewechselt(abschnitt: StringName)
 signal stille_gewechselt(aktiv: bool)
+## Ein neuer Tag hat begonnen (für Sold, Prüfer und andere Ereignisse, siehe ereignisse.gd).
+signal neuer_tag(tag: int)
 
 ## Echte Sekunden für einen ganzen Spieltag. 2400 s = 40 Minuten.
 @export var sekunden_pro_tag: float = 2400.0
@@ -116,6 +118,12 @@ func _tageswechsel() -> void:
 	while minuten >= 1440.0:
 		minuten -= 1440.0
 		tag += 1
+		neuer_tag.emit(tag)
+
+
+## Fortlaufende Tage seit Spielbeginn (ein Jahr zu 360 Tagen), um Fristen zu messen.
+func gesamttag() -> int:
+	return (jahr - STARTJAHR) * 360 + tag
 
 
 func _aktualisiere(erzwingen: bool = false) -> void:

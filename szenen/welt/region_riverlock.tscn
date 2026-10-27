@@ -1,4 +1,4 @@
-[gd_scene load_steps=49 format=3]
+[gd_scene load_steps=50 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -21,6 +21,7 @@
 [ext_resource type="Script" path="res://szenen/welt/uebergang.gd" id="20_uebergang"]
 [ext_resource type="Script" path="res://szenen/welt/bedingt_sichtbar.gd" id="21_bedingt"]
 [ext_resource type="PackedScene" path="res://szenen/figuren/gegner.tscn" id="22_gegner"]
+[ext_resource type="Script" path="res://szenen/welt/gespraech.gd" id="23_gespraech"]
 
 [sub_resource type="StandardMaterial3D" id="Material_flamme"]
 shading_mode = 0
@@ -1883,6 +1884,32 @@ anzeige_name = "Zollherr Hendrik Falk"
 dialog_id = "zollherr_falk"
 kordel = 0
 tracht = Color(0.4, 0.3, 0.12, 1)
+
+[node name="Gesandter" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 140, 0, 20)
+anzeige_name = "Orm Velsch, Händler aus Salzhain"
+dialog_id = "gesandter_valdrenn"
+kordel = 0
+tracht = Color(0.45, 0.38, 0.22, 1)
+
+[node name="Schreiber" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 140, 0, 22.2)
+anzeige_name = "Schreiber Lukas Dorn"
+dialog_id = "schreiber_falk"
+kordel = 0
+tracht = Color(0.3, 0.28, 0.24, 1)
+
+[node name="Gespraeche" type="Node3D" parent="."]
+
+[node name="GesandterUndSchreiber" type="Node3D" parent="Gespraeche"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 140, 1, 21.1)
+script = ExtResource("23_gespraech")
+sprecher_a = NodePath("../../Personen/Gesandter")
+sprecher_b = NodePath("../../Personen/Schreiber")
+zeilen = PackedStringArray("a: Der König zahlt in Gold, nicht in Versprechen. Hundert Gulden für eine Nacht, in der die Kette im Wasser liegt.", "b: Der Zollherr sagt weder ja noch nein. Er will wissen, wann.", "a: Wenn das Korn reif ist. Und wenn der Beobachter des Ordens in Drachenstein sitzt statt hier.", "b: Dann sorgt dafür, dass er gerufen wird. Ich habe nichts gesagt.")
+bedingung = ""
+flag_gehoert = "beobachtung_kette"
+akte_text = "Belauscht in Riverlock: Ein Gesandter aus Valdrenn bietet hundert Gulden für eine Nacht, in der die Kette im Wasser liegt. Der Schreiber des Zollherrn verhandelt mit."
 
 [node name="Beobachter" parent="Personen" instance=ExtResource("4_person")]
 transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, -9, 6, -6.4)
