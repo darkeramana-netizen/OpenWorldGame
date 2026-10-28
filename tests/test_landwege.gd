@@ -145,7 +145,7 @@ func _initialize() -> void:
 
 	# --- Durch das Südöstliche Tor (19) aus der Stadt ---
 	await setze(Vector3(444.6, current_scene.get_node("Gelaende").hoehe_bei(444.6, -251.3) + 0.3, -251.3))
-	pruefe(await gehe_ueber([Vector2(473.7, -296), Vector2(465, -312), Vector2(430, -380)], 30.0), "Durch das Südöstliche Tor auf die Nordstraße")
+	pruefe(await gehe_ueber([Vector2(469.6, -292.9), Vector2(474.3, -296.7), Vector2(479, -300.4), Vector2(486, -306), Vector2(430, -380)], 30.0), "Durch das Südöstliche Tor auf die Nordstraße")
 
 	# --- Drachenstein → Nordstraße ---
 	var start: float = Z.absolute_minuten()
@@ -217,7 +217,7 @@ func _initialize() -> void:
 	pruefe(await durch_uebergang(marke("von_drachenstein"), "NachDrachenstein") and region_id() == "drachenstein", "Gleich wieder umgekehrt")
 	pruefe(Z.absolute_minuten() - start < 60, "Wer umkehrt, verliert keine Tage")
 	await setze(marke("von_kuestenweg") + Vector3(0, 0.3, 0))
-	pruefe(await gehe_ueber([Vector2(515, 600), Vector2(500, 520), Vector2(502.6, 432), Vector2(502.8, 424.6), Vector2(446.8, 363),
+	pruefe(await gehe_ueber([Vector2(515, 600), Vector2(508, 520), Vector2(512, 429), Vector2(502.6, 424.9), Vector2(495, 422.3), Vector2(446.8, 363),
 			Vector2(466.9, 307.2)], 30.0), "Über den Pass und durch das Westtor in die Stadt")
 
 	print("\nFehler: ", fehler)

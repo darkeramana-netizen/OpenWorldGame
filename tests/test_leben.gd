@@ -234,7 +234,7 @@ func _initialize() -> void:
 	var hedda := stadt("BuergerHedda")
 	var marit := stadt("Fischhaendlerin")
 	var pim := stadt("KindPim")
-	pruefe(hedda.visible and flach(hedda.global_position).distance_to(Vector2(243.58, 59.07)) < 1.0, "Vormittags ist Hedda Korn auf dem Markt")
+	pruefe(hedda.visible and flach(hedda.global_position).distance_to(Vector2(299.44, 53.48)) < 1.0, "Vormittags ist Hedda Korn auf dem Markt")
 	pruefe(marit.visible and flach(marit.global_position).distance_to(Vector2(249.16, -24.55)) < 1.0, "Marit Hoff steht an ihrem Fischstand")
 	pruefe(pim.visible and pim.unterwegs(), "Pim rennt um den Brunnen")
 	var p0 := pim.global_position
@@ -257,7 +257,7 @@ func _initialize() -> void:
 
 	# --- Vor den Augen des Spielers wird gegangen ---
 	await setze_zeit(10.0)
-	await setze(Vector3(246, hedda.global_position.y + 0.5, 56))
+	await setze(Vector3(302, hedda.global_position.y + 0.5, 50))
 	await setze_zeit(11.99)
 	await warte(1.2)   # Mittag beginnt
 	var start := hedda.global_position
@@ -342,7 +342,7 @@ func _initialize() -> void:
 	await warte_auf_szene(alt)
 	pruefe(not stadt("BuergerHedda").visible and stadt("StreifeStrom").visible, "Nach dem Laden: nachts im Haus, die Nachtstreife unterwegs")
 	await setze_zeit(10.0)
-	pruefe(stadt("BuergerHedda").visible and flach(stadt("BuergerHedda").global_position).distance_to(Vector2(243.58, 59.07)) < 1.0,
+	pruefe(stadt("BuergerHedda").visible and flach(stadt("BuergerHedda").global_position).distance_to(Vector2(299.44, 53.48)) < 1.0,
 			"Am Vormittag ist Hedda wieder auf dem Markt")
 
 	print("\nFehler: ", fehler)

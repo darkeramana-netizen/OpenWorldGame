@@ -57,8 +57,8 @@ const WEG_GRAVECREST := [Vector2(-460, -150), Vector2(-470, -240), Vector2(-500,
 const GRAVECREST_HOEHE := 70.0
 ## Landstraßen: die Nordstraße verlässt die Stadt durch das Südöstliche Tor (19) und steigt über einen Pass
 ## im Norden (nach Riverlock), der Küstenweg durch das Westtor der Löwenward über einen Pass im Süden.
-const WEG_NORD := [Vector2(474.2, -296.6), Vector2(430, -380), Vector2(330, -450), Vector2(230, -500)]
-const WEG_KUESTE := [Vector2(502.4, 425.0), Vector2(500, 520), Vector2(515, 600)]
+const WEG_NORD := [Vector2(474.2, -296.6), Vector2(486, -306), Vector2(430, -380), Vector2(330, -450), Vector2(230, -500)]
+const WEG_KUESTE := [Vector2(502.4, 425.0), Vector2(512, 429), Vector2(508, 520), Vector2(515, 600)]
 ## Passstrecken mit fester Steigung: [Linienzug, Höhe am Anfang, Höhe am Ende].
 const PASS_NORD := [[Vector2(230, -500), Vector2(150, -560), Vector2(110, -610), Vector2(85, -660)], -4.0, 30.0]
 const PASS_SUED := [[Vector2(515, 600), Vector2(530, 660), Vector2(545, 735)], -8.0, 22.0]
@@ -240,7 +240,7 @@ func _drachenstein(h: float, p: Vector2) -> float:
 		h = stadthoehe(p) + _fein.get_noise_2dv(p) * 0.25
 	elif p.x > 60.0:
 		var aussen := _polygon_abstand(p, _stadt)
-		var ziel := stadthoehe(p) + 2.0 + aussen * 0.06
+		var ziel := stadthoehe(p) + aussen * 0.06
 		if h > ziel:
 			h = lerpf(ziel, h, smoothstep(10.0, 160.0, aussen))
 	else:

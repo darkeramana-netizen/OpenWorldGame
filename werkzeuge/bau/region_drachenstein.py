@@ -86,7 +86,7 @@ bewuchs(frei_vielecke=[ring, WL(PD.AEUSSERER_ZWINGER), WL(PD.OBERE_BURG), WL(PD.
 N("Personen", "Node3D", ".")
 _bw = polar(23.5, BF_WINKEL + 14, -17.8)
 person("Bergwaechter", "Personen", BF_X + _bw[0], -17.8, BF_Z + _bw[2], "Bergwächter Tjark Halm", "bergwaechter", 2, "0.05, 0.05, 0.06, 1", gier=round(-BF_WINKEL - 90, 1))
-_lotsin = W((505, 780))
+_lotsin = W((515, 780))   # am Westkai, nah am Becken
 person("Lotsin", "Personen", _lotsin[0], -17.8, _lotsin[1], "Lotsin Wenna Kroll", "lotsin", 0, "0.2, 0.24, 0.3, 1", gier=180)
 person("TorwacheGravemarch", "Personen", round(ESME[0], 2), round(ESME[1], 2), round(ESME[2], 2), "Wächterin Esme Rauh", "torwache_gravemarch", 1, "0.15, 0.15, 0.16, 1", gier=round(math.degrees(math.atan2(-nx, -nz)), 1))
 person("ArchivarinGravemarch", "Personen", *ARCHIVARIN, "Archivarin Ysolde Brack", "archivarin_gravemarch", 2, "0.3, 0.26, 0.2, 1", gier=180)

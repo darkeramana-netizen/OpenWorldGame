@@ -211,7 +211,7 @@ def _freier_platz(stand, abstand):
             return p
     raise SystemExit(f"Kein freier Platz am Stand {stand}")
 
-MARKTPLAETZE = [_freier_platz(s_, 3.2) for s_ in STAENDE] + P((530, 560), (570, 640))
+MARKTPLAETZE = [_freier_platz(STAENDE[k], 3.2) for k in (4, 5, 0, 1, 2, 3)] + P((530, 560), (570, 640))   # die ersten nah am Brunnen
 AM_BRUNNEN = [(round(MARKT_MITTE[0] + dx, 2), round(MARKT_MITTE[1] + dz, 2)) for dx, dz in ((-3.4, 0), (3.4, 0), (0, 3.4), (0, -3.4))]
 VOR_DER_KIRCHE = P((452, 605), (451, 612), (450, 620), (449, 628))   # auf der Gasse neben der Kirche
 FARBEN = ["0.42, 0.33, 0.24, 1", "0.3, 0.35, 0.42, 1", "0.45, 0.4, 0.3, 1", "0.35, 0.28, 0.32, 1",
