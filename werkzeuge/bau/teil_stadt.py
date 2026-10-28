@@ -224,6 +224,37 @@ N("Stadthaeuser", "Node3D", DS, "script = ExtResource(\"27_stadthaeuser\")\n"
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _, _ in HAEUSER) + ")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HAEUSER) + ")")
 
+# --- Burgdetails: Zinnen auf Hof und Drachenhorst, Dächer auf Türmen und Bauten (ohne Kollision) ---
+BD = DS + "/Burgdetails"
+N("Burgdetails", "Node3D", DS)
+
+def satteldach(name, x, y, z, breite, laenge, hoehe, gier=0.0, mat="Material_dach_schiefer"):
+    """Satteldach als Prisma: Traufe auf Höhe y, First entlang der lokalen z-Achse, mit Überstand."""
+    b = breite / 2 + 0.5
+    N(name, "CSGPolygon3D", BD, f"""{T(x, y, round(z + (laenge + 1.0) / 2, 2), gier)}
+polygon = PackedVector2Array({-b}, -0.3, {b}, -0.3, 0, {hoehe})
+depth = {laenge + 1.0}
+material = SubResource("{mat}")""")
+
+# Hofmauern (burg_hof.tscn): Nord, Ost, West, Süd mit Krone auf 8 m
+for (ax, az), (bx, bz) in [((-32, -31), (32, -31)), ((31, -32), (31, 32)), ((-31, -32), (-31, 32)),
+                           ((-32, 31), (-7, 31)), ((7, 31), (32, 31))]:
+    zinnen_auf(ax, az, bx, bz, 8.0, (ax + bx) / 2, (az + bz) / 2)
+turmdach("HofTorturmWestDach", BD, -5, 11, 31, 3.2, 4.0, kanten=4, gier=45)
+turmdach("HofTorturmOstDach", BD, 5, 11, 31, 3.2, 4.0, kanten=4, gier=45)
+satteldach("DachHausDerSchwelle", -24, 6, 4, 10, 14, 5.0)
+satteldach("DachSpeisesaal", 20, 7, -24, 10, 16, 5.0, gier=90)
+satteldach("DachSchreibstube", -25, 5, -15, 8, 8, 4.0)
+# Drachenhorst (Oberer Burg, Boden auf 8 m)
+for (ax, az), (bx, bz) in [((-86, -45), (-33.5, -45)), ((-86, -45), (-86, 11)), ((-86, 11), (-52.5, 11)), ((-47.5, 11), (-33.5, 11))]:
+    zinnen_auf(ax, az, bx, bz, 8 + 6.0, (ax + bx) / 2 + 60, (az + bz) / 2 + 17)
+for i, (x, z) in enumerate([(-86, -45), (-33.5, -45), (-86, 11), (-33.5, 11)]):
+    turmdach(f"DrachenhorstTurm{i + 1}Dach", BD, x, 8 + 4 + 7, z, 3.8, 6.0)
+turmdach("UrkernDach", BD, -62, 8 + 30, -17, 9.5, 9.0, kanten=4, gier=45)
+satteldach("DachPalas", -46, 8 + 9, -36, 10, 18, 6.0, gier=90)
+satteldach("DachKapelle", -76, 8 + 7, -36, 10, 9, 5.5)
+satteldach("DachZeughaus", -76, 8 + 6, 1, 8, 12, 4.0, gier=90)
+
 # Zinnen als MultiMesh: ein Quader je Zinne
 S('''[sub_resource type="BoxMesh" id="Mesh_zinne"]
 material = SubResource("Material_mauer")

@@ -12,6 +12,47 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Neue Grafik und eine große Stadt Drachenstein
+
+Weg vom Klötzchen-Look: Die Welt hat Texturen, Licht, Bewuchs und richtige Figuren, und Drachenstein ist eine große Stadt mit zwei Mauerringen.
+
+**Texturen und Materialien:**
+- Alle Texturen erzeugt `werkzeuge/texturen_erzeugen.py` selbst aus Rauschen und Formen, ohne fremde Lizenzen: Quader, Bruchstein, Basalt, Putz, Holz, Dachziegel, Steinplatten, Kopfsteinpflaster, Stoff, Metall, Gras, Erde, Fels, Sand, Schnee, Sumpf und die Wolken.
+- Jede Textur hat Farbe, Normalen und Rauheit. Die Materialien in `material/` legen sie triplanar in Weltgröße auf, so haben Mauersteine überall die richtige Größe.
+
+**Licht und Himmel:**
+- Wolken am Himmel, AgX-Farbumsetzung, Umgebungsverdeckung (SSAO), leichtes Glühen, Höhennebel und Luftperspektive.
+- Die Sonne geht im Osten auf und steht mittags höchstens 58° hoch. Mauern werfen also auch mittags Schatten.
+
+**Gelände:**
+- Gras, Erde, Fels, Sand, Schnee und Sumpf werden nach Hang und Höhe gemischt, Fels triplanar an Steilwänden.
+- In der Stadt sind die Straßen gepflastert, dazwischen liegt festgetretene Erde.
+
+**Bewuchs** (`szenen/welt/bewuchs.gd`) in allen Regionen:
+- Nadel- und Laubbäume, Büsche und Felsbrocken als MultiMesh, die Wälder aus Rauschen verteilt.
+- Gras rund um den Spieler, alles wiegt im Wind.
+- Nichts wächst auf Wegen, im Wasser, an Steilhängen, unter Bauten oder in Städten und Burghöfen.
+- Baumstämme sind fest.
+
+**Figuren** (`szenen/figuren/figur.gd`) statt Kapseln:
+- Kopf mit Haar, Hut oder Kapuze, Rumpf, Arme und Beine mit Gelenken. Ordensleute tragen den langen Rock.
+- Die Figur geht und schwingt die Arme, sobald sie sich bewegt.
+- Haut, Haar, Frisur und Statur werden fest aus dem Namen abgeleitet. Kinder sind kleiner.
+- Namen über den Köpfen erscheinen erst in der Nähe.
+
+**Die Stadt Drachenstein** (`werkzeuge/bau/teil_stadt.py`), nach der Lore „in Ringen":
+- Die alte Ringmauer ist jetzt die **innere Mauer** um Marktviertel und Hafen, alle Tore bleiben.
+- Darum liegt die **Löwenward**: ein neuer äußerer Ring mit 13 m hohen Mauern, Zinnen, runden Türmen mit Schieferdächern und drei Toren (äußeres Nordtor, äußeres Südtor, Westtor nach Gravemarch). Davor liegen das Nord-, West- und Südviertel.
+- Die Stadt ist etwa 470 × 300 m groß und hat rund **320 Bürgerhäuser** in Zeilen entlang der Straßen.
+- Die Häuser (`szenen/welt/stadthaeuser.gd`) kommen in 24 Formen:
+  - Fachwerk über steinernem Erdgeschoss, vorkragende Obergeschosse.
+  - Steile Satteldächer, als Giebel oder als Traufe zur Straße.
+  - Fenster mit Sprossen und Läden, Türen, Schornsteine.
+  - Ziegel oder Schiefer, drei Putzfarben.
+  - Jede Form wird einmal gebaut und als MultiMesh vielfach gezeichnet. Jedes Haus hat eine Kollisionsbox.
+- Die Straßen stehen in `daten/drachenstein_strassen.json`. Das Bauskript stellt die Häuser daran auf, der Geländeerzeuger ebnet sie ein und pflastert sie.
+- Hof und Drachenhorst haben Zinnen sowie Dächer auf Türmen, Palas, Kapelle, Zeughaus und den Hofgebäuden.
+
 ### Leben in der Welt: Drachenstein hat Einwohner
 
 Bevor die Geschichte weitergeht, wird die Welt ausgebaut. Den Anfang macht Drachenstein: Die Stadt hat jetzt **32 neue Leute mit Tagesablauf**. In der Region leben damit über 50 Personen.
@@ -420,11 +461,13 @@ szenen/
   welt/region.gd           Wurzel einer Region: Wasser, Rand, Lage auf der Karte
   welt/gelaende.gd         baut Gelände und Kollision aus daten/gelaende*/
   welt/burg_hof.tscn       der Hof aus Akt I mit seinen Personen und Posten
-  welt/gelaende.gdshader   Farben des Geländes: Strand, Gras, Fels, Schnee, Wege, Sumpf
+  welt/gelaende.gdshader   Gelände aus Texturen: Gras, Erde, Fels, Sand, Schnee, Sumpf, Wege, Pflaster
   welt/wasser.gdshader     das Wächtermeer
   welt/auf_gelaende.gd     setzt Häuser und Personen auf die Geländehöhe
   welt/ort.gd              benannter Ort, zeigt beim Betreten den Namen
-  welt/haus.tscn           Stadthaus
+  welt/haus.tscn           einfaches Haus (Gravemarch)
+  welt/stadthaeuser.gd     Bürgerhäuser einer Stadt: 24 Fachwerk- und Steinhausformen als MultiMesh
+  welt/bewuchs.gd          Bäume, Büsche, Felsen und Gras einer Region (bewuchs.gdshader: Farbe und Wind)
   welt/turm.gd             begehbarer achteckiger Turm: Ebenen, Wendelrampe, Türen, Zinnen
   welt/tor.gd              Tor, das sich erst unter einer Bedingung öffnet
   welt/lesbar.gd           Gegenstand zum Lesen oder Ansehen (Namensbuch, Feuerbecken)
@@ -435,9 +478,13 @@ szenen/
   spieler/                 Spielfigur und Kamera, spieler/kampf.gd: Waffen, Leben, Verwundung
   figuren/gegner.tscn      Gegner (Gesetzlose mit Säbel oder Muskete, Übungspuppe)
   figuren/person.tscn      ansprechbare Person
+  figuren/figur.gd         Mensch aus Gliedern mit Gehanimation (Personen, Spieler, Gegner)
   figuren/bruchstein.tscn  Gegenstand zum Aufheben
   figuren/werkbank.tscn    Arbeitsstelle (kostet Spielzeit)
 daten/dialoge/             Gespräche als JSON-Dateien
+daten/drachenstein_strassen.json  Straßen der Stadt (Bauskript und Geländeerzeuger lesen sie)
+texturen/                  erzeugte Texturen (werkzeuge/texturen_erzeugen.py)
+material/                  Materialien aus diesen Texturen (triplanar, in Weltgröße)
 daten/gelaende/            Höhen (hoehen.r32), Wege und Sumpf (maske.png), Vorschau der Region Drachenstein
 daten/gelaende_riverlock/  dasselbe für Riverlock
 daten/gelaende_ashenveil/  dasselbe für Ashenveil
@@ -488,7 +535,11 @@ python3 werkzeuge/bau/region_riverlock.py      # schreibt szenen/welt/region_riv
 python3 werkzeuge/bau/region_ashenveil.py      # schreibt szenen/welt/region_ashenveil.tscn
 python3 werkzeuge/bau/region_strasse.py        # schreibt die drei Landstraßen
 python3 werkzeuge/dialoge_stadt.py             # schreibt die Alltagsdialoge der Stadtleute
+python3 werkzeuge/texturen_erzeugen.py         # erzeugt alle Texturen und material/*.tres neu
+python3 werkzeuge/texturen_erzeugen.py dach    # nur eine Textur (Namen siehe Skript), "material" nur die .tres
 ```
+
+Prüfen ohne zu schreiben: `BAU_NUR_PRUEFEN=1 python3 werkzeuge/bau/region_drachenstein.py`. Mit zusätzlich `BAU_KARTE=plan.png` zeichnet das Skript einen Lageplan der Stadt mit Straßen, Häusern und Mauern.
 
 Die Stadtleute von Drachenstein entstehen in `teil_stadtleben.py`: `stadtmensch(...)` mit Wohnung und einem Plan je Tagesabschnitt (Ziel, `"heim"` oder eine `runde(...)`). Die Wege dazwischen sucht das Skript über das Wegenetz. Führt einer durch ein Haus, einen Stand oder den Brunnen, gibt es beim Bauen eine Warnung.
 
