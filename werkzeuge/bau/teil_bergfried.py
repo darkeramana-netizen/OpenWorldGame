@@ -1,6 +1,7 @@
 # ---------- Schwarzer Bergfried ----------
 # Begehbarer Turm nach dem Schnitt: Unterbau (Ebenen -4 bis -1), Schwelle, Schaft, Krone.
 BF = "SchwarzerBergfried"
+BF_X, BF_Z = 990, 150   # Mitte des Bergfrieds auf seiner Insel (werkzeuge/gelaende_erzeuger.gd, BERGFRIED)
 BF_WINKEL = round(math.degrees(math.atan2(95 - 135, 212 - 250)), 2)  # Richtung zur Brücke: Eingang und Treppentür
 BF_BODEN = [-24, -18, -12, -6, 0, 8, 15, 22, 29, 37, 44, 53, 60, 68]
 BF_NUMMERN = list(range(-4, 9))
@@ -9,7 +10,7 @@ BF_NAMEN = ["Sonderzellen", "Zellentrakt", "Zisternen", "Interne Sicherung", "Sc
 BF_RADIEN = [20, 20, 20, 20, 20, 19, 18.5, 18, 17.5, 17, 19, 20, 20.5]
 BF_STAERKEN = [10, 10, 10, 10, 8, 5, 5, 5, 5, 5, 3, 3, 3]
 liste = lambda werte, typ: f"{typ}(" + ", ".join(str(w) for w in werte) + ")"
-N(BF, "Node3D", ".", f"""{T(250, -17.8, 135)}
+N(BF, "Node3D", ".", f"""{T(BF_X, -17.8, BF_Z)}
 script = ExtResource("14_turm")
 ebenen_nummern = {liste(BF_NUMMERN, "PackedInt32Array")}
 ebenen_namen = PackedStringArray({", ".join('"%s"' % n for n in BF_NAMEN)})

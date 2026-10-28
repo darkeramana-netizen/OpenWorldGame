@@ -7,28 +7,37 @@
 SL = "Personen/Stadtleben"
 N("Stadtleben", "Node3D", "Personen")
 
-KAI_Y = -17.8
-NORDKAI_Z = -20.4
-SUEDKAI_Z = 19.5
-NETZ = STRASSEN + [
-    [(0, 56), (0, 80)],                                            # über den Vorplatz zum Weg nach Gravemarch
-    [(98, 0), (99, -12), (100, NORDKAI_Z), (146, NORDKAI_Z)],     # Nordkai bis vor das Zollhaus
-    [(98, 0), (99, 12), (100, SUEDKAI_Z), (156, SUEDKAI_Z)],      # Südkai mit den Pollern
-    [(58, 22), (68, 17), (68, 7.5)],                               # zwischen den Ständen auf den Markt
-    [(68, 7.5), (73.5, 2), (68, -3.5), (62.5, 2), (68, 7.5)],      # Ring um den Brunnen
-    [(73.5, 2), (75, 4)],
-]
+KAI_Y = PD.H_HAFEN
+P = lambda *pp: [W(p) for p in pp]
+# Wegenetz im Plan (Bildpunkte): die Straßen, dazu Wege über den Markt um Stände, Brunnen und Schmiede herum,
+# und der Westkai am Hafenbecken
+_RING = [(550, 591), (556, 597), (550, 603), (544, 597), (550, 591)]          # um den Brunnen
+NETZ = STRASSEN + [P(*l) for l in [
+    [(504, 500), (504, 540), (504, 600), (504, 680), (504, 696)],                        # Westseite des Markts
+    [(596, 500), (596, 530), (596, 600), (596, 615), (596, 655), (580, 662), (580, 696)],  # Ostseite
+    [(504, 500), (550, 498), (596, 500)], [(550, 494), (550, 498), (550, 591)],
+    [(504, 696), (550, 696), (580, 696), (602, 690)], [(550, 603), (550, 696)],
+    _RING, [(504, 600), (544, 597)], [(556, 597), (570, 615), (596, 615)],
+    [(500, 540), (504, 540)], [(500, 600), (504, 600)], [(500, 680), (504, 680)], [(498, 700), (504, 696)],
+    [(600, 530), (596, 530)], [(600, 600), (596, 600)],
+    [(498, 700), (512, 712), (511, 800), (510, 895)],                                    # Westkai
+]]
 
 # Hindernisse: (Mitte x, Mitte z, Breite, Tiefe, Gier) als Rechtecke, Kreise als (x, z, Radius)
+def _bau(pp, laenge, breite, gier=0):
+    x, z = W(pp)
+    return (x, z, breite, laenge, gier)
 RECHTECKE = [(h[0], h[2], HAUSFORMEN[h[5]][0], HAUSFORMEN[h[5]][1] + 2 * VORKRAGUNG, h[3]) for h in HAEUSER] + [
-    (60, -8, 3, 2, 0), (72, -9, 3, 2, 0), (62, 13, 3, 2, 0), (76, 12, 3, 2, 0),
-    (80, 38, 20, 10, -20), (70.6, 41.6, 6, 6, 0), (100, -42, 16, 10, 0),
-    (114, -24.5, 16, 6.5, 0), (154, -24.5, 10, 6, 0)]
-KREISE = [(68, 2, 2.4)]
+    (x, z, 3, 2, 0) for x, z in STAENDE] + [
+    _bau(PD.KIRCHE[0], 66, 30, 90), _bau(PD.KIRCHTURM, 10, 10)] + [
+    _bau(pp, l * 1.117, b * 1.117, 90 if l > b else 0) for pp, l, b in (PD.RATHAUS, PD.BADEHAUS, PD.MUEHLE, PD.SCHMIEDE)] + [
+    _bau(pp, l, b, g) for pp, l, b, g in [((660, 745), 34, 12, 85), ((700, 760), 30, 11, 5), ((470, 790), 30, 12, 0),
+                                          ((480, 880), 22, 12, 30)]]
+KREISE = [(MARKT_MITTE[0], MARKT_MITTE[1], 2.4)]
 
 
 def hoehe(x, z):
-    return KAI_Y if x >= 99 and (z <= NORDKAI_Z + 0.5 or z >= SUEDKAI_Z - 0.5) else round(H(x, z), 2)
+    return round(H(x, z), 2)
 
 
 def _projektion(p, a, b):
@@ -163,7 +172,7 @@ def runde(*ziele):
 # Wohnungen: Häuser, deren Tür einen freien Weg zur nächsten Straße hat. In einem Haus wohnen bis zu drei.
 def _frei_zur_strasse(t):
     vorher = len(FEHLWEGE)
-    pruefe_weg("Tür", weg(t, (0, 40))[:2])
+    pruefe_weg("Tür", weg(t, MARKT_MITTE)[:2])
     frei = len(FEHLWEGE) == vorher
     del FEHLWEGE[vorher:]
     return frei and not in_hindernis(*t, rand=0.3)
@@ -180,21 +189,40 @@ def wohnung():
             return t
     raise SystemExit(f"Keine freie Wohnung mehr ({len(WOHNUNGEN)} Häuser)")
 
-TOR_BURG = (0, 40)
-WACHWECHSEL = (-6, 48)   # neben dem Burgtor auf dem Vorplatz, nicht im Durchgang
-BRUNNEN = (68, 2)
-MARKTPLAETZE = [(64, -1), (71.5, 6.5), (65, 9), (73, -2.5), (69, -5), (63, 4), (74, 7.5), (70, 9.5)]
-AM_BRUNNEN = [(64.6, 2), (71.4, 2), (68, 5.4), (68, -1.4)]
-VOR_DER_KIRCHE = [(60, 33), (62, 30), (58.5, 30.5), (61, 35.5)]
+def _blick(von, nach):
+    return round(math.degrees(math.atan2(nach[0] - von[0], nach[1] - von[1])))
+
+def _richtung(p, ziel, abstand):
+    d = math.dist(p, ziel)
+    return (round(p[0] + (ziel[0] - p[0]) * abstand / d, 2), round(p[1] + (ziel[1] - p[1]) * abstand / d, 2))
+
+WACHWECHSEL = W((540, 448))   # im Äußeren Zwinger neben dem Weg vom Treppentor, nicht im Durchgang
+BRUNNEN = MARKT_MITTE
+def _freier_platz(stand, abstand):
+    """Ein Platz neben dem Stand, zu dem die Wege vom Brunnen und von den Markträndern frei sind."""
+    for dx, dz in ((0, 1), (0, -1), (1, 0), (-1, 0), (0.7, 0.7), (-0.7, 0.7), (0.7, -0.7), (-0.7, -0.7)):
+        p = (round(stand[0] + dx * abstand, 2), round(stand[1] + dz * abstand, 2))
+        vorher = len(FEHLWEGE)
+        for von in P((550, 591), (504, 540), (596, 600)):
+            pruefe_weg("Platz", weg(von, p))
+        frei = len(FEHLWEGE) == vorher
+        del FEHLWEGE[vorher:]
+        if frei:
+            return p
+    raise SystemExit(f"Kein freier Platz am Stand {stand}")
+
+MARKTPLAETZE = [_freier_platz(s_, 3.2) for s_ in STAENDE] + P((530, 560), (570, 640))
+AM_BRUNNEN = [(round(MARKT_MITTE[0] + dx, 2), round(MARKT_MITTE[1] + dz, 2)) for dx, dz in ((-3.4, 0), (3.4, 0), (0, 3.4), (0, -3.4))]
+VOR_DER_KIRCHE = P((452, 605), (451, 612), (450, 620), (449, 628))   # auf der Gasse neben der Kirche
 FARBEN = ["0.42, 0.33, 0.24, 1", "0.3, 0.35, 0.42, 1", "0.45, 0.4, 0.3, 1", "0.35, 0.28, 0.32, 1",
           "0.28, 0.36, 0.28, 1", "0.5, 0.42, 0.34, 1", "0.38, 0.3, 0.2, 1", "0.32, 0.32, 0.36, 1"]
 ORDEN = "0.12, 0.12, 0.14, 1"
 
 # --- Händler an den Ständen (Stand 1 gehört Grete Lohm). Bei Alarm bleiben die Märkte leer. ---
-for i, (name, anzeige, stand, blick) in enumerate([
-        ("Fischhaendlerin", "Fischhändlerin Marit Hoff", (72, -6.4), 180),
-        ("Toepfer", "Töpfer Benno Kalk", (62, 15.6), 0),
-        ("Tuchhaendler", "Tuchhändler Ansgar Weel", (76, 15.4), 0)]):
+for i, (name, anzeige, k) in enumerate([("Fischhaendlerin", "Fischhändlerin Marit Hoff", 1),
+                                        ("Toepfer", "Töpfer Benno Kalk", 2), ("Tuchhaendler", "Tuchhändler Ansgar Weel", 3)]):
+    stand = _freier_platz(STAENDE[k], 2.2)
+    blick = _blick(stand, STAENDE[k])
     stadtmensch(name, anzeige, "stadt_haendler", 0, FARBEN[i + 2], wohnung(), {
         "morgengrauen": (stand, [f"blick={blick}"]),
         "stille_stunde": ("heim", ["weg"]),
@@ -223,7 +251,7 @@ for i, (name, anzeige) in enumerate([("Schmied", "Schmied Harm Eckel"), ("Schust
     }, sichtbar_wenn="alarm<3")
 
 # --- Kinder spielen um den Brunnen ---
-KINDERKREIS = [(round(68 + 4.4 * math.cos(math.radians(w)), 2), round(2 + 4.4 * math.sin(math.radians(w)), 2))
+KINDERKREIS = [(round(MARKT_MITTE[0] + 4.4 * math.cos(math.radians(w)), 2), round(MARKT_MITTE[1] + 4.4 * math.sin(math.radians(w)), 2))
                for w in range(0, 360, 45)]
 for i, (name, anzeige) in enumerate([("Pim", "Pim, ein Junge aus dem Marktviertel"),
                                      ("Ylva", "Ylva, ein Mädchen aus dem Marktviertel"),
@@ -238,8 +266,8 @@ for i, (name, anzeige) in enumerate([("Pim", "Pim, ein Junge aus dem Marktvierte
     }, sichtbar_wenn="alarm<2", tempo=2.2, groesse=0.68)
 
 # --- Streifen des Ordens: tags zwei, nachts zwei, aus der Burg und zurück ---
-STADT_NORD = runde(WACHWECHSEL, (-50, 18), (0, 56), (22, 90))
-MARKT_HAFEN = runde(WACHWECHSEL, (58, 22), (98, 0), (140, SUEDKAI_Z), (98, 0), (20, -40))
+STADT_NORD = runde(WACHWECHSEL, *P((360, 470), (290, 740), (420, 800)))          # Vorburg und Westviertel
+MARKT_HAFEN = runde(WACHWECHSEL, *P((596, 600), (790, 625), (790, 720), (510, 840), (504, 696)))
 for name, anzeige, kordel, strecke, schicht in [
         ("StreifeHahn", "Wächter Bertolt Hahn", 1, STADT_NORD, "tag"),
         ("StreifeKiel", "Wächterin Sanne Kiel", 1, MARKT_HAFEN, "tag"),
@@ -251,31 +279,42 @@ for name, anzeige, kordel, strecke, schicht in [
         plan = {"morgengrauen": ("heim", ["weg"]), "nacht": (strecke, [])}
     stadtmensch(name, anzeige, "streife", kordel, ORDEN, WACHWECHSEL, plan)
 
-# --- Hafen: Fischer am Südkai, Träger am Nordkai, ein Kaufmann aus Velmund unter Aufsicht ---
+# --- Hafen: Fischer und Träger am Westkai, ein Kaufmann aus Velmund unter Aufsicht am Docklager ---
 for i, (name, anzeige) in enumerate([("FischerKlaas", "Fischer Klaas Wend"), ("FischerinTora", "Fischerin Tora Lunk"),
                                      ("FischerHinnerk", "Fischer Hinnerk Saal")]):
     stadtmensch(name, anzeige, "hafen", 0, FARBEN[(i + 1) % 8], wohnung(), {
-        "morgengrauen": ((112 + 14 * i, SUEDKAI_Z + 1.2), ["blick=180"]),
+        "morgengrauen": (W((516, 740 + 55 * i)), ["blick=180"]),
         "stille_stunde": ("heim", ["weg"]),
     }, sichtbar_wenn="alarm<3")
 for i, (name, anzeige) in enumerate([("TraegerOle", "Hafenträger Jonte Pahl"), ("TraegerinMieke", "Hafenträgerin Mieke Strand")]):
-    tragen = [(104 + 6 * i, NORDKAI_Z), (126 + 8 * i, NORDKAI_Z), (104 + 6 * i, NORDKAI_Z)]
+    tragen = P((511, 770 + 20 * i), (510, 850 + 20 * i), (511, 770 + 20 * i))
     stadtmensch(name, anzeige, "hafen", 0, FARBEN[(i + 4) % 8], wohnung(), {
         "morgengrauen": (tragen, []),
         "stille_stunde": ("heim", ["weg"]),
     }, sichtbar_wenn="alarm<3")
-person("KaufmannVelmund", SL, 132, KAI_Y, NORDKAI_Z, "Kaufmann Teodor Vass aus Velmund", "kaufmann_velmund", 0,
-       "0.5, 0.2, 0.18, 1", gier=0, sichtbar_wenn="alarm<2")
-person("Hafenaufsicht", SL, 143, KAI_Y, NORDKAI_Z, "Hafenwächter Gunnar Fleet", "hafenaufsicht", 1, ORDEN, gier=-90)
+KAUFMANN = W((505, 760))
+person("KaufmannVelmund", SL, KAUFMANN[0], hoehe(*KAUFMANN), KAUFMANN[1], "Kaufmann Teodor Vass aus Velmund",
+       "kaufmann_velmund", 0, "0.5, 0.2, 0.18, 1", gier=-90, sichtbar_wenn="alarm<2")
+AUFSICHT = W((505, 772))
+person("Hafenaufsicht", SL, AUFSICHT[0], hoehe(*AUFSICHT), AUFSICHT[1], "Hafenwächter Gunnar Fleet", "hafenaufsicht", 1,
+       ORDEN, gier=_blick(AUFSICHT, KAUFMANN))
 
 # --- Kirche, Rathaus, ein Flüchtling ---
+KUESTER = W((453, 598))
 stadtmensch("Kuester", "Küster Anselm Rohr", "kuester", 0, "0.2, 0.2, 0.22, 1", wohnung(), {
-    "morgengrauen": ((62.5, 34), ["blick=-110"]),
+    "morgengrauen": (KUESTER, [f"blick={_blick(KUESTER, W(PD.KIRCHE[0]))}"]),
     "nacht": ("heim", ["weg"]),
 })
-person("Ratsdiener", SL, 100, KAI_Y, -36, "Ratsdiener Oswin Pfahl", "ratsdiener", 0, "0.3, 0.2, 0.35, 1", gier=0)
-person("Fluechtling", SL, 45.5, round(H(45.5, -16.5), 2), -16.5, "Jana Brook, Flüchtling aus dem Süden", "fluechtling", 0,
-       "0.4, 0.36, 0.3, 1", gier=-130)
+RATSDIENER = W((693, 680))
+person("Ratsdiener", SL, RATSDIENER[0], hoehe(*RATSDIENER), RATSDIENER[1], "Ratsdiener Oswin Pfahl", "ratsdiener", 0,
+       "0.3, 0.2, 0.35, 1", gier=_blick(RATSDIENER, W(PD.RATHAUS[0])) + 180)
+FLUECHTLING = W((510, 688))
+person("Fluechtling", SL, FLUECHTLING[0], hoehe(*FLUECHTLING), FLUECHTLING[1], "Jana Brook, Flüchtling aus dem Süden",
+       "fluechtling", 0, "0.4, 0.36, 0.3, 1", gier=_blick(FLUECHTLING, MARKT_MITTE))
+
+# Prüfen, ob das Wegenetz selbst durch Bauten führt
+for linie in NETZ:
+    pruefe_weg("Netz", linie)
 
 anzahl_stadtleute = sum(1 for k in knoten if f'parent="{SL}"' in k)
 print("Stadtleute:", anzahl_stadtleute, "in", len(_belegt), "Häusern")

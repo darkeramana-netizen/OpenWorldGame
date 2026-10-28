@@ -1,152 +1,170 @@
-# ---------- Burgfeste Drachenstein nach dem Grundriss ----------
-# Gedreht: Süden des Plans liegt im Osten der Welt, der Hafen öffnet sich zum Wächtermeer.
-# Der Hof (BurgHof) ist die Mittlere Burg, westlich davon liegt die Oberer Burg (Drachenhorst).
+# ---------- Burgfeste Drachenstein nach dem Grundriss (docs/bilder/grundriss-drachenstein.webp) ----------
+# Fünf Burgen gestaffelt den Berg hinauf (werkzeuge/bau/plan_drachenstein.py hat die Planpunkte):
+#   I   Untere Burg (Marktviertel) und V Hafenbezirk: teil_stadt.py
+#   II  Mittlere Burg (Wolfsfeste): Kernhof (2) mit dem Inneren Burghof aus Akt I (burg_hof.tscn) und Palas (6)
+#   III Oberer Burg (Drachenhorst): Urkern (1) mit Bergfried, Kapelle (7), Hoher Zwinger, Aussichtsplattform
+#   Äußerer Zwinger (3) mit dem Treppentor hinab zum Markt, Ostterrasse (4)
+#   IV  Vorburg/Löwenward: äußerer Ring, teil_stadt.py
+# Der Weg hinauf: Kernhof → Nordtor → Rampe im Mittleren Zwinger → Zwingertor → Hoher Zwinger → Rampe →
+# Tor der Oberen Burg → Rampe → Urkerntor.
+import sys
+sys.path.insert(0, str(BAU))
+import plan_drachenstein as PD
+teil("teil_mauern.py")
+
+W = PD.welt
+WL = PD.welt_liste
 DS = "Drachenstein"
 N(DS, "Node3D", ".")
+BG = DS + "/Burgen"
+N("Burgen", "Node3D", DS)
 
-# --- Oberer Burg (Drachenhorst) auf Höhe 8 ---
+def ramp(name, a, b, breite=4.0):
+    """Rampe zwischen zwei Punkten (x, y, z) mit Stützmauer darunter."""
+    rampe(name, BG, a, b, breite, 0.6, "Material_boden")
+    # Stützmauer in Stufen, jede bleibt unter der Rampe
+    laenge = math.hypot(b[0] - a[0], b[2] - a[2])
+    unten = min(a[1], b[1]) - 1.0
+    for k in range(4):
+        t0, t1 = 0.12 + 0.2 * k, 0.32 + 0.2 * k
+        oben = a[1] + (b[1] - a[1]) * (t0 if b[1] > a[1] else t1) - 0.7
+        if oben - unten < 0.5:
+            continue
+        t = (t0 + t1) / 2
+        box(f"{name}Stuetze{k}", BG, round(a[0] + (b[0] - a[0]) * t, 2), round((unten + oben) / 2, 2), round(a[2] + (b[2] - a[2]) * t, 2),
+            round(laenge * 0.2, 2), round(oben - unten, 2), breite - 0.4, "Material_mauer", gier=round(gier_zu(b[0] - a[0], b[2] - a[2]), 2))
+
+def entlang(p0, p1, t, versatz, gegen):
+    """Punkt auf der Strecke p0-p1 (Anteil t), um 'versatz' zur Seite von 'gegen' verschoben."""
+    x, z = p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t
+    dx, dz = p1[0] - p0[0], p1[1] - p0[1]
+    l = math.hypot(dx, dz)
+    nx, nz = -dz / l, dx / l
+    if (gegen[0] - x) * nx + (gegen[1] - z) * nz < 0:
+        nx, nz = -nx, -nz
+    return x + nx * versatz, z + nz * versatz
+
+# --- II Mittlere Burg: Kernhof (Sechseck) um den Inneren Burghof aus Akt I ---
+KH = WL(PD.KERNHOF)
+# Tore: nach Osten zum Äußeren Zwinger, nach Nordwesten hinauf, nach Südwesten zur Vorburg
+mauerring("Kernhof", BG, KH, 8.0, dicke=3.0, geschlossen=True, mitte=(0, 0), turm_r=4.0,
+         tore={4: (0.5, 6.0, "Kernhoftor"), 1: (0.45, 5.0, ""), 6: (0.55, 5.0, "")})
+schild("SchildKernhof", BG, 0, 9.5, 52, "Kernhof · Mittlere Burg (Wolfsfeste)", 40)
+# Palas (6) an der Nordseite des Kernhofs
+kh_n0, kh_n1 = KH[2], KH[3]
+px_, pz_ = entlang(kh_n0, kh_n1, 0.5, 13, (0, 0))
+steinbau("Palas", BG, px_, pz_, 42, 13, 14, gier=gier_zu(kh_n1[0] - kh_n0[0], kh_n1[1] - kh_n0[1]) + 90,
+         mat="Material_hell", dachhoehe=8)
+schild("SchildPalas", BG, round(px_, 2), 24, round(pz_, 2), "Palas", 40)
+
+MB = WL(PD.MITTLERE_BURG)
+mauerring("MittlereBurg", BG, MB, 10.0, dicke=3.0, geschlossen=True, mitte=(0, 0), turm_r=5.0,
+         tore={3: (0.93, 7.0, "Tor der Wolfsfeste"), 5: (0.46, 6.0, "Westtor der Wolfsfeste"), 0: (0.6, 6.0, "Zwingertor")})
+# Rampe im Mittleren Zwinger vom Nordwesttor des Kernhofs hinauf zum Zwingertor (Hoher Zwinger, +18)
+z0, z1 = MB[0], MB[1]
+oben_x, oben_z = entlang(z0, z1, 0.6, 3.5, (0, 0))
+unten_x, unten_z = entlang(z0, z1, 0.6 - 40 / math.dist(z0, z1), 7.5, (0, 0))
+ramp("RampeZwinger", (unten_x, PD.H_MITTLERER_ZWINGER, unten_z), (oben_x, PD.H_HOHER_ZWINGER, oben_z), 4.5)
+# Absatz hinter dem oberen Ende der Rampe, durch das Zwingertor hindurch
+_rl = math.hypot(oben_x - unten_x, oben_z - unten_z)
+_rx, _rz = (oben_x - unten_x) / _rl, (oben_z - unten_z) / _rl
+# Absatz am oberen Ende der Rampe, seitlich durch das Zwingertor in den Hohen Zwinger
+_wx, _wz = entlang(z0, z1, 0.6, -1.0, (0, 0))
+_wx, _wz = _wx - z0[0] - (z1[0] - z0[0]) * 0.6, _wz - z0[1] - (z1[1] - z0[1]) * 0.6   # Richtung nach außen
+box("AbsatzZwinger", BG, round(oben_x + _rx * 2.5 + _wx * 1.5, 2), PD.H_HOHER_ZWINGER - 0.3, round(oben_z + _rz * 2.5 + _wz * 1.5, 2),
+    5, 0.6, 10, "Material_boden", gier=round(gier_zu(_rx, _rz), 2))
+
+# --- Äußerer Zwinger (3) mit dem Treppentor hinab zum Markt ---
+AZ = WL(PD.AEUSSERER_ZWINGER)
+# Nur der Teil unterhalb der Oberen Burg ist eine eigene Mauer (oben schließt die Obere Burg an)
+mauerring("AeussererZwinger", BG, AZ[:-1], 9.0, dicke=3.0, mitte=(0, 0), turm_r=4.5,
+         tore={6: (0.7, 7.0, "Treppentor"), 3: (0.2, 6.0, "Zwingerpforte")})
+schild("SchildAeussererZwinger", BG, *(lambda p: (round(p[0], 1), 4.0, round(p[1], 1)))(W((560, 410))), "Äußerer Zwinger", 40)
+
+# --- Ostterrasse (4): spätmittelalterliche Verdichtung mit Wohnbauten ---
+for k, (pp, laenge, breite, g) in enumerate([((745, 210), 26, 10, 20), ((760, 260), 22, 10, 30), ((780, 330), 28, 11, 35),
+                                             ((735, 380), 20, 10, 10), ((800, 390), 22, 10, 45)]):
+    x, z = W(pp)
+    steinbau(f"Ostbau{k}", BG, x, z, laenge, breite, 9, gier=g, mat="Material_hell", dach="Material_dach")
+
+# --- III Oberer Burg (Drachenhorst) ---
+OBB = WL(PD.OBERE_BURG)
+mauerring("ObereBurgMauer", BG, OBB, 10.0, dicke=3.5, mitte=W((610, 140)), turm_r=5.5)
+# Abschlussmauer zum Hohen Zwinger (Futtermauer zwischen +18 und +34) mit Tor
+FUTTER = [OBB[-1], OBB[0]]
+mauerring("ObereBurgFutter", BG, FUTTER, 6.0, dicke=3.0, mitte=W((610, 140)), tore={0: (0.79, 6.0, "Tor der Oberen Burg")})
+# Rampe im Hohen Zwinger hinauf zum Tor der Oberen Burg
+f0, f1 = FUTTER
+tor_x, tor_z = f0[0] + (f1[0] - f0[0]) * 0.79, f0[1] + (f1[1] - f0[1]) * 0.79
+ux, uz = (f1[0] - f0[0]) / math.dist(f0, f1), (f1[1] - f0[1]) / math.dist(f0, f1)
+nx, nz = uz, -ux                                   # von der Mauer nach Osten (Hoher Zwinger)
+if nx < 0:
+    nx, nz = -nx, -nz
+# Die Rampe läuft an der Mauer entlang (im schmalen Hohen Zwinger ist quer kein Platz) und endet auf einem Absatz vor dem Tor
+ramp("RampeObereBurg", (tor_x + nx * 5 - ux * 48, PD.H_HOHER_ZWINGER, tor_z + nz * 5 - uz * 48),
+     (tor_x + nx * 5 - ux * 6, PD.H_OBERE_BURG, tor_z + nz * 5 - uz * 6), 4.5)
+# Der Absatz reicht durch das Tor, über die Kante zwischen den Terrassen
+box("AbsatzObereBurg", BG, round(tor_x + nx * 1.45 - ux * 1.2, 2), PD.H_OBERE_BURG - 0.3, round(tor_z + nz * 1.45 - uz * 1.2, 2), 9.6, 0.6, 10.9,
+    "Material_boden", gier=round(gier_zu(ux, uz), 2))
+
+# Urkern (1): ältester Teil, Ring mit Rundtürmen, darin der Bergfried
+UK = WL(PD.URKERN)
+UK_MITTE = W((628, 140))
+mauerring("Urkern", BG, UK, 12.0, dicke=3.5, geschlossen=True, mitte=UK_MITTE, turm_r=4.5,
+         tore={4: (0.85, 5.0, "Urkerntor")}, mat="Material_basalt")
+# Rampe in der Oberen Burg zum Urkerntor, an der Ostseite des Urkerns entlang
+u0, u1 = UK[4], UK[5]
+gx, gz = u0[0] + (u1[0] - u0[0]) * 0.85, u0[1] + (u1[1] - u0[1]) * 0.85
+UK_ABSTAND = 6.5                                   # Rampe so weit vor der Mauer (dort ist das Gelände eben)
+ox, oz = entlang(u0, u1, 0.85, -UK_ABSTAND, UK_MITTE)
+ux2, uz2 = (u1[0] - u0[0]) / math.dist(u0, u1), (u1[1] - u0[1]) / math.dist(u0, u1)
+ramp("RampeUrkern", (ox - ux2 * 36, PD.H_OBERE_BURG, oz - uz2 * 36), (ox - ux2 * 3, PD.H_URKERN, oz - uz2 * 3), 4.0)
+_aus = (UK_ABSTAND - 4) / 2 / UK_ABSTAND          # Absatz von der Rampe bis 4 m hinter das Tor
+box("AbsatzUrkern", BG, round(gx + (ox - gx) * _aus, 2), PD.H_URKERN - 0.3, round(gz + (oz - gz) * _aus, 2), 6, 0.6, UK_ABSTAND + 4, "Material_boden",
+    gier=round(gier_zu(ux2, uz2), 2))
+# Bergfried des Urkerns
+bx, bz = UK_MITTE[0] - 6, UK_MITTE[1] - 8
+box("BergfriedUrkern", BG, round(bx, 2), PD.H_URKERN + 21, round(bz, 2), 15, 46, 15, "Material_basalt")
+turmdach("BergfriedUrkernDach", BG, round(bx, 2), PD.H_URKERN + 44, round(bz, 2), 11, 12, kanten=4, gier=45)
+for k in range(4):
+    w = math.radians(45 + 90 * k)
+    zyl(f"BergfriedErker{k}", BG, round(bx + 8.2 * math.cos(w), 2), PD.H_URKERN + 41, round(bz + 8.2 * math.sin(w), 2),
+        1.6, 6, "Material_basalt", 8)
+schild("SchildBergfried", BG, round(bx, 2), PD.H_URKERN + 60, round(bz, 2), "Bergfried (Urkern)", 56)
+# Kapelle (7) am Urkern
+KP = WL(PD.KAPELLE_URKERN)
+mauerring("KapelleMauer", BG, KP, 8.0, dicke=2.5, geschlossen=True, mitte=W((559, 146)), mat="Material_basalt")
+kx, kz = W((559, 146))
+steinbau("Kapelle", BG, kx, kz, 18, 10, 9, gier=90, mat="Material_hell", boden=PD.H_URKERN)
+schild("SchildKapelle", BG, round(kx, 2), PD.H_URKERN + 16, round(kz, 2), "Kapelle", 40)
+
+# Aussichtsplattform: hoher Turm mit Spitzhelm an der Spitze der Oberen Burg
+ax_, az_ = W(PD.AUSSICHTSPLATTFORM)
+zyl("Aussichtsturm", BG, ax_, PD.H_OBERE_BURG + 12, az_, 6.5, 30, "Material_mauer", 16)
+turmdach("AussichtsturmDach", BG, ax_, PD.H_OBERE_BURG + 27, az_, 7.5, 14)
+schild("SchildAussicht", BG, ax_, PD.H_OBERE_BURG + 45, az_, "Aussichtsplattform", 48)
+# Bauten in der Oberen Burg: Speicher, Zeughaus, Wohnbau
+for k, (pp, laenge, breite, g, name) in enumerate([((540, 85), 30, 11, -30, "Speicher"), ((680, 95), 26, 10, 25, "Zeughaus"),
+                                                   ((690, 165), 24, 10, 75, "Wohnbau")]):
+    x, z = W(pp)
+    steinbau(f"Obere{name}", BG, x, z, laenge, breite, 10, gier=g, boden=PD.H_OBERE_BURG)
+
+# Übungsplatz mit zwei Puppen in der Oberen Burg (Stufe 4, Kampf)
 OB = DS + "/ObererBurg"
-N("ObererBurg", "Node3D", DS, T(0, 8, 0))
-X0, X1, Z0, Z1 = -86, -33.5, -45, 11
-box("MauerNord", OB, (X0+X1)/2, 1.5, Z0, X1-X0+2.5, 9, 2.5, "Material_mauer")
-box("MauerWest", OB, X0, 1.5, (Z0+Z1)/2, 2.5, 9, Z1-Z0, "Material_mauer")
-box("MauerSuedWest", OB, (X0-52.5)/2, 1.5, Z1, -52.5-X0+1.25, 9, 2.5, "Material_mauer")
-box("MauerSuedOst", OB, (-47.5+X1)/2, 1.5, Z1, X1+47.5+1.25, 9, 2.5, "Material_mauer")
-box("TorturmWest", OB, -54, 3, Z1, 4, 12, 4, "Material_mauer")
-box("TorturmOst", OB, -46, 3, Z1, 4, 12, 4, "Material_mauer")
-box("Torbogen", OB, -50, 7.5, Z1, 4, 3, 2.5, "Material_mauer")
-schild("SchildTor", OB, -50, 10.5, Z1 + 2, "Tor zur Oberer Burg", 40)
-# Brüstung zur Hofmauer mit Durchlass auf den Wehrgang
-box("BruestungNord", OB, -34.6, 0.6, (Z0 + -12)/2, 0.6, 1.2, -12 - Z0, "Material_mauer")
-box("BruestungSued", OB, -34.6, 0.6, (-7 + Z1)/2, 0.6, 1.2, Z1 + 7, "Material_mauer")
-box("Urkern", OB, -62, 15, -17, 12, 30, 12, "Material_basalt")
-schild("Schild", OB, -62, 33, -17, "Oberer Burg · Drachenhorst")
-zyl("Aussichtsplattform", OB, -86, 8, -17, 4.5, 20, "Material_mauer", 12)
-box("Palas", OB, -46, 4.5, -36, 18, 9, 10, "Material_hell")
-box("Kapelle", OB, -76, 3.5, -36, 10, 7, 9, "Material_hell")
-box("Zeughaus", OB, -76, 3, 1, 12, 6, 8, "Material_mauer")
-for i, (x, z) in enumerate([(X0, Z0), (X1, Z0), (X0, Z1), (X1, Z1)]):
-    zyl(f"Eckturm{i+1}", OB, x, 4, z, 3, 14, "Material_mauer", 10)
-# Übungsplatz mit zwei Puppen für Säbel und Muskete
-for k, x in enumerate([-44, -39]):
-    gegner(f"Uebungspuppe{k + 1}", OB, x, 0, -14, "Übungspuppe", waffe="puppe", tracht="0.55, 0.45, 0.3, 1")
-schild("SchildUebungsplatz", OB, -41.5, 3.5, -10, "Übungsplatz", 40)
+UEB = W((525, 175))
+N("ObererBurg", "Node3D", DS, T(round(UEB[0], 2), PD.H_OBERE_BURG, round(UEB[1], 2)))
+for k, x in enumerate([-2.5, 2.5]):
+    gegner(f"Uebungspuppe{k + 1}", OB, x, 0, 0, "Übungspuppe", waffe="puppe", tracht="0.55, 0.45, 0.3, 1")
+schild("SchildUebungsplatz", OB, 0, 3.5, 4, "Übungsplatz", 40)
 
-# --- Ringmauer der Stadt (Löwenward) ---
-RM = DS + "/Ringmauer"
-N("Ringmauer", "Node3D", DS)
-VORBURGTOR = 1  # Kante mit dem Tor
-# Tore in der Ringmauer: Kante → (Name, Lage auf der Kante, Breite). Nordtor und Südtor führen zu den Landstraßen.
-TORE = {VORBURGTOR: ("Vorburgtor", 0.827, 7.0), 2: ("Südtor (Küstenweg)", 0.5, 6.0), 14: ("Nordtor (Nordstraße)", 0.5, 6.0)}
-ecken = [(-86, 11), (-40.6, 47.6), (-8.4, 91), (64.4, 127.4), (103.6, 124.6), (120.4, 93.8), (140, 57.4),
-         (152, 24.5), None, (150, -28), (128.8, -63), (95.2, -88.2), (53.2, -99.4), (22.4, -77), (8.4, -54.6),
-         (-30.8, -43.4), (-33.5, -45)]
-stueck_nr = 0
-def mauerstueck(x1, z1, x2, z2):
-    global stueck_nr
-    dx, dz = x2 - x1, z2 - z1
-    laenge = math.hypot(dx, dz)
-    werte = [H(x1 + dx*t/8, z1 + dz*t/8) for t in range(9)]
-    unten = min(werte) - 2.0
-    oben = max(max(werte), KAI_OBEN) + 9.0
-    stueck_nr += 1
-    box(f"Mauer{stueck_nr}", RM, round((x1+x2)/2, 2), round((unten+oben)/2, 2), round((z1+z2)/2, 2),
-        round(laenge + 1.2, 2), round(oben - unten, 2), 2.5, "Material_mauer", gier=round(gier_zu(dx, dz), 2))
-    return oben
-KAI_OBEN = -17.8
-def mauerkante(a, b, luecke=None):
-    """Mauer von a nach b in Stücken bis 20 m; luecke = (Anteil, Breite) für ein Tor."""
-    (x1, z1), (x2, z2) = a, b
-    laenge = math.hypot(x2 - x1, z2 - z1)
-    abschnitte = [(0.0, 1.0)]
-    if luecke:
-        mitte, breite = luecke
-        h = breite / 2 / laenge
-        abschnitte = [(0.0, mitte - h), (mitte + h, 1.0)]
-    for t0, t1 in abschnitte:
-        n = max(1, math.ceil(laenge * (t1 - t0) / 20))
-        for k in range(n):
-            u0 = t0 + (t1 - t0) * k / n; u1 = t0 + (t1 - t0) * (k + 1) / n
-            mauerstueck(x1 + (x2-x1)*u0, z1 + (z2-z1)*u0, x1 + (x2-x1)*u1, z1 + (z2-z1)*u1)
-for i in range(len(ecken) - 1):
-    a, b = ecken[i], ecken[i+1]
-    if a is None or b is None:
-        continue
-    mauerkante(a, b, TORE[i][1:] if i in TORE else None)
-# Ecktürme
-for i, e in enumerate(ecken[1:-2]):
-    if e is None:
-        continue
-    boden = H(*e)
-    unten = min(boden, KAI_OBEN) - 2
-    oben = max(boden, KAI_OBEN) + 12
-    zyl(f"Turm{i+1}", RM, e[0], round((unten+oben)/2, 2), e[1], 3.2, round(oben-unten, 2), "Material_mauer", 10)
-# Ölturm an der Nordspitze
-oel = (53.2, -99.4)
-zyl("Oelturm", RM, oel[0], round(H(*oel) + 8, 2), oel[1], 5, 22, "Material_mauer", 12)
-schild("SchildOelturm", RM, oel[0], round(H(*oel) + 21, 2), oel[1], "Ölturm", 48)
-# Tortürme und Bögen: Vorburgtor (Weg nach Gravemarch), Nordtor und Südtor (Landstraßen)
-for kante, (torname, anteil, breite) in TORE.items():
-    (ax, az), (bx, bz) = ecken[kante], ecken[kante + 1]
-    tor = (ax + (bx-ax)*anteil, az + (bz-az)*anteil)
-    ux, uz = (bx-ax), (bz-az); ul = math.hypot(ux, uz); ux, uz = ux/ul, uz/ul
-    torboden = H(*tor)
-    vor = "" if kante == VORBURGTOR else f"Tor{kante}"
-    for seite, name in [(-1, "TorturmWest"), (1, "TorturmOst")]:
-        box(vor + name, RM, round(tor[0] + ux*(breite/2 + 2)*seite, 2), round(torboden + 5, 2), round(tor[1] + uz*(breite/2 + 2)*seite, 2),
-            5, 16, 5, "Material_mauer", gier=round(gier_zu(ux, uz), 2))
-    box(vor + "Torbogen", RM, round(tor[0], 2), round(torboden + 10.5, 2), round(tor[1], 2), breite + 0.4, 3, 2.5, "Material_mauer",
-        gier=round(gier_zu(ux, uz), 2))
-    schild("Schild" + (vor or "Vorburgtor"), RM, round(tor[0] - uz*2, 2), round(torboden + 13.5, 2), round(tor[1] + ux*2, 2), torname, 48)
+# Hoher Zwinger: Zisterne (9) und Brunnenhaus (15)
+zx, zz = W(PD.ZISTERNE)
+zyl("Zisterne", BG, zx, PD.H_HOHER_ZWINGER + 0.5, zz, 4.0, 1.2, "Material_mauer", 16)
+zyl("ZisterneWasser", BG, zx, PD.H_HOHER_ZWINGER + 1.05, zz, 3.4, 0.1, "Material_wasser_becken", 16, False)
+bx_, bz_ = W(PD.BRUNNENHAUS)
+steinbau("Brunnenhaus", BG, bx_, bz_, 10, 8, 6, gier=30, boden=PD.H_HOHER_ZWINGER, mat="Material_hell", dach="Material_dach")
+schild("SchildHoherZwinger", BG, *(lambda p: (round(p[0], 1), PD.H_HOHER_ZWINGER + 4, round(p[1], 1)))(W((590, 225))), "Hoher Zwinger", 40)
 
-# --- Hafen (Drachenkai) im Osten ---
-HF = DS + "/Drachenkai"
-N("Drachenkai", "Node3D", DS)
-# Kaimauern um das Becken (Oberkante -17.8), sie decken die steilen Geländekanten ab
-box("KaimauerNord", HF, 134, -22.9, -18.75, 66, 10.2, 2.5, "Material_kai")
-box("KaimauerSued", HF, 134, -22.9, 16.25, 66, 10.2, 2.5, "Material_kai")
-box("KaimauerWest", HF, 101.25, -22.9, -1.25, 2.5, 10.2, 37.5, "Material_kai")
-box("MoleNord", HF, 160, -22.9, -24.5, 14, 10.2, 9, "Material_kai")
-box("MoleSued", HF, 160, -22.9, 21, 14, 10.2, 7.5, "Material_kai")
-zyl("Hafentor", HF, 165, -11, -23.5, 3.5, 22, "Material_mauer", 10)
-zyl("Schiffstor", HF, 165, -11, 20, 3.5, 22, "Material_mauer", 10)
-schild("SchildHafentor", HF, 165, 1.5, -23.5, "Hafentor", 40)
-schild("SchildSchiffstor", HF, 165, 1.5, 20, "Schiffstor", 40)
-box("Zollhaus", HF, 154, -15.3, -24.5, 10, 5, 6, "Material_hell")
-schild("SchildZoll", HF, 154, -11.5, -21, "Zollhaus", 40)
-box("Dockspeicher", HF, 114, -14.3, -24.5, 16, 7, 6.5, "Material_holz")
-for i, (x, z, g) in enumerate([(118, -8, 4), (140, 6, -6), (152, -9, 10)]):
-    box(f"Schiff{i+1}", HF, x, -19.6, z, 16, 3, 5, "Material_holz", gier=g)
-    zyl(f"Mast{i+1}", HF, x, -10, z, 0.3, 16, "Material_holz", 6, False)
-for i, x in enumerate([108, 126, 144]):
-    zyl(f"Poller{i+1}", HF, x, -17.3, 15.6, 0.3, 1.0, "Material_metall", 8)
-schild("SchildKai", HF, 130, -9, -1, "Drachenkai")
-
-# --- Marktplatz, Kirche, Rathaus ---
-MK = DS + "/Marktplatz"
-N("Marktplatz", "Node3D", DS)
-mb = H(68, 2)
-zyl("Brunnen", MK, 68, round(mb + 0.4, 2), 2, 2.4, 1.2, "Material_hell", 12)
-zyl("BrunnenWasser", MK, 68, round(mb + 0.95, 2), 2, 2.0, 0.1, "Material_wasser_becken", 12, False)
-for i, (x, z) in enumerate([(60, -8), (72, -9), (62, 13), (76, 12)]):
-    y = H(x, z)
-    box(f"Stand{i+1}", MK, x, round(y + 0.5, 2), z, 3, 1.0, 2, "Material_holz")
-    box(f"StandDach{i+1}", MK, x, round(y + 2.4, 2), z, 3.4, 0.15, 2.4, "Material_stoff", kollision=False)
-schild("SchildMarkt", MK, 68, round(mb + 6, 2), 2, "Marktplatz")
-
-def gebaeude(name, x, z, sx, sy, sz, mat, gier=0.0):
-    lo, hi = H_bereich(x, z, sx/2, sz/2, gier)
-    unten = lo - 1.5
-    oben = hi + sy
-    box(name, DS, x, round((unten+oben)/2, 2), z, sx, round(oben-unten, 2), sz, mat, gier=gier)
-    return hi
-kh = gebaeude("KircheStGeorg", 80, 38, 20, 10, 10, "Material_hell", gier=-20)
-lo, hi = H_bereich(70, 42, 3, 3)
-box("Kirchturm", DS, 70.6, round((lo - 1 + hi + 26)/2, 2), 41.6, 6, round(hi + 26 - lo + 1, 2), 6, "Material_hell")
-schild("SchildKirche", DS, 70.6, round(hi + 28, 2), 41.6, "Kirche St. Georg", 48)
-rh = gebaeude("Rathaus", 100, -42, 16, 10, 10, "Material_hell")
-schild("SchildRathaus", DS, 100, round(rh + 12, 2), -42, "Rathaus", 48)
-
-# --- Stadt: Häuserzeilen, äußerer Mauerring (Löwenward), Zinnen ---
+# --- I Untere Burg, V Hafen, IV Löwenward und Vorburg: die Stadt ---
 teil("teil_stadt.py")
-ring = STADT_UMRISS
+zinnen_schreiben(DS)

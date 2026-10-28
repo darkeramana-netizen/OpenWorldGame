@@ -12,6 +12,28 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Drachenstein nach dem echten Grundriss: fünf Burgen den Berg hinauf
+
+Drachenstein ist neu gebaut, genau nach deinem Grundriss ([`docs/bilder/grundriss-drachenstein.webp`](docs/bilder/grundriss-drachenstein.webp)) und im Maßstab 1:1 (200 m im Plan = 200 m im Spiel). Die Feste ist jetzt rund 1 km lang und 900 m breit. Der Plan ist gedreht eingebaut: Plan-Süd (Hafen) liegt im Osten am Wächtermeer, der Burgberg im Westen.
+
+**Die Burgen, gestaffelt den Berg hinauf:**
+
+| Stufe | Höhe | Was dort steht |
+|---|---|---|
+| Hafen (Drachenkai) | −17,8 m | Hafenbecken mit Kaimauern, Kanal, Docklager, Schiffstor, Zollhaus, Hafentor zur Mole |
+| Untere Burg (Marktviertel) | −15 bis −6 m | Marktplatz (rund 230 × 110 m) mit Brunnen und Ständen, Kirche St. Georg, Rathaus, Badehaus, Mühle, Schmiedehaus, gut 530 Bürgerhäuser |
+| Äußerer Zwinger | −3 m | Ring um die Burgen, Treppentor hinab zum Markt, Zwingerpforte zur Vorburg, Ostterrasse mit Wohnbauten |
+| Mittlere Burg (Wolfsfeste) | 0 bis 1,5 m | Kernhof mit dem Hof aus Akt I und dem Palas, Tor der Wolfsfeste, Westtor, Zwingertor |
+| Hoher Zwinger | +18 m | Zisterne, Brunnenhaus |
+| Oberer Burg (Drachenhorst) | +34 m | Aussichtsturm, Speicher, Zeughaus, Wohnbau, Übungsplatz |
+| Urkern | +46 m | Basaltring mit dem Bergfried, Kapelle |
+
+- **Der Weg hinauf:** Kernhof → Westtor → Rampe im Mittleren Zwinger → Zwingertor → Hoher Zwinger → Rampe an der Futtermauer → Tor der Oberen Burg → Rampe am Urkern → Urkerntor.
+- **Der Weg hinab:** Kernhoftor → Tor der Wolfsfeste → Äußerer Zwinger → Treppentor → Markt → Westkai → Hafentor → Mole und Brücken zum Schwarzen Bergfried.
+- **Löwenward und Vorburg:** Der äußere Ring umschließt alles. Tore: zum Weg nach Gravemarch, das **Westtor** zum Küstenweg und das **Südöstliche Tor** zur Nordstraße. Hinter der inneren Vorburgmauer liegen die Gärten, am Garten das **Vorburgtor**.
+- **Stadtleben:** Die 32 Stadtleute haben neue Wohnungen, Stände, Wege und Runden. Die Streifen wechseln im Äußeren Zwinger neben dem Treppentor.
+- **So entsteht es:** `werkzeuge/bau/plan_drachenstein.py` enthält den digitalisierten Grundriss (Planpunkte, Höhenstufen, Tore, Straßen) und schreibt `daten/drachenstein_plan.json`. Daraus ebnet der Geländeerzeuger die Terrassen, Kais und Straßen ein. Die Bauskripte (`teil_drachenstein.py`, `teil_stadt.py`, Mauern aus `teil_mauern.py`) lesen denselben Plan.
+
 ### Neue Grafik und eine große Stadt Drachenstein
 
 Weg vom Klötzchen-Look: Die Welt hat Texturen, Licht, Bewuchs und richtige Figuren, und Drachenstein ist eine große Stadt mit zwei Mauerringen.
@@ -40,17 +62,16 @@ Weg vom Klötzchen-Look: Die Welt hat Texturen, Licht, Bewuchs und richtige Figu
 - Haut, Haar, Frisur und Statur werden fest aus dem Namen abgeleitet. Kinder sind kleiner.
 - Namen über den Köpfen erscheinen erst in der Nähe.
 
-**Die Stadt Drachenstein** (`werkzeuge/bau/teil_stadt.py`), nach der Lore „in Ringen":
-- Die alte Ringmauer ist jetzt die **innere Mauer** um Marktviertel und Hafen, alle Tore bleiben.
-- Darum liegt die **Löwenward**: ein neuer äußerer Ring mit 13 m hohen Mauern, Zinnen, runden Türmen mit Schieferdächern und drei Toren (äußeres Nordtor, äußeres Südtor, Westtor nach Gravemarch). Davor liegen das Nord-, West- und Südviertel.
-- Die Stadt ist etwa 470 × 300 m groß und hat rund **320 Bürgerhäuser** in Zeilen entlang der Straßen.
+**Die Stadt Drachenstein** (`werkzeuge/bau/teil_stadt.py`, inzwischen nach dem Grundriss neu gebaut, siehe oben):
+- Die **Löwenward** hat 13 m hohe Mauern, Zinnen und runde Türme.
+- Die Bürgerhäuser stehen in Zeilen entlang der Straßen.
 - Die Häuser (`szenen/welt/stadthaeuser.gd`) kommen in 24 Formen:
   - Fachwerk über steinernem Erdgeschoss, vorkragende Obergeschosse.
   - Steile Satteldächer, als Giebel oder als Traufe zur Straße.
   - Fenster mit Sprossen und Läden, Türen, Schornsteine.
   - Ziegel oder Schiefer, drei Putzfarben.
   - Jede Form wird einmal gebaut und als MultiMesh vielfach gezeichnet. Jedes Haus hat eine Kollisionsbox.
-- Die Straßen stehen in `daten/drachenstein_strassen.json`. Das Bauskript stellt die Häuser daran auf, der Geländeerzeuger ebnet sie ein und pflastert sie.
+- Die Straßen stehen im Grundriss (`werkzeuge/bau/plan_drachenstein.py`). Das Bauskript stellt die Häuser daran auf, der Geländeerzeuger ebnet sie ein und pflastert sie.
 - Hof und Drachenhorst haben Zinnen sowie Dächer auf Türmen, Palas, Kapelle, Zeughaus und den Hofgebäuden.
 
 ### Leben in der Welt: Drachenstein hat Einwohner
@@ -184,7 +205,7 @@ Die drei Straßen aus der Lore sind jetzt begehbare Strecken. Jede ist eine eige
 | **Küstenweg** | Drachenstein – Ashenveil, an der Westküste | 70 km | 0,7 km | 3 Tage |
 
 - **Anschlüsse:**
-  - Drachenstein hat zwei neue Tore in der Ringmauer: das **Nordtor** (Nordstraße) und das **Südtor** (Küstenweg). Hinter beiden führt die Straße über einen **Pass** durchs Gebirge.
+  - Drachenstein hat zwei Tore in der Löwenward: das **Südöstliche Tor** (Nordstraße) und das **Westtor** (Küstenweg). Hinter beiden führt die Straße über einen **Pass** durchs Gebirge.
   - In Riverlock geht die Nordstraße nach Westen ab, die Südstraße nach Süden.
   - In Ashenveil beginnt der Küstenweg am Ende des Damms, die Südstraße am Ostpfad.
   - Wer am Ende eines Weges weitergeht, ist in der nächsten Region.
@@ -289,15 +310,7 @@ Deine Grundrisse liegen in [`docs/bilder/`](docs/bilder/) (`grundriss-*.webp`), 
 
 ### Burgfeste Drachenstein nach Grundriss
 
-Gebaut nach deinem Grundriss, **gedreht**: Der Süden des Plans liegt jetzt im Osten, der Hafen öffnet sich zum Wächtermeer.
-
-- **Mittlere Burg:** der Hof aus Akt I, unverändert.
-- **Oberer Burg (Drachenhorst)** im Westen, auf Höhe der Hofmauerkrone (8 m), mit eigener Ringmauer, Tor im Süden, Urkern, Aussichtsplattform, Palas, Kapelle und Zeughaus. Von der Hofmauer führt ein Durchlass hinüber.
-- **Stadt:** Die Ringmauer (Löwenward) umschließt alles, mit dem **Vorburgtor** am Weg nach Gravemarch und dem **Ölturm** an der Nordspitze. Darin liegen gut 50 Stadthäuser, die **Terrassengärten** an der Ringmauer im Süden, der **Marktplatz** mit Brunnen und Ständen, die **Kirche St. Georg** und das **Rathaus** am Hafen.
-- **Drachenkai:** Hafenbecken mit Kaimauern zwischen Nord- und Südmole, an den Molenköpfen **Hafentor** und **Schiffstor**. Dazu Zollhaus, Dockspeicher und drei Schiffe.
-- **Zum Bergfried:** Von der Südmole führen drei Brücken über zwei Inseln zum Tor des Bergfrieds.
-
-Der Weg vom Hoftor führt den Hang hinunter über den Markt bis an den Kai.
+Inzwischen genau nach dem Grundriss neu gebaut, mit fünf gestaffelten Burgen (siehe ganz oben unter „Drachenstein nach dem echten Grundriss“). Der Hof aus Akt I ist der Innere Burghof im Kernhof der Mittleren Burg.
 
 | Drachenstein vom Meer | Von oben (Norden oben) |
 |---|---|
@@ -424,7 +437,7 @@ Dazu kommen diese Systeme:
 
 Den Wehrgang erreichst du über die Holzrampe an der Südmauer, westlich vom Tor. Von dort führt die Westmauer zur zweiten Rampe hinauf auf den Wachturm in der Nordwestecke.
 
-Wege durch die Region: Vom Tor des Hofs führt der Weg nach Osten über den Marktplatz zum Drachenkai und von der Südmole über die Brücken zum Bergfried. Ein zweiter Weg steigt nach Westen zum Tor der Oberer Burg. Der Weg nach Westen führt aus dem Vorburgtor ins Tal bis zur Brückenpforte von Gravemarch. Kurz vor Gravemarch zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
+Wege durch die Region: Vom Kernhof führt der Weg nach Osten durch den Äußeren Zwinger und das Treppentor über den Marktplatz zum Drachenkai, durch das Hafentor auf die Mole und über die Brücken zum Bergfried. Nach Westen steigt der Weg über Rampen durch den Hohen Zwinger in die Oberer Burg und den Urkern. Der Weg nach Gravemarch führt durch die Zwingerpforte, das Vorburgtor und die Löwenward ins Tal bis zur Brückenpforte von Gravemarch. Kurz vor Gravemarch zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
 
 ## Speichern und Laden
 
@@ -482,7 +495,7 @@ szenen/
   figuren/bruchstein.tscn  Gegenstand zum Aufheben
   figuren/werkbank.tscn    Arbeitsstelle (kostet Spielzeit)
 daten/dialoge/             Gespräche als JSON-Dateien
-daten/drachenstein_strassen.json  Straßen der Stadt (Bauskript und Geländeerzeuger lesen sie)
+daten/drachenstein_plan.json      Grundriss von Drachenstein in Weltkoordinaten (aus werkzeuge/bau/plan_drachenstein.py, der Geländeerzeuger liest ihn)
 texturen/                  erzeugte Texturen (werkzeuge/texturen_erzeugen.py)
 material/                  Materialien aus diesen Texturen (triplanar, in Weltgröße)
 daten/gelaende/            Höhen (hoehen.r32), Wege und Sumpf (maske.png), Vorschau der Region Drachenstein
@@ -639,10 +652,10 @@ Elf automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstän
 | `tests/test_akt2.gd` | Akt II, Nachrichtenkette, 36 Punkte: Zeitsprung beim Komtur, Leofa und die Siegelhülse, der Beobachter, das Pult tagsüber bewacht und nachts durchsucht, Speichern und Laden, alle Ausgänge (Falk liefert aus, der Rat entscheidet, Falk verweigert, Gold genommen und nach fünf Tagen angezeigt, gestanden) |
 | `tests/test_spaehwesen.gd` | Sold, Spähwesen und Bürgschaft, 22 Punkte: Sold zum Monatsanfang und doppelt im Krieg, Bürgschaft für Kerrin, offen von vorn bemerkt werden, schleichend alles hören, Kerrin als Bürge melden, Gold vom Gesandten, Gespräch über die Kette belauschen und berichten, Gold melden, Speichern und Laden, Anzeige durch die Prüfer bei nicht gemeldetem Gold, Verweis für den schweigenden Bürgen |
 | `tests/test_stufe4.gd` | Stufe 4, 28 Punkte: Alarmstufe 1 zu Beginn, Ansehen durch Antworten, Auftrag und Kampf gegen die Gesetzlosen (Treffer, Block, Sieg, bleiben nach dem Laden liegen), Verwundung, Ring der Feuer und leere Märkte, keine Boote bei Alarm, Säbel, Schuss, Bajonett, Nachladen, Verweise und Verfahren bis zur Degradierung, Waffe gegen die Händlerin bis zur Ausstoßung |
-| `tests/test_landwege.gd` | die Landwege, 26 Punkte: Anwärter bleiben drin, durch das Nordtor, einmal um das Meer (Nordstraße, Südstraße, Küstenweg) mit den richtigen Reisetagen, Umkehren kostet nichts, Karte, Wald, Personen an der Straße, Speichern und Laden unterwegs, über den Pass und durch das Südtor zurück in die Stadt |
+| `tests/test_landwege.gd` | die Landwege, 26 Punkte: Anwärter bleiben drin, durch das Südöstliche Tor, einmal um das Meer (Nordstraße, Südstraße, Küstenweg) mit den richtigen Reisetagen, Umkehren kostet nichts, Karte, Wald, Personen an der Straße, Speichern und Laden unterwegs, über den Pass und durch das Westtor zurück in die Stadt |
 | `tests/test_ashenveil.gd` | Ashenveil, 24 Punkte: Reiterin lehnt Anwärter ab, Ritt hin und zurück mit Zeitverlust, Morast, über den Damm und durch das Fallgitter, Rampe hinunter in die Kapelle, Gedenkstein, durch den Fluchttunnel ins Moor, Personen, verriegelter Nebeneingang, Speichern und Laden |
 | `tests/test_riverlock.gd` | Riverlock und das Reisen, 21 Punkte: Lotsin lehnt Anwärter ab, Überfahrt hin und zurück mit Zeitverlust, Rampen durch alle drei Geschosse des Mittelbaus, Zollherr in der Akte, Personen, Wege durch beide Burgen bis vor die Tore, Wasser, Speichern und Laden in Riverlock, Reise über das Entwicklermenü |
-| `tests/test_region.gd` | die Region, 30 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, die Wege zur Oberer Burg, zum Kai und durchs Vorburgtor, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
+| `tests/test_region.gd` | die Region, 30 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, die Wege durch die fünf Burgen bis in den Urkern, über Markt und Kai auf die Mole, durch Zwingerpforte, Vorburgtor und Löwenward, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
 
 ```
 godot --headless --path . --script res://tests/test_akt1.gd

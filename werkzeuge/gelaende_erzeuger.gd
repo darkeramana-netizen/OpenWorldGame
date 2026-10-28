@@ -1,11 +1,12 @@
 class_name GelaendeErzeuger
 ## Erzeugt das Gelände der Region Drachenstein nach der Karte von Sorrowland.
 ##
-## Maßstab 1:50 (1 km auf der Karte = 20 m im Spiel). Ursprung (0, 0) ist der Hof
+## Maßstab 1:50 (1 km auf der Karte = 20 m im Spiel). Ursprung (0, 0) ist der Kernhof
 ## der Burgfeste Drachenstein, +x ist Osten, +z ist Süden. Lage der Orte:
-##   Burgfeste Drachenstein   (0, 0)        Hof (Mittlere Burg) auf Höhe 0, nach dem Grundriss
-##                                          gedreht: Oberer Burg im Westen, Hafen im Osten
-##   Schwarzer Bergfried       (250, 135)    Insel, von der Südmole über zwei Inseln erreichbar
+##   Burgfeste Drachenstein   (0, 0)        Kernhof (Mittlere Burg) auf Höhe 0. Die ganze Anlage nach dem
+##                                          Grundriss 1:1 (daten/drachenstein_plan.json): Oberer Burg oben im
+##                                          Westen, Stadt den Hang hinab, Hafen im Osten am Meer
+##   Schwarzer Bergfried       (990, 150)    Insel, von der Hafenmole über zwei Inseln erreichbar
 ##   Gravemarch                (-600, -205)  im Tal unter dem Felssporn, nach dem Grundriss um 180°
 ##                                          gedreht: Torhaus im Nordosten, Kernburg im Süden
 ##   Gravecrest                (-675, -365)  auf dem eisigen Felssporn, Höhe 70
@@ -14,8 +15,8 @@ class_name GelaendeErzeuger
 ## Ausführen: in Godot werkzeuge/gelaende_erzeugen.gd öffnen und Datei → Ausführen
 ## (Strg+Umschalt+X). Danach die Szene neu öffnen.
 
-const URSPRUNG := Vector2(-900, -650)
-const GROESSE := Vector2(1350, 1000)
+const URSPRUNG := Vector2(-900, -700)
+const GROESSE := Vector2(2200, 1450)
 const ABSTAND := 2.5
 const MEERESSPIEGEL := -20.0
 
@@ -27,7 +28,7 @@ var abstand := ABSTAND
 var wasserspiegel := MEERESSPIEGEL
 
 const GRAVEMARCH := Vector2(-600, -205)
-const BERGFRIED := Vector2(250, 135)
+const BERGFRIED := Vector2(990, 150)
 ## Umriss der Hauptmauer von Gravemarch (mit dem Verfallenen Vorhof im Osten), relativ zur Mitte.
 const GRAVEMARCH_UMRISS := [Vector2(51, -48.1), Vector2(64, -37.7), Vector2(41, -6.5), Vector2(60, -2),
 	Vector2(60, 24), Vector2(33, 26), Vector2(31, 37.7), Vector2(22, 50.7), Vector2(4, 54.6), Vector2(-26, 52),
@@ -37,43 +38,37 @@ const GRAVEMARCH_UMRISS := [Vector2(51, -48.1), Vector2(64, -37.7), Vector2(41, 
 const GRAVEMARCH_INSELN := [[Vector2(-8, -59), 7.0], [Vector2(-35, -63), 8.0]]
 const GRABEN_SOHLE := -13.0
 ## Inseln zwischen Drachenkai und Bergfried: [Mitte, Radius].
-const INSELN := [[Vector2(185, 60), 10.0], [Vector2(212, 95), 9.0], [BERGFRIED, 40.0]]
+const INSELN := [[Vector2(790, 58), 10.0], [Vector2(872, 82), 9.0], [Vector2(952.4, 110.4), 9.0], [BERGFRIED, 40.0]]
 const INSEL_HOEHE := -17.8
 ## Radius der Grube für den Unterbau des Bergfrieds (liegt innerhalb seiner 10 m dicken Mauer).
 const BERGFRIED_GRUBE := 17.0
 
-## Oberer Burg (Drachenhorst) westlich vom Hof, auf Höhe der Hofmauerkrone.
-const OBERE_BURG_MIN := Vector2(-86, -45)
-const OBERE_BURG_MAX := Vector2(-33.5, 11)
-const OBERE_BURG_HOEHE := 8.0
-## Hafen im Osten: Kais auf Höhe -17.8, Becken (offen nach Osten) zwischen Nord- und Südmole.
+## Küste: so weit östlich liegt im Mittel die Wasserlinie.
+const KUESTE_X := 680.0
 const KAI_HOEHE := -17.8
-const BECKEN_MIN := Vector2(101, -19)
-const BECKEN_MAX := Vector2(173, 16)
 const BECKEN_TIEFE := -27.0
-const MOLE_ENDE := 166.0
 
 ## Wege als Linienzüge.
-const WEG_HAFEN := [Vector2(0, 40), Vector2(0, 56), Vector2(44, 46), Vector2(58, 22), Vector2(75, 4), Vector2(98, 0)]
-const WEG_DRACHENHORST := [Vector2(0, 56), Vector2(-25, 52), Vector2(-50, 18), Vector2(-50, 8)]
-const WEG_GRAVEMARCH := [Vector2(0, 80), Vector2(-60, 95), Vector2(-150, 70), Vector2(-260, 10),
-	Vector2(-360, -70), Vector2(-460, -150), Vector2(-490, -215), Vector2(-528.8, -265.1)]
+const WEG_GRAVEMARCH := [Vector2(-72.6, 181.3), Vector2(-120, 215), Vector2(-220, 170), Vector2(-300, 80),
+	Vector2(-380, -20), Vector2(-460, -150), Vector2(-490, -215), Vector2(-528.8, -265.1)]
 ## Der Weg nach Gravecrest steigt vom Tal bis zur Zugbrücke auf Höhe 70.
 const WEG_GRAVECREST := [Vector2(-460, -150), Vector2(-470, -240), Vector2(-500, -310),
 	Vector2(-560, -345), Vector2(-612, -363)]
 const GRAVECREST_HOEHE := 70.0
-## Landstraßen: die Nordstraße verlässt die Stadt durch das Nordtor und steigt über einen Pass
-## im Norden (nach Riverlock), der Küstenweg durch das Südtor über einen Pass im Süden (nach Ashenveil).
-const WEG_NORD := [Vector2(-11, -40), Vector2(-11.2, -49), Vector2(-14, -100), Vector2(0, -200), Vector2(30, -320),
-	Vector2(50, -420), Vector2(70, -540), Vector2(85, -650)]
-const WEG_NORD_STADT := [Vector2(-11, -40), Vector2(20, -40), Vector2(45, -20), Vector2(58, 22)]
-const WEG_KUESTE := [Vector2(0, 56), Vector2(10, 64), Vector2(22, 90), Vector2(28, 109.2), Vector2(40, 170),
-	Vector2(60, 240), Vector2(80, 300), Vector2(95, 350)]
+## Landstraßen: die Nordstraße verlässt die Stadt durch das Südöstliche Tor (19) und steigt über einen Pass
+## im Norden (nach Riverlock), der Küstenweg durch das Westtor der Löwenward über einen Pass im Süden.
+const WEG_NORD := [Vector2(474.2, -296.6), Vector2(430, -380), Vector2(330, -450), Vector2(230, -500)]
+const WEG_KUESTE := [Vector2(502.4, 425.0), Vector2(500, 520), Vector2(515, 600)]
 ## Passstrecken mit fester Steigung: [Linienzug, Höhe am Anfang, Höhe am Ende].
-const PASS_NORD := [[Vector2(30, -320), Vector2(50, -420), Vector2(70, -540), Vector2(85, -650)], 3.0, 32.0]
-const PASS_SUED := [[Vector2(40, 170), Vector2(60, 240), Vector2(80, 300), Vector2(95, 350)], 2.0, 24.0]
+const PASS_NORD := [[Vector2(230, -500), Vector2(150, -560), Vector2(110, -610), Vector2(85, -660)], -4.0, 30.0]
+const PASS_SUED := [[Vector2(515, 600), Vector2(530, 660), Vector2(545, 735)], -8.0, 22.0]
 
-## Straßen der Stadt (daten/drachenstein_strassen.json, auch von werkzeuge/bau/teil_stadt.py gelesen)
+## Grundriss der Burgfeste (werkzeuge/bau/plan_drachenstein.py schreibt ihn)
+var plan: Dictionary = {}
+var _zonen: Array = []          # [PackedVector2Array, Höhe, Rand]
+var _stadt := PackedVector2Array()
+var _becken: Array = []         # Hafenbecken, Kanal, Fahrrinne
+var _markt := PackedVector2Array()
 var stadt_strassen: Array = []
 
 var _rauschen := FastNoiseLite.new()
@@ -82,10 +77,22 @@ var _grat := FastNoiseLite.new()
 
 
 func _init() -> void:
-	var daten: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://daten/drachenstein_strassen.json"))
+	var daten: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://daten/drachenstein_plan.json"))
 	if daten is Dictionary:
-		for linie: Array in daten["strassen"]:
-			stadt_strassen.append(linie.map(func(p: Array) -> Vector2: return Vector2(p[0], p[1])))
+		plan = daten
+		var vec := func(liste: Array) -> PackedVector2Array:
+			var a := PackedVector2Array()
+			for q: Array in liste:
+				a.append(Vector2(q[0], q[1]))
+			return a
+		for z: Dictionary in plan["zonen"]:
+			_zonen.append([vec.call(z["punkte"]), float(z["hoehe"]), float(z["rand"])])
+		_stadt = vec.call(plan["stadt"])
+		_markt = vec.call(plan["markt"])
+		for name in ["hafen_becken", "kanal", "fahrrinne"]:
+			_becken.append(vec.call(plan[name]))
+		for linie: Array in plan["strassen"]:
+			stadt_strassen.append(Array(vec.call(linie)))
 	_rauschen.seed = 1750
 	_rauschen.frequency = 0.004
 	_fein.seed = 940
@@ -142,11 +149,11 @@ func hoehe(p: Vector2) -> float:
 	var gebirge := 120.0 + grat * 70.0 + n * 20.0
 	var berg := smoothstep(-330.0, -560.0, p.x)
 	berg = maxf(berg, smoothstep(-470.0, -600.0, p.y))
-	berg = maxf(berg, smoothstep(230.0, 330.0, p.y) * smoothstep(250.0, 100.0, p.x))
+	berg = maxf(berg, smoothstep(600.0, 700.0, p.y) * smoothstep(760.0, 560.0, p.x))
 	berg = maxf(berg, smoothstep(-800.0, -880.0, p.x))
 
 	# Das Tal nach Gravemarch hält das Gebirge zurück.
-	var tal_abstand := _abstand_zu([Vector2(-260, 10), Vector2(-360, -70), Vector2(-460, -150), GRAVEMARCH], p)
+	var tal_abstand := _abstand_zu([Vector2(-200, 190), Vector2(-300, 80), Vector2(-380, -20), Vector2(-460, -150), GRAVEMARCH], p)
 	# Das Tal zieht sich bis unter den Felssporn von Gravecrest.
 	tal_abstand = minf(tal_abstand, _abstand_zu([GRAVEMARCH, Vector2(-560, -300), Vector2(-660, -380), Vector2(-740, -420)], p))
 	var tal := 1.0 - smoothstep(70.0, 170.0, tal_abstand)
@@ -164,7 +171,7 @@ func hoehe(p: Vector2) -> float:
 		h = lerpf(h, maxf(h, krone), flanke)
 
 	# Küste: Das Land fällt zum Wächtermeer hin ab.
-	var kueste := 115.0 + 20.0 * sin(p.y / 110.0)
+	var kueste := KUESTE_X + 20.0 * sin(p.y / 110.0)
 	var d := p.x - kueste
 	h = lerpf(h, -18.6, smoothstep(-110.0, 0.0, d) * (1.0 - berg))
 	h -= smoothstep(5.0, 70.0, d) * 15.0
@@ -180,19 +187,8 @@ func hoehe(p: Vector2) -> float:
 	if p.distance_to(BERGFRIED) < BERGFRIED_GRUBE:
 		h = -50.0
 
-	# Plateau des Hofs (64 x 64 m) mit Vorplatz vor dem Tor, Höhe 0.
-	var hof := _rechteck_abstand(p, Vector2(-42, -42), Vector2(42, 42))
-	hof = minf(hof, _rechteck_abstand(p, Vector2(-14, 42), Vector2(14, 92)))
-	h = lerpf(h, 0.0, 1.0 - smoothstep(0.0, 30.0, hof))
-
-	# Oberer Burg (Drachenhorst) westlich vom Hof auf Höhe der Mauerkrone. Zum Hof hin
-	# endet das Plateau scharf an der Westmauer, sonst fällt es in 16 m ab.
-	if p.x <= -32.0:
-		var horst := _rechteck_abstand(p, OBERE_BURG_MIN, OBERE_BURG_MAX)
-		h = lerpf(h, OBERE_BURG_HOEHE, 1.0 - smoothstep(0.0, 16.0, horst))
-
-	# Stadt am Hang: vom Hof hinunter über den Marktplatz zu den Kais.
-	h = _stadthang(h, p)
+	# Burgfeste Drachenstein nach dem Grundriss: Burgberg, Stadt, Burgringe, Hafen.
+	h = _drachenstein(h, p)
 
 	# Gravemarch auf einem aufgeschütteten Hügel im Sumpf.
 	var gm := p.distance_to(GRAVEMARCH)
@@ -200,15 +196,22 @@ func hoehe(p: Vector2) -> float:
 	h = _gravemarch(h, p)
 
 	# Wege glätten das Gelände.
-	h = _weg_einebnen(h, p, WEG_HAFEN)
-	h = _weg_einebnen(h, p, WEG_DRACHENHORST)
 	h = _weg_einebnen(h, p, WEG_GRAVEMARCH)
 	h = _weg_gravecrest(h, p)
 	h = _weg_einebnen(h, p, WEG_NORD)
-	h = _weg_einebnen(h, p, WEG_NORD_STADT)
 	h = _weg_einebnen(h, p, WEG_KUESTE)
-	for linie: Array in stadt_strassen:
-		h = _weg_einebnen(h, p, linie)
+	if p.x > -350.0 and p.x < 720.0 and absf(p.y - 60.0) < 500.0:
+		for linie: Array in stadt_strassen:
+			h = _weg_einebnen(h, p, linie)
+	# Hafenbucht vor Schiffstor und Hafentor: offenes Wasser für Fahrrinne und Mole
+	if p.x > 600.0 and not Geometry2D.is_point_in_polygon(p, _stadt):
+		var bucht := maxf(645.0 - p.x, absf(p.y - 5.0) - 75.0)
+		if bucht < 0.0:
+			h = minf(h, lerpf(-24.0, h, smoothstep(-12.0, 0.0, bucht)))
+	# Hafenbecken und Fahrrinne zuletzt, damit nichts sie wieder auffüllt
+	for becken: PackedVector2Array in _becken:
+		if Geometry2D.is_point_in_polygon(p, becken):
+			h = minf(h, BECKEN_TIEFE)
 	h = _pass(h, p, PASS_NORD)
 	h = _pass(h, p, PASS_SUED)
 
@@ -222,31 +225,58 @@ func hoehe(p: Vector2) -> float:
 	return h
 
 
-## Hang der Stadt zwischen Hof und Hafen mit dem Marktplatz als flacher Stufe. Ausgefahren
-## wird er nur in einem Band um den Hafen, nach Osten laufen nur die schmalen Molen ins Meer.
-func _stadthang(h: float, p: Vector2) -> float:
-	if p.x < 28.0:
+## Die Burgfeste: Ein Grat steigt vom Eisgrat zum Drachenhorst und fällt zum Kernhof ab. In der Löwenward
+## fällt die Stadt vom Treppentor zum Hafen; die Burgringe sind Terrassen auf ihren Höhen (Grundriss).
+func _drachenstein(h: float, p: Vector2) -> float:
+	if p.x < -420.0 or p.x > 760.0 or p.y < -480.0 or p.y > 600.0:
 		return h
-	var profil: float
-	if p.x < 42.0:
-		profil = 0.0
-	elif p.x < 58.0:
-		profil = lerpf(0.0, -7.5, (p.x - 42.0) / 16.0)
-	elif p.x < 80.0:
-		profil = lerpf(-7.5, -8.5, (p.x - 58.0) / 22.0)  # Marktplatz
-	elif p.x < 95.0:
-		profil = lerpf(-8.5, KAI_HOEHE, (p.x - 80.0) / 15.0)
+	# Burgberg: steiler Fels um die oberen Burgen
+	var grat := _naechster_punkt([Vector2(-420, -60), Vector2(-300, -55), Vector2(-205, -70), Vector2(-60, -15)], p)
+	var kamm := lerpf(56.0, 4.0, smoothstep(0.55, 1.0, grat[1]))
+	var berg := kamm - maxf(0.0, grat[0] - 25.0) * 0.42 + _fein.get_noise_2dv(p) * 1.5
+	h = maxf(h, berg)
+	# Stadt innerhalb der Löwenward; davor fällt das Land zur Küste hin auf die Höhe der Stadt ab
+	if Geometry2D.is_point_in_polygon(p, _stadt):
+		h = stadthoehe(p) + _fein.get_noise_2dv(p) * 0.25
+	elif p.x > 60.0:
+		var aussen := _polygon_abstand(p, _stadt)
+		var ziel := stadthoehe(p) + 2.0 + aussen * 0.06
+		if h > ziel:
+			h = lerpf(ziel, h, smoothstep(10.0, 160.0, aussen))
 	else:
-		profil = KAI_HOEHE
-	var quer := absf(p.y + 2.0)
-	var rand := lerpf(24.0, 1.0, smoothstep(100.0, 115.0, p.x))
-	var anteil := (1.0 - smoothstep(26.0, 26.0 + rand, quer)) * smoothstep(28.0, 42.0, p.x)
-	anteil *= 1.0 - smoothstep(MOLE_ENDE, MOLE_ENDE + 3.0, p.x)
-	h = lerpf(h, profil, anteil)
-	# Hafenbecken mit senkrechten Kaimauern (die Mauern selbst baut die Szene).
-	if p.x > BECKEN_MIN.x and p.x < BECKEN_MAX.x and p.y > BECKEN_MIN.y and p.y < BECKEN_MAX.y:
-		h = minf(h, BECKEN_TIEFE)
+		# Kleine Stufen vor der Löwenward ausgleichen (sonst steht man vor den Toren an einer Kante);
+		# große Höhenunterschiede sind der Burgberg und bleiben
+		var aussen := _polygon_abstand(p, _stadt)
+		var ziel := stadthoehe(p)
+		if aussen < 30.0:
+			var angepasst := lerpf(ziel, h, smoothstep(3.0, 30.0, aussen))
+			h = lerpf(h, angepasst, smoothstep(14.0, 8.0, absf(h - ziel)))
+	# Burgringe als Terrassen, von außen nach innen
+	for zone: Array in _zonen:
+		var d := _polygon_abstand(p, zone[0])
+		if d <= 0.0:
+			h = zone[1]
+		elif d < zone[2]:
+			h = lerpf(zone[1], h, smoothstep(0.0, zone[2], d))
+	# Kais auf Höhe der Hafenmauern rings um die Becken
+	for becken: PackedVector2Array in _becken:
+		var d := _polygon_abstand(p, becken)
+		if d > 0.0 and d < 14.0 and Geometry2D.is_point_in_polygon(p, _stadt):
+			h = lerpf(KAI_HOEHE, h, smoothstep(9.0, 14.0, d))
 	return h
+
+
+## Höhe der Stadt: vom Treppentor (Markt oben) zum Hafen (Markt unten), weiter bis an die Kais.
+func stadthoehe(p: Vector2) -> float:
+	var oben: Array = plan["markt_oben"]
+	var unten: Array = plan["markt_unten"]
+	var t := clampf((p.x - float(oben[0])) / (float(unten[0]) - float(oben[0])), 0.0, 1.0)
+	var hh := lerpf(float(oben[1]), float(unten[1]), t)
+	if p.x > float(unten[0]):
+		hh = lerpf(float(unten[1]), KAI_HOEHE + 0.8, clampf((p.x - float(unten[0])) / 220.0, 0.0, 1.0))
+	if p.x < float(oben[0]):
+		hh = lerpf(float(oben[1]), float(plan["vorburg_hoehe"]), clampf((float(oben[0]) - p.x) / 150.0, 0.0, 1.0))
+	return hh
 
 
 ## Gravemarch: aufgeschütteter Hügel in der Form der Hauptmauer, darum ein Wassergraben.
@@ -281,8 +311,10 @@ func _polygon_abstand(p: Vector2, ecken: Array) -> float:
 ## Farbmaske für den Gelände-Shader: Rot = Weg, Grün = Sumpf.
 func maske_bei(p: Vector2) -> Color:
 	var weg := INF
-	for linie in [WEG_HAFEN, WEG_DRACHENHORST, WEG_GRAVEMARCH, WEG_GRAVECREST, WEG_NORD, WEG_NORD_STADT, WEG_KUESTE] + stadt_strassen:
+	for linie in [WEG_GRAVEMARCH, WEG_GRAVECREST, WEG_NORD, WEG_KUESTE, PASS_NORD[0], PASS_SUED[0]] + stadt_strassen:
 		weg = minf(weg, _abstand_zu(linie, p))
+	if not _markt.is_empty() and Geometry2D.is_point_in_polygon(p, _markt):
+		weg = 0.0
 	var gm := p.distance_to(GRAVEMARCH)
 	var sumpf := (1.0 - smoothstep(115.0, 140.0, gm)) * smoothstep(17.0, 26.0, _polygon_abstand(p - GRAVEMARCH, GRAVEMARCH_UMRISS))
 	sumpf *= clampf(0.6 + _fein.get_noise_2dv(p * 0.5), 0.0, 1.0)

@@ -234,8 +234,8 @@ func _initialize() -> void:
 	var hedda := stadt("BuergerHedda")
 	var marit := stadt("Fischhaendlerin")
 	var pim := stadt("KindPim")
-	pruefe(hedda.visible and flach(hedda.global_position).distance_to(Vector2(64, -1)) < 1.0, "Vormittags ist Hedda Korn auf dem Markt")
-	pruefe(marit.visible and flach(marit.global_position).distance_to(Vector2(72, -6.4)) < 1.0, "Marit Hoff steht an ihrem Fischstand")
+	pruefe(hedda.visible and flach(hedda.global_position).distance_to(Vector2(243.58, 59.07)) < 1.0, "Vormittags ist Hedda Korn auf dem Markt")
+	pruefe(marit.visible and flach(marit.global_position).distance_to(Vector2(249.16, -24.55)) < 1.0, "Marit Hoff steht an ihrem Fischstand")
 	pruefe(pim.visible and pim.unterwegs(), "Pim rennt um den Brunnen")
 	var p0 := pim.global_position
 	await warte(1.0)
@@ -253,23 +253,23 @@ func _initialize() -> void:
 	# --- Morgens kommt die Tagstreife heraus, Händler gehen zu ihren Ständen ---
 	await setze_zeit(6.0)
 	pruefe(stadt("StreifeHahn").visible and not stadt("StreifeMarten").visible, "Wachwechsel bei Morgengrauen")
-	pruefe(marit.visible and flach(marit.global_position).distance_to(Vector2(72, -6.4)) < 1.0, "Bei Morgengrauen steht die Händlerin schon am Stand (Spieler weit weg)")
+	pruefe(marit.visible and flach(marit.global_position).distance_to(Vector2(249.16, -24.55)) < 1.0, "Bei Morgengrauen steht die Händlerin schon am Stand (Spieler weit weg)")
 
 	# --- Vor den Augen des Spielers wird gegangen ---
 	await setze_zeit(10.0)
-	await setze(Vector3(66, hedda.global_position.y + 0.5, -3))
+	await setze(Vector3(246, hedda.global_position.y + 0.5, 56))
 	await setze_zeit(11.99)
 	await warte(1.2)   # Mittag beginnt
 	var start := hedda.global_position
 	pruefe(hedda.unterwegs(), "Mittag: Hedda geht vom Markt zum Brunnen, während der Spieler zusieht")
-	var ende := Time.get_ticks_msec() + 15000
+	var ende := Time.get_ticks_msec() + 90000
 	var schwebt := false
 	while hedda.unterwegs() and Time.get_ticks_msec() < ende:
 		await physics_frame
 		var b := boden_unter(hedda.global_position, hedda)
 		if not is_nan(b) and absf(hedda.global_position.y - b) > 0.4:
 			schwebt = true
-	pruefe(not hedda.unterwegs() and flach(hedda.global_position).distance_to(Vector2(64.6, 2)) < 0.5, "… und kommt am Brunnen an")
+	pruefe(not hedda.unterwegs() and flach(hedda.global_position).distance_to(Vector2(303.86, 16.76)) < 0.5, "… und kommt am Brunnen an")
 	pruefe(hedda.global_position.distance_to(start) > 2.0 and not schwebt, "… ohne zu schweben oder zu versinken")
 
 	# --- Wer angesprochen wird, bleibt stehen ---
@@ -342,7 +342,7 @@ func _initialize() -> void:
 	await warte_auf_szene(alt)
 	pruefe(not stadt("BuergerHedda").visible and stadt("StreifeStrom").visible, "Nach dem Laden: nachts im Haus, die Nachtstreife unterwegs")
 	await setze_zeit(10.0)
-	pruefe(stadt("BuergerHedda").visible and flach(stadt("BuergerHedda").global_position).distance_to(Vector2(64, -1)) < 1.0,
+	pruefe(stadt("BuergerHedda").visible and flach(stadt("BuergerHedda").global_position).distance_to(Vector2(243.58, 59.07)) < 1.0,
 			"Am Vormittag ist Hedda wieder auf dem Markt")
 
 	print("\nFehler: ", fehler)
