@@ -16,6 +16,8 @@ const KORDELFARBEN := {
 ## Rangabzeichen am Kragen (Alltag 1.3).
 @export var kordel: Kordel = Kordel.SCHWARZ
 @export var tracht: Color = Color(0.15, 0.15, 0.17)
+## Größe als Faktor, z. B. 0.65 für Kinder.
+@export var groesse: float = 1.0
 ## Die Person ist nur da, solange diese Bedingung gilt (Schreibweise wie in den Dialogen).
 @export var sichtbar_wenn: String = ""
 ## Tagesablauf: eine Zeile je Tagesabschnitt, "abschnitt: x,y,z; x,y,z; … | Zusatz | Zusatz".
@@ -42,9 +44,12 @@ var _spricht: bool = false
 
 func _ready() -> void:
 	$Name.text = anzeige_name
-	$Mesh.material_override = _material(tracht)
-	$Kordel.visible = kordel != Kordel.KEINE
-	$Kordel.material_override = _material(KORDELFARBEN[kordel])
+	var figur = $Figur
+	figur.merkmale_aus(anzeige_name)
+	figur.tracht = tracht
+	figur.rock = kordel != Kordel.KEINE    # Ordensleute tragen den langen Rock der Tracht
+	figur.kordel_farbe = KORDELFARBEN[kordel]
+	figur.scale *= groesse
 	Spielstand.flag_geaendert.connect(func(_f: String) -> void: _pruefe_sichtbarkeit())
 	Spielstand.alarm_geaendert.connect(func(_s: int) -> void: _pruefe_sichtbarkeit())
 	Spielzeit.abschnitt_gewechselt.connect(func(_a: StringName) -> void:

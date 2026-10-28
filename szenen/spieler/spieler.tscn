@@ -1,4 +1,5 @@
 [gd_scene load_steps=13 format=3]
+[ext_resource type="Script" path="res://szenen/figuren/figur.gd" id="9_figur"]
 
 [ext_resource type="Script" path="res://szenen/spieler/spieler.gd" id="1_spieler"]
 [ext_resource type="Script" path="res://szenen/spieler/kampf.gd" id="2_kampf"]
@@ -49,20 +50,10 @@ shape = SubResource("Form_koerper")
 
 [node name="Koerper" type="Node3D" parent="."]
 
-[node name="Mesh" type="MeshInstance3D" parent="Koerper"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("Mesh_koerper")
-surface_material_override/0 = SubResource("Material_tracht")
-
-[node name="Blick" type="MeshInstance3D" parent="Koerper"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.3)
-mesh = SubResource("Mesh_blick")
-surface_material_override/0 = SubResource("Material_blick")
-
-[node name="Kordel" type="MeshInstance3D" parent="Koerper"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.42, 0)
-visible = false
-mesh = SubResource("Mesh_kordel")
+[node name="Figur" type="Node3D" parent="Koerper"]
+script = ExtResource("9_figur")
+tracht = Color(0.32, 0.27, 0.21, 1)
+haut = Color(0.8, 0.62, 0.5, 1)
 
 [node name="Saebel" type="Node3D" parent="Koerper"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 1.05, -0.2)

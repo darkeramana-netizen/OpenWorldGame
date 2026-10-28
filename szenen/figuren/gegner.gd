@@ -48,9 +48,12 @@ func _ready() -> void:
 	_heimat = global_position
 	leben = leben_max
 	$Name.text = anzeige_name
-	var material := StandardMaterial3D.new()
-	material.albedo_color = tracht
-	$Koerper/Mesh.material_override = material
+	var figur = $Koerper/Figur
+	figur.merkmale_aus(anzeige_name + str(get_index()))
+	figur.tracht = tracht
+	figur.frisur = 4 if waffe == "puppe" else 2     # Gesetzlose tragen Kapuzen, die Puppe hat keinen Kopfputz
+	if waffe == "puppe":
+		figur.haut = Color(0.75, 0.62, 0.38)       # Stroh
 	_waffe.visible = waffe != "puppe"
 	if waffe == "muskete":
 		_waffe.scale = Vector3(1.4, 1.4, 1.6)

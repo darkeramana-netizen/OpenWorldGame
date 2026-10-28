@@ -1,4 +1,4 @@
-[gd_scene load_steps=52 format=3]
+[gd_scene load_steps=70 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -21,17 +21,49 @@
 [ext_resource type="Script" path="res://szenen/welt/uebergang.gd" id="20_uebergang"]
 [ext_resource type="Script" path="res://szenen/welt/bedingt_sichtbar.gd" id="21_bedingt"]
 [ext_resource type="PackedScene" path="res://szenen/figuren/gegner.tscn" id="22_gegner"]
+[ext_resource type="Script" path="res://szenen/welt/gespraech.gd" id="23_gespraech"]
+[ext_resource type="Script" path="res://szenen/welt/durchsuchbar.gd" id="24_durchsuchbar"]
+[ext_resource type="Texture2D" path="res://texturen/wolken.png" id="25_wolken"]
+[ext_resource type="Texture2D" path="res://texturen/gras_farbe.jpg" id="tex_gras_farbe"]
+[ext_resource type="Texture2D" path="res://texturen/gras_normal.jpg" id="tex_gras_normal"]
+[ext_resource type="Texture2D" path="res://texturen/erde_farbe.jpg" id="tex_erde_farbe"]
+[ext_resource type="Texture2D" path="res://texturen/erde_normal.jpg" id="tex_erde_normal"]
+[ext_resource type="Texture2D" path="res://texturen/fels_farbe.jpg" id="tex_fels_farbe"]
+[ext_resource type="Texture2D" path="res://texturen/fels_normal.jpg" id="tex_fels_normal"]
+[ext_resource type="Texture2D" path="res://texturen/sand_farbe.jpg" id="tex_sand_farbe"]
+[ext_resource type="Texture2D" path="res://texturen/schnee_farbe.jpg" id="tex_schnee_farbe"]
+[ext_resource type="Texture2D" path="res://texturen/sumpf_farbe.jpg" id="tex_sumpf_farbe"]
+[ext_resource type="Material" path="res://material/mauer.tres" id="Material_mauer"]
+[ext_resource type="Material" path="res://material/hell.tres" id="Material_hell"]
+[ext_resource type="Material" path="res://material/basalt.tres" id="Material_basalt"]
+[ext_resource type="Material" path="res://material/holz.tres" id="Material_holz"]
+[ext_resource type="Material" path="res://material/eis.tres" id="Material_eis"]
+[ext_resource type="Material" path="res://material/kai.tres" id="Material_kai"]
+[ext_resource type="Material" path="res://material/boden.tres" id="Material_boden"]
+[ext_resource type="Material" path="res://material/pflaster.tres" id="Material_pflaster"]
+[ext_resource type="Material" path="res://material/bruchstein.tres" id="Material_bruchstein"]
+[ext_resource type="Material" path="res://material/dach.tres" id="Material_dach"]
+[ext_resource type="Material" path="res://material/dach_schiefer.tres" id="Material_dach_schiefer"]
+[ext_resource type="Material" path="res://material/stoff.tres" id="Material_stoff"]
+[ext_resource type="Material" path="res://material/metall.tres" id="Material_metall"]
+[ext_resource type="Material" path="res://material/fels.tres" id="Material_fels"]
 [ext_resource type="Script" path="res://szenen/welt/wasserdicht.gd" id="19_wasserdicht"]
+[ext_resource type="Script" path="res://szenen/welt/bewuchs.gd" id="26_bewuchs"]
 
 [sub_resource type="StandardMaterial3D" id="Material_flamme"]
 shading_mode = 0
 albedo_color = Color(1, 0.62, 0.18, 1)
 
 [sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
-sky_top_color = Color(0.32, 0.42, 0.56, 1)
-sky_horizon_color = Color(0.68, 0.68, 0.66, 1)
-ground_bottom_color = Color(0.12, 0.11, 0.1, 1)
-ground_horizon_color = Color(0.68, 0.68, 0.66, 1)
+sky_top_color = Color(0.22, 0.38, 0.62, 1)
+sky_horizon_color = Color(0.66, 0.7, 0.74, 1)
+sky_curve = 0.12
+sky_cover = ExtResource("25_wolken")
+sky_cover_modulate = Color(1, 1, 1, 0.9)
+ground_bottom_color = Color(0.1, 0.1, 0.1, 1)
+ground_horizon_color = Color(0.66, 0.7, 0.74, 1)
+sun_angle_max = 20.0
+sun_curve = 0.08
 
 [sub_resource type="Sky" id="Himmel"]
 sky_material = SubResource("Himmel_material")
@@ -40,10 +72,32 @@ sky_material = SubResource("Himmel_material")
 background_mode = 2
 sky = SubResource("Himmel")
 ambient_light_source = 3
-tonemap_mode = 2
+ambient_light_sky_contribution = 0.85
+reflected_light_source = 2
+tonemap_mode = 4
+tonemap_exposure = 1.05
+tonemap_white = 6.0
+ssao_enabled = true
+ssao_radius = 1.6
+ssao_intensity = 1.6
+ssao_power = 1.4
+glow_enabled = true
+glow_intensity = 0.35
+glow_strength = 0.9
+glow_bloom = 0.05
+glow_hdr_threshold = 1.1
 fog_enabled = true
-fog_light_color = Color(0.62, 0.64, 0.68, 1)
+fog_mode = 0
+fog_light_color = Color(0.62, 0.66, 0.72, 1)
+fog_sun_scatter = 0.25
 fog_density = 0.012
+fog_aerial_perspective = 0.35
+fog_sky_affect = 0.25
+fog_height = 0.0
+fog_height_density = 0.0015
+adjustment_enabled = true
+adjustment_saturation = 1.08
+adjustment_contrast = 1.04
 
 [sub_resource type="ShaderMaterial" id="Material_gelaende"]
 shader = ExtResource("8_gelaende_shader")
@@ -51,8 +105,18 @@ shader_parameter/maske = ExtResource("9_maske")
 shader_parameter/welt_ursprung = Vector2(-250.0, -200.0)
 shader_parameter/welt_groesse = Vector2(500.0, 400.0)
 shader_parameter/meeresspiegel = -1.0
-shader_parameter/sand = Vector3(0.24, 0.23, 0.16)
-shader_parameter/gras = Vector3(0.22, 0.26, 0.15)
+shader_parameter/gras_farbe = ExtResource("tex_gras_farbe")
+shader_parameter/gras_normal = ExtResource("tex_gras_normal")
+shader_parameter/erde_farbe = ExtResource("tex_erde_farbe")
+shader_parameter/erde_normal = ExtResource("tex_erde_normal")
+shader_parameter/fels_farbe = ExtResource("tex_fels_farbe")
+shader_parameter/fels_normal = ExtResource("tex_fels_normal")
+shader_parameter/sand_farbe = ExtResource("tex_sand_farbe")
+shader_parameter/schnee_farbe = ExtResource("tex_schnee_farbe")
+shader_parameter/sumpf_farbe = ExtResource("tex_sumpf_farbe")
+shader_parameter/sand = Vector3(0.55, 0.55, 0.45)
+shader_parameter/gras = Vector3(0.8, 0.82, 0.7)
+shader_parameter/gras_trocken = Vector3(0.75, 0.72, 0.55)
 
 [sub_resource type="ShaderMaterial" id="Material_wasser"]
 shader = ExtResource("10_wasser")
@@ -70,53 +134,17 @@ size = Vector2(600, 500)
 subdivide_width = 120
 subdivide_depth = 100
 
-[sub_resource type="StandardMaterial3D" id="Material_mauer"]
-albedo_color = Color(0.3, 0.29, 0.28, 1)
-roughness = 1.0
-
-[sub_resource type="StandardMaterial3D" id="Material_basalt"]
-albedo_color = Color(0.12, 0.12, 0.14, 1)
-roughness = 0.95
-
-[sub_resource type="StandardMaterial3D" id="Material_holz"]
-albedo_color = Color(0.36, 0.25, 0.16, 1)
-roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Material_eis"]
-albedo_color = Color(0.5, 0.53, 0.57, 1)
-roughness = 0.85
-
-[sub_resource type="StandardMaterial3D" id="Material_hell"]
-albedo_color = Color(0.55, 0.52, 0.47, 1)
-roughness = 1.0
-
 [sub_resource type="StandardMaterial3D" id="Material_feuer"]
 albedo_color = Color(0.85, 0.45, 0.15, 1)
 roughness = 0.6
-
-[sub_resource type="StandardMaterial3D" id="Material_kai"]
-albedo_color = Color(0.38, 0.36, 0.33, 1)
-roughness = 1.0
-
-[sub_resource type="StandardMaterial3D" id="Material_boden"]
-albedo_color = Color(0.42, 0.4, 0.37, 1)
-roughness = 1.0
 
 [sub_resource type="StandardMaterial3D" id="Material_wasser_becken"]
 albedo_color = Color(0.12, 0.22, 0.3, 1)
 roughness = 0.1
 
-[sub_resource type="StandardMaterial3D" id="Material_stoff"]
-albedo_color = Color(0.45, 0.12, 0.1, 1)
-roughness = 0.9
-
 [sub_resource type="StandardMaterial3D" id="Material_papier"]
 albedo_color = Color(0.82, 0.76, 0.6, 1)
 roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Material_metall"]
-albedo_color = Color(0.25, 0.25, 0.27, 1)
-roughness = 0.4
 
 [sub_resource type="BoxShape3D" id="Form_Fallgitter"]
 size = Vector3(0.4, 4.8, 4.4)
@@ -170,7 +198,15 @@ light_energy = 0.0
 [node name="Sonne" type="DirectionalLight3D" parent="." node_paths=PackedStringArray("umgebung", "mond")]
 transform = Transform3D(1, 0, 0, 0, 0.5, 0.8660254, 0, -0.8660254, 0.5, 0, 60, 0)
 shadow_enabled = true
-directional_shadow_max_distance = 250.0
+shadow_bias = 0.03
+shadow_normal_bias = 1.2
+shadow_blur = 1.5
+directional_shadow_mode = 2
+directional_shadow_split_1 = 0.06
+directional_shadow_split_2 = 0.18
+directional_shadow_split_3 = 0.45
+directional_shadow_blend_splits = true
+directional_shadow_max_distance = 320.0
 script = ExtResource("1_tageslicht")
 umgebung = NodePath("../Umgebung")
 mond = NodePath("../Mond")
@@ -191,157 +227,157 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.5, 0)
 transform = Transform3D(-1, 0, -1.2246e-16, 0, 1, 0, 1.2246e-16, 0, -1, -70, 4, 32)
 use_collision = true
 size = Vector3(13.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer2" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(-1, 0, -1.2246e-16, 0, 1, 0, 1.2246e-16, 0, -1, -82, 4, 32)
 use_collision = true
 size = Vector3(13.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer3" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, -88, 4, 24.6)
 use_collision = true
 size = Vector3(16.0, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer4" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, -88, 4, 9.8)
 use_collision = true
 size = Vector3(16.0, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer5" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, -88, 4, -5)
 use_collision = true
 size = Vector3(16.0, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer6" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, -88, 4, -19.8)
 use_collision = true
 size = Vector3(16.0, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer7" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, -88, 4, -34.6)
 use_collision = true
 size = Vector3(16.0, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer8" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, -80, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer9" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, -64, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer10" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, -48, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer11" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, -32, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer12" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, -16, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer13" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 0, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer14" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 16, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer15" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 32, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer16" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 48, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer17" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 64, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer18" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 80, 4, -42)
 use_collision = true
 size = Vector3(17.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer19" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 88, 4, -34.83)
 use_collision = true
 size = Vector3(15.53, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer20" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 88, 4, -20.5)
 use_collision = true
 size = Vector3(15.53, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer21" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 88, 4, -6.17)
 use_collision = true
 size = Vector3(14.33, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer22" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 88, 4, 11.74)
 use_collision = true
 size = Vector3(13.5, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer23" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 88, 4, 25.25)
 use_collision = true
 size = Vector3(14.7, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer24" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(-1, 0, -1.2246e-16, 0, 1, 0, 1.2246e-16, 0, -1, 81, 4, 32)
 use_collision = true
 size = Vector3(15.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer25" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(-1, 0, -1.2246e-16, 0, 1, 0, 1.2246e-16, 0, -1, 67, 4, 32)
 use_collision = true
 size = Vector3(15.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Mauer26" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(-1, 0, -1.2246e-16, 0, 1, 0, 1.2246e-16, 0, -1, 53, 4, 32)
 use_collision = true
 size = Vector3(15.2, 12, 2.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Wachturm27" type="CSGCylinder3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -88, 6, 32)
@@ -349,11 +385,14 @@ use_collision = true
 radius = 7
 height = 16
 sides = 8
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="SchildTurm27" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -88, 15, 32)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "27 · Wachturm"
 font_size = 36
@@ -365,11 +404,14 @@ use_collision = true
 radius = 7
 height = 16
 sides = 8
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="SchildTurm28" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -88, 15, -42)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "28 · Wachturm"
 font_size = 36
@@ -381,11 +423,14 @@ use_collision = true
 radius = 7
 height = 16
 sides = 8
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="SchildTurm29" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 88, 15, -42)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "29 · Wachturm"
 font_size = 36
@@ -397,11 +442,14 @@ use_collision = true
 radius = 7
 height = 16
 sides = 8
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="SchildTurm30" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 88, 15, 32)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "30 · Wachturm"
 font_size = 36
@@ -410,6 +458,9 @@ outline_size = 14
 [node name="SchildWehrgangNord" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3, -37)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "Offene Gänge (Wehrgänge)"
 font_size = 32
@@ -418,6 +469,9 @@ outline_size = 14
 [node name="SchildWehrgangWest" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -83, 3, -5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "Offene Gänge (Wehrgänge)"
 font_size = 32
@@ -426,6 +480,9 @@ outline_size = 14
 [node name="SchildWehrgangOst" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 84.5, 3, -5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "Offene Gänge (Wehrgänge)"
 font_size = 32
@@ -435,11 +492,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51, 3.5, 35)
 use_collision = true
 size = Vector3(26, 9, 14)
-material = SubResource("Material_hell")
+material = ExtResource("Material_hell")
 
 [node name="SchildKueche" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51, 10, 35)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "12 · Küche"
 font_size = 40
@@ -449,11 +509,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -28, 3, 35)
 use_collision = true
 size = Vector3(20, 8, 14)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="SchildVorratslager" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -28, 9, 35)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "13 · Vorratslager"
 font_size = 40
@@ -463,23 +526,26 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -15.5, 4, 35)
 use_collision = true
 size = Vector3(5, 10, 14)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="TorhausOstwand" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 5.5, 4, 35)
 use_collision = true
 size = Vector3(5, 10, 14)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Waffenlager" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 16, 3, 35)
 use_collision = true
 size = Vector3(16, 8, 14)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="SchildWaffenlager" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 16, 9, 35)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "15 · Waffenlager"
 font_size = 40
@@ -489,11 +555,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 35, 3, 35)
 use_collision = true
 size = Vector3(22, 8, 14)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="SchildSchmiede" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 35, 9, 35)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "16 · Schmiede"
 font_size = 40
@@ -508,7 +577,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, 6, 35)
 radius = 8
 height = 16
 sides = 12
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Durchgang" type="CSGBox3D" parent="Burg/Torhaus"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, 2.5, 35)
@@ -518,6 +587,9 @@ size = Vector3(4.4, 5, 18)
 [node name="SchildTorhaus" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, 17, 35)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "14 · Torhaus (Haupttor) · 17 Wachstube · 18 Kommandoraum"
 font_size = 36
@@ -534,19 +606,19 @@ text_geschlossen = "Das Fallgitter bleibt unten. Nach Ashenveil hinein kommen nu
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0, 0)
 
 size = Vector3(0.4, 4.8, 4.4)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Band0" type="CSGBox3D" parent="Burg/Fallgitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.22, -1.2, 0)
 
 size = Vector3(0.06, 0.15, 3.9600000000000004)
-material = SubResource("Material_metall")
+material = ExtResource("Material_metall")
 
 [node name="Band2" type="CSGBox3D" parent="Burg/Fallgitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.22, 1.2, 0)
 
 size = Vector3(0.06, 0.15, 3.9600000000000004)
-material = SubResource("Material_metall")
+material = ExtResource("Material_metall")
 
 [node name="Form" type="CollisionShape3D" parent="Burg/Fallgitter"]
 shape = SubResource("Form_Fallgitter")
@@ -555,11 +627,14 @@ shape = SubResource("Form_Fallgitter")
 transform = Transform3D(6.1232e-17, 2.6623e-19, -1, -0.0043478, 0.99999, 0, 0.99999, 0.0043478, 6.1232e-17, -5, -0.35, 54.499)
 use_collision = true
 size = Vector3(23.2, 0.6, 4.4)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="SchildZugbruecke" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, 3, 50)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "Zugbrücke mit Fallgitter (Haupteingang)"
 font_size = 36
@@ -573,7 +648,7 @@ use_collision = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 4.5, 0)
 
 size = Vector3(23, 9, 27)
-material = SubResource("Material_hell")
+material = ExtResource("Material_hell")
 
 [node name="Innen" type="CSGBox3D" parent="Burg/Reithalle"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 4.1, 0)
@@ -589,11 +664,14 @@ size = Vector3(1.8, 2.8, 2.2)
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.04, 0)
 
 size = Vector3(21.8, 0.08, 25.8)
-material = SubResource("Material_boden")
+material = ExtResource("Material_boden")
 
 [node name="SchildReithalle" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -65.5, 10.5, -22.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "1 · Große Reithalle"
 font_size = 40
@@ -612,7 +690,7 @@ use_collision = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3, 0)
 
 size = Vector3(12, 6, 47)
-material = SubResource("Material_hell")
+material = ExtResource("Material_hell")
 
 [node name="Innen" type="CSGBox3D" parent="Burg/Marstall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 2.6, 0)
@@ -633,11 +711,14 @@ size = Vector3(1.8, 2.8, 2.2)
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0.04, 0)
 
 size = Vector3(10.8, 0.08, 45.8)
-material = SubResource("Material_boden")
+material = ExtResource("Material_boden")
 
 [node name="SchildMarstall" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -48, 7.5, -12.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "2 · Marstall"
 font_size = 40
@@ -655,43 +736,43 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, -33)
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 1.35, 0)
 use_collision = true
 size = Vector3(2.1, 0.9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Hals" type="CSGBox3D" parent="Burg/Pferd0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.15, 1.95, 0)
 
 size = Vector3(0.5, 0.9, 0.4)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Kopf" type="CSGBox3D" parent="Burg/Pferd0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.5, 2.35, 0)
 
 size = Vector3(0.7, 0.35, 0.35)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein0" type="CSGBox3D" parent="Burg/Pferd0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein1" type="CSGBox3D" parent="Burg/Pferd0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein2" type="CSGBox3D" parent="Burg/Pferd0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein3" type="CSGBox3D" parent="Burg/Pferd0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pferd1" type="Node3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, -27)
@@ -700,43 +781,43 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, -27)
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 1.35, 0)
 use_collision = true
 size = Vector3(2.1, 0.9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Hals" type="CSGBox3D" parent="Burg/Pferd1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.15, 1.95, 0)
 
 size = Vector3(0.5, 0.9, 0.4)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Kopf" type="CSGBox3D" parent="Burg/Pferd1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.5, 2.35, 0)
 
 size = Vector3(0.7, 0.35, 0.35)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein0" type="CSGBox3D" parent="Burg/Pferd1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein1" type="CSGBox3D" parent="Burg/Pferd1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein2" type="CSGBox3D" parent="Burg/Pferd1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein3" type="CSGBox3D" parent="Burg/Pferd1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pferd2" type="Node3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, -14)
@@ -745,43 +826,43 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, -14)
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 1.35, 0)
 use_collision = true
 size = Vector3(2.1, 0.9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Hals" type="CSGBox3D" parent="Burg/Pferd2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.15, 1.95, 0)
 
 size = Vector3(0.5, 0.9, 0.4)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Kopf" type="CSGBox3D" parent="Burg/Pferd2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.5, 2.35, 0)
 
 size = Vector3(0.7, 0.35, 0.35)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein0" type="CSGBox3D" parent="Burg/Pferd2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein1" type="CSGBox3D" parent="Burg/Pferd2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein2" type="CSGBox3D" parent="Burg/Pferd2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein3" type="CSGBox3D" parent="Burg/Pferd2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pferd3" type="Node3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, -8)
@@ -790,43 +871,43 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, -8)
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 1.35, 0)
 use_collision = true
 size = Vector3(2.1, 0.9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Hals" type="CSGBox3D" parent="Burg/Pferd3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.15, 1.95, 0)
 
 size = Vector3(0.5, 0.9, 0.4)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Kopf" type="CSGBox3D" parent="Burg/Pferd3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.5, 2.35, 0)
 
 size = Vector3(0.7, 0.35, 0.35)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein0" type="CSGBox3D" parent="Burg/Pferd3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein1" type="CSGBox3D" parent="Burg/Pferd3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein2" type="CSGBox3D" parent="Burg/Pferd3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein3" type="CSGBox3D" parent="Burg/Pferd3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pferd4" type="Node3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, -2)
@@ -835,43 +916,43 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, -2)
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 1.35, 0)
 use_collision = true
 size = Vector3(2.1, 0.9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Hals" type="CSGBox3D" parent="Burg/Pferd4"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.15, 1.95, 0)
 
 size = Vector3(0.5, 0.9, 0.4)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Kopf" type="CSGBox3D" parent="Burg/Pferd4"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.5, 2.35, 0)
 
 size = Vector3(0.7, 0.35, 0.35)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein0" type="CSGBox3D" parent="Burg/Pferd4"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein1" type="CSGBox3D" parent="Burg/Pferd4"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein2" type="CSGBox3D" parent="Burg/Pferd4"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein3" type="CSGBox3D" parent="Burg/Pferd4"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pferd5" type="Node3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, 4)
@@ -880,43 +961,43 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 1.35, 0)
 use_collision = true
 size = Vector3(2.1, 0.9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Hals" type="CSGBox3D" parent="Burg/Pferd5"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.15, 1.95, 0)
 
 size = Vector3(0.5, 0.9, 0.4)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Kopf" type="CSGBox3D" parent="Burg/Pferd5"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.5, 2.35, 0)
 
 size = Vector3(0.7, 0.35, 0.35)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein0" type="CSGBox3D" parent="Burg/Pferd5"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein1" type="CSGBox3D" parent="Burg/Pferd5"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein2" type="CSGBox3D" parent="Burg/Pferd5"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein3" type="CSGBox3D" parent="Burg/Pferd5"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pferd6" type="Node3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, 8)
@@ -925,53 +1006,56 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -51.5, 0, 8)
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 1.35, 0)
 use_collision = true
 size = Vector3(2.1, 0.9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Hals" type="CSGBox3D" parent="Burg/Pferd6"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.15, 1.95, 0)
 
 size = Vector3(0.5, 0.9, 0.4)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Kopf" type="CSGBox3D" parent="Burg/Pferd6"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.5, 2.35, 0)
 
 size = Vector3(0.7, 0.35, 0.35)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein0" type="CSGBox3D" parent="Burg/Pferd6"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein1" type="CSGBox3D" parent="Burg/Pferd6"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein2" type="CSGBox3D" parent="Burg/Pferd6"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein3" type="CSGBox3D" parent="Burg/Pferd6"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Futterkammer1" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -71.5, 2, -4)
 use_collision = true
 size = Vector3(11, 6, 8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="SchildFutterkammer1" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -71.5, 7, -4)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "3 · Futterkammer I"
 font_size = 40
@@ -981,11 +1065,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -60, 2, -4)
 use_collision = true
 size = Vector3(12, 6, 8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="SchildFutterkammer2" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -60, 7, -4)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "4 · Futterkammer II"
 font_size = 40
@@ -995,11 +1082,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -65.5, 2, 5.5)
 use_collision = true
 size = Vector3(23, 6, 9)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="SchildFutterkammer3" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -65.5, 7, 5.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "5 · Futterkammer III"
 font_size = 40
@@ -1009,11 +1099,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -61, 3, 16)
 use_collision = true
 size = Vector3(28, 8, 10)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="SchildHeuboden" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -61, 9, 16)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "6 · Heuboden"
 font_size = 40
@@ -1023,11 +1116,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -31, 2.5, -32.5)
 use_collision = true
 size = Vector3(14, 7, 9)
-material = SubResource("Material_hell")
+material = ExtResource("Material_hell")
 
 [node name="SchildSattlerei" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -31, 8, -32.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "7 · Sattlerei"
 font_size = 40
@@ -1037,11 +1133,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -17, 2.5, -32.5)
 use_collision = true
 size = Vector3(14, 7, 9)
-material = SubResource("Material_hell")
+material = ExtResource("Material_hell")
 
 [node name="SchildWaffenkammer" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -17, 8, -32.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "8 · Waffenkammer (leicht)"
 font_size = 40
@@ -1051,11 +1150,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -3, 2.5, -32.5)
 use_collision = true
 size = Vector3(14, 7, 9)
-material = SubResource("Material_hell")
+material = ExtResource("Material_hell")
 
 [node name="SchildZeugkammer" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -3, 8, -32.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "9 · Zeugkammer"
 font_size = 40
@@ -1065,11 +1167,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 22.5, 2.5, -32.5)
 use_collision = true
 size = Vector3(17, 7, 9)
-material = SubResource("Material_hell")
+material = ExtResource("Material_hell")
 
 [node name="SchildWaffenschmiede" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 22.5, 8, -32.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "19 · Waffenschmiede / Werkstatt"
 font_size = 40
@@ -1079,11 +1184,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 44, 3.5, -23.5)
 use_collision = true
 size = Vector3(16, 9, 23)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="SchildErweiterteRuestkammern" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 44, 10, -23.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "20 · Erweiterte Rüstkammern"
 font_size = 40
@@ -1093,11 +1201,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 73, 2.5, -25.5)
 use_collision = true
 size = Vector3(14, 7, 9)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="SchildSchmiedeOst" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 73, 8, -25.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "21 · Schmiede (Ost)"
 font_size = 40
@@ -1113,11 +1224,14 @@ material = SubResource("Material_feuer")
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 58, 3.5, -5.5)
 use_collision = true
 size = Vector3(46, 9, 29)
-material = SubResource("Material_hell")
+material = ExtResource("Material_hell")
 
 [node name="SchildMannschaftsunterkuenfte" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 58, 10, -5.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "22 · Mannschaftsunterkünfte"
 font_size = 40
@@ -1127,11 +1241,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 58, 4, 15.5)
 use_collision = true
 size = Vector3(46, 10, 13)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="SchildKernspeicher" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 58, 11, 15.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "23 · Kernspeicher (Getreide)"
 font_size = 40
@@ -1141,13 +1258,13 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 88, 5, -1)
 use_collision = true
 size = Vector3(4.5, 14, 4.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="PforteTurm1" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 88, 5, 7)
 use_collision = true
 size = Vector3(4.5, 14, 4.5)
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Nebeneingang" type="StaticBody3D" parent="Burg"]
 transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 90.4, 2.25, 3)
@@ -1160,19 +1277,19 @@ text_geschlossen = "Der Nebeneingang ist verriegelt. Seit dem Verrat von 1065 ö
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0, 0)
 
 size = Vector3(0.4, 4.5, 4.0)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Band0" type="CSGBox3D" parent="Burg/Nebeneingang"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.22, -1.125, 0)
 
 size = Vector3(0.06, 0.15, 3.6)
-material = SubResource("Material_metall")
+material = ExtResource("Material_metall")
 
 [node name="Band2" type="CSGBox3D" parent="Burg/Nebeneingang"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.22, 1.125, 0)
 
 size = Vector3(0.06, 0.15, 3.6)
-material = SubResource("Material_metall")
+material = ExtResource("Material_metall")
 
 [node name="Form" type="CollisionShape3D" parent="Burg/Nebeneingang"]
 shape = SubResource("Form_Nebeneingang")
@@ -1181,11 +1298,14 @@ shape = SubResource("Form_Nebeneingang")
 transform = Transform3D(0.99996, 0.009459, 0, -0.009459, 0.99996, 0, 0, 0, 1, 101.9, -0.405, 3)
 use_collision = true
 size = Vector3(22.4, 0.6, 3.6)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="SchildNebeneingang" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 96, 4, 3)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "Zugbrücke (Nebeneingang)"
 font_size = 36
@@ -1195,11 +1315,14 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5.5, 2.5, 18.5)
 use_collision = true
 size = Vector3(51, 7, 7)
-material = SubResource("Material_hell")
+material = ExtResource("Material_hell")
 
 [node name="SchildUntereRuestkammern" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5.5, 8, 18.5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "11 · Untere Rüstkammern"
 font_size = 40
@@ -1209,131 +1332,134 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -33, 4.5, -20)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten7_46" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -33, 4.5, 16)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten16_10" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -24, 4.5, -20)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten16_46" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -24, 4.5, 16)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten25_10" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -15, 4.5, -20)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten25_46" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -15, 4.5, 16)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten34_10" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 4.5, -20)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten34_46" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 4.5, 16)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten43_10" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 3, 4.5, -20)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten43_46" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 3, 4.5, 16)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten52_10" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 12, 4.5, -20)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten52_46" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 12, 4.5, 16)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten61_10" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 21, 4.5, -20)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten61_46" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 21, 4.5, 16)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten7_19" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -33, 4.5, -11)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten61_19" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 21, 4.5, -11)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten7_28" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -33, 4.5, -2)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten61_28" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 21, 4.5, -2)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten7_37" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -33, 4.5, 7)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Pfosten61_37" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 21, 4.5, 7)
 use_collision = true
 size = Vector3(0.8, 9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Hofdach" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 9.3, -2)
 
 size = Vector3(56, 0.6, 38)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="SchildInnenhof" type="Label3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 7.5, -16)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "10 · Überdachter Großer Innenhof"
 font_size = 40
@@ -1352,7 +1478,7 @@ use_collision = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -15, -0.9, -2.5)
 
 size = Vector3(40, 1.8, 20)
-material = SubResource("Material_boden")
+material = ExtResource("Material_boden")
 
 [node name="Loch" type="CSGBox3D" parent="Burg/Hofboden"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -24.75, -0.9, -3)
@@ -1363,19 +1489,19 @@ size = Vector3(10.9, 4, 3.5)
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -24.75, 0.55, -4.9)
 use_collision = true
 size = Vector3(11.2, 1.1, 0.3)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="GelaenderS" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -24.75, 0.55, -1.1)
 use_collision = true
 size = Vector3(11.2, 1.1, 0.3)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="GelaenderO" type="CSGBox3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -19.15, 0.55, -3)
 use_collision = true
 size = Vector3(0.3, 1.1, 4.1)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Brunnen" type="CSGCylinder3D" parent="Burg"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -6, 0.5, 4)
@@ -1383,7 +1509,7 @@ use_collision = true
 radius = 1.3
 height = 1.0
 sides = 12
-material = SubResource("Material_mauer")
+material = ExtResource("Material_mauer")
 
 [node name="Unterbau" type="Node3D" parent="Burg"]
 
@@ -1391,37 +1517,37 @@ material = SubResource("Material_mauer")
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -15, -7.4, -2.5)
 use_collision = true
 size = Vector3(40, 0.8, 20)
-material = SubResource("Material_boden")
+material = ExtResource("Material_boden")
 
 [node name="WandNordWest" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -21.125, -4.4, -12.25)
 use_collision = true
 size = Vector3(27.75, 5.2, 0.5)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="WandNordOst" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.875, -4.4, -12.25)
 use_collision = true
 size = Vector3(8.25, 5.2, 0.5)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="WandSued" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -15, -4.4, 7.25)
 use_collision = true
 size = Vector3(40, 5.2, 0.5)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="WandWest" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -34.75, -4.4, -2.5)
 use_collision = true
 size = Vector3(0.5, 5.2, 20)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="WandOst" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 4.75, -4.4, -2.5)
 use_collision = true
 size = Vector3(0.5, 5.2, 20)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Trennwand" type="CSGCombiner3D" parent="Burg/Unterbau"]
 use_collision = true
@@ -1430,7 +1556,7 @@ use_collision = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -12, -4.4, -2.5)
 
 size = Vector3(0.5, 5.2, 19.5)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Tuer" type="CSGBox3D" parent="Burg/Unterbau/Trennwand"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -12, -5.5, -3)
@@ -1441,55 +1567,55 @@ size = Vector3(1, 3, 3)
 transform = Transform3D(0.92848, 0.37139, 0, -0.37139, 0.92848, 0, 0, 0, 1, -21.343, -3.732, -3)
 use_collision = true
 size = Vector3(19.05, 0.5, 3.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bank0_0" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -7, -6.75, -8)
 use_collision = true
 size = Vector3(0.6, 0.5, 2.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bank0_1" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -7, -6.75, -5)
 use_collision = true
 size = Vector3(0.6, 0.5, 2.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bank0_2" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -7, -6.75, -1)
 use_collision = true
 size = Vector3(0.6, 0.5, 2.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bank0_3" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -7, -6.75, 2)
 use_collision = true
 size = Vector3(0.6, 0.5, 2.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bank1_0" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -4, -6.75, -8)
 use_collision = true
 size = Vector3(0.6, 0.5, 2.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bank1_1" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -4, -6.75, -5)
 use_collision = true
 size = Vector3(0.6, 0.5, 2.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bank1_2" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -4, -6.75, -1)
 use_collision = true
 size = Vector3(0.6, 0.5, 2.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bank1_3" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -4, -6.75, 2)
 use_collision = true
 size = Vector3(0.6, 0.5, 2.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Gedenkstein" type="StaticBody3D" parent="Burg/Unterbau"]
 transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, 3.6, -6.1, -3)
@@ -1501,7 +1627,7 @@ dialog_id = "gedenkstein_ashenveil"
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 0, 0)
 
 size = Vector3(0.6, 1.8, 1.4)
-material = SubResource("Material_hell")
+material = ExtResource("Material_hell")
 
 [node name="Form" type="CollisionShape3D" parent="Burg/Unterbau/Gedenkstein"]
 shape = SubResource("Form_gedenkstein")
@@ -1519,6 +1645,9 @@ omni_range = 12
 [node name="SchildKapelle" type="Label3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -3, -2.8, 5)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "A · Unterirdische Kapelle (der Stille)"
 font_size = 32
@@ -1528,121 +1657,121 @@ outline_size = 14
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.1, -14)
 use_collision = true
 size = Vector3(10, 4.2, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke16" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.1, -18)
 use_collision = true
 size = Vector3(10, 4.2, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke20" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.1, -22)
 use_collision = true
 size = Vector3(10, 4.2, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke24" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.1, -26)
 use_collision = true
 size = Vector3(10, 4.2, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke28" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.1, -30)
 use_collision = true
 size = Vector3(10, 4.2, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke32" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.1, -34)
 use_collision = true
 size = Vector3(10, 4.2, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke36" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.1, -38)
 use_collision = true
 size = Vector3(10, 4.2, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke40" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.1, -42)
 use_collision = true
 size = Vector3(10, 4.2, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke44" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.1, -46)
 use_collision = true
 size = Vector3(10, 4.2, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke48" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.1, -50)
 use_collision = true
 size = Vector3(10, 4.2, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke52" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -3.3372, -54)
 use_collision = true
 size = Vector3(10, 1.73, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke56" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -3.85, -58)
 use_collision = true
 size = Vector3(10, 0.7, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke60" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -3.85, -62)
 use_collision = true
 size = Vector3(10, 0.7, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke64" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -3.1648, -66)
 use_collision = true
 size = Vector3(10, 2.07, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke68" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -3.114, -70)
 use_collision = true
 size = Vector3(10, 2.17, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke72" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -3.0035, -74)
 use_collision = true
 size = Vector3(10, 2.39, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="Decke76" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -2.9238, -78)
 use_collision = true
 size = Vector3(10, 2.55, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="TunnelBoden" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5, -7.4, -46.25)
 use_collision = true
 size = Vector3(10, 0.8, 67.5)
-material = SubResource("Material_boden")
+material = ExtResource("Material_boden")
 
 [node name="TunnelWandWest" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -7.25, -5.6, -46.25)
 use_collision = true
 size = Vector3(0.5, 2.8, 67.5)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="TunnelWandOst" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -3.25, -5.6, -46.25)
 use_collision = true
 size = Vector3(0.5, 2.8, 67.5)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="LichtTunnel0" type="OmniLight3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5.25, -4.6, -25)
@@ -1662,6 +1791,9 @@ omni_range = 9
 [node name="SchildTunnel" type="Label3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5.25, -5, -16)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "B · Fluchttunnel (zu den Sümpfen)"
 font_size = 28
@@ -1671,47 +1803,50 @@ outline_size = 14
 transform = Transform3D(5.7973e-17, -1.9711e-17, 1, 0.3219, 0.94677, 0, -0.94677, 0.3219, 6.1232e-17, -5.25, -3.837, -90.08)
 use_collision = true
 size = Vector3(21.32, 0.5, 3.0)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Absatz" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5.25, -0.6, -102)
 use_collision = true
 size = Vector3(4, 0.8, 4)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="AusstiegWandWest" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -7.25, -3.1, -90)
 use_collision = true
 size = Vector3(0.5, 7.8, 20)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="AusstiegWandOst" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -3.25, -3.1, -90)
 use_collision = true
 size = Vector3(0.5, 7.8, 20)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="AusstiegSturz" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5.25, 2.4, -99.7)
 use_collision = true
 size = Vector3(5, 0.6, 1.2)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="AusstiegPfosten0" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -7.45, 1, -99.7)
 use_collision = true
 size = Vector3(0.6, 2.4, 1.2)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="AusstiegPfosten2" type="CSGBox3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -3.05, 1, -99.7)
 use_collision = true
 size = Vector3(0.6, 2.4, 1.2)
-material = SubResource("Material_basalt")
+material = ExtResource("Material_basalt")
 
 [node name="SchildAusstieg" type="Label3D" parent="Burg/Unterbau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5.25, 3.8, -100)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "Verdeckter Ausgang"
 font_size = 32
@@ -1743,43 +1878,43 @@ transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, -9.6, 0.43
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 1.35, 0)
 use_collision = true
 size = Vector3(2.1, 0.9, 0.8)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Hals" type="CSGBox3D" parent="Personen/PferdReiterin"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.15, 1.95, 0)
 
 size = Vector3(0.5, 0.9, 0.4)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Kopf" type="CSGBox3D" parent="Personen/PferdReiterin"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.5, 2.35, 0)
 
 size = Vector3(0.7, 0.35, 0.35)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein0" type="CSGBox3D" parent="Personen/PferdReiterin"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein1" type="CSGBox3D" parent="Personen/PferdReiterin"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein2" type="CSGBox3D" parent="Personen/PferdReiterin"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, -0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="Bein3" type="CSGBox3D" parent="Personen/PferdReiterin"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.8, 0.45, 0.28)
 
 size = Vector3(0.2, 0.9, 0.2)
-material = SubResource("Material_holz")
+material = ExtResource("Material_holz")
 
 [node name="TorwacheSued" parent="Personen" instance=ExtResource("4_person")]
 transform = Transform3D(-1, 0, 1.2246e-16, 0, 1, 0, -1.2246e-16, 0, -1, -3.4, 0.48, 48)
@@ -1855,6 +1990,15 @@ untertitel = "Zu den verborgenen Ausgängen in den Sümpfen."
 
 [node name="Form" type="CollisionShape3D" parent="Orte/Ort5"]
 shape = SubResource("Form_ort5")
+
+[node name="Bewuchs" type="Node3D" parent="."]
+script = ExtResource("26_bewuchs")
+frei_vielecke = Array[PackedVector2Array]([PackedVector2Array(-105, -58, 105, -58, 105, 52, -105, 52)])
+wald_anteil = 0.08
+offen_dichte = 3.0
+nadel_anteil = 0.3
+busch_dichte = 14.0
+laub_farbe = Color(0.85, 0.85, 0.7, 1)
 
 [node name="Sprungpunkte" type="Node3D" parent="."]
 
@@ -1938,6 +2082,9 @@ shape = SubResource("Form_ZurSuedstrasse")
 [node name="SchildKuestenweg" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 4, 9.48, 192)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "Küstenweg → Drachenstein 70 km"
 font_size = 48
@@ -1946,6 +2093,9 @@ outline_size = 14
 [node name="SchildSuedstrasse" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 214, 4.96, -2)
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "Südstraße → Riverlock 185 km"
 font_size = 48

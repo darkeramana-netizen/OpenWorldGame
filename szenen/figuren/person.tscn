@@ -1,20 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://szenen/figuren/person.gd" id="1_person"]
+[ext_resource type="Script" path="res://szenen/figuren/figur.gd" id="2_figur"]
 
 [sub_resource type="CapsuleShape3D" id="Form_koerper"]
 radius = 0.35
 height = 1.8
-
-[sub_resource type="CapsuleMesh" id="Mesh_koerper"]
-radius = 0.35
-height = 1.8
-
-[sub_resource type="BoxMesh" id="Mesh_kordel"]
-size = Vector3(0.5, 0.06, 0.42)
-
-[sub_resource type="BoxMesh" id="Mesh_blick"]
-size = Vector3(0.3, 0.12, 0.2)
 
 [node name="Person" type="StaticBody3D"]
 script = ExtResource("1_person")
@@ -23,21 +14,15 @@ script = ExtResource("1_person")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("Form_koerper")
 
-[node name="Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("Mesh_koerper")
-
-[node name="Kordel" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.42, 0)
-mesh = SubResource("Mesh_kordel")
-
-[node name="Blick" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.3)
-mesh = SubResource("Mesh_blick")
+[node name="Figur" type="Node3D" parent="."]
+script = ExtResource("2_figur")
 
 [node name="Name" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.15, 0)
 billboard = 1
+visibility_range_end = 14.0
+visibility_range_end_margin = 3.0
+visibility_range_fade_mode = 1
 pixel_size = 0.004
 text = "Name"
 font_size = 40

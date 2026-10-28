@@ -2,7 +2,7 @@
 
 Jedes Regionsskript führt diese Datei mit exec() aus und schreibt am Ende mit schreibe() die Szene.
 """
-import json, math, random
+import json, math, os, random
 from pathlib import Path
 import numpy as np
 
@@ -60,12 +60,15 @@ material = SubResource("{mat}")""")
 def schild(name, parent, x, y, z, text, groesse=64):
     N(name, "Label3D", parent, f"""{T(x,y,z)}
 billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
 pixel_size = 0.02
 text = "{text}"
 font_size = {groesse}
 outline_size = 14""")
 
-def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0, sichtbar_wenn="", ablauf=None, tempo=None):
+def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0, sichtbar_wenn="", ablauf=None, tempo=None, groesse=None):
     """ablauf: {abschnitt: (punkte, zusätze)} mit punkte = [(x, y, z), ...] und zusätze z. B. ["weg"],
     ["runde"] oder ["blick=180"] (siehe person.gd, tagesablauf)."""
     zusatz = f'\nsichtbar_wenn = "{sichtbar_wenn}"' if sichtbar_wenn else ""
@@ -77,6 +80,8 @@ def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0, sic
         zusatz += "\ntagesablauf = PackedStringArray(" + ", ".join(zeilen) + ")"
     if tempo:
         zusatz += f"\ntempo = {tempo}"
+    if groesse:
+        zusatz += f"\ngroesse = {groesse}"
     N(name, None, parent, f"""{T(x,y,z,gier)}
 anzeige_name = "{anzeige}"
 dialog_id = "{dialog}"
@@ -123,8 +128,55 @@ def bereich(id_, sx, sy, sz):
     S(f'''[sub_resource type="BoxShape3D" id="{id_}"]
 size = Vector3({sx}, {sy}, {sz})''')
 
+GELAENDE_TEXTUREN = [("gras", "farbe"), ("gras", "normal"), ("erde", "farbe"), ("erde", "normal"), ("fels", "farbe"),
+                     ("fels", "normal"), ("sand", "farbe"), ("schnee", "farbe"), ("sumpf", "farbe"),
+                     ("pflaster", "farbe"), ("pflaster", "normal")]
+
+def gelaende_pflaster(vielecke):
+    """Trägt gepflasterte Flächen nachträglich in das Geländematerial ein (nach grundgeruest)."""
+    for i, eintrag in enumerate(sub):
+        if 'id="Material_gelaende"' in eintrag:
+            sub[i] = eintrag + pflaster_parameter(vielecke)
+
+def pflaster_parameter(vielecke):
+    """Gepflasterte Flächen für den Geländeshader (bis zu vier Vielecke, zusammen höchstens 64 Punkte)."""
+    punkte = [p for v in vielecke for p in v]
+    assert len(vielecke) <= 4 and len(punkte) <= 64
+    laengen = [len(v) for v in vielecke] + [0] * (4 - len(vielecke))
+    return ("\nshader_parameter/pflaster_punkte = PackedVector2Array(" + ", ".join(f"{x:.5g}, {z:.5g}" for x, z in punkte) + ")"
+            + "\nshader_parameter/pflaster_laengen = PackedInt32Array(" + ", ".join(map(str, laengen)) + ")")
+
+TEXTUR_MATERIALIEN = ["mauer", "hell", "basalt", "holz", "eis", "kai", "boden", "pflaster", "bruchstein",
+                      "dach", "dach_schiefer", "stoff", "metall", "fels"]
+
+def bewuchs(frei_rechtecke=(), frei_vielecke=(), frei_kreise=(), feste_baeume=(), **werte):
+    """Bäume, Büsche, Felsen und Gras (szenen/welt/bewuchs.gd). frei_rechtecke: (Mitte x, Mitte z, Breite, Tiefe);
+    frei_vielecke: Listen von (x, z); frei_kreise: (x, z, Radius); feste_baeume: (x, y, z, Größe).
+    werte: weitere Eigenschaften, z. B. wald_anteil=0.3, laub_farbe="Color(0.8, 0.8, 0.6, 1)"."""
+    E("Script", "res://szenen/welt/bewuchs.gd", "26_bewuchs")
+    vielecke = [[(x - sx / 2, z - sz / 2), (x + sx / 2, z - sz / 2), (x + sx / 2, z + sz / 2), (x - sx / 2, z + sz / 2)]
+                for x, z, sx, sz in frei_rechtecke] + [list(v) for v in frei_vielecke]
+    zeilen = ['script = ExtResource("26_bewuchs")']
+    if vielecke:
+        zeilen.append("frei_vielecke = Array[PackedVector2Array]([" + ", ".join(
+            "PackedVector2Array(" + ", ".join(f"{x:.5g}, {z:.5g}" for x, z in v) + ")" for v in vielecke) + "])")
+    if frei_kreise:
+        zeilen.append("frei_kreise = PackedVector3Array(" + ", ".join(f"{x:.5g}, {z:.5g}, {r:.5g}" for x, z, r in frei_kreise) + ")")
+    if feste_baeume:
+        zeilen.append("feste_baeume = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {s:.3g}" for x, y, z, s in feste_baeume) + ")")
+    zeilen += [f"{k} = {v}" for k, v in werte.items()]
+    N("Bewuchs", "Node3D", ".", "\n".join(zeilen))
+
 def schreibe(szene):
     """Schreibt die gesammelte Szene nach szenen/welt/<szene>."""
+    for liste in (knoten, sub):
+        for i, k in enumerate(liste):
+            for name in TEXTUR_MATERIALIEN:
+                k = k.replace(f'SubResource("Material_{name}")', f'ExtResource("Material_{name}")')
+            liste[i] = k
+    if os.environ.get("BAU_NUR_PRUEFEN"):
+        print(szene, "– Knoten:", len(knoten), "(nicht geschrieben)")
+        return
     text = f'[gd_scene load_steps={len(ext)+len(sub)+1} format=3]\n\n' + "\n".join(ext) + "\n\n" + "\n\n".join(sub) + "\n\n" + "\n\n".join(knoten) + "\n"
     open(REPO / "szenen" / "welt" / szene, "w", encoding="utf-8").write(text)
     print(szene, "– Knoten:", len(knoten))
@@ -240,28 +292,59 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     shading_mode = 0
     albedo_color = Color(1, 0.62, 0.18, 1)''')
 
+    E("Texture2D", "res://texturen/wolken.png", "25_wolken")
     S('''[sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
-    sky_top_color = Color(0.32, 0.42, 0.56, 1)
-    sky_horizon_color = Color(0.68, 0.68, 0.66, 1)
-    ground_bottom_color = Color(0.12, 0.11, 0.1, 1)
-    ground_horizon_color = Color(0.68, 0.68, 0.66, 1)''')
+    sky_top_color = Color(0.22, 0.38, 0.62, 1)
+    sky_horizon_color = Color(0.66, 0.7, 0.74, 1)
+    sky_curve = 0.12
+    sky_cover = ExtResource("25_wolken")
+    sky_cover_modulate = Color(1, 1, 1, 0.9)
+    ground_bottom_color = Color(0.1, 0.1, 0.1, 1)
+    ground_horizon_color = Color(0.66, 0.7, 0.74, 1)
+    sun_angle_max = 20.0
+    sun_curve = 0.08''')
     S('''[sub_resource type="Sky" id="Himmel"]
     sky_material = SubResource("Himmel_material")''')
     S(f'''[sub_resource type="Environment" id="Umgebung"]
     background_mode = 2
     sky = SubResource("Himmel")
     ambient_light_source = 3
-    tonemap_mode = 2
+    ambient_light_sky_contribution = 0.85
+    reflected_light_source = 2
+    tonemap_mode = 4
+    tonemap_exposure = 1.05
+    tonemap_white = 6.0
+    ssao_enabled = true
+    ssao_radius = 1.6
+    ssao_intensity = 1.6
+    ssao_power = 1.4
+    glow_enabled = true
+    glow_intensity = 0.35
+    glow_strength = 0.9
+    glow_bloom = 0.05
+    glow_hdr_threshold = 1.1
     fog_enabled = true
-    fog_light_color = Color(0.62, 0.64, 0.68, 1)
-    fog_density = {nebel}''')
+    fog_mode = 0
+    fog_light_color = Color(0.62, 0.66, 0.72, 1)
+    fog_sun_scatter = 0.25
+    fog_density = {nebel}
+    fog_aerial_perspective = 0.35
+    fog_sky_affect = 0.25
+    fog_height = 0.0
+    fog_height_density = 0.0015
+    adjustment_enabled = true
+    adjustment_saturation = 1.08
+    adjustment_contrast = 1.04''')
     groesse = ((HOEHEN["breite"] - 1) * HOEHEN["abstand"], (HOEHEN["tiefe"] - 1) * HOEHEN["abstand"])
+    for t, k in GELAENDE_TEXTUREN:
+        E("Texture2D", f"res://texturen/{t}_{k}.jpg", f"tex_{t}_{k}")
+    texturen = "".join(f'\nshader_parameter/{t}_{k} = ExtResource("tex_{t}_{k}")' for t, k in GELAENDE_TEXTUREN)
     S(f'''[sub_resource type="ShaderMaterial" id="Material_gelaende"]
     shader = ExtResource("8_gelaende_shader")
     shader_parameter/maske = ExtResource("9_maske")
     shader_parameter/welt_ursprung = Vector2({HOEHEN["ursprung_x"]}, {HOEHEN["ursprung_z"]})
     shader_parameter/welt_groesse = Vector2({groesse[0]}, {groesse[1]})
-    shader_parameter/meeresspiegel = {HOEHEN["meeresspiegel"]}{gelaende_parameter}''')
+    shader_parameter/meeresspiegel = {HOEHEN["meeresspiegel"]}{texturen}{gelaende_parameter}''')
     S(f'''[sub_resource type="ShaderMaterial" id="Material_wasser"]
     shader = ExtResource("10_wasser"){wasser_parameter}''')
     S(f'''[sub_resource type="PlaneMesh" id="Mesh_meer"]
@@ -269,12 +352,12 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     size = Vector2({wasser_groesse[0]}, {wasser_groesse[1]})
     subdivide_width = 120
     subdivide_depth = 100''')
-    for name, farbe, rau in [("Material_mauer", "0.3, 0.29, 0.28", 1.0), ("Material_basalt", "0.12, 0.12, 0.14", 0.95),
-                             ("Material_holz", "0.36, 0.25, 0.16", 0.9), ("Material_eis", "0.5, 0.53, 0.57", 0.85),
-                             ("Material_hell", "0.55, 0.52, 0.47", 1.0), ("Material_feuer", "0.85, 0.45, 0.15", 0.6),
-                             ("Material_kai", "0.38, 0.36, 0.33", 1.0), ("Material_boden", "0.42, 0.4, 0.37", 1.0),
-                             ("Material_wasser_becken", "0.12, 0.22, 0.3", 0.1), ("Material_stoff", "0.45, 0.12, 0.1", 0.9),
-                             ("Material_papier", "0.82, 0.76, 0.6", 0.9), ("Material_metall", "0.25, 0.25, 0.27", 0.4)]:
+    # Texturierte Materialien aus material/ (werkzeuge/texturen_erzeugen.py); in der Szene als ExtResource.
+    for name in TEXTUR_MATERIALIEN:
+        E("Material", f"res://material/{name}.tres", f"Material_{name}")
+    for name, farbe, rau in [("Material_feuer", "0.85, 0.45, 0.15", 0.6),
+                             ("Material_wasser_becken", "0.12, 0.22, 0.3", 0.1),
+                             ("Material_papier", "0.82, 0.76, 0.6", 0.9)]:
         S(f'''[sub_resource type="StandardMaterial3D" id="{name}"]
     albedo_color = Color({farbe}, 1)
     roughness = {rau}''')
@@ -287,7 +370,15 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     light_energy = 0.0''')
     N("Sonne", "DirectionalLight3D", ".", '''transform = Transform3D(1, 0, 0, 0, 0.5, 0.8660254, 0, -0.8660254, 0.5, 0, 60, 0)
     shadow_enabled = true
-    directional_shadow_max_distance = 250.0
+    shadow_bias = 0.03
+    shadow_normal_bias = 1.2
+    shadow_blur = 1.5
+    directional_shadow_mode = 2
+    directional_shadow_split_1 = 0.06
+    directional_shadow_split_2 = 0.18
+    directional_shadow_split_3 = 0.45
+    directional_shadow_blend_splits = true
+    directional_shadow_max_distance = 320.0
     script = ExtResource("1_tageslicht")
     umgebung = NodePath("../Umgebung")
     mond = NodePath("../Mond")''', extra='node_paths=PackedStringArray("umgebung", "mond")')

@@ -90,9 +90,6 @@ karte_ende = Vector2{W["karte"][2]}
 karte_strecke = {L}
 karte_entlang_z = {"true" if W["entlang_z"] else "false"}''', wasser_groesse=(L + 800, 1200) if not W["entlang_z"] else (1200, L + 800),
              wasser_parameter="\nshader_parameter/loch_radius = 0.0", nebel=0.003 if STRASSE == "kuestenweg" else 0.0018)
-S('''[sub_resource type="StandardMaterial3D" id="Material_wald"]
-albedo_color = Color(0.16, 0.24, 0.13, 1)
-roughness = 1.0''')
 
 def auf_boden(x, z, halb=0.0):
     if halb <= 0:
@@ -193,7 +190,7 @@ material = SubResource("Material_stoff")""")
                "Gesetzloser" if waffe == "saebel" else "Gesetzloser mit Muskete", waffe, f"gesetzlose_{k + 1}", "gesetzlose_besiegt")
     lager_mitte = (lx, lz)
 
-# ---------- Wald aus zwei MultiMeshes (Stämme, Kronen), ohne Kollision ----------
+# ---------- Waldstücke an der Straße (gezeichnet vom Bewuchs) ----------
 def wald_dichte(x, z):
     return 0.5 + 0.3 * math.sin(x / 37.0) * math.cos(z / 29.0) + 0.2 * math.sin((x + z) / 13.0)
 
@@ -214,32 +211,7 @@ for x in range(int(-20 if not W["entlang_z"] else -195), int((L + 20) if not W["
         if h < -15 or h > 70:
             continue
         baeume.append((px, h, pz, random.uniform(0.8, 1.35)))
-def multimesh(id_, mesh_id, hoehe_mitte):
-    werte = []
-    for x, y, z, s in baeume:
-        werte += [s, 0, 0, round(x, 2), 0, s, 0, round(y + hoehe_mitte * s, 2), 0, 0, s, round(z, 2)]
-    S(f'''[sub_resource type="MultiMesh" id="{id_}"]
-transform_format = 1
-instance_count = {len(baeume)}
-mesh = SubResource("{mesh_id}")
-buffer = PackedFloat32Array({", ".join(f"{v:.4g}" for v in werte)})''')
-S('''[sub_resource type="CylinderMesh" id="Mesh_stamm"]
-material = SubResource("Material_holz")
-top_radius = 0.18
-bottom_radius = 0.28
-height = 3.0
-radial_segments = 6''')
-S('''[sub_resource type="CylinderMesh" id="Mesh_krone"]
-material = SubResource("Material_wald")
-top_radius = 0.0
-bottom_radius = 1.9
-height = 6.0
-radial_segments = 7''')
-multimesh("Baeume_stamm", "Mesh_stamm", 1.4)
-multimesh("Baeume_krone", "Mesh_krone", 5.4)
-N("Wald", "Node3D", ".")
-N("Staemme", "MultiMeshInstance3D", "Wald", 'multimesh = SubResource("Baeume_stamm")')
-N("Kronen", "MultiMeshInstance3D", "Wald", 'multimesh = SubResource("Baeume_krone")')
+bewuchs(frei_kreise=frei, feste_baeume=[(x, y, z, s) for x, y, z, s in baeume], wald_anteil=0.0, offen_dichte=1.2)
 
 # ---------- Personen ----------
 N("Personen", "Node3D", ".")

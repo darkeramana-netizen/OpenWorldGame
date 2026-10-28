@@ -156,7 +156,12 @@ func _initialize() -> void:
 	var karte_anfang: Vector2 = region.karten_pixel(marke("von_drachenstein"))
 	var karte_ende: Vector2 = region.karten_pixel(marke("von_riverlock"))
 	pruefe(karte_anfang.distance_to(Vector2(272, 491)) < 10 and karte_ende.distance_to(Vector2(1016, 494)) < 10, "Karte: Pfeil wandert die Nordstraße entlang")
-	pruefe(current_scene.get_node("Wald/Kronen").multimesh.instance_count > 500, "Wald an der Nordstraße")
+	var bewuchs = current_scene.get_node("Bewuchs")
+	for i in 120:
+		if not bewuchs.anzahl.is_empty():
+			break
+		await physics_frame
+	pruefe(bewuchs.anzahl.get("nadel", 0) + bewuchs.anzahl.get("laub", 0) > 500, "Wald an der Nordstraße (%s)" % bewuchs.anzahl)
 	await gehe_ueber([Vector2(marke("von_drachenstein").x + 40, marke("von_drachenstein").z)])
 	pruefe(orte.has("Nordstraße"), "Ortsname: Nordstraße")
 	for eintrag in [["Dorfvorsteherin", KEY_3], ["Bezirkswache", KEY_3]]:

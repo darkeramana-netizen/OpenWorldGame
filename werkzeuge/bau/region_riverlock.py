@@ -249,6 +249,9 @@ ortsname = "{name}"
 untertitel = "{untertitel}"''')
     N("Form", "CollisionShape3D", f"Orte/Ort{i+1}", f'shape = SubResource("Form_ort{i+1}")')
 
+# ---------- Bewuchs: Burgen und Brücke bleiben frei ----------
+bewuchs(frei_rechtecke=[(-100, -10, 110, 155), (115, 5, 120, 155), (0, 0, 120, 50)], wald_anteil=0.3, nadel_anteil=0.7)
+
 # ---------- Sprungpunkte (Entwicklermenü, F10) ----------
 N("Sprungpunkte", "Node3D", ".")
 for name, x, y, z in [("Hafenhalle (Ankunft)", -46, -8.0, 4), ("Mittelbau, Zoll", 0, 0.5, 8), ("Großer Saal", -20, 6.5, 6),

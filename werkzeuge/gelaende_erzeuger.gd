@@ -73,12 +73,19 @@ const WEG_KUESTE := [Vector2(0, 56), Vector2(10, 64), Vector2(22, 90), Vector2(2
 const PASS_NORD := [[Vector2(30, -320), Vector2(50, -420), Vector2(70, -540), Vector2(85, -650)], 3.0, 32.0]
 const PASS_SUED := [[Vector2(40, 170), Vector2(60, 240), Vector2(80, 300), Vector2(95, 350)], 2.0, 24.0]
 
+## Straßen der Stadt (daten/drachenstein_strassen.json, auch von werkzeuge/bau/teil_stadt.py gelesen)
+var stadt_strassen: Array = []
+
 var _rauschen := FastNoiseLite.new()
 var _fein := FastNoiseLite.new()
 var _grat := FastNoiseLite.new()
 
 
 func _init() -> void:
+	var daten: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://daten/drachenstein_strassen.json"))
+	if daten is Dictionary:
+		for linie: Array in daten["strassen"]:
+			stadt_strassen.append(linie.map(func(p: Array) -> Vector2: return Vector2(p[0], p[1])))
 	_rauschen.seed = 1750
 	_rauschen.frequency = 0.004
 	_fein.seed = 940
@@ -200,6 +207,8 @@ func hoehe(p: Vector2) -> float:
 	h = _weg_einebnen(h, p, WEG_NORD)
 	h = _weg_einebnen(h, p, WEG_NORD_STADT)
 	h = _weg_einebnen(h, p, WEG_KUESTE)
+	for linie: Array in stadt_strassen:
+		h = _weg_einebnen(h, p, linie)
 	h = _pass(h, p, PASS_NORD)
 	h = _pass(h, p, PASS_SUED)
 
@@ -272,7 +281,7 @@ func _polygon_abstand(p: Vector2, ecken: Array) -> float:
 ## Farbmaske für den Gelände-Shader: Rot = Weg, Grün = Sumpf.
 func maske_bei(p: Vector2) -> Color:
 	var weg := INF
-	for linie in [WEG_HAFEN, WEG_DRACHENHORST, WEG_GRAVEMARCH, WEG_GRAVECREST, WEG_NORD, WEG_NORD_STADT, WEG_KUESTE]:
+	for linie in [WEG_HAFEN, WEG_DRACHENHORST, WEG_GRAVEMARCH, WEG_GRAVECREST, WEG_NORD, WEG_NORD_STADT, WEG_KUESTE] + stadt_strassen:
 		weg = minf(weg, _abstand_zu(linie, p))
 	var gm := p.distance_to(GRAVEMARCH)
 	var sumpf := (1.0 - smoothstep(115.0, 140.0, gm)) * smoothstep(17.0, 26.0, _polygon_abstand(p - GRAVEMARCH, GRAVEMARCH_UMRISS))

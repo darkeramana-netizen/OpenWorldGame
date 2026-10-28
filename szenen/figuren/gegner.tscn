@@ -1,12 +1,9 @@
 [gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://szenen/figuren/gegner.gd" id="1_gegner"]
+[ext_resource type="Script" path="res://szenen/figuren/figur.gd" id="2_figur"]
 
 [sub_resource type="CapsuleShape3D" id="Form_koerper"]
-radius = 0.35
-height = 1.8
-
-[sub_resource type="CapsuleMesh" id="Mesh_koerper"]
 radius = 0.35
 height = 1.8
 
@@ -26,9 +23,9 @@ shape = SubResource("Form_koerper")
 
 [node name="Koerper" type="Node3D" parent="."]
 
-[node name="Mesh" type="MeshInstance3D" parent="Koerper"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("Mesh_koerper")
+[node name="Figur" type="Node3D" parent="Koerper"]
+script = ExtResource("2_figur")
+rock = false
 
 [node name="Waffe" type="Node3D" parent="Koerper"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 1.1, -0.2)

@@ -31,7 +31,7 @@ var _schwerkraft: float = ProjectSettings.get_setting("physics/3d/default_gravit
 
 @onready var _kamera_drehpunkt: Node3D = $KameraDrehpunkt
 @onready var _koerper: Node3D = $Koerper
-@onready var _kordel: MeshInstance3D = $Koerper/Kordel
+@onready var _figur = $Koerper/Figur
 
 
 func _ready() -> void:
@@ -185,11 +185,10 @@ func _bei_dialogende(_id: String) -> void:
 
 func _zeige_kordel() -> void:
 	var farbe: Variant = KORDELFARBEN.get(Spielstand.kordel_name())
-	_kordel.visible = farbe != null
-	if farbe != null:
-		var material := StandardMaterial3D.new()
-		material.albedo_color = farbe
-		_kordel.material_override = material
+	_figur.kordel_farbe = farbe if farbe != null else Color(0, 0, 0, 0)
+	# Ab dem Knappen trägt man die Tracht des Ordens, vorher die eigene Kleidung.
+	_figur.rock = Spielstand.rang >= 2
+	_figur.tracht = Color(0.14, 0.14, 0.16) if Spielstand.rang >= 2 else Color(0.32, 0.27, 0.21)
 
 
 ## Sucht das nächste ansprechbare Objekt in Reichweite.

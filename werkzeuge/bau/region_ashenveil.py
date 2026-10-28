@@ -27,8 +27,9 @@ shader_parameter/loch_mitte = Vector2({LOCH_HOF[0]}, {LOCH_HOF[1]})
 shader_parameter/loch_radius = {LOCH_HOF[2]}
 shader_parameter/loch2_mitte = Vector2({LOCH_AUSSTIEG[0]}, {LOCH_AUSSTIEG[1]})
 shader_parameter/loch2_radius = {LOCH_AUSSTIEG[2]}""", nebel=0.012, gelaende_parameter="""
-shader_parameter/sand = Vector3(0.24, 0.23, 0.16)
-shader_parameter/gras = Vector3(0.22, 0.26, 0.15)""")
+shader_parameter/sand = Vector3(0.55, 0.55, 0.45)
+shader_parameter/gras = Vector3(0.8, 0.82, 0.7)
+shader_parameter/gras_trocken = Vector3(0.75, 0.72, 0.55)""")
 E("Script", "res://szenen/welt/wasserdicht.gd", "19_wasserdicht")
 
 BODEN = 0.5   # Höhe der Burginsel
@@ -196,6 +197,10 @@ script = ExtResource("13_ort")
 ortsname = "{name}"
 untertitel = "{untertitel}"''')
     N("Form", "CollisionShape3D", f"Orte/Ort{i+1}", f'shape = SubResource("Form_ort{i+1}")')
+
+# ---------- Bewuchs: fahles Moor, wenige krumme Bäume; die Burg bleibt frei ----------
+bewuchs(frei_rechtecke=[(0, -3, 210, 110)], wald_anteil=0.08, offen_dichte=3.0, nadel_anteil=0.3, busch_dichte=14.0,
+        laub_farbe="Color(0.85, 0.85, 0.7, 1)")
 
 # ---------- Sprungpunkte (Entwicklermenü, F10) ----------
 N("Sprungpunkte", "Node3D", ".")

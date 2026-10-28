@@ -10,7 +10,8 @@ N("Stadtleben", "Node3D", "Personen")
 KAI_Y = -17.8
 NORDKAI_Z = -20.4
 SUEDKAI_Z = 19.5
-NETZ = WEGE + [
+NETZ = STRASSEN + [
+    [(0, 56), (0, 80)],                                            # über den Vorplatz zum Weg nach Gravemarch
     [(98, 0), (99, -12), (100, NORDKAI_Z), (146, NORDKAI_Z)],     # Nordkai bis vor das Zollhaus
     [(98, 0), (99, 12), (100, SUEDKAI_Z), (156, SUEDKAI_Z)],      # Südkai mit den Pollern
     [(58, 22), (68, 17), (68, 7.5)],                               # zwischen den Ständen auf den Markt
@@ -19,7 +20,7 @@ NETZ = WEGE + [
 ]
 
 # Hindernisse: (Mitte x, Mitte z, Breite, Tiefe, Gier) als Rechtecke, Kreise als (x, z, Radius)
-RECHTECKE = [(h[0], h[2], 8, 10, h[3]) for h in HAEUSER] + [
+RECHTECKE = [(h[0], h[2], HAUSFORMEN[h[5]][0], HAUSFORMEN[h[5]][1] + 2 * VORKRAGUNG, h[3]) for h in HAEUSER] + [
     (60, -8, 3, 2, 0), (72, -9, 3, 2, 0), (62, 13, 3, 2, 0), (76, 12, 3, 2, 0),
     (80, 38, 20, 10, -20), (70.6, 41.6, 6, 6, 0), (100, -42, 16, 10, 0),
     (114, -24.5, 16, 6.5, 0), (154, -24.5, 10, 6, 0)]
@@ -114,9 +115,10 @@ def pruefe_weg(name, punkte):
 
 
 def tuer(haus):
-    x, y, z, gier, _ = haus
+    x, y, z, gier, _, form = haus
     a = math.radians(gier)
-    return (round(x + math.sin(a) * 5.8, 2), round(z + math.cos(a) * 5.8, 2))
+    vor = HAUSFORMEN[form][1] / 2 + 1.0
+    return (round(x + math.sin(a) * vor, 2), round(z + math.cos(a) * vor, 2))
 
 
 def p3(punkte):
@@ -125,7 +127,7 @@ def p3(punkte):
 
 REIHENFOLGE = ["morgengrauen", "vormittag", "mittag", "nachmittag", "stille_stunde", "nacht"]
 
-def stadtmensch(name, anzeige, dialog, kordel, tracht, zuhause, plan, sichtbar_wenn="", tempo=None):
+def stadtmensch(name, anzeige, dialog, kordel, tracht, zuhause, plan, sichtbar_wenn="", tempo=None, groesse=None):
     """plan: {abschnitt: (Ziel, zusätze)}. Ziel ist ein Punkt (x, z), "heim" oder eine Runde aus runde().
     Die Wege sucht weg() über das Netz, jeweils vom Ziel des vorigen Abschnitts aus (über Mitternacht hinweg)."""
     ablauf = {}
@@ -147,7 +149,7 @@ def stadtmensch(name, anzeige, dialog, kordel, tracht, zuhause, plan, sichtbar_w
         pos = ende(ziel)
     x, z = zuhause
     person(name, SL, x, hoehe(x, z), z, anzeige, dialog, kordel, tracht, sichtbar_wenn=sichtbar_wenn,
-           ablauf=ablauf, tempo=tempo)
+           ablauf=ablauf, tempo=tempo, groesse=groesse)
 
 
 def runde(*ziele):
@@ -233,7 +235,7 @@ for i, (name, anzeige) in enumerate([("Pim", "Pim, ein Junge aus dem Marktvierte
         "mittag": ("heim", ["weg"]),
         "nachmittag": (kreis[::-1], []),
         "stille_stunde": ("heim", ["weg"]),
-    }, sichtbar_wenn="alarm<2", tempo=2.2)
+    }, sichtbar_wenn="alarm<2", tempo=2.2, groesse=0.68)
 
 # --- Streifen des Ordens: tags zwei, nachts zwei, aus der Burg und zurück ---
 STADT_NORD = runde(WACHWECHSEL, (-50, 18), (0, 56), (22, 90))

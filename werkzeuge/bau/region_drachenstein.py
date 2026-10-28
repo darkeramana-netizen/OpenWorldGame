@@ -8,6 +8,7 @@ grundgeruest("gelaende")
 # ---------- Burgfeste Drachenstein ----------
 N("BurgHof", None, ".", "", instanz="3_hof")
 teil("teil_drachenstein.py")
+gelaende_pflaster([ring, [(-44, -44), (44, -44), (44, 44), (-44, 44)]])   # Stadt in der Ringmauer, Burghof
 
 # ---------- Brücken über die Inseln zum Schwarzen Bergfried ----------
 N("Bruecken", "Node3D", ".")
@@ -60,6 +61,10 @@ script = ExtResource("13_ort")
 ortsname = "{name}"
 untertitel = "{untertitel}"''')
     N("Form", "CollisionShape3D", f"Orte/Ort{i+1}", f'shape = SubResource("Form_ort{i+1}")')
+
+# ---------- Bewuchs: Wälder, Büsche, Gras; Stadt, Burgen und Hafen bleiben frei ----------
+bewuchs(frei_vielecke=[ring], frei_rechtecke=[(0, 0, 92, 92), (132, -2, 74, 60), (232, 115, 70, 70),
+        (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24)
 
 # ---------- Personen der Region ----------
 N("Personen", "Node3D", ".")
