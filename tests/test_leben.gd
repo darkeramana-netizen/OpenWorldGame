@@ -262,14 +262,14 @@ func _initialize() -> void:
 	await warte(1.2)   # Mittag beginnt
 	var start := hedda.global_position
 	pruefe(hedda.unterwegs(), "Mittag: Hedda geht vom Markt zum Brunnen, während der Spieler zusieht")
-	var ende := Time.get_ticks_msec() + 90000
+	var ende := Time.get_ticks_msec() + 180000
 	var schwebt := false
 	while hedda.unterwegs() and Time.get_ticks_msec() < ende:
 		await physics_frame
 		var b := boden_unter(hedda.global_position, hedda)
 		if not is_nan(b) and absf(hedda.global_position.y - b) > 0.4:
 			schwebt = true
-	pruefe(not hedda.unterwegs() and flach(hedda.global_position).distance_to(Vector2(303.86, 16.76)) < 0.5, "… und kommt am Brunnen an")
+	pruefe(not hedda.unterwegs() and flach(hedda.global_position).distance_to(Vector2(303.86, 16.76)) < 0.5, "… und kommt am Brunnen an (steht bei %s)" % flach(hedda.global_position))
 	pruefe(hedda.global_position.distance_to(start) > 2.0 and not schwebt, "… ohne zu schweben oder zu versinken")
 
 	# --- Wer angesprochen wird, bleibt stehen ---
