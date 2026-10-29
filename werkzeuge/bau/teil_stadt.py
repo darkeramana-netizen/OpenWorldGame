@@ -112,8 +112,9 @@ kx, kz = W(PD.KIRCHE[0])
 steinbau("KircheStGeorg", ST, kx, kz, 66, 30, 22, gier=90, mat="Material_hell", dachhoehe=16)
 tx, tz = W(PD.KIRCHTURM)
 tb = H(tx, tz)
-box("Kirchturm", ST, tx, round(tb + 20, 2), tz, 10, 44, 10, "Material_hell")
-turmdach("KirchturmHelm", ST, tx, tb + 42, tz, 7.5, 22, kanten=8)
+N("Kirchturm", "Node3D", ST, f"""script = ExtResource("28_burgbau")
+torbauten = PackedFloat32Array({_zahlen([tx, tz, 1, 0, tb - 2, tb + 40, 10, 10, 1, 2.4])})
+stein = \"hell\"""")
 schild("SchildKirche", ST, tx, round(tb + 68, 2), tz, "Kirche St. Georg", 56)
 for name, (pp, laenge, breite), hoehe in [("Rathaus", PD.RATHAUS, 16), ("Badehaus", PD.BADEHAUS, 9), ("Muehle", PD.MUEHLE, 11),
                                           ("Schmiedehaus", PD.SCHMIEDE, 8)]:

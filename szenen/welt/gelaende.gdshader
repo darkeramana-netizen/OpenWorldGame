@@ -29,16 +29,24 @@ uniform vec2 pflaster_punkte[64];
 uniform int pflaster_laengen[4];
 
 // Färbung, z. B. trockeneres Gras in Ashenveil
-uniform vec3 gras = vec3(1.0, 1.0, 1.0);
-uniform vec3 gras_trocken = vec3(1.25, 1.1, 0.8);
+uniform vec3 gras = vec3(0.9, 1.0, 0.85);
+uniform vec3 gras_trocken = vec3(1.08, 1.02, 0.85);
 uniform vec3 fels = vec3(1.0, 1.0, 1.0);
 uniform vec3 schnee = vec3(1.0, 1.0, 1.0);
 uniform vec3 sand = vec3(1.0, 1.0, 1.0);
 uniform vec3 weg = vec3(1.0, 1.0, 1.0);
 uniform vec3 sumpf = vec3(1.0, 1.0, 1.0);
 
-const float NAH = 0.22;     // eine Kachel ≈ 4,5 m
-const float FERN = 0.035;   // eine Kachel ≈ 29 m
+// Kachelgrößen in Metern (Fotoscans von Poly Haven, siehe texturen/groessen.json). In der Ferne wird jede Textur
+// zusätzlich 6,5-mal größer daruntergemischt, das bricht die Wiederholung.
+const float M_GRAS = 2.5;
+const float M_ERDE = 3.2;
+const float M_SAND = 8.0;
+const float M_SUMPF = 2.4;
+const float M_SCHNEE = 4.0;
+const float M_PFLASTER = 1.6;
+const float M_FELS = 18.0;
+const float FERN = 6.5;
 
 varying vec3 welt_pos;
 varying vec3 welt_normale;
@@ -56,8 +64,8 @@ float rauschen(vec2 p) {
 }
 
 // Zwei Größen gemischt gegen Kachelmuster
-vec3 zwei(sampler2D t, vec2 p) {
-	return mix(texture(t, p * NAH).rgb, texture(t, p * FERN + 0.37).rgb, 0.35);
+vec3 zwei(sampler2D t, vec2 p, float meter) {
+	return mix(texture(t, p / meter).rgb, texture(t, p / (meter * FERN) + 0.37).rgb, 0.35);
 }
 
 bool im_vieleck(vec2 p, int anfang, int anzahl) {
@@ -117,27 +125,27 @@ void fragment() {
 	// In der Stadt sind die Wege gepflastert, zwischen den Häusern liegen Höfe aus festgetretener Erde.
 	float in_stadt = gepflastert(p);
 	float a_pflaster = in_stadt * smoothstep(0.1, 0.5, m.r) * (1.0 - a_fels);
-	a_erde = max(a_erde, in_stadt * (1.0 - a_fels) * 0.55);
+	a_erde = max(a_erde, in_stadt * (1.0 - a_fels) * smoothstep(0.45, 0.75, gross) * 0.6);
 	a_weg *= 1.0 - in_stadt;
 
-	vec3 g = zwei(gras_farbe, p) * mix(gras, gras_trocken, smoothstep(0.35, 0.8, gross));
-	vec3 farbe = mix(g, zwei(erde_farbe, p), a_erde);
-	farbe = mix(farbe, zwei(sand_farbe, p) * sand, a_sand);
-	farbe = mix(farbe, zwei(sumpf_farbe, p) * sumpf, a_sumpf);
-	farbe = mix(farbe, zwei(erde_farbe, p * 1.3) * weg, a_weg);
+	vec3 g = zwei(gras_farbe, p, M_GRAS) * mix(gras, gras_trocken, smoothstep(0.35, 0.8, gross));
+	vec3 farbe = mix(g, zwei(erde_farbe, p, M_ERDE), a_erde);
+	farbe = mix(farbe, zwei(sand_farbe, p, M_SAND) * sand, a_sand);
+	farbe = mix(farbe, zwei(sumpf_farbe, p, M_SUMPF) * sumpf, a_sumpf);
+	farbe = mix(farbe, zwei(erde_farbe, p, M_ERDE * 0.8) * weg, a_weg);
 	// In Städten und Höfen: Kopfsteinpflaster mit ausgetretenen Erdstellen
-	vec3 pf = texture(pflaster_farbe, p * 0.33).rgb * mix(1.0, 0.85, klein);
-	pf = mix(pf, zwei(erde_farbe, p) * 0.9, smoothstep(0.68, 0.85, gross) * 0.7);
+	vec3 pf = texture(pflaster_farbe, p / M_PFLASTER).rgb * mix(1.0, 0.85, klein);
+	pf = mix(pf, zwei(erde_farbe, p, M_ERDE) * 0.9, smoothstep(0.68, 0.85, gross) * 0.7);
 	farbe = mix(farbe, pf, a_pflaster);
-	vec3 f = mix(dreiseitig(fels_farbe, welt_pos, gewicht, NAH * 0.6), dreiseitig(fels_farbe, welt_pos, gewicht, FERN), 0.4) * fels;
+	vec3 f = mix(dreiseitig(fels_farbe, welt_pos, gewicht, 1.0 / M_FELS), dreiseitig(fels_farbe, welt_pos, gewicht, 1.0 / (M_FELS * 4.0)), 0.4) * fels;
 	farbe = mix(farbe, f, a_fels);
-	farbe = mix(farbe, zwei(schnee_farbe, p) * schnee, a_schnee);
+	farbe = mix(farbe, zwei(schnee_farbe, p, M_SCHNEE) * schnee, a_schnee);
 	farbe *= 0.85 + gross * 0.3;
 
 	// Normalen ohne Tangenten: die Normalenkarte kippt die Weltnormale
-	vec3 nk_boden = texture(gras_normal, p * NAH).rgb * (1.0 - a_weg - a_erde) + texture(erde_normal, p * NAH).rgb * (a_weg + a_erde);
-	nk_boden = mix(nk_boden, texture(pflaster_normal, p * 0.33).rgb, a_pflaster);
-	vec3 nk_fels = texture(fels_normal, welt_pos.zy * NAH * 0.6).rgb * gewicht.x + texture(fels_normal, welt_pos.xz * NAH * 0.6).rgb * gewicht.y + texture(fels_normal, welt_pos.xy * NAH * 0.6).rgb * gewicht.z;
+	vec3 nk_boden = texture(gras_normal, p / M_GRAS).rgb * (1.0 - a_weg - a_erde) + texture(erde_normal, p / M_ERDE).rgb * (a_weg + a_erde);
+	nk_boden = mix(nk_boden, texture(pflaster_normal, p / M_PFLASTER).rgb, a_pflaster);
+	vec3 nk_fels = texture(fels_normal, welt_pos.zy * (1.0 / M_FELS)).rgb * gewicht.x + texture(fels_normal, welt_pos.xz * (1.0 / M_FELS)).rgb * gewicht.y + texture(fels_normal, welt_pos.xy * (1.0 / M_FELS)).rgb * gewicht.z;
 	vec3 nk = mix(nk_boden, nk_fels, a_fels) * 2.0 - 1.0;
 	float staerke = mix(mix(0.45, 0.9, a_pflaster), 1.1, a_fels) * (1.0 - a_schnee * 0.6);
 	vec3 neu = normalize(n + vec3(nk.x, 0.0, -nk.y) * staerke * (1.0 - gewicht.x - gewicht.z) + vec3(0.0, nk.y, 0.0) * 0.0

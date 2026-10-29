@@ -185,6 +185,12 @@ func _viereck(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -
 		st.add_vertex(p)
 
 
+func _viereck_uv(st: SurfaceTool, p: Array, uv: Array) -> void:
+	for i in [0, 2, 1, 0, 3, 2]:
+		st.set_uv(uv[i])
+		st.add_vertex(p[i])
+
+
 func _dreieck(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
 	var n := (b - a).cross(c - a).normalized()
 	for p in [a, c, b]:
@@ -300,12 +306,18 @@ func _dach(flaechen: Dictionary, mat: String, giebel_mat: String, traufe: float,
 		# Oberseite (nach außen) und Unterseite
 		var oben := [a + Vector3(0, dicke, 0), b + Vector3(0, dicke, 0), c + Vector3(0, dicke, 0), d + Vector3(0, dicke, 0)]
 		var gerade := (s == 1) != giebelstaendig
+		# UV entlang des Firsts und die Dachfläche hinab, damit die Ziegelreihen waagrecht liegen
+		var schraege := Vector2(halbe, hoehe + 0.35).length()
+		var uv_a := Vector2(-laenge, schraege)
+		var uv_b := Vector2(laenge, schraege)
+		var uv_c := Vector2(laenge, 0.0)
+		var uv_d := Vector2(-laenge, 0.0)
 		if gerade:
-			_viereck(st, oben[0], oben[1], oben[2], oben[3])
-			_viereck(st, b, a, d, c)
+			_viereck_uv(st, [oben[0], oben[1], oben[2], oben[3]], [uv_a, uv_b, uv_c, uv_d])
+			_viereck_uv(st, [b, a, d, c], [uv_b, uv_a, uv_d, uv_c])
 		else:
-			_viereck(st, oben[1], oben[0], oben[3], oben[2])
-			_viereck(st, a, b, c, d)
+			_viereck_uv(st, [oben[1], oben[0], oben[3], oben[2]], [uv_b, uv_a, uv_d, uv_c])
+			_viereck_uv(st, [a, b, c, d], [uv_a, uv_b, uv_c, uv_d])
 		# Traufkante
 		_viereck(_st(flaechen, "balken"), a, b, oben[1], oben[0]) if gerade else _viereck(_st(flaechen, "balken"), b, a, oben[0], oben[1])
 	# Giebelwände (Dreiecke) an beiden Enden, etwas hinter der Dachkante
@@ -340,11 +352,12 @@ func _material(name_: String) -> Material:
 	if _mat_cache.has(name_):
 		return _mat_cache[name_]
 	var m := StandardMaterial3D.new()
-	var tex := {"quader": ["quader", 4.0], "bruchstein": ["bruchstein", 5.0], "dach0": ["dach", 3.0],
-		"dach1": ["dach", 3.0], "balken": ["holz", 2.0], "tuer": ["holz", 1.5], "laden": ["holz", 1.5],
+	# Textur und Meter je Kachel (Fotoscans, echte Größe siehe texturen/groessen.json)
+	var tex := {"quader": ["quader", 2.5], "bruchstein": ["bruchstein", 2.0], "dach0": ["dach", 2.0],
+		"dach1": ["schiefer", 3.0], "balken": ["holz", 2.0], "tuer": ["holz", 1.5], "laden": ["holz", 1.5],
 		"rahmen": ["holz", 2.0]}
 	if name_.begins_with("putz"):
-		tex[name_] = ["putz", 3.0]
+		tex[name_] = ["putz", 1.6]
 	if tex.has(name_):
 		var t: String = tex[name_][0]
 		m.albedo_texture = load("res://texturen/%s_farbe.jpg" % t)
@@ -356,13 +369,11 @@ func _material(name_: String) -> Material:
 		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	match name_:
 		"balken", "rahmen":
-			m.albedo_color = Color(0.45, 0.33, 0.25)
+			m.albedo_color = Color(0.62, 0.5, 0.4)
 		"tuer":
 			m.albedo_color = Color(0.7, 0.5, 0.35)
 		"laden":
 			m.albedo_color = Color(0.45, 0.6, 0.5)
-		"dach1":
-			m.albedo_color = Color(0.42, 0.5, 0.62)
 		"glas":
 			m.albedo_color = Color(0.08, 0.1, 0.12)
 			m.metallic = 0.4

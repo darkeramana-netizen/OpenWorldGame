@@ -115,8 +115,8 @@ func _initialize() -> void:
 	pruefe(orte.has("Oberer Burg · Drachenhorst") and orte.has("Hoher Zwinger"), "Ortsnamen: Hoher Zwinger und Oberer Burg")
 	# Hinab: Kernhoftor → Tor der Wolfsfeste → Äußerer Zwinger → Treppentor → Markt → Westkai → Hafentor → Mole
 	await setze(Vector3(0, 0.3, 46))
-	var hinab := await gehe_ueber([Vector2(35, 42), Vector2(45, 10), Vector2(50, -3.3), Vector2(66, -3.3), Vector2(85, -5),
-			Vector2(96, -4), Vector2(120, 5), Vector2(140, 20), Vector2(146, 23.5), Vector2(152.2, 28.4), Vector2(158, 26.7), Vector2(165, 24.7), Vector2(192, 16.8), Vector2(300, 25),
+	var hinab := await gehe_ueber([Vector2(35, 42), Vector2(45, 10), Vector2(50, -3.3), Vector2(66, -3.3), Vector2(80, -12), Vector2(84.7, -14.1),
+			Vector2(96.3, -11), Vector2(120, 5), Vector2(140, 20), Vector2(146, 23.5), Vector2(152.2, 28.4), Vector2(158, 26.7), Vector2(165, 24.7), Vector2(192, 16.8), Vector2(300, 25),
 			Vector2(415, 62), Vector2(422.4, 74.9), Vector2(435.8, 59.2), Vector2(534, 60.3)], 40.0)
 	pruefe(hinab and absf(spieler().global_position.y + 17.8) < 0.6, "Durch das Treppentor über den Markt hinunter zum Kai gelaufen")
 	pruefe(orte.has("Marktviertel") and orte.has("Drachenkai"), "Ortsnamen: Marktviertel und Drachenkai")

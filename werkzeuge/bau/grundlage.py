@@ -263,7 +263,7 @@ def gebaeude_lokal(name, eltern, x, z, sx, sz, hoehe, mat="Material_hell", gier=
 
 
 def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", wasser_hoehe=-20,
-                 wasser_groesse=(2600, 2200), wasser_parameter="", nebel=0.0015, gelaende_parameter=""):
+                 wasser_groesse=(2600, 2200), wasser_parameter="", nebel=0.0006, gelaende_parameter=""):
     """Gemeinsame Ressourcen und die Wurzel einer Region: Himmel, Licht, Gelände und Wasserfläche."""
     E("Script", "res://szenen/welt/tageslicht.gd", "1_tageslicht")
     E("Script", "res://szenen/welt/gelaende.gd", "2_gelaende")
@@ -318,6 +318,15 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     ssao_radius = 1.6
     ssao_intensity = 1.6
     ssao_power = 1.4
+    ssil_enabled = true
+    ssil_radius = 4.0
+    ssil_intensity = 0.8
+    sdfgi_enabled = true
+    sdfgi_use_occlusion = true
+    sdfgi_read_sky_light = true
+    sdfgi_cascades = 6
+    sdfgi_min_cell_size = 0.3
+    sdfgi_energy = 0.9
     glow_enabled = true
     glow_intensity = 0.35
     glow_strength = 0.9
@@ -328,10 +337,10 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     fog_light_color = Color(0.62, 0.66, 0.72, 1)
     fog_sun_scatter = 0.25
     fog_density = {nebel}
-    fog_aerial_perspective = 0.35
+    fog_aerial_perspective = 0.5
     fog_sky_affect = 0.25
     fog_height = 0.0
-    fog_height_density = 0.0015
+    fog_height_density = 0.0008
     adjustment_enabled = true
     adjustment_saturation = 1.08
     adjustment_contrast = 1.04''')
@@ -378,7 +387,7 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     directional_shadow_split_2 = 0.18
     directional_shadow_split_3 = 0.45
     directional_shadow_blend_splits = true
-    directional_shadow_max_distance = 320.0
+    directional_shadow_max_distance = 500.0
     script = ExtResource("1_tageslicht")
     umgebung = NodePath("../Umgebung")
     mond = NodePath("../Mond")''', extra='node_paths=PackedStringArray("umgebung", "mond")')

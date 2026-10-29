@@ -1,7 +1,9 @@
-"""Erzeugt kachelbare Texturen (Farbe, Normalen, Rauheit) nach texturen/.
-Alles wird aus Rauschen und einfachen Formen berechnet, es gibt also keine fremden Lizenzen.
-Aufruf: python3 werkzeuge/texturen_erzeugen.py [name ...]   (ohne Namen: alle)
+"""Erzeugt kachelbare Texturen (Farbe, Normalen, Rauheit) nach texturen/ und schreibt die Materialien.
+Die Texturen werden aus Rauschen und einfachen Formen berechnet. Im Spiel stehen statt ihrer inzwischen
+Fotoscans von Poly Haven (werkzeuge/texturen_laden.py); von hier kommen nur noch die Wolken.
+Aufruf: python3 werkzeuge/texturen_erzeugen.py [name ...]   (ohne Namen: nur die Wolken; "material": nur .tres)
 Danach in Godot einmal importieren (Editor öffnen oder godot --headless --import)."""
+import json
 import sys
 from pathlib import Path
 import numpy as np
@@ -352,32 +354,35 @@ ALLE = {
 
 # ---------- Materialien (material/*.tres) ----------
 # Name → (Textur, Meter je Kachel, Farbton, Metall, Rauheit-Faktor). Triplanar in Weltkoordinaten: Jede Fläche
-# bekommt Steine in echter Größe, egal wie groß der Klotz ist.
+# bekommt Steine in echter Größe, egal wie groß der Klotz ist. Meter None: echte Größe der geladenen Textur
+# (texturen/groessen.json, von texturen_laden.py).
 MATERIALIEN = {
-    "mauer": ("quader", 4.0, (1, 1, 1), 0.0, 1.0),
-    "hell": ("putz", 3.0, (1, 1, 1), 0.0, 1.0),
-    "basalt": ("basalt", 6.0, (1, 1, 1), 0.0, 1.0),
-    "holz": ("holz", 2.0, (1, 1, 1), 0.0, 1.0),
-    "eis": ("fels", 8.0, (1.35, 1.45, 1.6), 0.0, 0.8),
-    "kai": ("bruchstein", 5.0, (1, 1, 1), 0.0, 1.0),
-    "boden": ("platten", 6.0, (1, 1, 1), 0.0, 1.0),
-    "pflaster": ("pflaster", 3.0, (1, 1, 1), 0.0, 1.0),
-    "bruchstein": ("bruchstein", 5.0, (1, 1, 1), 0.0, 1.0),
-    "dach": ("dach", 3.0, (1, 1, 1), 0.0, 1.0),
-    "dach_schiefer": ("dach", 3.0, (0.42, 0.5, 0.62), 0.0, 1.0),
-    "stoff": ("stoff", 1.0, (1, 1, 1), 0.0, 1.0),
-    "metall": ("metall", 2.0, (1, 1, 1), 0.6, 1.0),
-    "fels": ("fels", 8.0, (1, 1, 1), 0.0, 1.0),
-    "erde": ("erde", 4.0, (1, 1, 1), 0.0, 1.0),
-    "sand": ("sand", 4.0, (1, 1, 1), 0.0, 1.0),
+    "mauer": ("quader", None, (1, 1, 1), 0.0, 1.0),
+    "hell": ("hellstein", None, (1, 1, 1), 0.0, 1.0),
+    "basalt": ("basalt", None, (0.8, 0.8, 0.82), 0.0, 1.0),
+    "holz": ("holz", None, (1, 1, 1), 0.0, 1.0),
+    "eis": ("fels", 25.0, (1.35, 1.45, 1.6), 0.0, 0.8),
+    "kai": ("bruchstein", None, (1, 1, 1), 0.0, 1.0),
+    "boden": ("platten", None, (1, 1, 1), 0.0, 1.0),
+    "pflaster": ("pflaster", None, (1, 1, 1), 0.0, 1.0),
+    "bruchstein": ("bruchstein", None, (1, 1, 1), 0.0, 1.0),
+    "dach": ("dach", None, (1, 1, 1), 0.0, 1.0),
+    "dach_schiefer": ("schiefer", None, (1, 1, 1), 0.0, 1.0),
+    "stoff": ("stoff", 1.0, (0.62, 0.17, 0.13), 0.0, 1.0),
+    "metall": ("metall", None, (0.6, 0.6, 0.62), 0.6, 1.0),
+    "fels": ("fels", 25.0, (1, 1, 1), 0.0, 1.0),
+    "erde": ("erde", None, (1, 1, 1), 0.0, 1.0),
+    "sand": ("sand", 6.0, (1, 1, 1), 0.0, 1.0),
 }
 MATERIAL_ORDNER = ZIEL.parent / "material"
 
 
 def schreibe_materialien():
     MATERIAL_ORDNER.mkdir(exist_ok=True)
+    groessen_datei = ZIEL / "groessen.json"
+    groessen = json.loads(groessen_datei.read_text()) if groessen_datei.exists() else {}
     for name, (tex, meter, ton, metall, rau) in MATERIALIEN.items():
-        s = 1.0 / meter
+        s = 1.0 / (meter or groessen.get(tex, {}).get("meter", 3.0))
         (MATERIAL_ORDNER / f"{name}.tres").write_text(f'''[gd_resource type="StandardMaterial3D" load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://texturen/{tex}_farbe.jpg" id="1_farbe"]
@@ -403,8 +408,10 @@ texture_filter = 5
 
 
 if __name__ == "__main__":
-    # "material" schreibt nur die .tres-Dateien neu, ohne die Texturen zu berechnen
-    namen = sys.argv[1:] or list(ALLE)
+    # "material" schreibt nur die .tres-Dateien neu, ohne die Texturen zu berechnen. Ohne Namen entstehen nur
+    # die Wolken: Die übrigen Texturen sind Fotoscans von Poly Haven (texturen_laden.py). Wer doch eine selbst
+    # erzeugte möchte, nennt sie (z. B. "quader") und überschreibt damit den Scan.
+    namen = sys.argv[1:] or ["wolken"]
     for name in namen:
         if name in ALLE:
             ALLE[name]()

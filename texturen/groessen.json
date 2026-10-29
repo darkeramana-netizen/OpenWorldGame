@@ -1,0 +1,110 @@
+{
+ "quader": {
+  "meter": 2.5,
+  "quelle": "https://polyhaven.com/a/castle_wall_slates",
+  "lizenz": "CC0",
+  "autoren": "Rob Tuytel"
+ },
+ "bruchstein": {
+  "meter": 2.0,
+  "quelle": "https://polyhaven.com/a/old_stone_wall",
+  "lizenz": "CC0",
+  "autoren": "Charlotte Baglioni"
+ },
+ "basalt": {
+  "meter": 1.8,
+  "quelle": "https://polyhaven.com/a/rock_wall_08",
+  "lizenz": "CC0",
+  "autoren": "Amal Kumar"
+ },
+ "hellstein": {
+  "meter": 2.0,
+  "quelle": "https://polyhaven.com/a/medieval_blocks_05",
+  "lizenz": "CC0",
+  "autoren": "Rob Tuytel"
+ },
+ "putz": {
+  "meter": 1.0,
+  "quelle": "https://polyhaven.com/a/white_plaster_02",
+  "lizenz": "CC0",
+  "autoren": "Rob Tuytel"
+ },
+ "holz": {
+  "meter": 2.0,
+  "quelle": "https://polyhaven.com/a/weathered_planks",
+  "lizenz": "CC0",
+  "autoren": "Dario Barresi, Dimitrios Savva"
+ },
+ "dach": {
+  "meter": 2.0,
+  "quelle": "https://polyhaven.com/a/roof_tiles",
+  "lizenz": "CC0",
+  "autoren": "Stephan Seeliger"
+ },
+ "schiefer": {
+  "meter": 3.0,
+  "quelle": "https://polyhaven.com/a/roof_slates_03",
+  "lizenz": "CC0",
+  "autoren": "Rob Tuytel"
+ },
+ "platten": {
+  "meter": 1.8,
+  "quelle": "https://polyhaven.com/a/monastery_stone_floor",
+  "lizenz": "CC0",
+  "autoren": "Amal Kumar"
+ },
+ "pflaster": {
+  "meter": 1.0,
+  "quelle": "https://polyhaven.com/a/cobblestone_floor_01",
+  "lizenz": "CC0",
+  "autoren": "Rob Tuytel"
+ },
+ "stoff": {
+  "meter": 0.27,
+  "quelle": "https://polyhaven.com/a/rough_linen",
+  "lizenz": "CC0",
+  "autoren": "colormass, Rico Cilliers"
+ },
+ "metall": {
+  "meter": 1.0,
+  "quelle": "https://polyhaven.com/a/rusty_metal_02",
+  "lizenz": "CC0",
+  "autoren": "Rob Tuytel"
+ },
+ "fels": {
+  "meter": 50.0,
+  "quelle": "https://polyhaven.com/a/aerial_rocks_02",
+  "lizenz": "CC0",
+  "autoren": "Rob Tuytel"
+ },
+ "gras": {
+  "meter": 2.0,
+  "quelle": "https://polyhaven.com/a/leafy_grass",
+  "lizenz": "CC0",
+  "autoren": "Charlotte Baglioni"
+ },
+ "erde": {
+  "meter": 3.15,
+  "quelle": "https://polyhaven.com/a/forest_ground_04",
+  "lizenz": "CC0",
+  "autoren": "Rob Tuytel, Rico Cilliers"
+ },
+ "sand": {
+  "meter": 15.0,
+  "quelle": "https://polyhaven.com/a/coast_sand_01",
+  "lizenz": "CC0",
+  "autoren": "Rob Tuytel"
+ },
+ "schnee": {
+  "meter": 2.0,
+  "quelle": "https://polyhaven.com/a/snow_02",
+  "lizenz": "CC0",
+  "autoren": "Rob Tuytel"
+ },
+ "sumpf": {
+  "meter": 2.35,
+  "quelle": "https://polyhaven.com/a/mud_forest",
+  "lizenz": "CC0",
+  "autoren": "eye-candy.xyz"
+ }
+}

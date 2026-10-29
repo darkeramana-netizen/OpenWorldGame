@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" path="res://texturen/stoff_rau.jpg" id="3_rau"]
 
 [resource]
-albedo_color = Color(1, 1, 1, 1)
+albedo_color = Color(0.62, 0.17, 0.13, 1)
 albedo_texture = ExtResource("1_farbe")
 metallic = 0.0
 roughness = 1.0

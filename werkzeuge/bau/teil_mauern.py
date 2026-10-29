@@ -71,12 +71,22 @@ def _schnitt(a, b, c, d):
     return t if 0 <= t <= 1 and 0 <= u <= 1 else None
 
 
+E("Script", "res://szenen/welt/burgbau.gd", "28_burgbau")
+STEINE = {"Material_mauer": "mauer", "Material_basalt": "basalt", "Material_kai": "kai", "Material_hell": "hell",
+          "Material_bruchstein": "bruchstein"}
+
+
+def _zahlen(werte):
+    return ", ".join(f"{v:.5g}" for v in werte)
+
+
 def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=None, strassen=(), torbreite=6.0,
              turm_r=0.0, turm_extra=5.0, turm_dach=True, mitte=(0, 0), zinnen=True, mat="Material_mauer",
              torname="", hoehe_min=None):
     """Mauer entlang eines Linienzugs (Welt x, z). tore: {Kantenindex: (Anteil, Breite, Name)}; dazu Tore,
-    wo Straßen kreuzen. turm_r > 0: Rundtürme an den Ecken. mitte: ein Punkt innerhalb (für die Zinnen).
-    Gibt die Liste der Tore zurück: (x, z, Richtung x, Richtung z, Name)."""
+    wo Straßen kreuzen. turm_r > 0: Rundtürme an den Ecken. mitte: ein Punkt innerhalb (für die Feldseite).
+    Gebaut wird von szenen/welt/burgbau.gd (Anlauf, Gesims, Wehrgang, Zinnen, Rundtürme, Torbögen); hier
+    entstehen nur die Maße. Gibt die Liste der Tore zurück: (x, z, Richtung x, Richtung z, Name)."""
     pkt = punkte + [punkte[0]] if geschlossen else list(punkte)
     tore = dict(tore or {})
     for i in range(len(pkt) - 1):
@@ -87,7 +97,7 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
                 t = _schnitt(pkt[i], pkt[i + 1], c, d)
                 if t is not None and 0.08 < t < 0.92:
                     tore[i] = (t, torbreite, torname)
-    stuecke = 0
+    mauern, tuerme, torboegen, torbauten = [], [], [], []
     toreliste = []
     for i in range(len(pkt) - 1):
         (x1, z1), (x2, z2) = pkt[i], pkt[i + 1]
@@ -116,54 +126,53 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
                 oben = max(werte) + hoehe
                 if hoehe_min is not None:
                     oben = max(oben, hoehe_min)
-                stuecke += 1
-                box(f"{name}{stuecke}", eltern, round((ax + bx) / 2, 2), round((unten + oben) / 2, 2), round((az + bz) / 2, 2),
-                    round(math.hypot(bx - ax, bz - az) + dicke * 0.4, 2), round(oben - unten, 2), dicke, mat,
-                    gier=round(gier_zu(bx - ax, bz - az), 2))
-                if zinnen:
-                    zinnen_auf(ax, az, bx, bz, oben, (ax + bx) / 2 - mitte[0], (az + bz) / 2 - mitte[1], dicke * 0.35)
+                mx, mz = (ax + bx) / 2 - mitte[0], (az + bz) / 2 - mitte[1]
+                aussen = (nx, nz) if nx * mx + nz * mz > 0 else (-nx, -nz)
+                mauern += [ax, az, bx, bz, unten, oben, dicke, aussen[0], aussen[1], 1 if zinnen else 0]
     if turm_r > 0:
         ecken = pkt[:-1] if geschlossen else pkt
-        for i, (x, z) in enumerate(ecken):
+        for x, z in ecken:
             werte = [H(x + dx, z + dz) for dx in (-turm_r, 0, turm_r) for dz in (-turm_r, 0, turm_r)]
             unten = min(werte) - 2.5
             oben = max(werte) + hoehe + turm_extra
-            zyl(f"{name}Turm{i + 1}", eltern, x, round((unten + oben) / 2, 2), z, turm_r, round(oben - unten, 2), mat, 14)
-            if turm_dach:
-                turmdach(f"{name}Turm{i + 1}Dach", eltern, x, oben, z, turm_r + 0.8, turm_r * 1.6)
-            else:
-                for k in range(8):
-                    w = 2 * math.pi * k / 8
-                    ZINNEN.append((x + math.cos(w) * (turm_r - 0.4), oben + 0.6, z + math.sin(w) * (turm_r - 0.4),
-                                   gier_zu(-math.sin(w), math.cos(w))))
+            tuerme += [x, z, unten, oben, turm_r, 1 if turm_dach else 0, turm_r * 1.8]
     for k, (tx, tz, ux, uz, tname, breite) in enumerate(toreliste):
-        boden = max(H(tx + ux * s, tz + uz * s) for s in (-breite, 0, breite))
-        for seite in (-1, 1):
-            px, pz = tx + ux * (breite / 2 + 2.6) * seite, tz + uz * (breite / 2 + 2.6) * seite
+        nx, nz = -uz, ux
+        boden = max(H(tx + ux * s + nx * q, tz + uz * s + nz * q) for s in (-breite, 0, breite) for q in (-4, 0, 4))
+        seite = 1 if nx * (tx - mitte[0]) + nz * (tz - mitte[1]) > 0 else -1
+        torboegen += [tx, tz, ux, uz, boden, breite, boden + hoehe, dicke]
+        for s_ in (-1, 1):
+            px, pz = tx + ux * (breite / 2 + 2.6) * s_, tz + uz * (breite / 2 + 2.6) * s_
             unten = min(H(px, pz), boden) - 2.5
-            hoch = boden + hoehe + 6
-            box(f"{name}Tor{k}Turm{seite}", eltern, round(px, 2), round((unten + hoch) / 2, 2), round(pz, 2), 5, round(hoch - unten, 2),
-                dicke + 2, mat, gier=round(gier_zu(ux, uz), 2))
-            turmdach(f"{name}Tor{k}Turm{seite}Dach", eltern, round(px, 2), hoch, round(pz, 2), 3.8, 4.5, kanten=4,
-                     gier=gier_zu(ux, uz) + 45)
-        box(f"{name}Tor{k}Bogen", eltern, round(tx, 2), round(boden + 5.2 + 1.8, 2), round(tz, 2), breite + 0.5, 3.6, dicke,
-            mat, gier=round(gier_zu(ux, uz), 2))
+            torbauten += [px, pz, ux, uz, unten, boden + hoehe + 6, 5.0, dicke + 2, seite, 1]
         if tname:
-            schild(f"{name}Tor{k}Schild", eltern, round(tx, 2), round(boden + 10.5, 2), round(tz, 2), tname, 40)
+            schild(f"{name}Tor{k}Schild", eltern, round(tx, 2), round(boden + hoehe + 4.5, 2), round(tz, 2), tname, 40)
+    N(f"{name}Bau", "Node3D", eltern, f"""script = ExtResource("28_burgbau")
+mauern = PackedFloat32Array({_zahlen(mauern)})
+tuerme = PackedFloat32Array({_zahlen(tuerme)})
+tore = PackedFloat32Array({_zahlen(torboegen)})
+torbauten = PackedFloat32Array({_zahlen(torbauten)})
+stein = \"{STEINE.get(mat, 'mauer')}\"""")
     return [(x, z, ux, uz, n) for x, z, ux, uz, n, _ in toreliste]
 
 
+WAENDE = {"Material_hell": 1, "Material_mauer": 2, "Material_holz": 3}
+
+
 def steinbau(name, eltern, x, z, laenge, breite, hoehe, gier=0.0, mat="Material_mauer", dach="Material_dach_schiefer",
-             dachhoehe=None, boden=None, kollision=True):
-    """Gebäude als Block mit Satteldach (First entlang der Länge). boden: Höhe des Erdgeschosses (sonst Gelände)."""
+             dachhoehe=None, boden=None, kollision=True, art=None):
+    """Gebäude mit Satteldach (First entlang der Länge), gebaut von burgbau.gd mit Sockel, Gesimsen, Fenstern,
+    Tür und Schornstein. boden: Höhe des Erdgeschosses (sonst Gelände). art: 0 Wohnbau, 1 Kirche/Saal, 2 Lager.
+    Gibt die Traufhöhe zurück."""
     a = math.radians(gier)
     ecken = [(x + math.cos(a) * dx + math.sin(a) * dz, z - math.sin(a) * dx + math.cos(a) * dz)
              for dx in (-breite / 2, breite / 2) for dz in (-laenge / 2, laenge / 2)]
     tief = min(H(px, pz) for px, pz in ecken) - 1.5
     b0 = H(x, z) if boden is None else boden
-    oben = b0 + hoehe
-    box(name, eltern, round(x, 2), round((tief + oben) / 2, 2), round(z, 2), breite, round(oben - tief, 2), laenge, mat,
-        gier=round(gier, 2), kollision=kollision)
-    satteldach(name + "Dach", eltern, x, round(oben, 2), z, breite, laenge,
-               dachhoehe if dachhoehe is not None else breite * 0.6, gier=gier, mat=dach)
-    return oben
+    if art is None:
+        art = 1 if hoehe >= 14 and laenge >= 30 else (2 if mat == "Material_holz" else 0)
+    werte = [x, z, gier, breite, laenge, b0, tief, hoehe, dachhoehe if dachhoehe is not None else breite * 0.6,
+             WAENDE.get(mat, 2), 1 if dach == "Material_dach" else 0, art]
+    N(name, "Node3D", eltern, f"""script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array({_zahlen(werte)})""")
+    return b0 + hoehe

@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" path="res://texturen/metall_rau.jpg" id="3_rau"]
 
 [resource]
-albedo_color = Color(1, 1, 1, 1)
+albedo_color = Color(0.6, 0.6, 0.62, 1)
 albedo_texture = ExtResource("1_farbe")
 metallic = 0.6
 roughness = 1.0
@@ -13,7 +13,7 @@ roughness_texture = ExtResource("3_rau")
 roughness_texture_channel = 0
 normal_enabled = true
 normal_texture = ExtResource("2_normal")
-uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_scale = Vector3(1, 1, 1)
 uv1_triplanar = true
 uv1_triplanar_sharpness = 4.0
 uv1_world_triplanar = true

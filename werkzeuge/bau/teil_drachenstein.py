@@ -59,7 +59,7 @@ schild("SchildPalas", BG, round(px_, 2), 24, round(pz_, 2), "Palas", 40)
 
 MB = WL(PD.MITTLERE_BURG)
 mauerring("MittlereBurg", BG, MB, 10.0, dicke=3.0, geschlossen=True, mitte=(0, 0), turm_r=5.0,
-         tore={3: (0.93, 7.0, "Tor der Wolfsfeste"), 5: (0.46, 6.0, "Westtor der Wolfsfeste"), 0: (0.6, 6.0, "Zwingertor")})
+         tore={3: (0.85, 7.0, "Tor der Wolfsfeste"), 5: (0.46, 6.0, "Westtor der Wolfsfeste"), 0: (0.6, 6.0, "Zwingertor")})
 # Rampe im Mittleren Zwinger vom Nordwesttor des Kernhofs hinauf zum Zwingertor (Hoher Zwinger, +18)
 z0, z1 = MB[0], MB[1]
 oben_x, oben_z = entlang(z0, z1, 0.6, 3.5, (0, 0))
@@ -124,12 +124,9 @@ box("AbsatzUrkern", BG, round(gx + (ox - gx) * _aus, 2), PD.H_URKERN - 0.3, roun
     gier=round(gier_zu(ux2, uz2), 2))
 # Bergfried des Urkerns
 bx, bz = UK_MITTE[0] - 6, UK_MITTE[1] - 8
-box("BergfriedUrkern", BG, round(bx, 2), PD.H_URKERN + 21, round(bz, 2), 15, 46, 15, "Material_basalt")
-turmdach("BergfriedUrkernDach", BG, round(bx, 2), PD.H_URKERN + 44, round(bz, 2), 11, 12, kanten=4, gier=45)
-for k in range(4):
-    w = math.radians(45 + 90 * k)
-    zyl(f"BergfriedErker{k}", BG, round(bx + 8.2 * math.cos(w), 2), PD.H_URKERN + 41, round(bz + 8.2 * math.sin(w), 2),
-        1.6, 6, "Material_basalt", 8)
+N("BergfriedUrkern", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+torbauten = PackedFloat32Array({_zahlen([bx, bz, 1, 0, PD.H_URKERN - 2, PD.H_URKERN + 42, 15, 15, 1, 1.0])})
+stein = \"basalt\"""")
 schild("SchildBergfried", BG, round(bx, 2), PD.H_URKERN + 60, round(bz, 2), "Bergfried (Urkern)", 56)
 # Kapelle (7) am Urkern
 KP = WL(PD.KAPELLE_URKERN)
@@ -140,8 +137,8 @@ schild("SchildKapelle", BG, round(kx, 2), PD.H_URKERN + 16, round(kz, 2), "Kapel
 
 # Aussichtsplattform: hoher Turm mit Spitzhelm an der Spitze der Oberen Burg
 ax_, az_ = W(PD.AUSSICHTSPLATTFORM)
-zyl("Aussichtsturm", BG, ax_, PD.H_OBERE_BURG + 12, az_, 6.5, 30, "Material_mauer", 16)
-turmdach("AussichtsturmDach", BG, ax_, PD.H_OBERE_BURG + 27, az_, 7.5, 14)
+N("Aussichtsturm", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+tuerme = PackedFloat32Array({_zahlen([ax_, az_, PD.H_OBERE_BURG - 4, PD.H_OBERE_BURG + 27, 6.5, 1, 14])})""")
 schild("SchildAussicht", BG, ax_, PD.H_OBERE_BURG + 45, az_, "Aussichtsplattform", 48)
 # Bauten in der Oberen Burg: Speicher, Zeughaus, Wohnbau
 for k, (pp, laenge, breite, g, name) in enumerate([((540, 85), 30, 11, -30, "Speicher"), ((680, 95), 26, 10, 25, "Zeughaus"),
