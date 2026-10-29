@@ -172,6 +172,7 @@ func _st(flaechen: Dictionary, mat: String) -> SurfaceTool:
 	if not flaechen.has(mat):
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		st.set_smooth_group(-1)   # kantig: sonst glättet generate_normals über die Kanten hinweg
 		flaechen[mat] = st
 	return flaechen[mat]
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=70 format=3]
+[gd_scene load_steps=72 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -33,6 +33,8 @@
 [ext_resource type="Texture2D" path="res://texturen/sand_farbe.jpg" id="tex_sand_farbe"]
 [ext_resource type="Texture2D" path="res://texturen/schnee_farbe.jpg" id="tex_schnee_farbe"]
 [ext_resource type="Texture2D" path="res://texturen/sumpf_farbe.jpg" id="tex_sumpf_farbe"]
+[ext_resource type="Texture2D" path="res://texturen/pflaster_farbe.jpg" id="tex_pflaster_farbe"]
+[ext_resource type="Texture2D" path="res://texturen/pflaster_normal.jpg" id="tex_pflaster_normal"]
 [ext_resource type="Material" path="res://material/mauer.tres" id="Material_mauer"]
 [ext_resource type="Material" path="res://material/hell.tres" id="Material_hell"]
 [ext_resource type="Material" path="res://material/basalt.tres" id="Material_basalt"]
@@ -81,6 +83,15 @@ ssao_enabled = true
 ssao_radius = 1.6
 ssao_intensity = 1.6
 ssao_power = 1.4
+ssil_enabled = true
+ssil_radius = 4.0
+ssil_intensity = 0.8
+sdfgi_enabled = true
+sdfgi_use_occlusion = true
+sdfgi_read_sky_light = true
+sdfgi_cascades = 6
+sdfgi_min_cell_size = 0.3
+sdfgi_energy = 0.9
 glow_enabled = true
 glow_intensity = 0.35
 glow_strength = 0.9
@@ -91,10 +102,10 @@ fog_mode = 0
 fog_light_color = Color(0.62, 0.66, 0.72, 1)
 fog_sun_scatter = 0.25
 fog_density = 0.012
-fog_aerial_perspective = 0.35
+fog_aerial_perspective = 0.5
 fog_sky_affect = 0.25
 fog_height = 0.0
-fog_height_density = 0.0015
+fog_height_density = 0.0008
 adjustment_enabled = true
 adjustment_saturation = 1.08
 adjustment_contrast = 1.04
@@ -114,6 +125,8 @@ shader_parameter/fels_normal = ExtResource("tex_fels_normal")
 shader_parameter/sand_farbe = ExtResource("tex_sand_farbe")
 shader_parameter/schnee_farbe = ExtResource("tex_schnee_farbe")
 shader_parameter/sumpf_farbe = ExtResource("tex_sumpf_farbe")
+shader_parameter/pflaster_farbe = ExtResource("tex_pflaster_farbe")
+shader_parameter/pflaster_normal = ExtResource("tex_pflaster_normal")
 shader_parameter/sand = Vector3(0.55, 0.55, 0.45)
 shader_parameter/gras = Vector3(0.8, 0.82, 0.7)
 shader_parameter/gras_trocken = Vector3(0.75, 0.72, 0.55)
@@ -206,7 +219,7 @@ directional_shadow_split_1 = 0.06
 directional_shadow_split_2 = 0.18
 directional_shadow_split_3 = 0.45
 directional_shadow_blend_splits = true
-directional_shadow_max_distance = 320.0
+directional_shadow_max_distance = 500.0
 script = ExtResource("1_tageslicht")
 umgebung = NodePath("../Umgebung")
 mond = NodePath("../Mond")

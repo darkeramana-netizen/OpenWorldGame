@@ -84,12 +84,9 @@ for k, (pp, laenge, breite, g) in enumerate([((660, 745), 34, 12, 85), ((700, 76
     x, z = W(pp)
     steinbau(f"Docklager{k}", HF, x, z, laenge, breite, 10, gier=g, mat="Material_holz", dach="Material_dach")
 schild("SchildDocklager", HF, *(lambda p: (p[0], KAI_OBEN + 16, p[1]))(W((660, 745))), "Docklager", 40)
-# Schiffe im Becken
-for k, (pp, g) in enumerate([((545, 770), 92), ((585, 820), 85), ((560, 870), 95), ((650, 820), 0)]):
-    x, z = W(pp)
-    box(f"Schiff{k}", HF, x, -19.6, z, 18, 3.2, 5.5, "Material_holz", gier=g)
-    zyl(f"Mast{k}", HF, x, -9, z, 0.3, 18, "Material_holz", 6, False)
-    box(f"Rahe{k}", HF, x, -4, z, 0.3, 0.3, 9, "Material_holz", gier=g, kollision=False)
+# Schiffe im Becken: Koggen (szenen/welt/ausstattung.gd, Art 5), die Wasserlinie liegt bei -20
+SCHIFFE = [(5, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in [((545, 770), 2), ((585, 820), -5), ((560, 870), 5),
+                                                                       ((650, 820), 90)]]
 schild("SchildKai", HF, *(lambda p: (p[0], KAI_OBEN + 6, p[1]))(W((565, 760))), "Drachenkai", 64)
 
 # --- Markt (8), Kirche, Rathaus und weitere Bauten des Marktviertels ---
@@ -102,10 +99,35 @@ zyl("Brunnen", MK, mx, round(mb + 0.4, 2), mz, 2.8, 1.2, "Material_hell", 14)
 zyl("BrunnenWasser", MK, mx, round(mb + 0.95, 2), mz, 2.4, 0.1, "Material_wasser_becken", 14, False)
 zyl("BrunnenSaeule", MK, mx, round(mb + 2.2, 2), mz, 0.4, 3.0, "Material_hell", 10)
 STAENDE = [W((515, 540)), W((585, 545)), W((515, 640)), W((585, 650)), W((520, 590)), W((580, 600))]
-for i, (x, z) in enumerate(STAENDE):
-    y = H(x, z)
-    box(f"Stand{i+1}", MK, round(x, 2), round(y + 0.5, 2), round(z, 2), 3, 1.0, 2, "Material_holz")
-    box(f"StandDach{i+1}", MK, round(x, 2), round(y + 2.4, 2), round(z, 2), 3.4, 0.15, 2.4, "Material_stoff", kollision=False)
+# Weitere Stände in zwei Reihen an den Längsseiten des Platzes (nur Ausstattung, ohne Händler)
+STAENDE_MEHR = [W(p) for p in [(515, 565), (515, 615), (515, 665), (585, 572), (585, 625), (585, 675), (535, 520), (565, 522)]]
+# Zwei Reihen mitten auf dem Platz, zwischen den Gassen; um den Brunnen bleibt Platz
+STAENDE_MEHR += [W((px, py)) for px in (528, 539, 561, 572) for py in range(518 + (px % 2) * 9, 692, 18) if abs(py - 597) > 16
+                 and all(math.dist((px, py), q) > 9 for q in [(515, 540), (585, 545), (515, 640), (585, 650), (520, 590), (580, 600)])]
+# Ausstattung: (Art, x, y, z, Gier). Arten siehe szenen/welt/ausstattung.gd: 0 Fass, 1 Kiste, 2 Säcke, 3 Stand, 4 Karren
+E("Script", "res://szenen/welt/ausstattung.gd", "29_ausstattung")
+AUSSTATTUNG = [(3, x, H(x, z), z, 0) for x, z in STAENDE + STAENDE_MEHR] + SCHIFFE
+random.seed(912)
+# Westkai zwischen den Docklagern und der Kaikante: Fässer, Kisten und Säcke in Gruppen, dazu Karren
+for py in range(722, 890, 14):
+    if abs(py - 780) < 8:
+        continue   # dort steht die Lotsin
+    gx, gz = W((random.uniform(492, 500), py))
+    for k in range(random.randint(2, 4)):
+        art = random.choice((0, 0, 1, 1, 2))
+        x, z = gx + random.uniform(-1.6, 1.6), gz + random.uniform(-1.2, 1.2)
+        AUSSTATTUNG.append((art, x, -17.8, z, random.uniform(0, 360)))
+for pp in [(497, 745), (497, 835)]:
+    x, z = W(pp)
+    AUSSTATTUNG.append((4, x + 3, -17.8, z, 90 + random.uniform(-15, 15)))
+# Neben jedem Stand ein paar Fässer und Kisten (auf der vom Platz abgewandten Seite)
+for x, z in STAENDE_MEHR:
+    seite = 1 if z > MARKT_MITTE[1] else -1
+    for k in range(2):
+        px, pz = x + random.uniform(-1.2, 1.2), z + seite * random.uniform(2.0, 2.6)
+        AUSSTATTUNG.append((random.choice((0, 1, 2)), px, H(px, pz), pz, random.uniform(0, 360)))
+N("Ausstattung", "Node3D", ST, "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
+  + ", ".join(f"{v:.5g}" for st_ in AUSSTATTUNG for v in st_) + ")")
 schild("SchildMarkt", MK, mx, round(mb + 7, 2), mz, "Marktplatz", 64)
 
 kx, kz = W(PD.KIRCHE[0])

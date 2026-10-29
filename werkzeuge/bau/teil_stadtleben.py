@@ -28,7 +28,10 @@ def _bau(pp, laenge, breite, gier=0):
     x, z = W(pp)
     return (x, z, breite, laenge, gier)
 RECHTECKE = [(h[0], h[2], HAUSFORMEN[h[5]][0], HAUSFORMEN[h[5]][1] + 2 * VORKRAGUNG, h[3]) for h in HAEUSER] + [
-    (x, z, 3, 2, 0) for x, z in STAENDE] + [
+    (x, z, 3.4, 2.4, 0) for x, z in STAENDE] + [
+    (x, z, 0.9 if art != 2 else 1.3, 0.9, gier) for art, x, y, z, gier in AUSSTATTUNG if art in (0, 1, 2)] + [
+    (x, z, 1.8, 3.2, gier) for art, x, y, z, gier in AUSSTATTUNG if art == 4] + [
+    (x, z, 3.4, 2.4, 0) for x, z in STAENDE_MEHR] + [
     _bau(PD.KIRCHE[0], 66, 30, 90), _bau(PD.KIRCHTURM, 10, 10)] + [
     _bau(pp, l * 1.117, b * 1.117, 90 if l > b else 0) for pp, l, b in (PD.RATHAUS, PD.BADEHAUS, PD.MUEHLE, PD.SCHMIEDE)] + [
     _bau(pp, l, b, g) for pp, l, b, g in [((660, 745), 34, 12, 85), ((700, 760), 30, 11, 5), ((470, 790), 30, 12, 0),

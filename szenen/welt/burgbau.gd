@@ -38,6 +38,11 @@ extends Node3D
 	set(w):
 		gebaeude = w
 		_neu_bauen()
+## Ohne Kollision: nur Optik (z. B. über den alten Hofmauern aus Akt I, deren Körper bleiben)
+@export var kollision := true:
+	set(w):
+		kollision = w
+		_neu_bauen()
 ## Steinart der Mauern: Name eines Materials in material/ (mauer, basalt, kai, hell, bruchstein)
 @export var stein := "mauer":
 	set(w):
@@ -115,6 +120,8 @@ func _baue() -> void:
 	anzeige.name = "Mesh"
 	anzeige.mesh = mesh
 	add_child(anzeige)
+	if not kollision:
+		return
 	var koerper := StaticBody3D.new()
 	koerper.name = "Kollision"
 	var form := CollisionShape3D.new()
@@ -130,6 +137,8 @@ func _st(mat: String, rund := false) -> SurfaceTool:
 	if not d.has(mat):
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		if not rund:
+			st.set_smooth_group(-1)   # kantig: sonst glättet generate_normals über die Kanten hinweg
 		d[mat] = st
 	return d[mat]
 
@@ -321,9 +330,12 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 			_klotz("dunkel", c + d * (r - 0.05), t, d, -0.08, 0.08, 0.0, 0.08, y - 0.6, y + 0.6)
 	if dach == 1:
 		# Kegeldach mit Traufe und Knauf
-		_ring("dach", c, r - 0.2, r + 0.45, oben + 0.2, teile, false)
-		_kegel("dach", c, r + 0.45, oben + 0.2, dachhoehe, teile)
-		_kegel("metall", c, 0.25, oben + 0.2 + dachhoehe - 0.3, 1.4, 8)
+		# Traufkranz: ein schmaler Mauerring, auf dem das Dach mit kurzem Überstand sitzt
+		_mantel(stein, c, r + 0.15, r + 0.15, oben - 0.2, oben + 0.35, teile)
+		_ring(stein, c, r, r + 0.15, oben - 0.2, teile, false)
+		_ring("dach", c, r - 0.2, r + 0.4, oben + 0.35, teile, false)
+		_kegel("dach", c, r + 0.4, oben + 0.35, dachhoehe, teile)
+		_kegel("metall", c, 0.25, oben + 0.35 + dachhoehe - 0.3, 1.4, 8)
 		_ring(stein, c, 0.0, r, oben, teile, true)
 	else:
 		# Zinnenkranz auf Kragsteinen

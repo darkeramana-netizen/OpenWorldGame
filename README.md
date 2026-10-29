@@ -12,6 +12,22 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 ## Stand
 
+### Grafik: echte Steine, echte Burgen
+
+Weg vom Klötzchen-Look, Richtung Valheim:
+
+- **Fotogescannte Texturen** statt selbst erzeugter: Mauern, Bruchstein, Basalt, Putz, Holz, Ziegel und Schiefer, Pflaster, Fels, Gras, Erde, Sand, Schnee und Sumpf. Alle sind CC0 (frei nutzbar) von [Poly Haven](https://polyhaven.com) und [ambientCG](https://ambientcg.com). `werkzeuge/texturen_laden.py` lädt sie, `texturen/groessen.json` nennt Quelle, Autoren und echte Größe.
+- **Stein-Shader** (`szenen/welt/stein.gdshader`) für alle Steinmaterialien: keine sichtbare Wiederholung (zwei Maßstäbe, großflächige Farbschwankung), Moos und Flechten auf Mauerkronen, Zinnen und Gesimsen.
+- **Burg-Baukasten** (`szenen/welt/burgbau.gd`): Mauern, Türme und Tore sind keine Quader mehr, sondern echte Geometrie:
+  - Mauern mit schrägem Anlauf am Fuß, Gesims, Wehrgang mit Plattenbelag, Brustwehr und Zinnen mit Schießscharten.
+  - Rundtürme mit Anlauf und Gesims, entweder mit Kegeldach samt Knauf oder mit Zinnenkranz auf Kragsteinen.
+  - Torbögen mit Bogensteinen und hochgezogenem Fallgitter, eckige Tortürme mit Eckquadern, Pechnasen und Zeltdach.
+  - Gebäude (Palas, Kirche, Rathaus, Zeughaus, Speicher, Docklager, die Hofbauten aus Akt I) mit Sockel, Stockwerksgesimsen, Fenstern mit Steinrahmen und Fensterkreuz, Türen mit Beschlägen, Dächern mit Überstand, Firstziegeln und Schornstein.
+  - Die Bauskripte legen nur Lage und Maße fest (`teil_mauern.py`: `mauerring`, `steinbau`); gebaut wird beim Laden.
+- **Ausstattung** (`szenen/welt/ausstattung.gd`): rund 50 Marktstände mit gestreiften Markisen und Waren, Fässer, Kisten, Säcke, Handkarren und Koggen im Hafen.
+- **Licht:** indirektes Licht (SDFGI, SSIL), deutlich weniger Dunst, 8K-Schattenkarte mit weichen Schatten, 4× MSAA und 16× anisotrope Filterung.
+- **Akt I:** Die Hofmauern, der Wachturm und die Hofbauten haben die neue Optik; ihre alten Kollisionskörper bleiben unsichtbar, damit alles wie gewohnt begehbar ist.
+
 ### Drachenstein nach dem echten Grundriss: fünf Burgen den Berg hinauf
 
 Drachenstein ist neu gebaut, genau nach deinem Grundriss ([`docs/bilder/grundriss-drachenstein.webp`](docs/bilder/grundriss-drachenstein.webp)) und im Maßstab 1:1 (200 m im Plan = 200 m im Spiel). Die Feste ist jetzt rund 1 km lang und 900 m breit. Der Plan ist gedreht eingebaut: Plan-Süd (Hafen) liegt im Osten am Wächtermeer, der Burgberg im Westen.
@@ -39,7 +55,7 @@ Drachenstein ist neu gebaut, genau nach deinem Grundriss ([`docs/bilder/grundris
 Weg vom Klötzchen-Look: Die Welt hat Texturen, Licht, Bewuchs und richtige Figuren, und Drachenstein ist eine große Stadt mit zwei Mauerringen.
 
 **Texturen und Materialien:**
-- Alle Texturen erzeugt `werkzeuge/texturen_erzeugen.py` selbst aus Rauschen und Formen, ohne fremde Lizenzen: Quader, Bruchstein, Basalt, Putz, Holz, Dachziegel, Steinplatten, Kopfsteinpflaster, Stoff, Metall, Gras, Erde, Fels, Sand, Schnee, Sumpf und die Wolken.
+- Die Texturen sind inzwischen Fotoscans (siehe oben); `werkzeuge/texturen_erzeugen.py` erzeugt nur noch die Wolken und schreibt die Materialien.
 - Jede Textur hat Farbe, Normalen und Rauheit. Die Materialien in `material/` legen sie triplanar in Weltgröße auf, so haben Mauersteine überall die richtige Größe.
 
 **Licht und Himmel:**
@@ -496,7 +512,7 @@ szenen/
   figuren/werkbank.tscn    Arbeitsstelle (kostet Spielzeit)
 daten/dialoge/             Gespräche als JSON-Dateien
 daten/drachenstein_plan.json      Grundriss von Drachenstein in Weltkoordinaten (aus werkzeuge/bau/plan_drachenstein.py, der Geländeerzeuger liest ihn)
-texturen/                  erzeugte Texturen (werkzeuge/texturen_erzeugen.py)
+texturen/                  Fotoscans (werkzeuge/texturen_laden.py, Quellen in groessen.json) und Wolken
 material/                  Materialien aus diesen Texturen (triplanar, in Weltgröße)
 daten/gelaende/            Höhen (hoehen.r32), Wege und Sumpf (maske.png), Vorschau der Region Drachenstein
 daten/gelaende_riverlock/  dasselbe für Riverlock
@@ -548,8 +564,9 @@ python3 werkzeuge/bau/region_riverlock.py      # schreibt szenen/welt/region_riv
 python3 werkzeuge/bau/region_ashenveil.py      # schreibt szenen/welt/region_ashenveil.tscn
 python3 werkzeuge/bau/region_strasse.py        # schreibt die drei Landstraßen
 python3 werkzeuge/dialoge_stadt.py             # schreibt die Alltagsdialoge der Stadtleute
-python3 werkzeuge/texturen_erzeugen.py         # erzeugt alle Texturen und material/*.tres neu
-python3 werkzeuge/texturen_erzeugen.py dach    # nur eine Textur (Namen siehe Skript), "material" nur die .tres
+python3 werkzeuge/texturen_laden.py            # lädt die Fotoscans (Poly Haven, ambientCG) nach texturen/
+python3 werkzeuge/texturen_erzeugen.py material  # schreibt material/*.tres (Steine mit stein.gdshader)
+python3 werkzeuge/texturen_erzeugen.py         # erzeugt nur die Wolken neu
 ```
 
 Prüfen ohne zu schreiben: `BAU_NUR_PRUEFEN=1 python3 werkzeuge/bau/region_drachenstein.py`. Mit zusätzlich `BAU_KARTE=plan.png` zeichnet das Skript einen Lageplan der Stadt mit Straßen, Häusern und Mauern.

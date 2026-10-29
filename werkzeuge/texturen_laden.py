@@ -1,4 +1,5 @@
-"""Lädt fotogescannte Texturen von Poly Haven (polyhaven.com, alle CC0) nach texturen/.
+"""Lädt fotogescannte Texturen von Poly Haven (polyhaven.com) und ambientCG (ambientcg.com), alle CC0,
+nach texturen/.
 
 Jede Textur wird unter unserem Namen abgelegt (<name>_farbe.jpg, <name>_normal.jpg, <name>_rau.jpg), so dass
 Materialien, Geländeshader und Häuser sie ohne Änderung nutzen. Die echte Größe einer Kachel (Meter) schreibt
@@ -30,13 +31,15 @@ QUELLEN = {
     "stoff": ("rough_linen", "1k", True),
     "metall": ("rusty_metal_02", "1k", False),
     "fels": ("aerial_rocks_02", "2k", False),             # Gelände: Steilhänge, Burgberg
-    "gras": ("leafy_grass", "2k", False),
+    "gras": ("acg:Grass004", "2k", False),               # ambientCG: grüne Wiese
     "erde": ("forest_ground_04", "2k", False),
     "sand": ("coast_sand_01", "1k", False),
     "schnee": ("snow_02", "1k", False),
     "sumpf": ("mud_forest", "1k", False),
 }
 API = "https://api.polyhaven.com"
+# Kantenlänge einer Kachel für ambientCG-Texturen (die API nennt keine Größe)
+ACG_METER = {"Grass004": 2.0}
 
 
 def hole(url):
@@ -45,8 +48,25 @@ def hole(url):
         return antwort.read()
 
 
+def lade_acg(name, ac, aufl):
+    import zipfile
+    daten = hole(f"https://ambientcg.com/get?file={ac}_{aufl.upper()}-JPG.zip")
+    with zipfile.ZipFile(io.BytesIO(daten)) as z:
+        for endung, schluessel, modus in [("farbe", "Color", "RGB"), ("normal", "NormalGL", "RGB"), ("rau", "Roughness", "L")]:
+            datei = next(n for n in z.namelist() if n.endswith(f"_{schluessel}.jpg"))
+            bild = Image.open(io.BytesIO(z.read(datei))).convert(modus)
+            if endung == "rau" and bild.width > 1024:
+                bild = bild.resize((1024, 1024), Image.LANCZOS)
+            bild.save(ZIEL / f"{name}_{endung}.jpg", quality=88, optimize=True)
+    meter = ACG_METER.get(ac, 2.0)
+    print(f"{name:10s} ← ambientCG {ac} ({aufl}, {meter} m)")
+    return f"https://ambientcg.com/view?id={ac}", meter, {"ambientCG": "Lennart Demes"}
+
+
 def lade(name):
     ph, aufl, grau = QUELLEN[name]
+    if ph.startswith("acg:"):
+        return lade_acg(name, ph[4:], aufl)
     dateien = json.loads(hole(f"{API}/files/{ph}"))
     info = json.loads(hole(f"{API}/info/{ph}"))
     for schluessel, endung, modus in [("Diffuse", "farbe", "RGB"), ("nor_gl", "normal", "RGB"), ("Rough", "rau", "L")]:
@@ -68,6 +88,7 @@ if __name__ == "__main__":
     groessen = json.loads(groessen_datei.read_text()) if groessen_datei.exists() else {}
     for name in namen:
         ph, meter, autoren = lade(name)
-        groessen[name] = {"meter": meter, "quelle": f"https://polyhaven.com/a/{ph}", "lizenz": "CC0",
+        quelle = ph if ph.startswith("http") else f"https://polyhaven.com/a/{ph}"
+        groessen[name] = {"meter": meter, "quelle": quelle, "lizenz": "CC0",
                           "autoren": ", ".join(autoren)}
     groessen_datei.write_text(json.dumps(groessen, ensure_ascii=False, indent=1), encoding="utf-8")

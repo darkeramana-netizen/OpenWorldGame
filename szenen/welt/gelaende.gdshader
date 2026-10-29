@@ -29,8 +29,8 @@ uniform vec2 pflaster_punkte[64];
 uniform int pflaster_laengen[4];
 
 // Färbung, z. B. trockeneres Gras in Ashenveil
-uniform vec3 gras = vec3(0.9, 1.0, 0.85);
-uniform vec3 gras_trocken = vec3(1.08, 1.02, 0.85);
+uniform vec3 gras = vec3(1.0, 1.0, 1.0);
+uniform vec3 gras_trocken = vec3(1.12, 1.05, 0.82);
 uniform vec3 fels = vec3(1.0, 1.0, 1.0);
 uniform vec3 schnee = vec3(1.0, 1.0, 1.0);
 uniform vec3 sand = vec3(1.0, 1.0, 1.0);
@@ -39,7 +39,7 @@ uniform vec3 sumpf = vec3(1.0, 1.0, 1.0);
 
 // Kachelgrößen in Metern (Fotoscans von Poly Haven, siehe texturen/groessen.json). In der Ferne wird jede Textur
 // zusätzlich 6,5-mal größer daruntergemischt, das bricht die Wiederholung.
-const float M_GRAS = 2.5;
+const float M_GRAS = 2.0;
 const float M_ERDE = 3.2;
 const float M_SAND = 8.0;
 const float M_SUMPF = 2.4;
@@ -125,6 +125,8 @@ void fragment() {
 	// In der Stadt sind die Wege gepflastert, zwischen den Häusern liegen Höfe aus festgetretener Erde.
 	float in_stadt = gepflastert(p);
 	float a_pflaster = in_stadt * smoothstep(0.1, 0.5, m.r) * (1.0 - a_fels);
+	// Kais am Hafen (Höhe der Kaimauern) sind gepflastert
+	a_pflaster = max(a_pflaster, in_stadt * (1.0 - smoothstep(-17.6, -17.0, h)) * step(meeresspiegel + 0.5, h) * (1.0 - a_fels));
 	a_erde = max(a_erde, in_stadt * (1.0 - a_fels) * smoothstep(0.45, 0.75, gross) * 0.6);
 	a_weg *= 1.0 - in_stadt;
 
