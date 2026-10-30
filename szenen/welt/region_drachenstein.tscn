@@ -960,9 +960,9 @@ multimesh = SubResource("Zinnen")
 [node name="Bruecken" type="Node3D" parent="."]
 
 [node name="Mole0" type="CSGBox3D" parent="Bruecken"]
-transform = Transform3D(0.99765, 0, 0.068538, 0, 1, 0, -0.068538, 0, 0.99765, 252, -19, -12.75)
+transform = Transform3D(0.99839, 0, 0.056693, 0, 1, 0, -0.056693, 0, 0.99839, 256, -19, -12.5)
 use_collision = true
-size = Vector3(86.19, 2.4, 7)
+size = Vector3(94.14, 2.4, 7)
 material = ExtResource("Material_kai")
 
 [node name="Bruecke1" type="Node3D" parent="Bruecken"]
