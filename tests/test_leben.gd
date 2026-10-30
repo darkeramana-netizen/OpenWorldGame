@@ -234,8 +234,8 @@ func _initialize() -> void:
 	var hedda := stadt("BuergerHedda")
 	var marit := stadt("Fischhaendlerin")
 	var pim := stadt("KindPim")
-	pruefe(hedda.visible and flach(hedda.global_position).distance_to(Vector2(288.27, 38.95)) < 1.0, "Vormittags ist Hedda Korn auf dem Markt")
-	pruefe(marit.visible and flach(marit.global_position).distance_to(Vector2(256.98, -25.66)) < 1.0, "Marit Hoff steht an ihrem Fischstand")
+	pruefe(hedda.visible and flach(hedda.global_position).distance_to(Vector2(130.5, 123.7)) < 1.0, "Vormittags ist Hedda Korn auf dem Markt")
+	pruefe(marit.visible and flach(marit.global_position).distance_to(Vector2(130.5, 101.7)) < 1.0, "Marit Hoff steht an ihrem Fischstand")
 	pruefe(pim.visible and pim.unterwegs(), "Pim rennt um den Brunnen")
 	var p0 := pim.global_position
 	await warte(1.0)
@@ -243,7 +243,7 @@ func _initialize() -> void:
 			"… und folgt dabei dem Boden")
 
 	# --- Nachts: alle im Haus, die Nachtstreife unterwegs ---
-	await setze(Vector3(-10, 0.3, 15))
+	await setze(Vector3(-10, 14.3, 15))
 	await setze_zeit(23.0)
 	pruefe(not hedda.visible and not marit.visible and not pim.visible, "Nachts sind Bürger, Händler und Kinder im Haus")
 	pruefe(stadt("StreifeMarten").visible and stadt("StreifeMarten").unterwegs(), "Die Nachtstreife geht ihre Runde")
@@ -253,11 +253,11 @@ func _initialize() -> void:
 	# --- Morgens kommt die Tagstreife heraus, Händler gehen zu ihren Ständen ---
 	await setze_zeit(6.0)
 	pruefe(stadt("StreifeHahn").visible and not stadt("StreifeMarten").visible, "Wachwechsel bei Morgengrauen")
-	pruefe(marit.visible and flach(marit.global_position).distance_to(Vector2(256.98, -25.66)) < 1.0, "Bei Morgengrauen steht die Händlerin schon am Stand (Spieler weit weg)")
+	pruefe(marit.visible and flach(marit.global_position).distance_to(Vector2(130.5, 101.7)) < 1.0, "Bei Morgengrauen steht die Händlerin schon am Stand (Spieler weit weg)")
 
 	# --- Vor den Augen des Spielers wird gegangen ---
 	await setze_zeit(10.0)
-	await setze(Vector3(291, hedda.global_position.y + 0.5, 34))
+	await setze(Vector3(133, hedda.global_position.y + 0.5, 126))
 	await setze_zeit(11.99)
 	await warte(1.2)   # Mittag beginnt
 	var start := hedda.global_position
@@ -269,7 +269,7 @@ func _initialize() -> void:
 		var b := boden_unter(hedda.global_position, hedda)
 		if not is_nan(b) and absf(hedda.global_position.y - b) > 0.4:
 			schwebt = true
-	pruefe(not hedda.unterwegs() and flach(hedda.global_position).distance_to(Vector2(320.62, 6.7)) < 0.5, "… und kommt am Brunnen an (steht bei %s)" % flach(hedda.global_position))
+	pruefe(not hedda.unterwegs() and flach(hedda.global_position).distance_to(Vector2(141.6, 111.5)) < 0.5, "… und kommt am Brunnen an (steht bei %s)" % flach(hedda.global_position))
 	pruefe(hedda.global_position.distance_to(start) > 2.0 and not schwebt, "… ohne zu schweben oder zu versinken")
 
 	# --- Wer angesprochen wird, bleibt stehen ---
@@ -330,7 +330,7 @@ func _initialize() -> void:
 	pruefe(marit.visible, "Nach dem Alarm ist der Markt wieder offen")
 
 	# --- Stille-Stunde: heim, nur der Küster bleibt bis zur Nacht ---
-	await setze(Vector3(-10, 0.3, 15))
+	await setze(Vector3(-10, 14.3, 15))
 	await setze_zeit(19.2)
 	pruefe(not marit.visible and not hedda.visible and stadt("Kuester").visible, "Zur Stille-Stunde gehen alle heim, der Küster bleibt an der Kirche")
 
@@ -342,7 +342,7 @@ func _initialize() -> void:
 	await warte_auf_szene(alt)
 	pruefe(not stadt("BuergerHedda").visible and stadt("StreifeStrom").visible, "Nach dem Laden: nachts im Haus, die Nachtstreife unterwegs")
 	await setze_zeit(10.0)
-	pruefe(stadt("BuergerHedda").visible and flach(stadt("BuergerHedda").global_position).distance_to(Vector2(288.27, 38.95)) < 1.0,
+	pruefe(stadt("BuergerHedda").visible and flach(stadt("BuergerHedda").global_position).distance_to(Vector2(130.5, 123.7)) < 1.0,
 			"Am Vormittag ist Hedda wieder auf dem Markt")
 
 	print("\nFehler: ", fehler)

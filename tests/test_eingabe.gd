@@ -32,7 +32,7 @@ func _initialize() -> void:
 	for i in 5: await process_frame
 	var sp = current_scene.get_node("Spieler")
 	var hinweis = current_scene.get_node("HUD/Hinweis")
-	sp.global_position = Vector3(3, 0.1, 36.5)
+	sp.global_position = Vector3(3, 14.1, 36.5)
 	for i in 5: await physics_frame
 	pruefe(hinweis.text == "[E] Sprechen – Kammerhüter Wendel Groth", "Hinweis beim Kammerhüter")
 	await druecke(KEY_E)
@@ -41,15 +41,15 @@ func _initialize() -> void:
 		await druecke(KEY_1)
 	pruefe(not D.aktiv and S.rang == 1, "Mit Taste 1 durch das Vorgespräch bis zum Gelöbnis")
 	S.setze_flag("aufgabe_steine")
-	sp.global_position = Vector3(17, 0.1, 8.5)
+	sp.global_position = Vector3(17, 14.1, 8.5)
 	for i in 5: await physics_frame
 	pruefe(hinweis.text == "[E] Aufheben – Bruchstein", "Hinweis beim Bruchstein")
 	await druecke(KEY_E)
 	pruefe(S.zaehler_wert("bruchsteine") == 1, "E hebt den Stein auf")
-	sp.global_position = Vector3(-12, 8.2, 31)
+	sp.global_position = Vector3(-12, 22.2, 31)
 	for i in 5: await physics_frame
 	pruefe(hinweis.text == "[E] Sprechen – Hüter Anselm Kray", "Hinweis oben auf dem Wehrgang")
-	sp.global_position = Vector3(-14, 0.1, 26)
+	sp.global_position = Vector3(-14, 14.1, 26)
 	for i in 5: await physics_frame
 	pruefe(hinweis.text == "", "Kein Ansprechen durch die Mauer von unten")
 	print("\nFehler: ", fehler)

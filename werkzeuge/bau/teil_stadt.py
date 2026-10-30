@@ -1,16 +1,13 @@
-# ---------- Die Stadt Drachenstein nach dem Grundriss: Marktviertel, Hafen, Vorburg, Löwenward ----------
+# ---------- Festungsstadt und Hafendorf Drachenstein nach dem Grundriss ----------
 # Wird aus teil_drachenstein.py ausgeführt (PD = plan_drachenstein, W = Planpunkt → Welt, Mauer-Bausteine).
-#   I   Untere Burg (Marktviertel): langer Marktplatz (8) vom Treppentor hinab zum Hafen, Kirche St. Georg (22),
-#       Rathaus (24), Schmiedehaus (27), Badehaus (29), Mühle (30), Bürgerhäuser (25) in Zeilen an den Straßen
-#   V   Hafenbezirk (Drachenkai): Hafenbecken (31) mit Kaimauern, Kanal (32), Docklager (33), Schiffstor (34),
-#       Zollhaus (35)
-#   IV  Vorburg: Gärten (36, 37) zwischen innerer Vorburgmauer und Löwenward
-#   V   Löwenward: äußerer Artillerie-Ring mit Rundtürmen und den Toren nach Gravemarch, zum Küstenweg (Westtor)
-#       und zur Nordstraße (Südöstliches Tor, 19)
+# Unten in der Ebene: die Stadt mit Fachwerkhäusern, St. Marien und dem Marktplatz hinter der Stadtmauer mit dem
+# Torhaus West; daneben der Drachenhafen mit Kaimauern, Hafenmauer, Speicher und Koggen. Die Hafenpforte verbindet
+# Stadt und Hafen, das Hafentor (in der Ringmauer) führt zum Weg hinauf zur Burg.
 # Die Häuser zeichnet szenen/welt/stadthaeuser.gd; die Hausformen (Breite, Tiefe) stehen dort.
 import re
 
 E("Script", "res://szenen/welt/stadthaeuser.gd", "27_stadthaeuser")
+E("Script", "res://szenen/welt/ausstattung.gd", "29_ausstattung")
 HAUSFORMEN = [(float(b), float(t), int(g)) for b, t, g in re.findall(
     r"\[(\d+\.\d+), (\d+\.\d+), (\d), \d, (?:true|false), \d, \d\]",
     (REPO / "szenen" / "welt" / "stadthaeuser.gd").read_text(encoding="utf-8"))]
@@ -20,77 +17,55 @@ KAI_OBEN = PD.H_HAFEN
 
 ST = DS + "/Stadt"
 N("Stadt", "Node3D", DS)
+HF = DS + "/Drachenhafen"
+N("Drachenhafen", "Node3D", DS)
 
-# --- Straßen ---
 STRASSEN = [WL(s) for s in PD.STRASSEN]
-# Landstraßen vor den Toren (für die Tore in der Löwenward)
-AUSSENWEGE = [[(-72.6, 181.3), (-120, 215), (-220, 170)], [(474.2, -296.6), (430, -380)], [(502.4, 425.0), (500, 520)]]
-STRASSE_HALB = 3.0      # die Gassen im Marktviertel sind eng
+STRASSE_HALB = 2.4      # die Gassen sind eng
 MARKT = WL(PD.MARKTPLATZ)
-STADT_UMRISS = WL(PD.LOEWENWARD + [(520, 905), (612, 905)] + PD.LOEWENWARD_OST)
-ring = STADT_UMRISS
+STADT_UMRISS = WL(PD.STADT)
+MITTE_STADT = W((400, 540))
 
-# --- Löwenward: äußerer Ring (V) ---
-LW = WL(PD.LOEWENWARD)
-LWO = WL(PD.LOEWENWARD_OST)
-MITTE_STADT = W((560, 560))
-mauerring("Loewenward", ST, LW, 13.0, dicke=4.0, mitte=MITTE_STADT, turm_r=7.0, turm_dach=False,
-         strassen=AUSSENWEGE, torbreite=7.0, torname="Tor nach Gravemarch",
-         tore={7: (0.1, 7.0, "Westtor (Küstenweg)")})
-mauerring("LoewenwardOst", ST, LWO, 13.0, dicke=4.0, mitte=MITTE_STADT, turm_r=7.0, turm_dach=False,
-         tore={1: (0.9, 7.0, "Südöstliches Tor (Nordstraße)")})
-# Vorburg (IV): innere Mauer zwischen Gärten und Marktviertel, Mauer um den Garten 36 mit dem Vorburgtor (11)
-mauerring("VorburgMauer", ST, WL(PD.VORBURG_INNEN), 8.0, dicke=3.0, mitte=MITTE_STADT, turm_r=4.5,
-         strassen=STRASSEN, torname="")
-mauerring("VorburgGarten", ST, WL(PD.VORBURG_GARTEN), 8.0, dicke=3.0, mitte=W((380, 330)), turm_r=4.5,
-         tore={1: (0.15, 6.0, "Vorburgtor")})
-# Mauer zwischen Burg und Marktviertel
-mauerring("StadtmauerNord", ST, WL(PD.STADTMAUER_NORD), 7.0, dicke=3.0, mitte=MITTE_STADT, turm_r=3.5,
-         strassen=STRASSEN)
-if PD.STADTMAUER_NORD_OST:
-    mauerring("StadtmauerNordOst", ST, WL(PD.STADTMAUER_NORD_OST), 7.0, dicke=3.0, mitte=MITTE_STADT, turm_r=3.5,
-             strassen=STRASSEN)
+# --- Stadtmauer mit Torhaus West und der Hafenpforte ---
+SM = PD.STADTMAUER
+mauerring("Stadtmauer", ST, WL(SM), 8.0, dicke=3.0, mitte=MITTE_STADT, strassen=STRASSEN, torname="Hafenpforte",
+         tore=tor_an(SM, PD.TORE["Torhaus West"], 6.0, "Torhaus West"))
+_st = []
+for pp in [(240, 600), (330, 665), (420, 674), (600, 664)]:
+    x, z = W(pp)
+    _st += [x, z, H(x, z) - 4, H(x, z) + 11, 4.5, 0, 0]
+N("StadtmauerTuerme", "Node3D", ST, f"""script = ExtResource("28_burgbau")
+tuerme = PackedFloat32Array({_zahlen(_st)})""")
 
-# --- V Hafenbezirk ---
-HF = DS + "/Drachenkai"
-N("Drachenkai", "Node3D", DS)
+# --- Drachenhafen ---
 BECKEN = WL(PD.HAFENBECKEN)
-KANAL = WL(PD.KANALBECKEN)
 def kaimauer(name, punkte, offen=()):
     for i, (a, b) in enumerate(zip(punkte, punkte[1:] + punkte[:1])):
         if i in offen:
             continue
         mauerring(f"{name}{i}", HF, [a, b], 0.9, dicke=2.0, zinnen=False, mat="Material_kai")
-kaimauer("KaiBecken", BECKEN, offen=(1, 3))
-kaimauer("KaiKanal", KANAL, offen=(3,))
-# Ostkai des Beckens mit der Öffnung zum Kanal
-b1a, b1b = BECKEN[1], BECKEN[2]
-for k, (t0, t1) in enumerate([(0.0, 0.36), (0.8, 1.0)]):
-    a = (b1a[0] + (b1b[0] - b1a[0]) * t0, b1a[1] + (b1b[1] - b1a[1]) * t0)
-    b = (b1a[0] + (b1b[0] - b1a[0]) * t1, b1a[1] + (b1b[1] - b1a[1]) * t1)
-    mauerring(f"KaiOst{k}", HF, [a, b], 0.9, dicke=2.0, zinnen=False, mat="Material_kai")
-# Schiffstor (34) mit zwei Türmen, Zollhaus (35)
-for k, pp in enumerate([(536, 912), (594, 912)]):
+kaimauer("KaiBecken", BECKEN, offen=(4,))
+HM = PD.HAFENMAUER_OST
+mauerring("Hafenmauer", HF, WL(HM), 8.0, dicke=3.0, mitte=W((720, 520)),
+         tore=tor_an(HM, (831, 505), 5.0, "Molentor"))
+mauerring("Speicherkai", HF, WL([(640, 642), (770, 646), (790, 630)]), 6.0, dicke=3.0, mitte=W((720, 520)))
+_ht = []
+for pp, r in [((792, 628), 6.0)]:
     x, z = W(pp)
-    zyl(f"Schiffstorturm{k}", HF, x, KAI_OBEN + 5, z, 6.0, 30, "Material_mauer", 16)
-    turmdach(f"Schiffstorturm{k}Dach", HF, x, KAI_OBEN + 20, z, 6.8, 8)
-schild("SchildSchiffstor", HF, *(lambda p: (p[0], KAI_OBEN + 32, p[1]))(W((565, 912))), "Schiffstor", 48)
-zx, zz = W(PD.ZOLLHAUS)
-zyl("Zollhaus", HF, zx, KAI_OBEN + 6, zz, 7.5, 22, "Material_mauer", 16)
-turmdach("ZollhausDach", HF, zx, KAI_OBEN + 17, zz, 8.3, 7)
-schild("SchildZoll", HF, zx, KAI_OBEN + 27, zz, "Zollhaus", 44)
-# Docklager (33) östlich des Beckens und am Westkai
-for k, (pp, laenge, breite, g) in enumerate([((660, 745), 34, 12, 85), ((700, 760), 30, 11, 5), ((470, 790), 30, 12, 0),
-                                             ((480, 880), 22, 12, 30)]):
-    x, z = W(pp)
-    steinbau(f"Docklager{k}", HF, x, z, laenge, breite, 10, gier=g, mat="Material_holz", dach="Material_dach")
-schild("SchildDocklager", HF, *(lambda p: (p[0], KAI_OBEN + 16, p[1]))(W((660, 745))), "Docklager", 40)
-# Schiffe im Becken: Koggen (szenen/welt/ausstattung.gd, Art 5), die Wasserlinie liegt bei -20
-SCHIFFE = [(5, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in [((545, 770), 2), ((585, 820), -5), ((560, 870), 5),
-                                                                       ((650, 820), 90)]]
-schild("SchildKai", HF, *(lambda p: (p[0], KAI_OBEN + 6, p[1]))(W((565, 760))), "Drachenkai", 64)
+    _ht += [x, z, KAI_OBEN - 6, KAI_OBEN + 12, r, 0, 0]
+N("HafenTuerme", "Node3D", HF, f"""script = ExtResource("28_burgbau")
+tuerme = PackedFloat32Array({_zahlen(_ht)})""")
+sx, sz = W(PD.SPEICHER[0])
+steinbau("Speicher", HF, sx, sz, PD.SPEICHER[1] * M, PD.SPEICHER[2] * M, 9, gier=0, mat="Material_holz",
+         dach="Material_dach", boden=KAI_OBEN, art=2)
+schild("SchildSpeicher", HF, sx, KAI_OBEN + 18, sz, "Speicher", 40)
+_hm = W((720, 520))
+schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
+# Koggen im Becken (szenen/welt/ausstattung.gd, Art 5; die Wasserlinie liegt bei -20)
+SCHIFFE = [(5, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in
+           [((660, 480), 80), ((745, 478), 95), ((700, 560), 85), ((770, 545), 60)]]
 
-# --- Markt (8), Kirche, Rathaus und weitere Bauten des Marktviertels ---
+# --- Marktplatz mit Brunnen und Ständen ---
 MK = DS + "/Marktplatz"
 N("Marktplatz", "Node3D", DS)
 MARKT_MITTE = W(PD.MARKT_MITTE)
@@ -99,54 +74,25 @@ mb = H(mx, mz)
 zyl("Brunnen", MK, mx, round(mb + 0.4, 2), mz, 2.8, 1.2, "Material_hell", 14)
 zyl("BrunnenWasser", MK, mx, round(mb + 0.95, 2), mz, 2.4, 0.1, "Material_wasser_becken", 14, False)
 zyl("BrunnenSaeule", MK, mx, round(mb + 2.2, 2), mz, 0.4, 3.0, "Material_hell", 10)
-# Stände in zwei Reihen an den Längsseiten des Platzes wie im Plan; die ersten sechs haben Händler
-_STAND_PLAN = [(533, 548), (586, 552), (533, 648), (586, 656), (533, 580), (586, 585)]
-STAENDE = [W(p) for p in _STAND_PLAN]
-STAENDE_MEHR = [W((px, py)) for px in (533, 586) for py in range(540, 690, 13) if abs(py - 612) > 11
-                and all(math.dist((px, py), q) > 9 for q in _STAND_PLAN)]
-# Ausstattung: (Art, x, y, z, Gier). Arten siehe szenen/welt/ausstattung.gd: 0 Fass, 1 Kiste, 2 Säcke, 3 Stand, 4 Karren
-E("Script", "res://szenen/welt/ausstattung.gd", "29_ausstattung")
-AUSSTATTUNG = [(3, x, H(x, z), z, 0) for x, z in STAENDE + STAENDE_MEHR] + SCHIFFE
-random.seed(912)
-# Westkai zwischen den Docklagern und der Kaikante: Fässer, Kisten und Säcke in Gruppen, dazu Karren
-for py in range(722, 890, 14):
-    if abs(py - 780) < 8:
-        continue   # dort steht die Lotsin
-    gx, gz = W((random.uniform(492, 500), py))
-    for k in range(random.randint(2, 4)):
-        art = random.choice((0, 0, 1, 1, 2))
-        x, z = gx + random.uniform(-1.6, 1.6), gz + random.uniform(-1.2, 1.2)
-        AUSSTATTUNG.append((art, x, -17.8, z, random.uniform(0, 360)))
-for pp in [(497, 745), (497, 835)]:
-    x, z = W(pp)
-    AUSSTATTUNG.append((4, x + 3, -17.8, z, 90 + random.uniform(-15, 15)))
-# Neben jedem Stand ein paar Fässer und Kisten (auf der vom Platz abgewandten Seite)
-for x, z in STAENDE_MEHR:
-    seite = 1 if z > MARKT_MITTE[1] else -1
-    for k in range(2):
-        px, pz = x + random.uniform(-1.2, 1.2), z + seite * random.uniform(2.0, 2.6)
-        AUSSTATTUNG.append((random.choice((0, 1, 2)), px, H(px, pz), pz, random.uniform(0, 360)))
-N("Ausstattung", "Node3D", ST, "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
-  + ", ".join(f"{v:.5g}" for st_ in AUSSTATTUNG for v in st_) + ")")
 schild("SchildMarkt", MK, mx, round(mb + 7, 2), mz, "Marktplatz", 64)
+# Stände in zwei Reihen an den Längsseiten; die ersten sechs haben Händler
+_STAND_PLAN = [(472, 489), (536, 489), (472, 547), (536, 547), (494, 489), (514, 547)]
+STAENDE = [W(p) for p in _STAND_PLAN]
+STAENDE_MEHR = [W((px, py)) for py in (489, 547) for px in range(472, 550, 21)
+                if all(math.dist((px, py), q) > 8 for q in _STAND_PLAN)]
 
-kx, kz = W(PD.KIRCHE[0])
-steinbau("KircheStGeorg", ST, kx, kz, 70, 34, 22, gier=90, mat="Material_hell", dachhoehe=17)
-tx, tz = W(PD.KIRCHTURM)
+# --- St. Marien ---
+kx, kz = W(PD.ST_MARIEN[0])
+steinbau("StMarien", ST, kx, kz, PD.ST_MARIEN[1] * M, PD.ST_MARIEN[2] * M, 15, gier=0, mat="Material_hell",
+         dachhoehe=10, art=1)
+tx, tz = W(PD.ST_MARIEN_TURM)
 tb = H(tx, tz)
-N("Kirchturm", "Node3D", ST, f"""script = ExtResource("28_burgbau")
-torbauten = PackedFloat32Array({_zahlen([tx, tz, 1, 0, tb - 2, tb + 40, 10, 10, 1, 2.4])})
+N("StMarienTurm", "Node3D", ST, f"""script = ExtResource("28_burgbau")
+torbauten = PackedFloat32Array({_zahlen([tx, tz, 1, 0, tb - 2, tb + 30, 8, 8, 1, 2.4])})
 stein = \"hell\"""")
-schild("SchildKirche", ST, tx, round(tb + 68, 2), tz, "Kirche St. Georg", 56)
-for name, (pp, laenge, breite), hoehe in [("Rathaus", PD.RATHAUS, 16), ("Badehaus", PD.BADEHAUS, 9), ("Muehle", PD.MUEHLE, 11),
-                                          ("Schmiedehaus", PD.SCHMIEDE, 8)]:
-    x, z = W(pp)
-    oben = steinbau(name, ST, x, z, laenge * 1.117, breite * 1.117, hoehe, gier=90 if laenge > breite else 0,
-                    mat="Material_hell" if name == "Rathaus" else "Material_mauer", dach="Material_dach")
-    schild(f"Schild{name}", ST, round(x, 2), round(oben + 9, 2), round(z, 2),
-           {"Muehle": "Mühle", "Schmiedehaus": "Schmiedehaus"}.get(name, name), 48)
+schild("SchildKirche", ST, tx, round(tb + 52, 2), tz, "St. Marien", 56)
 
-# --- Bürgerhäuser (25) in Zeilen entlang der Straßen und um den Markt ---
+# --- Bürgerhäuser in Zeilen entlang der Gassen und um den Markt ---
 def rechteck(x, z, b, t, gier):
     a = math.radians(gier); c, s = math.cos(a), math.sin(a)
     return [(x + c * px + s * pz, z - s * px + c * pz) for px, pz in [(-b / 2, -t / 2), (b / 2, -t / 2), (b / 2, t / 2), (-b / 2, t / 2)]]
@@ -169,48 +115,28 @@ def im_vieleck(p, poly):
             innen = not innen
     return innen
 
-def pr(pp, laenge, breite, g=0):
+def pr(bau, rand=1.0):
+    """Sperrfläche für einen Bau aus dem Plan ((Mitte), Länge entlang Plan-x, Breite, Drehung)."""
+    (pp, laenge, breite, dreh) = bau
     x, z = W(pp)
-    return rechteck(x, z, breite * 1.117, laenge * 1.117, g)
-
-def konvexe_teile(poly):
-    """Ein Vieleck als Fächer aus Dreiecken (für die Überlappungsprüfung, die nur konvexe Formen kann)."""
-    return [[poly[0], poly[i], poly[i + 1]] for i in range(1, len(poly) - 1)]
-
-SPERR = [MARKT] + [t for z in (PD.AEUSSERER_ZWINGER, PD.OSTTERRASSE, PD.HAFENBECKEN, PD.KANALBECKEN, PD.DOCK_OST, PD.KAI_WEST)
-                   for t in konvexe_teile(WL(z))] + [
-    pr(PD.KIRCHE[0], 72, 38, 90), pr(PD.KIRCHTURM, 12, 12), pr(PD.RATHAUS[0], 40, 28, 90), pr(PD.BADEHAUS[0], 30, 24, 90),
-    pr(PD.MUEHLE[0], 24, 24), pr(PD.SCHMIEDE[0], 22, 20, 90), pr((565, 912), 90, 30), pr((470, 790), 30, 26),
-    pr((480, 880), 26, 26), pr(PD.ZOLLHAUS, 20, 20)]
-# Gärten der Vorburg (zwischen innerer Vorburgmauer und Löwenward) und Garten 36 bleiben frei
-VORBURG_GAERTEN = WL([(398, 385), (300, 510), (220, 690), (362, 833), (165, 765), (100, 632), (210, 437), (325, 300)])
-GARTEN36 = WL([(325, 300), (400, 268), (418, 195), (358, 190), (320, 255)])
-FREI_FLAECHEN = [VORBURG_GAERTEN, GARTEN36]
-MAUERN = [LW, LWO, WL(PD.VORBURG_INNEN), WL(PD.STADTMAUER_NORD), WL(PD.STADTMAUER_NORD_OST),
-          WL(PD.AEUSSERER_ZWINGER), WL(PD.OSTTERRASSE)]
+    return rechteck(x, z, breite * M + 2 * rand, laenge * M + 2 * rand, -dreh)
 
 def abstand_vieleck(p, poly):
     return 0.0 if im_vieleck(p, poly) else min(abstand_linie([a, b], *p) for a, b in zip(poly, poly[1:] + poly[:1]))
 
-EBENE = WL(PD.MARKTVIERTEL)
+SPERR = [MARKT, pr(PD.ST_MARIEN, 2.0), pr((PD.ST_MARIEN_TURM, 18, 18, 0))]
+MAUERN = [WL(SM), WL(PD.RINGMAUER)]
 
 def bauplatz_frei(ecken4, haeuser_ecken, halb):
-    # Bürgerhäuser stehen nur in der Ebene des Marktviertels, nicht am Burgberg
-    if not all(im_vieleck(p, EBENE) for p in ecken4):
+    if not all(im_vieleck(p, STADT_UMRISS) for p in ecken4):
         return False
-    if any(im_vieleck(p, f) for f in FREI_FLAECHEN for p in ecken4):
-        return False
-    # auch Punkte entlang der Wände prüfen: sonst könnte eine Straße mitten durch ein Haus laufen
+    # auch Punkte entlang der Wände prüfen: sonst könnte eine Gasse mitten durch ein Haus laufen
     rand = [(a[0] + (b[0] - a[0]) * k / 4, a[1] + (b[1] - a[1]) * k / 4)
             for a, b in zip(ecken4, ecken4[1:] + ecken4[:1]) for k in range(1, 4)]
-    if any(min(abstand_linie(s, x, z) for s in STRASSEN) < STRASSE_HALB - 0.3 for x, z in rand):
+    if any(min(abstand_linie(s, x, z) for s in STRASSEN) < STRASSE_HALB - 0.3 for x, z in rand + ecken4):
         return False
     for x, z in ecken4:
         if min(abstand_linie(m, x, z) for m in MAUERN) < 3.5:
-            return False
-        if min(abstand_linie(s, x, z) for s in STRASSEN) < STRASSE_HALB - 0.3:
-            return False
-        if min(abstand_vieleck((x, z), b) for b in (BECKEN, KANAL)) < 12:
             return False
     if any(ueberlappen(ecken4, r) for r in SPERR):
         return False
@@ -219,9 +145,7 @@ def bauplatz_frei(ecken4, haeuser_ecken, halb):
 random.seed(1754)
 HAEUSER = []          # (x, y, z, gier, Abstand zur Straße, Form) – für teil_stadtleben.py
 _haus_ecken = []
-# Zeilen: (Linienzug, halbe Breite bis zur Hauswand, Seiten)
 ZEILEN = [(s, STRASSE_HALB, (-1, 1)) for s in STRASSEN]
-# Häuser rund um den Markt, die Front zum Platz
 markt_ring = MARKT + [MARKT[0]]
 ZEILEN += [([a, b], 0.6, (1, -1)) for a, b in zip(markt_ring, markt_ring[1:])]
 for linie, halb, seiten in ZEILEN:
@@ -244,9 +168,9 @@ for linie, halb, seiten in ZEILEN:
                 gier = math.degrees(math.atan2(-nx, -nz))   # Vorderseite (+z lokal) zur Straße
                 ecken4 = rechteck(hx, hz, b + 0.1, t + 2 * VORKRAGUNG, gier)
                 if bauplatz_frei(ecken4, _haus_ecken, halb):
-                    tx, tz = hx - nx * (t / 2), hz - nz * (t / 2)
+                    tx_, tz_ = hx - nx * (t / 2), hz - nz * (t / 2)
                     hoehen = [H(x, z) for x, z in ecken4]
-                    y = H(tx, tz)
+                    y = H(tx_, tz_)
                     if max(hoehen) - y < 3.5:
                         HAEUSER.append((round(hx, 2), round(y, 2), round(hz, 2), round(gier, 1), halb, form))
                         _haus_ecken.append(ecken4)
@@ -259,11 +183,31 @@ N("Stadthaeuser", "Node3D", DS, "script = ExtResource(\"27_stadthaeuser\")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HAEUSER) + ")")
 print("Stadthäuser:", len(HAEUSER))
 
+# --- Ausstattung: Stände, Kram, Koggen ---
+AUSSTATTUNG = [(3, x, H(x, z), z, 0) for x, z in STAENDE + STAENDE_MEHR] + SCHIFFE
+random.seed(912)
+# Nordkai zwischen Ringmauer und Becken: Fässer, Kisten, Säcke in Gruppen, dazu Karren
+for px in range(630, 720, 15):
+    gx, gz = W((px, random.uniform(414, 418)))
+    for k in range(random.randint(2, 4)):
+        art = random.choice((0, 0, 1, 1, 2))
+        AUSSTATTUNG.append((art, gx + random.uniform(-1.2, 1.2), KAI_OBEN, gz + random.uniform(-1.6, 1.6), random.uniform(0, 360)))
+for pp in [(652, 417), (700, 417)]:
+    x, z = W(pp)
+    AUSSTATTUNG.append((4, x - 2.5, KAI_OBEN, z, random.uniform(-15, 15)))
+for x, z in STAENDE_MEHR:
+    # neben dem Stand in der Reihe, nicht auf den Wegen davor und dahinter
+    for seite in (-1, 1):
+        px_, pz_ = x + random.uniform(-0.6, 0.6), z + seite * random.uniform(2.4, 2.8)
+        AUSSTATTUNG.append((random.choice((0, 1, 2)), px_, H(px_, pz_), pz_, random.uniform(0, 360)))
+N("Ausstattung", "Node3D", ST, "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
+  + ", ".join(f"{v:.5g}" for st_ in AUSSTATTUNG for v in st_) + ")")
+
 if os.environ.get("BAU_KARTE"):
     # Lageplan zum Prüfen: BAU_NUR_PRUEFEN=1 BAU_KARTE=datei.png python3 werkzeuge/bau/region_drachenstein.py
     from PIL import Image, ImageDraw
-    x0, z0, m = -340, -420, 1.0
-    bild = Image.new("RGB", (int(1060 * m), int(980 * m)), (70, 90, 60))
+    x0, z0, m = -160, -300, 1.6
+    bild = Image.new("RGB", (int(420 * m), int(640 * m)), (70, 90, 60))
     zeichnung = ImageDraw.Draw(bild)
     P = lambda p: ((p[0] - x0) * m, (p[1] - z0) * m)
     for j in range(0, bild.height, 3):
@@ -272,14 +216,16 @@ if os.environ.get("BAU_KARTE"):
             if h < -19.5:
                 farbe = (40, 70, 120)
             else:
-                t = max(0, min(1, (h + 20) / 55)); farbe = (int(70 + 120 * t), int(90 + 100 * t), int(60 + 100 * t))
+                t = max(0, min(1, (h + 20) / 30)); farbe = (int(60 + 150 * t), int(80 + 130 * t), int(50 + 130 * t))
             zeichnung.rectangle([i, j, i + 2, j + 2], fill=farbe)
-    for r in SPERR + FREI_FLAECHEN:
+    for r in SPERR:
         zeichnung.polygon([P(p) for p in r], outline=(200, 200, 0))
-    for s in STRASSEN:
+    for s in STRASSEN + [WL(w) for w in PD.BURGWEGE] + [WL(PD.KAIWEG)]:
         zeichnung.line([P(p) for p in s], fill=(150, 130, 100), width=int(STRASSE_HALB * 2 * m))
     for e in _haus_ecken:
         zeichnung.polygon([P(p) for p in e], fill=(190, 90, 70), outline=(60, 30, 20))
-    for linie in MAUERN + [WL(PD.URKERN), WL(PD.OBERE_BURG), WL(PD.MITTLERE_BURG), WL(PD.KERNHOF)]:
+    for linie in [WL(SM), WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.VORBURG + PD.VORBURG[:1]), WL(PD.BURGHOF2 + PD.BURGHOF2[:1]),
+                  WL(PD.BURGHOF3), WL(PD.ZWINGER_KERNBURG), WL(PD.KERNBURG + PD.KERNBURG[:1]), BECKEN + BECKEN[:1], WL(HM)]:
         zeichnung.line([P(p) for p in linie], fill=(230, 230, 230), width=3)
+    zeichnung.rectangle([P((-31, -31)), P((31, 31))], outline=(255, 0, 0), width=2)
     bild.save(os.environ["BAU_KARTE"])

@@ -1,7 +1,7 @@
 # ---------- Schwarzer Bergfried ----------
 # Begehbarer Turm nach dem Schnitt: Unterbau (Ebenen -4 bis -1), Schwelle, Schaft, Krone.
 BF = "SchwarzerBergfried"
-BF_X, BF_Z = 990, 150   # Mitte des Bergfrieds auf seiner Insel (werkzeuge/gelaende_erzeuger.gd, BERGFRIED)
+BF_X, BF_Z = 500, 100   # Mitte des Bergfrieds auf seiner Insel (werkzeuge/gelaende_erzeuger.gd, BERGFRIED)
 BF_WINKEL = round(math.degrees(math.atan2(95 - 135, 212 - 250)), 2)  # Richtung zur Brücke: Eingang und Treppentür
 BF_BODEN = [-24, -18, -12, -6, 0, 8, 15, 22, 29, 37, 44, 53, 60, 68]
 BF_NUMMERN = list(range(-4, 9))

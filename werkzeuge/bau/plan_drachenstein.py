@@ -1,22 +1,28 @@
-"""Grundriss der Burgfeste Drachenstein (docs/bilder/grundriss-drachenstein.webp), digitalisiert.
+"""Grundriss der Burgfeste Drachenstein (docs/bilder/grundriss-drachenstein-2.webp), digitalisiert.
 
-Alle Punkte stehen in Bildpunkten des Plans (x nach rechts, y nach unten). Maßstab laut Leiste:
-200 m = 179 px, also 1,117 m je Bildpunkt (1:1 übernommen). Der Plan ist gedreht eingebaut:
-Plan-Süd (Hafen) zeigt in der Welt nach Osten (+x, zum Wächtermeer), Plan-Ost nach Norden (-z).
-Die Mitte des Kernhofs (2) ist der Weltursprung (0, 0), dort liegt der Hof aus Akt I.
+Alle Punkte stehen in Bildpunkten des Plans (x nach rechts, y nach unten). Maßstab: 0,5 m je Bildpunkt (die ganze
+Anlage ist rund 650 m lang). Der Plan ist gedreht eingebaut: Plan-Süd (Stadt und Hafen) zeigt in der Welt nach Osten
+(+x, zum Wächtermeer), Plan-Ost (Kernburg) nach Norden (-z). Die Mitte des III. Burghofs ist der Weltursprung (0, 0):
+Dort liegt der Hof aus Akt I (burg_hof.tscn, Mauern bei ±31 m), angehoben auf HOF_Y.
 
-Höhen (Welt-y, Meer bei -20) nach den Schnitten A-A und B-B: Die Burgen liegen auf einer Felskuppe, nur
-Marktviertel und Hafen in der Ebene. Hafen -17,8 · Marktviertel -16,5 bis -15 · Gärten und Löwenward am Hang ·
-Äußerer Zwinger -3 · Kernhof 0 (Hof aus Akt I) · Hoher Zwinger +6 · Oberer Burg +12 · Urkern +18.
-Einziger Weg vom Markt hinauf ist die Treppe mittig vom Marktplatz durch die Stadtmauer zum Äußeren Zwinger.
+Aufbau nach dem Plan und den Schnitten A-A und B-B:
+  Auf einem Felsgrat liegen hintereinander die I. Vorburg, der II. Burghof, der III. Burghof (Hof aus Akt I) und
+  die Kernburg mit Bergfried, Palas, Drachenkapelle, Burgküche und Zeughaus, umgeben von der Zwingermauer.
+  Eine Ringmauer (Stadtmauer) mit Torhäusern, Halbturm, Wehrturm, Zwinger und Rondell umschließt den Grat.
+  Unten in der Ebene liegen die Stadt mit St. Marien und dem Marktplatz und der Drachenhafen mit Speicher.
+  Zugang zur Burg: durch das Hafentor auf den Weg unter den Felsen, über die Rampe hinauf zum II. Burghof.
+
+Höhen (Welt-y, Meer bei -20): Hafen -17,8 · Stadt -16,5 bis -14 · Weg unter den Felsen -16 bis +6 ·
+I. Vorburg +8 · II. Burghof +11 · III. Burghof +14 (Hof aus Akt I) · Kernburg +20 · Zwinger der Kernburg +17.
+Unter den Burgmauern bricht der Fels steil zum Zwinger ab, außen an der Ringmauer zur Ebene.
 
 Ausführen schreibt daten/drachenstein_plan.json für den Geländeerzeuger (werkzeuge/gelaende_erzeuger.gd).
 """
 import json, math
 from pathlib import Path
 
-MASSSTAB = 200.0 / 179.0
-MITTE = (565.0, 322.0)          # Kernhof (2) im Plan
+MASSSTAB = 0.5
+MITTE = (735.0, 228.0)          # Mitte des III. Burghofs im Plan = Hof aus Akt I
 
 
 def welt(p):
@@ -29,156 +35,155 @@ def welt_liste(punkte):
     return [welt(p) for p in punkte]
 
 
+def plan(w):
+    """Weltpunkt (x, z) → Planpunkt (für Prüfungen)."""
+    return (MITTE[0] - w[1] / MASSSTAB, MITTE[1] + w[0] / MASSSTAB)
+
+
 # ---------- Höhenstufen ----------
 H_HAFEN = -17.8
-H_MARKT_OBEN = -15.0      # am Fuß der Treppe
-H_MARKT_UNTEN = -16.5     # am Hafenbecken
-H_EBENE = -14.0           # Land außerhalb der Löwenward am Fuß der Kuppe
-H_ZWINGER = -3.0
-H_KERNHOF = 0.0
-H_MITTLERER_ZWINGER = 1.5
-H_HOHER_ZWINGER = 6.0
-H_OBERE_BURG = 12.0
-H_URKERN = 18.0
-H_OSTTERRASSE = -8.0      # spätmittelalterliche Verdichtung (4), tiefer am Osthang
-H_VORBURG = -9.0          # Gärten der Vorburg (36, 37) am Westhang (Mittelwert, sie fallen zur Ebene ab)
+H_STADT_WEST = -14.0      # am Torhaus West
+H_STADT_OST = -16.5       # am Hafen
+H_MARKT = -15.2
+HOF_Y = 14.0              # Höhe des Hofs aus Akt I (III. Burghof); szenen/welt/burg_hof.tscn liegt dort
+H_VORBURG = 8.0
+H_BURGHOF2 = 11.0
+H_KERNHOF = HOF_Y         # III. Burghof
+H_KERNBURG = 20.0
+H_ZWINGER = 17.0          # Zwinger um die Kernburg
+H_EBENE = -14.0           # Land vor der Ringmauer
 
-# ---------- Mauerringe (Planpunkte, im Uhrzeigersinn) ----------
-URKERN = [(585, 112), (618, 92), (668, 112), (677, 150), (652, 172), (612, 180), (585, 165), (578, 140)]
-KAPELLE_URKERN = [(540, 125), (578, 125), (578, 168), (540, 168)]          # Kapelle (7)
-OBERE_BURG = [(512, 195), (502, 105), (560, 75), (612, 55), (695, 78), (712, 125), (722, 185)]
-HOHER_ZWINGER = [(512, 195), (540, 172), (585, 168), (652, 175), (680, 158), (722, 185), (700, 248),
-                 (652, 298), (605, 250), (533, 212)]
-# Im Plan etwas größer als gezeichnet (Faktor 1,18), damit der quadratische Innere Burghof (4) aus Akt I
-# mit Abstand hineinpasst.
-KERNHOF = [(round(MITTE[0] + (x - MITTE[0]) * 1.18, 1), round(MITTE[1] + (y - MITTE[1]) * 1.18, 1))
-           for x, y in [(518, 292), (560, 280), (608, 300), (612, 345), (590, 365), (545, 365), (520, 342)]]
-INNERER_BURGHOF = [(-33, -33), (33, -33), (33, 33), (-33, 33)]   # Welt, burg_hof.tscn (Mauern bei ±31)
-MITTLERE_BURG = [(533, 212), (605, 250), (652, 298), (640, 420), (565, 400), (492, 350), (497, 262)]
-# Der Zwinger hat zum Markt hin ein gerades Mauerstück (536-560, 462) mit dem Treppentor in der Mitte
-AEUSSERER_ZWINGER = [(502, 105), (470, 140), (440, 190), (418, 250), (415, 330), (420, 395), (520, 440),
-                     (536, 462), (560, 462), (634, 450), (690, 420), (705, 300), (722, 185), (712, 125)]
-OSTTERRASSE = [(712, 125), (745, 150), (790, 290), (850, 430), (780, 420), (720, 445), (690, 420),
-               (705, 300), (722, 185)]
-# Löwenward: äußerer Artillerie-Ring (V), vom Drachenhorst im Westen (Plan-Nord) über Plan-West,
-# Plan-Süd (Hafen) und Plan-Ost zurück zum Drachenhorst. Die Lücke am Hafen ist das Schiffstor.
-LOEWENWARD = [(502, 105), (418, 195), (358, 190), (320, 255), (325, 300), (210, 437), (100, 632), (165, 765),
-              (362, 833), (435, 880), (500, 900)]
-LOEWENWARD_OST = [(640, 890), (700, 850), (845, 735), (885, 670), (915, 555), (890, 490), (850, 430),
-                  (830, 320), (790, 270), (745, 150), (712, 125)]
-# Innere Mauer der Vorburg zwischen den Gärten (37) und dem Marktviertel, und um den Garten 36
-VORBURG_INNEN = [(398, 385), (300, 510), (220, 690), (362, 833)]
-VORBURG_GARTEN = [(325, 300), (400, 268), (418, 195)]
-# Stadtmauer zwischen Burgberg und Marktviertel; wo die Treppe sie kreuzt (549, 515), entsteht das Tor
-STADTMAUER_NORD = [(300, 510), (440, 515), (660, 515), (790, 505), (850, 470)]
-STADTMAUER_NORD_OST = []
-# Hafen (VI): Kaimauern um das Becken (31), Docks (33), Kanal (32), Schiffstor (34), Hafentor (20), Zollhaus (35)
-HAFENBECKEN = [(522, 705), (608, 705), (612, 900), (588, 912), (542, 912), (518, 900)]
-KANALBECKEN = [(612, 780), (680, 780), (690, 860), (612, 860)]
-KAI_WEST = [(470, 700), (522, 705), (518, 900), (500, 900), (470, 870)]
-DOCK_OST = [(608, 705), (720, 720), (730, 790), (612, 780)]
+# ---------- Burgen auf dem Grat ----------
+VORBURG = [(318, 250), (360, 232), (445, 212), (458, 270), (450, 330), (420, 352), (350, 358), (312, 300)]
+BURGHOF2 = [(458, 270), (445, 212), (472, 215), (530, 192), (600, 182), (636, 160), (636, 290),
+            (625, 322), (580, 336), (513, 326), (487, 294)]
+BURGHOF3 = [(636, 160), (650, 136), (838, 134), (842, 310), (668, 318), (645, 300), (636, 290)]
+KERNBURG = [(878, 255), (878, 185), (912, 138), (965, 126), (1065, 116), (1100, 150), (1102, 280), (1062, 302),
+            (950, 302), (896, 288)]
+ZWINGER_KERNBURG = [(842, 310), (838, 134), (852, 120), (885, 105), (965, 88), (1085, 92), (1142, 135),
+                    (1152, 250), (1112, 322), (1000, 338), (895, 332), (850, 318)]
+# Ringmauer (Stadtmauer um den Grat): von Torhaus West über Halbturm, Torhaus Nord, Wehrturm, Zwinger und Rondell
+# bis zum Hafentor; der südliche Teil ist zugleich die Mauer zwischen Burgbezirk und Stadt.
+RINGMAUER = [(150, 430), (172, 330), (190, 225), (240, 195), (285, 172), (330, 180), (450, 145), (560, 100),
+             (640, 72), (720, 76), (800, 95), (880, 60), (960, 36), (1100, 30), (1190, 55), (1230, 140), (1245, 250),
+             (1215, 345), (1100, 375), (1000, 393), (900, 405), (785, 412), (700, 403), (600, 390), (470, 373),
+             (360, 394), (250, 406)]
+# Stadt: von Torhaus West nach Süden, an der Hafenmauer hinauf zur Mauer unter dem Grat
+STADTMAUER = [(150, 430), (180, 500), (240, 600), (330, 665), (420, 674), (560, 674), (600, 664), (590, 560),
+              (600, 470), (615, 425)]
+STADT = STADTMAUER + [(470, 373), (360, 394), (250, 406)]
+# Hafen: Becken mit Kaimauern, östliche Hafenmauer mit Rundturm, Speicherkai im Süden mit Turm
+HAFENBECKEN = [(632, 452), (700, 444), (790, 452), (812, 472), (820, 560), (800, 598), (760, 610), (652, 608),
+               (634, 560), (622, 486)]
+HAFENMAUER_OST = [(785, 412), (828, 440), (832, 532)]
+SPEICHERKAI = [(640, 612), (770, 614), (790, 628), (660, 640), (630, 628)]
+HAFEN_BEZIRK = [(615, 425), (785, 412), (828, 440), (842, 548), (842, 600), (800, 640), (770, 646), (640, 650),
+                (600, 664), (590, 560), (600, 470)]
+FAHRRINNE = [(790, 590), (830, 575), (960, 830), (900, 860)]
+# Bucht vor dem Hafen: offenes Wasser bis zur Küste, darin Mole und Brücken
+BUCHT = [(845, 455), (845, 600), (800, 650), (700, 700), (680, 900), (1100, 900), (1100, 455)]
 
-# Die Ebene des Marktviertels (I) und des Hafens (V): zwischen innerer Vorburgmauer, Stadtmauer und Löwenward-Ost
-MARKTVIERTEL = [(300, 512), (440, 516), (549, 520), (700, 514), (790, 507), (850, 472), (890, 490), (915, 555),
-                (885, 670), (845, 735), (700, 850), (640, 890), (612, 905), (520, 905), (500, 900), (435, 880),
-                (362, 833), (220, 690)]
-
-# ---------- Plätze, Gebäude, Tore ----------
-MARKTPLATZ = [(522, 530), (597, 530), (594, 690), (520, 690)]
-MARKT_MITTE = (559, 612)
-KIRCHE = ((432, 615), 64, 34, 0)              # Mitte, Länge (Plan-y), Breite (Plan-x), Drehung
-KIRCHTURM = (425, 572)
-RATHAUS = ((694, 672), 34, 22)
-BADEHAUS = ((760, 588), 26, 20)
-MUEHLE = ((765, 630), 20, 20)
-SCHMIEDE = ((614, 672), 18, 16)
-ZOLLHAUS = (650, 885)
-PALAS = ((548, 300), 40, 16)                  # im Kernhof an der Nordwestseite (6)
-BRUNNENHAUS = (685, 250)                      # (15)
-ZISTERNE = (657, 205)                         # (9)
-AUSSICHTSPLATTFORM = (612, 55)                # Turm mit Spitzdach (28 im Bild)
-TREPPENTOR = (548, 462)                       # oben an der Treppe, in der Mauer des Äußeren Zwingers
-TREPPE = [(549, 532), (549, 515), (548, 466)]  # vom Markt durch das Stadtmauertor hinauf
+# ---------- Tore ----------
+# Tore als (Kantenindex im jeweiligen Linienzug, Anteil, Breite, Name); die Punkte im Plan stehen dahinter
 TORE = {
-    "Treppentor": TREPPENTOR,
-    "Kernhoftor": (565, 365),                 # vom Äußeren Zwinger in den Kernhof
-    "Zwingertor": (605, 250),                 # vom Kernhof hinauf in den Hohen Zwinger
-    "Urkerntor": (612, 180),
-    "Vorburgtor": (403, 257),                 # (11) zum Weg nach Gravemarch
-    "Westtor": (185, 772),                    # in der Löwenward, zum Küstenweg
-    "Südöstliches Tor": (830, 746),           # (19) zur Nordstraße
-    "Schiffstor": (565, 912),                 # (34)
+    "Torhaus West": (157.5, 447.5),      # in der Stadtmauer: Stadt ↔ Küstenweg
+    "Torhaus Nord": (294, 173.6),        # in der Ringmauer: Burgbezirk ↔ Weg nach Gravemarch
+    "Hafentor": (750, 408),              # Hafen ↔ Weg unter den Felsen zur Burg
+    "Nordtor": (1238, 195),              # am Zwinger, zur Nordstraße
+    "Tor zur Vorburg": (385, 355),       # vom Weg in die I. Vorburg
+    "Tor des II. Burghofs": (455.4, 258.4),  # zwischen I. Vorburg und II. Burghof
+    "Rampentor": (540, 331),             # II. Burghof ↔ Rampe hinab zum Weg
+    "Tor des III. Burghofs": (636, 228), # II. ↔ III. Burghof, vor dem Tor des Hofs aus Akt I
+    "Burgtor": (840, 222),               # III. Burghof ↔ Zwinger der Kernburg
+    "Kernburgtor": (878, 222),           # Zwinger ↔ Kernburg
+    "Hafenpforte": (596, 500),           # Stadt ↔ Hafenkai
 }
+# Weg unter den Felsen: vom Hafentor nach Westen zur Vorburg, mit der Rampe hinauf zum II. Burghof
+WEG_UNTEN = [(750, 422), (750, 396), (700, 390), (600, 376), (470, 359), (440, 360), (420, 361), (385, 362)]
+RAMPE_BURGHOF2 = [(440, 360), (466, 343), (528, 343), (540, 335)]
 
-# ---------- Straßen und Gassen (Planpunkte) ----------
-# Östliches Marktviertel: ein Raster aus Gassen; gemeinsame Kreuzungspunkte verbinden das Wegenetz.
-_X_OST = [600, 660, 728, 792]
-_Y_OST = [528, 568, 608, 650, 694]
-_OST_ENDE = {528: 880, 568: 890, 608: 880, 650: 862, 694: 838}
-STRASSEN = []
-for _y in _Y_OST:
-    STRASSEN.append([(_x, _y) for _x in _X_OST] + [(_OST_ENDE[_y], _y)])
-for _x in _X_OST[1:]:
-    STRASSEN.append([(_x, _y) for _y in _Y_OST] + ([(_x, 718)] if _x < 760 else []))
-STRASSEN += [
-    # Westliches Marktviertel um die Kirche: Gasse unter der Stadtmauer, Bögen nach Süden, Querverbindungen
-    [(525, 535), (470, 528), (380, 530), (330, 545), (290, 580)],
-    [(330, 545), (300, 600), (285, 650)],
-    [(380, 530), (372, 600), (350, 650), (330, 700)],
-    [(470, 528), (482, 560), (484, 610), (482, 660), (476, 700)],
-    [(300, 600), (372, 600)],
-    [(285, 650), (350, 650), (395, 680), (440, 690), (476, 700)],
-    [(484, 610), (520, 610)],
-    [(440, 690), (434, 658)],                       # zum Portal der Kirche
-    [(476, 700), (520, 690)],
-    # Vom Marktviertel hinab zu den Kais und zum Westtor
-    [(476, 700), (470, 760), (420, 800), (362, 820)],
-    [(330, 700), (360, 760), (420, 800)],
-    [(290, 740), (240, 722), (185, 772)],
-    [(330, 700), (290, 740)],
-    # Ostrand: zum Südöstlichen Tor (19) und zum Dock
-    [(792, 694), (810, 720), (830, 746)],
-    [(600, 694), (594, 690)],
-    [(600, 528), (597, 530)],
-    # Die Treppe vom Markt hinauf in den Äußeren Zwinger und weiter zum Kernhoftor
-    [(549, 532), (548, 466), (548, 462), (552, 440), (565, 380)],
-    # Vom Äußeren Zwinger durch die Zwingerpforte und die Vorburg zum Vorburgtor (Weg nach Gravemarch)
-    [(425, 268), (417.4, 266), (403, 257)],
+# ---------- Bauten ----------
+# (Mitte, Länge, Breite, Drehung in Grad) in Bildpunkten; Länge entlang Plan-x bei Drehung 0
+BERGFRIED_KERNBURG = (1075, 140)
+PALAS = ((995, 155), 120, 32, 4)
+DRACHENKAPELLE = ((1075, 215), 22, 80, 0)
+BURGKUECHE = ((905, 252), 52, 30, -25)
+ZEUGHAUS = ((1030, 260), 56, 26, -3)
+VORBURG_BAUTEN = [((392, 236), 90, 20, -12), ((330, 300), 22, 50, 0)]
+BURGHOF2_BAUTEN = [((565, 198), 70, 20, -8), ((585, 318), 60, 22, -10)]
+ST_MARIEN = ((410, 500), 76, 34, 0)      # Langhaus von West nach Ost, Turm im Osten
+ST_MARIEN_TURM = (444, 494)
+MARKTPLATZ = [(455, 480), (566, 478), (568, 556), (456, 558)]
+MARKT_MITTE = (512, 518)
+SPEICHER = ((705, 627), 120, 22, 1)
+WEHRTURM = (800, 95)
+HALBTURM = (190, 225)
+RONDELL = (1215, 345)
+
+# ---------- Straßen und Gassen der Stadt (Planpunkte) ----------
+STRASSEN = [
+    # Hauptstraße vom Torhaus West zum Markt, Fachwerkhäuser zu beiden Seiten
+    [(162, 432), (230, 440), (300, 447), (370, 455), (455, 480)],
+    # Gasse innen an der Mauer unter dem Grat
+    [(230, 440), (262, 418), (350, 410), (470, 404), (560, 414), (600, 440)],
+    [(370, 455), (350, 410)],
+    [(566, 478), (600, 440)],
+    # Westviertel: Bogen an der Stadtmauer entlang und Gasse um St. Marien zum Markt
+    [(230, 440), (215, 495), (250, 555), (300, 610), (350, 640)],
+    [(300, 447), (295, 525), (330, 585), (400, 590), (456, 558)],
+    [(250, 555), (295, 525)],
+    # Südviertel zwischen Markt und Stadtmauer
+    [(456, 558), (440, 610), (430, 645)],
+    [(512, 556), (510, 645)],
+    [(568, 556), (575, 645)],
+    [(400, 590), (440, 610), (510, 612), (575, 612)],
+    # Vom Markt zum Hafen, zum Portal von St. Marien
+    [(566, 500), (606, 500)],
+    [(370, 455), (366, 500)],
 ]
+# Kaiweg im Hafen: von der Hafenpforte am Becken entlang zum Hafentor
+KAIWEG = [(606, 500), (612, 470), (630, 440), (680, 428), (750, 424)]
+# Weg vom Torhaus Nord im Zwinger westlich der Vorburg hinab zum Tor der Vorburg
+WEG_NORDWEST = [(294, 160), (294, 186), (296, 250), (300, 320), (322, 372), (352, 380), (385, 362)]
+# Durch das Nordtor in den Zwinger
+WEG_NORDTOR = [(1254, 195), (1225, 197), (1180, 215)]
+# Die Rampe hinauf und die Wege im Zwinger sind keine Stadtgassen, gehören aber ins Wegenetz
+BURGWEGE = [WEG_UNTEN, RAMPE_BURGHOF2, WEG_NORDWEST]
 
 
 def plan_json():
     zonen = [
-        {"name": "Urkern", "punkte": welt_liste(URKERN), "hoehe": H_URKERN, "rand": 2.5},
-        {"name": "Kapelle", "punkte": welt_liste(KAPELLE_URKERN), "hoehe": H_URKERN, "rand": 2.5},
-        {"name": "Obere Burg", "punkte": welt_liste(OBERE_BURG), "hoehe": H_OBERE_BURG, "rand": 2.5},
-        {"name": "Hoher Zwinger", "punkte": welt_liste(HOHER_ZWINGER), "hoehe": H_HOHER_ZWINGER, "rand": 2.5},
-        {"name": "Mittlere Burg", "punkte": welt_liste(MITTLERE_BURG), "hoehe": H_MITTLERER_ZWINGER, "rand": 6.0},
-        {"name": "Kernhof", "punkte": welt_liste(KERNHOF), "hoehe": H_KERNHOF, "rand": 4.0},
-        {"name": "Äußerer Zwinger", "punkte": welt_liste(AEUSSERER_ZWINGER), "hoehe": H_ZWINGER, "rand": 8.0},
-        {"name": "Ostterrasse", "punkte": welt_liste(OSTTERRASSE), "hoehe": H_OSTTERRASSE, "rand": 8.0},
+        {"name": "I. Vorburg", "punkte": welt_liste(VORBURG), "hoehe": H_VORBURG, "rand": 6.0},
+        {"name": "II. Burghof", "punkte": welt_liste(BURGHOF2), "hoehe": H_BURGHOF2, "rand": 4.0},
+        {"name": "III. Burghof", "punkte": welt_liste(BURGHOF3), "hoehe": H_KERNHOF, "rand": 4.0},
+        {"name": "Zwinger der Kernburg", "punkte": welt_liste(ZWINGER_KERNBURG), "hoehe": H_ZWINGER, "rand": 6.0},
+        {"name": "Kernburg", "punkte": welt_liste(KERNBURG), "hoehe": H_KERNBURG, "rand": 3.0},
     ]
-    stadt = welt_liste(LOEWENWARD + [(520, 905), (612, 905)] + LOEWENWARD_OST)
     return {
         "_hinweis": "Erzeugt von werkzeuge/bau/plan_drachenstein.py aus dem Grundriss. Nicht von Hand ändern.",
-        # Zonen werden in dieser Reihenfolge eingeebnet; spätere (innere) gewinnen.
-        "zonen": [zonen[i] for i in (6, 7, 4, 5, 3, 2, 1, 0)],
-        "stadt": stadt,
-        "markt_oben": [welt((549, 530))[0], H_MARKT_OBEN],
-        "markt_unten": [welt((549, 690))[0], H_MARKT_UNTEN],
-        # Ebene des Marktviertels: hier liegt das Gelände flach, ringsum steigt die Kuppe an
-        "ebene": welt_liste(MARKTVIERTEL),
-        "ebene_hoehe": H_EBENE,
-        "kuppe": welt_liste(AEUSSERER_ZWINGER),
-        "treppe": [list(welt(TREPPE[0])) + [H_MARKT_OBEN], list(welt(TREPPE[-1])) + [H_ZWINGER]],
-        "hafen_becken": welt_liste(HAFENBECKEN),
-        # Fahrrinne vom Becken durch das Schiffstor ins offene Meer
-        "fahrrinne": welt_liste([(540, 900), (590, 900), (595, 990), (535, 990)]),
-        "kanal": welt_liste(KANALBECKEN),
+        "zonen": zonen,                                  # in dieser Reihenfolge eingeebnet; spätere gewinnen
+        "ring": welt_liste(RINGMAUER),                   # Burgbezirk: Grat mit Zwingern
+        "stadt": welt_liste(STADT + []),                 # Stadt in der Ebene
+        "hafen": welt_liste(HAFEN_BEZIRK),
+        "grat": welt_liste([VORBURG[0], (445, 212), (636, 160), (842, 222), (1100, 200)]),
+        "stadt_hoehe": [welt((150, 430))[1], H_STADT_WEST, welt((600, 470))[1], H_STADT_OST],
         "hafen_hoehe": H_HAFEN,
-        "vorburg_hoehe": H_VORBURG,
+        "weg_unten": [list(welt(p)) for p in WEG_UNTEN],
+        "weg_unten_hoehen": [-17.6, -16.0, -14.5, -9.0, -1.5, 0.5, 2.5, 6.5],
+        "weg_nordwest": [list(welt(p)) for p in WEG_NORDWEST],
+        "weg_nordwest_hoehen": [-12.5, -11.0, -6.0, -1.0, 3.0, 5.0, 6.5],
+        "weg_nordtor": [list(welt(p)) for p in WEG_NORDTOR],
+        "weg_nordtor_hoehen": [-14.0, -9.5, -6.0],
+        "rampe": [list(welt(p)) for p in RAMPE_BURGHOF2],
+        "rampe_hoehen": [0.5, 4.5, 8.5, H_BURGHOF2],
+        "hafen_becken": welt_liste(HAFENBECKEN),
+        "fahrrinne": welt_liste(FAHRRINNE),
+        "bucht": welt_liste(BUCHT),
+        "grat_hoehen": [H_VORBURG, H_KERNBURG],
+        "zwinger_hoehen": [-9.0, -2.0],
         "strassen": [welt_liste(s) for s in STRASSEN],
         "markt": welt_liste(MARKTPLATZ),
+        "ebene": H_EBENE,
     }
 
 
@@ -186,7 +191,8 @@ if __name__ == "__main__":
     ziel = Path(__file__).resolve().parents[2] / "daten" / "drachenstein_plan.json"
     ziel.write_text(json.dumps(plan_json(), ensure_ascii=False, indent=1), encoding="utf-8")
     print("geschrieben:", ziel)
-    for name, p in [("Urkern", (628, 138)), ("Aussichtsplattform", AUSSICHTSPLATTFORM), ("Kernhof", MITTE),
-                    ("Treppentor", TREPPENTOR), ("Markt Mitte", (550, 597)), ("Hafenausfahrt", (565, 915)),
-                    ("Löwenward West", (100, 632)), ("Löwenward Ost", (915, 555)), ("Tor 19", (845, 735))]:
-        print(f"  {name:20s} {welt(p)}")
+    for name, p in [("III. Burghof", MITTE), ("Kernburg", (990, 220)), ("I. Vorburg", (385, 290)),
+                    ("Markt", MARKT_MITTE), ("Hafenmitte", (720, 530)), ("Hafenausfahrt", (830, 600)),
+                    ("Torhaus West", TORE["Torhaus West"]), ("Torhaus Nord", TORE["Torhaus Nord"]),
+                    ("Hafentor", TORE["Hafentor"]), ("Nordtor", TORE["Nordtor"])]:
+        print(f"  {name:16s} {welt(p)}")

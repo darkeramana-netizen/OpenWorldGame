@@ -226,14 +226,14 @@ func _initialize() -> void:
 	# --- Belauschen: offen von vorn wird man bemerkt ---
 	var gespraech = current_scene.get_node("Gespraeche/KerrinUndTilo")
 	meldungen.clear()
-	await setze(Vector3(22, 0.3, -4.5))
+	await setze(Vector3(22, 14.3, -4.5))
 	await warte(4.0)
 	pruefe(meldungen.any(func(m): return "verstummen" in m) and not S.hat_flag("beobachtung_kerrin"), "Offen von vorn: Sie bemerken dich und verstummen")
 	gespraech._pause = 0.0   # für den Test nicht zwanzig Sekunden warten
 
 	# --- Schleichend von der Seite: alles gehört ---
 	zeilen.clear()
-	await setze(Vector3(17, 0.3, 1.1))
+	await setze(Vector3(17, 14.3, 1.1))
 	Input.action_press("schleichen")
 	await warte(0.2)
 	pruefe(spieler().schleicht, "Strg: geduckt schleichen")

@@ -17,7 +17,9 @@ const HAUPTMENUE := "res://szenen/oberflaeche/hauptmenue.tscn"
 ## Manuelle Plätze im Pausemenü. "auto" und "schnell" kommen dazu.
 const PLAETZE: Array[String] = ["1", "2", "3"]
 ## 1: Hof als eigene Szene (Akt I). 2: Hof liegt in der Region Drachenstein.
-const VERSION := 2
+const VERSION := 3
+## Höhe des Hofs aus Akt I in der Region Drachenstein (werkzeuge/bau/plan_drachenstein.py, HOF_Y)
+const HOF_Y := 14.0
 
 ## Position und Blickrichtung des Spielers aus dem geladenen Spielstand.
 ## Die Spielfigur holt sie sich beim Start ab.
@@ -188,6 +190,20 @@ func _ziehe_um(daten: Dictionary) -> void:
 		var pfade: Array = stand.get("aufgehoben", [])
 		for i in pfade.size():
 			pfade[i] = String(pfade[i]).replace("/root/Hof/", "/root/Region/BurgHof/")
+	if int(daten.get("version", 1)) < 3 and String(daten.get("region", START_REGION)) == START_REGION:
+		# Drachenstein ist nach dem Grundriss neu gebaut: Der Hof aus Akt I liegt jetzt oben auf dem Grat (HOF_Y).
+		# Wer im Hof stand, steht dort wieder; wer anderswo in der alten Stadt war, kommt vor das Tor des Hofs.
+		var spieler: Dictionary = daten.get("spieler", {})
+		var pos: Array = spieler.get("position", [])
+		if pos.size() == 3:
+			var x := float(pos[0])
+			var z := float(pos[2])
+			if absf(x) <= 33.0 and absf(z) <= 33.0:
+				pos[1] = float(pos[1]) + HOF_Y
+			elif x > -480.0:
+				# alte Stadt, Hafen oder Bergfried (Gravemarch und Gravecrest im Westen sind gleich geblieben)
+				spieler["position"] = [0.0, HOF_Y + 0.3, 46.0]
+		daten["letzte_ankunft"] = ""
 
 
 func _spieler_daten() -> Dictionary:
