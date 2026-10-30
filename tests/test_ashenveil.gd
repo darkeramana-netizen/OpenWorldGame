@@ -196,7 +196,7 @@ func _initialize() -> void:
 	gereist = await warte_auf_szene(szene_vorher)
 	ankunft = current_scene.get_node("Ankuenfte/von_ashenveil").global_position
 	pruefe(gereist and region_id() == "drachenstein" and spieler().global_position.distance_to(ankunft) < 1.5,
-			"Mit der Reiterin zurück vor das Vorburgtor von Drachenstein")
+			"Mit der Reiterin zurück vor das Torhaus West von Drachenstein (%s, %s, Ankunft %s)" % [gereist, region_id(), spieler().global_position.distance_to(ankunft)])
 
 	print("\nFehler: ", fehler)
 	quit(fehler)
