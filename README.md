@@ -34,18 +34,22 @@ Drachenstein ist nach deinem zweiten, vereinfachten Grundriss neu gebaut ([`docs
 
 | Teil | Höhe | Was dort steht |
 |---|---|---|
-| Kernburg (Drachenhorst) | +20 m | Bergfried, Palas, Drachenkapelle, Burgküche, Zeughaus, Übungsplatz; Zwingermauer mit Türmen ringsum (+17 m) |
-| III. Burghof (Wolfsfeste) | +14 m | der Hof aus Akt I mit Haus der Schwelle, Ordenswand und Bauhof; Burgtor zur Kernburg |
-| II. Burghof | +11 m | Bauten des 14. Jahrhunderts, Rampentor |
-| I. Vorburg | +8 m | zwei Rundtürme, Tor zur Vorburg |
-| Zwinger und Ringmauer | −11 bis +6 m | Weg unter den Felsen, Torhaus Nord, Halbturm, Wehrturm, Zwinger, Rondell, Nordtor |
+| Kernburg (Drachenhorst) | +38 m | Bergfried (bis +76 m), Palas, Drachenkapelle, Burgküche, Zeughaus, Übungsplatz; Kernburgtor am Ende des Zwingerwegs |
+| Zwinger der Kernburg | +14 bis +38 m | Zwingerweg einmal um die Kernburg hinauf, Zwingermauer mit Türmen, Quermauer im Süden |
+| III. Burghof (Wolfsfeste) | +14 m | der Hof aus Akt I mit Haus der Schwelle, Ordenswand und Bauhof; Burgtor zum Zwinger |
+| II. Burghof | +6 m | Bauten des 14. Jahrhunderts, Rampentor im Süden, Rampe hinauf zum III. Burghof |
+| I. Vorburg | 0 m | zwei Rundtürme, Südtor, Tor zum II. Burghof |
+| Burgbezirk in der Ringmauer | −14 bis −3 m | Burgweg um die ganze Burg, Torhaus Nord, Burgstraßentor, Halbturm, Wehrturm, Zwinger, Rondell, Nordtor |
 | Festungsstadt | −16 bis −14 m | Stadtmauer mit Torhaus West und Hafenpforte, St. Marien, Marktplatz mit Ständen, Fachwerkhäuser in engen Gassen |
-| Drachenhafen | −17,8 m | Becken mit Kaimauern, Hafenmauer mit Molentor, Speicher, Koggen, Hafentor zum Burgbezirk |
+| Drachenhafen | −17,8 m | Becken mit offener Einfahrt zum Meer, Kaimauern, Hafenmauer, Speicherkai mit Molenpforte, Koggen |
+| Felsenhafen | −17,8 m | hinter dem Hafentor (Wassertor) unter der Burg: Kanal, Kai, Gewölbe, Tür zu den Kelleranlagen |
 
-- **Der Weg hinauf:** Hafentor → Weg unter den Felsen → Rampe → Rampentor (II. Burghof) → Tor des III. Burghofs → um den Hof herum → Burgtor → Zwinger → Kernburgtor. Vom Weg unter den Felsen geht es auch in die I. Vorburg und durch den Zwinger zum Torhaus Nord (Weg nach Gravemarch).
-- **Außen:** Unter den Burgmauern bricht der Fels zum Zwinger ab, außen an der Ringmauer zur Ebene. Vor dem Hafen liegt eine Bucht; vom Molentor führen Mole und Brücken über drei Inseln zum Schwarzen Bergfried. Küstenweg vom Torhaus West, Nordstraße vom Nordtor.
-- **Hof aus Akt I:** liegt jetzt auf +14 m. Ältere Spielstände ziehen beim Laden um (Version 3): Wer im Hof stand, steht dort wieder; wer anderswo in der alten Stadt war, kommt vor das Tor des Hofs.
-- **So entsteht es:** `werkzeuge/bau/plan_drachenstein.py` enthält den digitalisierten Grundriss und schreibt `daten/drachenstein_plan.json`; daraus formt der Geländeerzeuger Grat, Zwinger, Ebene, Wege und Hafen. Die Bauskripte (`teil_drachenstein.py`, `teil_stadt.py`, `teil_stadtleben.py`) lesen denselben Plan.
+Die Höfe sind gestaffelt wie im Schnitt B-B: Von der Stadt steigt es über die Vorburg (14 m höher) und die Burghöfe bis zur Kernburg auf dem höchsten Fels, über 50 m über der Stadt. Zwischen den Burgen und zum Burgbezirk bricht der Fels steil ab.
+
+- **Der Weg in die Burg** (blaue Linie im Grundriss): vom Hafen oder vom Torhaus West durch die Stadt → Burgstraßentor → im Westen am Halbturm vorbei hinauf, wo der Landweg vom Torhaus Nord dazukommt → außen um die ganze Burg (im Norden am Wehrturm vorbei, um den Zwinger der Kernburg, am Rondell vorbei, im Süden über den Felsenhafen) → Rampe → Rampentor in den II. Burghof → Tor des III. Burghofs → um den Hof herum → Burgtor → Zwingerweg → Kernburgtor. Unten im Westen zweigt der Weg unter der Vorburg zu ihrem Südtor ab. Vom Nordtor (Nordstraße) kommt man im Osten auf den Burgweg.
+- **Hafen:** Die Einfahrt zwischen dem Rundturm der Hafenmauer und dem Turm am Speicherkai ist offen zum Meer, eine Fahrrinne führt hinaus. Das Hafentor in der Ringmauer ist ein Wassertor: Ein Kanal führt die Schiffe in den überwölbten Felsenhafen unter der Burg, ein Kai daneben führt zu Fuß hinein. Von der Molenpforte am Speicherkai führen Mole und Brücken über drei Inseln zum Schwarzen Bergfried.
+- **Hof aus Akt I:** liegt auf +14 m. Ältere Spielstände ziehen beim Laden um (Version 3): Wer im Hof stand, steht dort wieder; wer anderswo in der alten Stadt war, kommt vor das Tor des Hofs.
+- **So entsteht es:** `werkzeuge/bau/plan_drachenstein.py` enthält den digitalisierten Grundriss und schreibt `daten/drachenstein_plan.json`; daraus formt der Geländeerzeuger die Burgfelsen, den Burgbezirk auf der Höhe der Burgwege, Ebene, Hafen, Kanal und Felsenhafen. Die Bauskripte (`teil_drachenstein.py`, `teil_stadt.py`, `teil_stadtleben.py`) lesen denselben Plan.
 
 ### Neue Grafik und eine große Stadt Drachenstein
 
@@ -245,7 +249,7 @@ Die drei Straßen aus der Lore sind jetzt begehbare Strecken. Jede ist eine eige
 Ashenveil, die Reiter- und Rüstburg im **Nebelmoor**, ist eine eigene Region mit dichtem Nebel. Gebaut ist sie nach deinem Grundriss, ohne Drehung.
 
 - **Hinkommen:**
-  - Vor dem Vorburgtor von Drachenstein wartet die **Reiterin Ilka Sand** aus Ashenveil. Sie nimmt Wächter über den Küstenweg mit: anderthalb Tage Spielzeit, dann eine Blende. Zurück geht es ebenso mit ihr. Anwärter nimmt sie nicht mit.
+  - Am Torhaus West von Drachenstein wartet die **Reiterin Ilka Sand** aus Ashenveil. Sie nimmt Wächter über den Küstenweg mit: anderthalb Tage Spielzeit, dann eine Blende. Zurück geht es ebenso mit ihr. Anwärter nimmt sie nicht mit.
   - Du kommst am Anfang des Damms an.
 - **Nur ein Weg:** Der Damm führt durch den Sumpf zur Zugbrücke am Haupttor. Wer ihn verlässt und in einen Tümpel gerät, wird zurückgesetzt: „Der Morast verschluckt jeden, der den Weg verlässt.“
 - **Die Burg nach Plan:**
@@ -450,7 +454,7 @@ Dazu kommen diese Systeme:
 
 Den Wehrgang erreichst du über die Holzrampe an der Südmauer, westlich vom Tor. Von dort führt die Westmauer zur zweiten Rampe hinauf auf den Wachturm in der Nordwestecke.
 
-Wege durch die Region: Vom Kernhof führt der Weg nach Osten durch den Äußeren Zwinger und das Treppentor über den Marktplatz zum Drachenkai, durch das Hafentor auf die Mole und über die Brücken zum Bergfried. Nach Westen steigt der Weg über Rampen durch den Hohen Zwinger in die Oberer Burg und den Urkern. Der Weg nach Gravemarch führt durch die Zwingerpforte, das Vorburgtor und die Löwenward ins Tal bis zur Brückenpforte von Gravemarch. Kurz vor Gravemarch zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
+Wege durch die Region: Vom Hof aus Akt I (III. Burghof) geht es durch den II. Burghof und die I. Vorburg hinab, unter der Vorburg nach Westen und durch das Burgstraßentor in die Stadt; der lange Burgweg führt vom Rampentor außen um die ganze Burg. Vom Markt kommt man durch die Hafenpforte in den Drachenhafen, an der Molenpforte auf die Mole und über die Brücken zum Bergfried. Nach Gravemarch geht es durch das Torhaus Nord ins Tal bis zur Brückenpforte von Gravemarch; kurz davor zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
 
 ## Speichern und Laden
 
@@ -669,7 +673,7 @@ Elf automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstän
 | `tests/test_landwege.gd` | die Landwege, 26 Punkte: Anwärter bleiben drin, durch das Nordtor, einmal um das Meer (Nordstraße, Südstraße, Küstenweg) mit den richtigen Reisetagen, Umkehren kostet nichts, Karte, Wald, Personen an der Straße, Speichern und Laden unterwegs, über den Pass und durch das Torhaus West zurück in die Stadt |
 | `tests/test_ashenveil.gd` | Ashenveil, 24 Punkte: Reiterin lehnt Anwärter ab, Ritt hin und zurück mit Zeitverlust, Morast, über den Damm und durch das Fallgitter, Rampe hinunter in die Kapelle, Gedenkstein, durch den Fluchttunnel ins Moor, Personen, verriegelter Nebeneingang, Speichern und Laden |
 | `tests/test_riverlock.gd` | Riverlock und das Reisen, 21 Punkte: Lotsin lehnt Anwärter ab, Überfahrt hin und zurück mit Zeitverlust, Rampen durch alle drei Geschosse des Mittelbaus, Zollherr in der Akte, Personen, Wege durch beide Burgen bis vor die Tore, Wasser, Speichern und Laden in Riverlock, Reise über das Entwicklermenü |
-| `tests/test_region.gd` | die Region, 32 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, der Weg hinauf in die Kernburg, die Rampe hinab über Hafentor und Kai in die Stadt, durch das Molentor auf die Mole, in die I. Vorburg und durch das Torhaus Nord hinaus, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
+| `tests/test_region.gd` | die Region, 34 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, der Zwingerweg hinauf in die Kernburg, hinab durch die Vorburg und das Burgstraßentor in die Stadt, der Burgweg vom Rampentor um die Burg zum Nordtor, durch das Wassertor in den Felsenhafen, durch die Molenpforte auf die Mole, der Landweg vom Torhaus Nord um die Burg, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
 
 ```
 godot --headless --path . --script res://tests/test_akt1.gd

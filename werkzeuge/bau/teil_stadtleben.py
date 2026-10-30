@@ -20,11 +20,12 @@ NETZ = STRASSEN + [P(*l) for l in [
     # Anschlüsse der Gassen an den Platz
     [(455, 480), (458, 482)], [(566, 478), (563, 482)], [(566, 500), (563, 500)],
     [(456, 558), (458, 555)], [(512, 556), (512, 552)], [(568, 556), (563, 555)],
-    # Hafen: Kaiweg von der Hafenpforte zum Hafentor, durch das Tor auf den Weg unter den Felsen
-    PD.KAIWEG, [(750, 424), (750, 422)],
-    PD.WEG_UNTEN, PD.RAMPE_BURGHOF2, PD.WEG_NORDWEST,
-    # Durch den II. Burghof zum Tor des III. Burghofs und zum Tor des Hofs aus Akt I
-    [(540, 335), (545, 295), (600, 250), (636, 228), (655, 228), (673, 228), (690, 228)],
+    # Hafen: Kaiweg von der Hafenpforte zum Kai am Kanal
+    PD.KAIWEG,
+    # Burgweg um die Burg in den II. und III. Burghof, Abzweig zur Vorburg, Weg vom Torhaus Nord
+    PD.WEG_BURG, PD.WEG_VORBURG, PD.WEG_TORHAUS_NORD,
+    # weiter zum Tor des Hofs aus Akt I
+    [(650, 228), (655, 228), (673, 228), (690, 228)],
 ]]
 
 # Hindernisse: (Mitte x, Mitte z, Breite, Tiefe, Gier) als Rechtecke, Kreise als (x, z, Radius)

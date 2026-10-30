@@ -2,9 +2,11 @@
 # Auf einem Felsgrat hintereinander (werkzeuge/bau/plan_drachenstein.py hat die Planpunkte):
 #   I. Vorburg (12. Jh.) mit zwei Rundtürmen · II. Burghof (14. Jh.) · III. Burghof mit dem Hof aus Akt I ·
 #   Kernburg mit Bergfried, Palas, Drachenkapelle, Burgküche und Zeughaus, umgeben von der Zwingermauer.
-#   Die Ringmauer umschließt den Grat: Torhaus Nord, Halbturm, Wehrturm, Zwinger, Rondell, Hafentor.
-# Der Weg hinauf: Hafentor → Weg unter den Felsen → Rampe → Rampentor (II. Burghof) → III. Burghof → Burgtor →
-# Zwinger → Kernburgtor. Vom Weg unter den Felsen geht es auch durch das Tor zur Vorburg in die I. Vorburg.
+#   Die Ringmauer umschließt den Grat: Torhaus Nord, Halbturm, Wehrturm, Zwinger, Rondell, Hafentor (Wassertor).
+# Der Weg hinauf (blaue Linie im Grundriss): Stadt → Burgstraßentor → am Halbturm vorbei hinauf (dort kommt der Weg
+# vom Torhaus Nord dazu) → außen um die ganze Burg → Rampe → Rampentor (II. Burghof) → III. Burghof → Burgtor →
+# Zwingerweg um die Kernburg → Kernburgtor. Unten zweigt der Weg zum Südtor der Vorburg ab.
+# Die Höfe sind gestaffelt (Schnitt B-B): Vorburg 0, II. Burghof +6, III. Burghof +14, Kernburg +38.
 import sys
 sys.path.insert(0, str(BAU))
 import plan_drachenstein as PD
@@ -19,9 +21,11 @@ N("Burgen", "Node3D", DS)
 M = PD.MASSSTAB
 
 
-def ramp(name, a, b, breite=4.0):
-    """Rampe zwischen zwei Punkten (x, y, z) mit Stützmauer darunter."""
-    rampe(name, BG, a, b, breite, 0.6, "Material_boden")
+def turmmasse(pp, r, ueber):
+    """Rundturm am Planpunkt: [x, z, unten, oben] – unten unter dem tiefsten Gelände, oben über dem höchsten."""
+    x, z = W(pp)
+    werte = [H(x + dx, z + dz) for dx in (-r, 0, r) for dz in (-r, 0, r)]
+    return [x, z, min(werte) - 2.5, max(werte) + ueber]
 
 
 def tor_an(punkte, p, breite, name):
@@ -57,8 +61,8 @@ MITTE_BURG = W(PD.MITTE)
 # --- Ringmauer um den Grat ---
 RING = PD.RINGMAUER + [PD.RINGMAUER[0]]
 mauerring("Ringmauer", BG, WL(RING), 9.0, dicke=3.0, mitte=MITTE_BURG,
-         tore=tore_an(RING, (PD.TORE["Torhaus Nord"], 6.0, "Torhaus Nord"), (PD.TORE["Hafentor"], 6.0, "Hafentor"),
-                      (PD.TORE["Nordtor"], 6.0, "Nordtor")))
+         tore=tore_an(RING, (PD.TORE["Torhaus Nord"], 6.0, "Torhaus Nord"), (PD.TORE["Hafentor"], 16.0, "Hafentor"),
+                      (PD.TORE["Nordtor"], 6.0, "Nordtor"), (PD.TORE["Burgstraßentor"], 6.0, "Burgstraßentor")))
 # Türme der Ringmauer: Wehrturm, Zwinger, Rondell und weitere Rundtürme; Halbturm eckig
 _tuerme = []
 for pp, r, dach in [(PD.WEHRTURM, 6.0, 0), ((1190, 55), 6.0, 1), ((1230, 140), 6.5, 1), (PD.RONDELL, 10.0, 0),
@@ -103,26 +107,24 @@ schild("SchildBurghof2", BG, *(lambda p: (p[0], PD.H_BURGHOF2 + 9, p[1]))(W((560
 # --- III. Burghof um den Hof aus Akt I; die Wand zum II. Burghof gehört zum II. ---
 mauerring("BurghofDrei", BG, WL(PD.BURGHOF3), 10.0, dicke=3.0, mitte=MITTE_BURG,
          tore=tor_an(PD.BURGHOF3, PD.TORE["Burgtor"], 6.0, "Burgtor"))
-schild("SchildBurghof3", BG, 0, 13, -36, "III. Burghof", 40)
+schild("SchildBurghof3", BG, 0, PD.H_KERNHOF + 13, -36, "III. Burghof", 40)
 
 # --- Zwinger und Kernburg ---
 ZW = PD.ZWINGER_KERNBURG[1:]        # die Wand am III. Burghof gehört zu diesem
 mauerring("Zwingermauer", BG, WL(ZW), 8.0, dicke=3.0, mitte=W((990, 220)), turm_r=0.0)
+# Quermauer im südlichen Zwinger: Dort endet der Zwingerweg oben, westlich davon liegt der Zwinger unten
+mauerring("Quermauer", BG, WL([(945, 296), (945, 340)]), 6.0, dicke=2.5, mitte=W((990, 220)))
 _zt = []
-for pp in [(965, 88), (1142, 135), (1112, 322), (895, 332)]:
-    x, z = W(pp)
-    _zt += [x, z, H(x, z) - 6, PD.H_ZWINGER + 12, 4.5, 1, 8]
+for pp in [(965, 88), (1152, 130), (1112, 322), (895, 332)]:
+    _zt += turmmasse(pp, 4.5, 12) + [4.5, 1, 8]
 KB = PD.KERNBURG + [PD.KERNBURG[0]]
 mauerring("Kernburg", BG, WL(KB), 12.0, dicke=3.5, mitte=W((990, 220)),
          tore=tor_an(KB, PD.TORE["Kernburgtor"], 5.0, "Kernburgtor"))
 for pp in [(912, 138), (1100, 150), (1102, 280), (896, 288)]:
-    x, z = W(pp)
-    _zt += [x, z, PD.H_ZWINGER - 4, PD.H_KERNBURG + 17, 4.5, 1, 9]
+    m = turmmasse(pp, 4.5, 0)
+    _zt += m[:3] + [PD.H_KERNBURG + 17, 4.5, 1, 9]
 N("KernburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_zt)})""")
-# Rampe im Kernburgtor vom Zwinger (+3) hinauf in den Hof der Kernburg (+6)
-ka, kb = W((856, 222)), W((892, 222))
-ramp("RampeKernburg", (ka[0], PD.H_ZWINGER, ka[1]), (kb[0], PD.H_KERNBURG, kb[1]), 5.0)
 
 # Bergfried der Kernburg: hoher eckiger Turm mit Pechnasen und Zeltdach
 bx, bz = W(PD.BERGFRIED_KERNBURG)

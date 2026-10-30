@@ -67,15 +67,17 @@ const PASS_SUED := [[Vector2(140, 540), Vector2(150, 615), Vector2(160, 690)], -
 
 ## Grundriss der Burgfeste (werkzeuge/bau/plan_drachenstein.py schreibt ihn)
 var plan: Dictionary = {}
-var _zonen: Array = []          # [PackedVector2Array, Höhe, Rand]
+var _zonen: Array = []          # [PackedVector2Array, Höhe, Rand, Weg, Weghöhen] (mit Weg: Höhe des nächsten Wegpunkts)
 var _stadt := PackedVector2Array()
 var _becken: Array = []         # Hafenbecken, Kanal, Fahrrinne
 var _markt := PackedVector2Array()
 var _ring := PackedVector2Array()     # Burgbezirk innerhalb der Ringmauer (Grat und Zwinger)
 var _hafen := PackedVector2Array()    # Hafenbezirk: Kais
 var _bucht := PackedVector2Array()    # Bucht vor dem Hafen
+var _felsenhafen := PackedVector2Array()  # Kai im Felsenhafen hinter dem Wassertor (überwölbt)
 var _firstlinie: Array = []           # Firstlinie des Felsgrats
 var _burgwege: Array = []             # [Linienzug, Höhen je Punkt]
+var _ringwege: Array = []             # Burgwege, deren Höhe der Grund im Burgbezirk folgt
 var stadt_strassen: Array = []
 
 var _rauschen := FastNoiseLite.new()
@@ -93,16 +95,20 @@ func _init() -> void:
 				a.append(Vector2(q[0], q[1]))
 			return a
 		for z: Dictionary in plan["zonen"]:
-			_zonen.append([vec.call(z["punkte"]), float(z["hoehe"]), float(z["rand"])])
+			_zonen.append([vec.call(z["punkte"]), float(z["hoehe"]), float(z["rand"]),
+					Array(vec.call(z.get("weg", []))), z.get("weg_hoehen", [])])
 		_stadt = vec.call(plan["stadt"])
 		_markt = vec.call(plan["markt"])
 		_ring = vec.call(plan["ring"])
 		_hafen = vec.call(plan["hafen"])
 		_bucht = vec.call(plan["bucht"])
+		_felsenhafen = vec.call(plan["felsenhafen"])
 		_firstlinie = Array(vec.call(plan["grat"]))
-		for name in ["weg_unten", "weg_nordwest", "weg_nordtor", "rampe"]:
-			_burgwege.append([Array(vec.call(plan[name])), plan[name + "_hoehen"]])
-		for name in ["hafen_becken", "fahrrinne"]:
+		for weg: Array in plan["burgwege"]:
+			_burgwege.append([Array(vec.call(weg[0])), weg[1]])
+			if weg.size() > 2 and weg[2]:
+				_ringwege.append(_burgwege[-1])
+		for name in ["hafen_becken", "fahrrinne", "kanal"]:
 			_becken.append(vec.call(plan[name]))
 		for linie: Array in plan["strassen"]:
 			stadt_strassen.append(Array(vec.call(linie)))
@@ -269,16 +275,20 @@ func _drachenstein(h: float, p: Vector2) -> float:
 		var fels := _fein.get_noise_2dv(p * 0.7) * 2.5
 		var unten := lerpf(H_EBENE + _fein.get_noise_2dv(p * 0.3) * 1.5, h, smoothstep(60.0, 260.0, aussen))
 		h = lerpf(am_rand + fels * (1.0 - smoothstep(0.0, abfall, aussen)), unten, smoothstep(0.0, abfall, aussen))
-	# Burgringe als Terrassen, von außen nach innen
+	# Burgringe als Terrassen, von außen nach innen (der Zwinger steigt mit seinem Weg)
 	for zone: Array in _zonen:
 		var d := _polygon_abstand(p, zone[0])
-		if d <= 0.0:
-			h = zone[1]
-		elif d < zone[2]:
-			h = lerpf(zone[1], h, smoothstep(0.0, zone[2], d))
-	# Wege im Burgbezirk mit fester Steigung: unter den Felsen, im Zwinger und die Rampe zum II. Burghof
+		if d < zone[2]:
+			var zh: float = zone[1]
+			if not zone[3].is_empty():
+				zh = _weg_hoehe(p, zone[3], zone[4])[1]
+			h = zh if d <= 0.0 else lerpf(zh, h, smoothstep(0.0, zone[2], d))
+	# Wege im Burgbezirk mit fester Steigung: Burgweg außen herum, vom Torhaus Nord, Zwingerweg, vom Nordtor
 	for weg: Array in _burgwege:
 		h = _burgweg(h, p, weg[0], weg[1])
+	# Kai im Felsenhafen (darüber das Gewölbe), das Wasser schneidet der Kanal hinein
+	if Geometry2D.is_point_in_polygon(p, _felsenhafen):
+		h = KAI_HOEHE + 0.2
 	# Kais auf Höhe der Hafenmauern rings um die Becken
 	for becken: PackedVector2Array in _becken:
 		var d := _polygon_abstand(p, becken)
@@ -293,6 +303,15 @@ func _innen_hoehe(p: Vector2) -> float:
 		return KAI_HOEHE + 0.2
 	if Geometry2D.is_point_in_polygon(p, _stadt):
 		return stadthoehe(p)
+	if Geometry2D.is_point_in_polygon(p, _ring) and not _ringwege.is_empty():
+		# Zwischen den Burgen und der Ringmauer liegt der Grund auf der Höhe des nächsten Burgwegs; die Burgen stehen
+		# als Felsen darüber (Zonen mit steilem Rand)
+		var naechst := [INF, 0.0]
+		for weg: Array in _ringwege:
+			var info := _weg_hoehe(p, weg[0], weg[1])
+			if info[0] < naechst[0]:
+				naechst = info
+		return float(naechst[1]) + _fein.get_noise_2dv(p * 0.5) * 1.2
 	if Geometry2D.is_point_in_polygon(p, _ring):
 		# Unter den Burgmauern bricht der Fels steil ab, darunter liegt der Zwinger vor der Ringmauer
 		var info := _naechster_punkt(_firstlinie, p)
@@ -300,7 +319,7 @@ func _innen_hoehe(p: Vector2) -> float:
 		var zh: Array = plan["zwinger_hoehen"]
 		var first := lerpf(float(gh[0]), float(gh[1]), float(info[1]))
 		var zwinger := lerpf(float(zh[0]), float(zh[1]), float(info[1])) + _fein.get_noise_2dv(p * 0.5) * 1.2
-		return maxf(first - maxf(0.0, float(info[0]) - 26.0) * 1.3, zwinger)
+		return maxf(first - maxf(0.0, float(info[0]) - 26.0) * float(plan.get("grat_abfall", 1.3)), zwinger)
 	return NAN
 
 
@@ -313,6 +332,14 @@ func stadthoehe(p: Vector2) -> float:
 
 ## Weg mit fester Höhe je Punkt (dazwischen linear), 7 m breit eben, bis 7 m ins Gelände übergehend.
 func _burgweg(h: float, p: Vector2, linie: Array, hoehen: Array) -> float:
+	var info := _weg_hoehe(p, linie, hoehen)
+	if info[0] > 7.0:
+		return h
+	return lerpf(info[1], h, smoothstep(3.5, 7.0, info[0]))
+
+
+## [Abstand, Höhe] des nächsten Punkts auf einem Weg mit Höhen je Punkt.
+func _weg_hoehe(p: Vector2, linie: Array, hoehen: Array) -> Array:
 	var bester := INF
 	var hw := 0.0
 	for i in linie.size() - 1:
@@ -323,9 +350,7 @@ func _burgweg(h: float, p: Vector2, linie: Array, hoehen: Array) -> float:
 		if d < bester:
 			bester = d
 			hw = lerpf(float(hoehen[i]), float(hoehen[i + 1]), a.distance_to(q) / maxf(a.distance_to(b), 0.01))
-	if bester > 7.0:
-		return h
-	return lerpf(hw, h, smoothstep(3.5, 7.0, bester))
+	return [bester, hw]
 
 
 ## Nächster Punkt auf dem Rand eines Vielecks.

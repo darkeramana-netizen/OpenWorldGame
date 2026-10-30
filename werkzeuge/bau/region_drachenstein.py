@@ -19,16 +19,15 @@ teil("teil_drachenstein.py")
 gelaende_pflaster([STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2 + PD.BURGHOF3[1:6]), WL(PD.KERNBURG)])
 
 # ---------- Mole und Brücken über die Inseln zum Schwarzen Bergfried ----------
-# Vom Molentor in der Hafenmauer führt eine Mole ins Meer, von dort Brücken über drei Inseln.
+# Von der Molenpforte am Speicherkai führt eine Mole westlich der Hafeneinfahrt zur ersten Insel, von dort Brücken
+# über die Inseln. Die Einfahrt und die Fahrrinne bleiben frei.
 N("Bruecken", "Node3D", ".")
 _bfw = math.atan2(95 - 135, 212 - 250)
-_mole_a = W((835, 505))            # vor dem Molentor
-_mole_knick = (_mole_a[0], -66.0)    # erst vom Tor weg ins Wasser
-_mole_b = (240.0, -64.0)             # dann hinaus in die Bucht
-for k, (a_, b_) in enumerate([(_mole_a, _mole_knick), (_mole_knick, _mole_b)]):
-    box(f"Mole{k}", "Bruecken", round((a_[0] + b_[0]) / 2, 2), -19.0, round((a_[1] + b_[1]) / 2, 2),
-        round(math.dist(a_, b_) + 8, 2), 2.4, 8, "Material_kai", gier=round(gier_zu(b_[0] - a_[0], b_[1] - a_[1]), 2))
-punkte = [_mole_b, (300, -15), (382, 22), (462.4, 60.4),
+_mole_a = W((755, 652))            # vor der Molenpforte
+_mole_b = (292.0, -15.5)             # an der ersten Insel
+box("Mole0", "Bruecken", round((_mole_a[0] + _mole_b[0]) / 2, 2), -19.0, round((_mole_a[1] + _mole_b[1]) / 2, 2),
+    round(math.dist(_mole_a, _mole_b) + 6, 2), 2.4, 7, "Material_kai", gier=round(gier_zu(_mole_b[0] - _mole_a[0], _mole_b[1] - _mole_a[1]), 2))
+punkte = [(300, -15), (382, 22), (462.4, 60.4),
           (round(BF_X_NEU + 20*math.cos(_bfw), 2), round(BF_Z_NEU + 20*math.sin(_bfw), 2))]
 for i in range(len(punkte) - 1):
     (x1,z1),(x2,z2) = punkte[i], punkte[i+1]
@@ -66,10 +65,10 @@ for i,(x,z) in enumerate([(120,-320),(170,380)]):
 N("Orte", "Node3D", ".")
 _orte = [
     ("Burgfeste Drachenstein", "Drei Burgen, ein Stein, eine Feste.", 60, 10, 20, 520, 140, 700),
-    ("Kernburg · Drachenhorst", "Bergfried, Palas und Drachenkapelle.", -4, 22, -127, 110, 30, 140),
+    ("Kernburg · Drachenhorst", "Bergfried, Palas und Drachenkapelle.", -4, 40, -127, 110, 30, 140),
     ("III. Burghof · Wolfsfeste", "Die Schwelle des Ordens.", 0, 17, 0, 95, 20, 100),
-    ("II. Burghof", "Vierzehntes Jahrhundert.", 15, 13, 75, 80, 16, 90),
-    ("I. Vorburg", "Der älteste Teil am Fuß des Grats.", 31, 10, 175, 70, 16, 75),
+    ("II. Burghof", "Vierzehntes Jahrhundert.", 15, 8, 75, 80, 16, 90),
+    ("I. Vorburg", "Der älteste Teil am Fuß des Grats.", 31, 2, 175, 70, 16, 75),
     ("Festungsstadt", "St. Marien, Markt und Fachwerkhäuser.", 140, -15, 160, 150, 16, 230),
     ("Drachenhafen", "Hafen am Wächtermeer", 150, -17, -5, 110, 12, 110),
     ("Schwarzer Bergfried", "Gründungsarchiv des Ordens", 485, -10, 85, 110, 80, 100),
@@ -131,8 +130,8 @@ N("Sprungpunkte", "Node3D", ".")
 _bf = lambda r, w, y: (round(BF_X + r*math.cos(math.radians(BF_WINKEL + w)), 1), y, round(BF_Z + r*math.sin(math.radians(BF_WINKEL + w)), 1))
 _sp = lambda pp, dy=0.5: (lambda p: (round(p[0], 1), round(H(*p) + dy, 1), round(p[1], 1)))(W(pp))
 for name, x, y, z in [("Hof der Burgfeste", 0, HOF_Y + 0.5, 20), ("Vor dem Tor", 0, HOF_Y + 0.5, 46), ("Kernburg", *_sp((975, 225))), ("Übungsplatz", round(UEB[0] + 4, 1), PD.H_KERNBURG + 0.5, round(UEB[1], 1)),
-                      ("II. Burghof", *_sp((560, 262))), ("I. Vorburg", *_sp((390, 300))), ("Weg unter den Felsen", *_sp((600, 378))),
-                      ("Hafentor", *_sp((750, 428))), ("Marktplatz", *_sp((512, 530))), ("St. Marien", *_sp((410, 530))),
+                      ("II. Burghof", *_sp((560, 262))), ("I. Vorburg", *_sp((390, 300))), ("Burgweg am Halbturm", *_sp((210, 330))),
+                      ("Felsenhafen", *(lambda p: (round(p[0], 1), -17.3, round(p[1], 1)))(W((732, 380)))), ("Marktplatz", *_sp((512, 530))), ("St. Marien", *_sp((410, 530))),
                       ("Drachenkai", _lotsin[0] + 2, -17.3, _lotsin[1]), ("Bergfried, Tor", *_bf(24, 0, -17.4)),
                       ("Bergfried, Schwelle (Ebene 0)", *_bf(8.5, 4, -17.4)), ("Bergfried, Archive (Ebene 4)", *_bf(8.6, -53, 11.4)),
                       ("Bergfried, Dach", *_bf(8.9, 189, 50.6)), ("Gravemarch, Brückenpforte", round(ESME[0] - ux * 3, 1), round(ESME[1] + 0.5, 1), round(ESME[2] - uz * 3, 1)), ("Gravemarch, Burghof", -614, -3.5, -180),

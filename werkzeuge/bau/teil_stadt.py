@@ -2,7 +2,8 @@
 # Wird aus teil_drachenstein.py ausgeführt (PD = plan_drachenstein, W = Planpunkt → Welt, Mauer-Bausteine).
 # Unten in der Ebene: die Stadt mit Fachwerkhäusern, St. Marien und dem Marktplatz hinter der Stadtmauer mit dem
 # Torhaus West; daneben der Drachenhafen mit Kaimauern, Hafenmauer, Speicher und Koggen. Die Hafenpforte verbindet
-# Stadt und Hafen, das Hafentor (in der Ringmauer) führt zum Weg hinauf zur Burg.
+# Stadt und Hafen. Die Hafeneinfahrt ist offen zum Meer; das Hafentor in der Ringmauer ist ein Wassertor, durch das
+# ein Kanal in den überwölbten Felsenhafen unter der Burg führt. Von der Molenpforte am Speicherkai geht die Mole ab.
 # Die Häuser zeichnet szenen/welt/stadthaeuser.gd; die Hausformen (Breite, Tiefe) stehen dort.
 import re
 
@@ -44,21 +45,43 @@ def kaimauer(name, punkte, offen=()):
         if i in offen:
             continue
         mauerring(f"{name}{i}", HF, [a, b], 0.9, dicke=2.0, zinnen=False, mat="Material_kai")
-kaimauer("KaiBecken", BECKEN, offen=(4,))
+# Kaimauern ums Becken; offen bleiben die Hafeneinfahrt und der Kanal zum Wassertor
+kaimauer("KaiBecken", BECKEN, offen=(PD.HAFENEINFAHRT, 1))
+kaimauer("KaiNord", WL([(700, 444), (744, 447.5)]) + WL([(764, 449.2), (790, 452)]), offen=(1, 3))
+for k, (a_, b_) in enumerate([((744, 448), (744, 352)), ((764, 449), (764, 352)), ((744, 352), (764, 352))]):
+    mauerring(f"KaiKanal{k}", HF, WL([a_, b_]), 0.9, dicke=2.0, zinnen=False, mat="Material_kai")
 HM = PD.HAFENMAUER_OST
-mauerring("Hafenmauer", HF, WL(HM), 8.0, dicke=3.0, mitte=W((720, 520)),
-         tore=tor_an(HM, (831, 505), 5.0, "Molentor"))
-mauerring("Speicherkai", HF, WL([(640, 642), (770, 646), (790, 630)]), 6.0, dicke=3.0, mitte=W((720, 520)))
+mauerring("Hafenmauer", HF, WL(HM), 8.0, dicke=3.0, mitte=W((720, 520)))
+mauerring("Speicherkai", HF, WL([(640, 642), (770, 646), (790, 630)]), 6.0, dicke=3.0, mitte=W((720, 520)),
+         tore=tor_an([(640, 642), (770, 646), (790, 630)], PD.MOLENPFORTE, 5.0, "Molenpforte"))
 _ht = []
-for pp, r in [((792, 628), 6.0)]:
+# Zwei Rundtürme an der Hafeneinfahrt: am Ende der Hafenmauer und am Ende des Speicherkais
+for pp, r in [((792, 628), 6.0), ((834, 540), 6.0)]:
     x, z = W(pp)
-    _ht += [x, z, KAI_OBEN - 6, KAI_OBEN + 12, r, 0, 0]
+    _ht += [x, z, -28.0, KAI_OBEN + 12, r, 0, 0]
 N("HafenTuerme", "Node3D", HF, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_ht)})""")
 sx, sz = W(PD.SPEICHER[0])
 steinbau("Speicher", HF, sx, sz, PD.SPEICHER[1] * M, PD.SPEICHER[2] * M, 9, gier=0, mat="Material_holz",
          dach="Material_dach", boden=KAI_OBEN, art=2)
 schild("SchildSpeicher", HF, sx, KAI_OBEN + 18, sz, "Speicher", 40)
+
+# --- Felsenhafen hinter dem Wassertor: überwölbt, mit Kai an der Westseite ---
+FH = HF + "/Felsenhafen"
+N("Felsenhafen", "Node3D", HF)
+_fh = WL(PD.FELSENHAFEN)
+# Das Gewölbe liegt auf Höhe des Geländes ringsum (Burgbezirk unter dem Grat)
+_fh_oben = max(H(*W(pp)) for pp in [(747, 338), (712, 380), (782, 380), (712, 350), (782, 350)])
+mauerring("FelsenhafenWand", FH, WL([(720, 405.1), (720, 346), (774, 346), (774, 410.8)]), 0.0, dicke=3.0,
+         zinnen=False, mat="Material_bruchstein", mitte=W((747, 380)), hoehe_min=_fh_oben)
+_fm = W((747, 377))
+box("Gewoelbe", FH, round(_fm[0], 2), round(_fh_oben - 0.9, 2), round(_fm[1], 2), 34.0, 1.8, 30.0, "Material_bruchstein")
+for k, pp in enumerate([(730, 400), (730, 375), (730, 355), (768, 380)]):
+    lx, lz = W(pp)
+    licht(f"Fackel{k}", FH, round(lx, 2), KAI_OBEN + 3.5, round(lz, 2), 16.0)
+_tx, _tz = W((733, 349.3))
+box("Kellertuer", FH, round(_tx, 2), KAI_OBEN + 1.3, round(_tz, 2), 0.3, 2.6, 1.8, "Material_holz")
+schild("SchildFelsenhafen", FH, round(_fm[0], 2), KAI_OBEN + 6, round(_fm[1], 2), "Felsenhafen", 40)
 _hm = W((720, 520))
 schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
 # Koggen im Becken (szenen/welt/ausstattung.gd, Art 5; die Wasserlinie liegt bei -20)
