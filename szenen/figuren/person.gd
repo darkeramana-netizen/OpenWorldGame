@@ -154,13 +154,20 @@ func _physics_process(delta: float) -> void:
 	global_position.y = _boden(ziel.y)
 
 
-## Höhe des Bodens unter der Person (Gelände, Böden, Brücken), sonst die des Ziels.
+## Höhe des Bodens unter der Person (Gelände, Böden, Brücken), sonst die des Ziels. Andere Personen sind kein
+## Boden: Sonst stiege sie jemandem, der im Weg steht, auf den Kopf.
 func _boden(ersatz: float) -> float:
 	var von := global_position + Vector3.UP * 1.5
 	var abfrage := PhysicsRayQueryParameters3D.create(von, von + Vector3.DOWN * 4.0, 1)
 	abfrage.exclude = [get_rid()]
-	var treffer := get_world_3d().direct_space_state.intersect_ray(abfrage)
-	return treffer.position.y if treffer else ersatz
+	for versuch in 4:
+		var treffer := get_world_3d().direct_space_state.intersect_ray(abfrage)
+		if not treffer:
+			return ersatz
+		if not (treffer.collider is CharacterBody3D or treffer.collider.has_method("unterwegs")):
+			return treffer.position.y
+		abfrage.exclude += [treffer.rid]
+	return ersatz
 
 
 ## Ob die Person gerade unterwegs ist (für Tests und die Anzeige).
