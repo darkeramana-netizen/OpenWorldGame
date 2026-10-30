@@ -137,7 +137,7 @@ func _initialize() -> void:
 	pruefe(orte.has("Drachenhafen"), "Ortsname: Drachenhafen")
 	# Zurück zum Becken, über den Westkai zum Speicherkai, durch die Molenpforte über Mole und Brücken zu den Inseln
 	var mole := await gehe_ueber([Vector2(83.5, 1), Vector2(92, -1.5), Vector2(100, -0.5), Vector2(100, 27.5), Vector2(106, 52.5),
-			Vector2(121, 61.5), Vector2(166, 61.5), Vector2(184, 55), Vector2(190, 17.5), Vector2(191, -8.5), Vector2(201, -10),
+			Vector2(121, 61.5), Vector2(166, 61.5), Vector2(186, 56.5), Vector2(191.5, 47.5), Vector2(191.5, 17.5), Vector2(191.5, -8.5), Vector2(201, -10),
 			Vector2(212, -10), Vector2(292, -15.5), Vector2(300, -15), Vector2(382, 22), Vector2(450, 55)], 30.0)
 	pruefe(mole and spieler().global_position.y > -18.5, "Durch die Molenpforte über Mole und Brücken zu den Inseln")
 	pruefe(orte.has("Schwarzer Bergfried"), "Ortsname beim Betreten: Schwarzer Bergfried")
