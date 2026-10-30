@@ -61,8 +61,8 @@ for i,(x,z) in enumerate([(620,-330),(640,330)]):
 N("Orte", "Node3D", ".")
 _orte = [
     ("Burgfeste Drachenstein", "Drei Burgen, ein Stein, eine Feste.", 160, 0, 60, 1050, 160, 960),
-    ("Oberer Burg · Drachenhorst", "Der Urkern, älter als der Orden selbst.", -215, 42, -60, 150, 40, 260),
-    ("Hoher Zwinger", "Zwischen Drachenhorst und Wolfsfeste.", -110, 20, -60, 60, 20, 180),
+    ("Oberer Burg · Drachenhorst", "Der Urkern, älter als der Orden selbst.", -215, 16, -60, 150, 24, 260),
+    ("Hoher Zwinger", "Zwischen Drachenhorst und Wolfsfeste.", -110, 6, -60, 60, 14, 180),
     ("Mittlere Burg · Wolfsfeste", "Kernhof, Palas und die Schwelle des Ordens.", -5, 3, -5, 200, 20, 170),
     ("Marktviertel", "Die Untere Burg: Markt, Kirche, Rathaus.", 300, -10, 20, 260, 30, 300),
     ("Drachenkai", "Hafen am Wächtermeer", 560, -16, 0, 200, 16, 200),
@@ -115,7 +115,7 @@ REITERIN = W((385, 230))
 person("Reiterin", "Personen/PersonenAmBoden", REITERIN[0], 0, REITERIN[1], "Reiterin Ilka Sand", "reiterin_ashenveil", 2, "0.25, 0.22, 0.18, 1", gier=-54)
 pferd("PferdReiterin", "Personen", round(REITERIN[0] - 3.5, 2), round(H(REITERIN[0] - 3.5, REITERIN[1] + 2), 2), round(REITERIN[1] + 2, 2), 36)
 # Bei Alarm leeren sich die Märkte (Konzept: Eine Welt, die kippen kann).
-_grete = W((520, 552))
+_grete = W((541, 548))
 person("Haendlerin", "Personen/PersonenAmBoden", _grete[0], 0, _grete[1], "Händlerin Grete Lohm", "haendlerin", 0, "0.45, 0.3, 0.2, 1", sichtbar_wenn="alarm<2")
 teil("teil_stadtleben.py")
 

@@ -25,7 +25,7 @@ N("Stadt", "Node3D", DS)
 STRASSEN = [WL(s) for s in PD.STRASSEN]
 # Landstraßen vor den Toren (für die Tore in der Löwenward)
 AUSSENWEGE = [[(-72.6, 181.3), (-120, 215), (-220, 170)], [(474.2, -296.6), (430, -380)], [(502.4, 425.0), (500, 520)]]
-STRASSE_HALB = 3.6
+STRASSE_HALB = 3.0      # die Gassen im Marktviertel sind eng
 MARKT = WL(PD.MARKTPLATZ)
 STADT_UMRISS = WL(PD.LOEWENWARD + [(520, 905), (612, 905)] + PD.LOEWENWARD_OST)
 ring = STADT_UMRISS
@@ -47,8 +47,9 @@ mauerring("VorburgGarten", ST, WL(PD.VORBURG_GARTEN), 8.0, dicke=3.0, mitte=W((3
 # Mauer zwischen Burg und Marktviertel
 mauerring("StadtmauerNord", ST, WL(PD.STADTMAUER_NORD), 7.0, dicke=3.0, mitte=MITTE_STADT, turm_r=3.5,
          strassen=STRASSEN)
-mauerring("StadtmauerNordOst", ST, WL(PD.STADTMAUER_NORD_OST), 7.0, dicke=3.0, mitte=MITTE_STADT, turm_r=3.5,
-         strassen=STRASSEN)
+if PD.STADTMAUER_NORD_OST:
+    mauerring("StadtmauerNordOst", ST, WL(PD.STADTMAUER_NORD_OST), 7.0, dicke=3.0, mitte=MITTE_STADT, turm_r=3.5,
+             strassen=STRASSEN)
 
 # --- V Hafenbezirk ---
 HF = DS + "/Drachenkai"
@@ -92,18 +93,17 @@ schild("SchildKai", HF, *(lambda p: (p[0], KAI_OBEN + 6, p[1]))(W((565, 760))), 
 # --- Markt (8), Kirche, Rathaus und weitere Bauten des Marktviertels ---
 MK = DS + "/Marktplatz"
 N("Marktplatz", "Node3D", DS)
-MARKT_MITTE = W((550, 597))
+MARKT_MITTE = W(PD.MARKT_MITTE)
 mx, mz = MARKT_MITTE
 mb = H(mx, mz)
 zyl("Brunnen", MK, mx, round(mb + 0.4, 2), mz, 2.8, 1.2, "Material_hell", 14)
 zyl("BrunnenWasser", MK, mx, round(mb + 0.95, 2), mz, 2.4, 0.1, "Material_wasser_becken", 14, False)
 zyl("BrunnenSaeule", MK, mx, round(mb + 2.2, 2), mz, 0.4, 3.0, "Material_hell", 10)
-STAENDE = [W((515, 540)), W((585, 545)), W((515, 640)), W((585, 650)), W((520, 590)), W((580, 600))]
-# Weitere Stände in zwei Reihen an den Längsseiten des Platzes (nur Ausstattung, ohne Händler)
-STAENDE_MEHR = [W(p) for p in [(515, 565), (515, 615), (515, 665), (585, 572), (585, 625), (585, 675), (535, 520), (565, 522)]]
-# Zwei Reihen mitten auf dem Platz, zwischen den Gassen; um den Brunnen bleibt Platz
-STAENDE_MEHR += [W((px, py)) for px in (528, 539, 561, 572) for py in range(518 + (px % 2) * 9, 692, 18) if abs(py - 597) > 16
-                 and all(math.dist((px, py), q) > 9 for q in [(515, 540), (585, 545), (515, 640), (585, 650), (520, 590), (580, 600)])]
+# Stände in zwei Reihen an den Längsseiten des Platzes wie im Plan; die ersten sechs haben Händler
+_STAND_PLAN = [(533, 548), (586, 552), (533, 648), (586, 656), (533, 580), (586, 585)]
+STAENDE = [W(p) for p in _STAND_PLAN]
+STAENDE_MEHR = [W((px, py)) for px in (533, 586) for py in range(540, 690, 13) if abs(py - 612) > 11
+                and all(math.dist((px, py), q) > 9 for q in _STAND_PLAN)]
 # Ausstattung: (Art, x, y, z, Gier). Arten siehe szenen/welt/ausstattung.gd: 0 Fass, 1 Kiste, 2 Säcke, 3 Stand, 4 Karren
 E("Script", "res://szenen/welt/ausstattung.gd", "29_ausstattung")
 AUSSTATTUNG = [(3, x, H(x, z), z, 0) for x, z in STAENDE + STAENDE_MEHR] + SCHIFFE
@@ -131,7 +131,7 @@ N("Ausstattung", "Node3D", ST, "script = ExtResource(\"29_ausstattung\")\nstueck
 schild("SchildMarkt", MK, mx, round(mb + 7, 2), mz, "Marktplatz", 64)
 
 kx, kz = W(PD.KIRCHE[0])
-steinbau("KircheStGeorg", ST, kx, kz, 66, 30, 22, gier=90, mat="Material_hell", dachhoehe=16)
+steinbau("KircheStGeorg", ST, kx, kz, 70, 34, 22, gier=90, mat="Material_hell", dachhoehe=17)
 tx, tz = W(PD.KIRCHTURM)
 tb = H(tx, tz)
 N("Kirchturm", "Node3D", ST, f"""script = ExtResource("28_burgbau")
@@ -179,7 +179,7 @@ def konvexe_teile(poly):
 
 SPERR = [MARKT] + [t for z in (PD.AEUSSERER_ZWINGER, PD.OSTTERRASSE, PD.HAFENBECKEN, PD.KANALBECKEN, PD.DOCK_OST, PD.KAI_WEST)
                    for t in konvexe_teile(WL(z))] + [
-    pr(PD.KIRCHE[0], 70, 36, 90), pr(PD.KIRCHTURM, 12, 12), pr(PD.RATHAUS[0], 40, 28, 90), pr(PD.BADEHAUS[0], 30, 24, 90),
+    pr(PD.KIRCHE[0], 72, 38, 90), pr(PD.KIRCHTURM, 12, 12), pr(PD.RATHAUS[0], 40, 28, 90), pr(PD.BADEHAUS[0], 30, 24, 90),
     pr(PD.MUEHLE[0], 24, 24), pr(PD.SCHMIEDE[0], 22, 20, 90), pr((565, 912), 90, 30), pr((470, 790), 30, 26),
     pr((480, 880), 26, 26), pr(PD.ZOLLHAUS, 20, 20)]
 # Gärten der Vorburg (zwischen innerer Vorburgmauer und Löwenward) und Garten 36 bleiben frei
@@ -192,8 +192,11 @@ MAUERN = [LW, LWO, WL(PD.VORBURG_INNEN), WL(PD.STADTMAUER_NORD), WL(PD.STADTMAUE
 def abstand_vieleck(p, poly):
     return 0.0 if im_vieleck(p, poly) else min(abstand_linie([a, b], *p) for a, b in zip(poly, poly[1:] + poly[:1]))
 
+EBENE = WL(PD.MARKTVIERTEL)
+
 def bauplatz_frei(ecken4, haeuser_ecken, halb):
-    if not all(im_vieleck(p, STADT_UMRISS) for p in ecken4):
+    # Bürgerhäuser stehen nur in der Ebene des Marktviertels, nicht am Burgberg
+    if not all(im_vieleck(p, EBENE) for p in ecken4):
         return False
     if any(im_vieleck(p, f) for f in FREI_FLAECHEN for p in ecken4):
         return False

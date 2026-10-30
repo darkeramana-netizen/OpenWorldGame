@@ -46,6 +46,8 @@ const BERGFRIED_GRUBE := 17.0
 ## Küste: so weit östlich liegt im Mittel die Wasserlinie.
 const KUESTE_X := 680.0
 const KAI_HOEHE := -17.8
+const H_ZWINGER := -3.0     # Äußerer Zwinger: Rand der Burgkuppe
+const H_EBENE := -14.0      # Land vor der Löwenward
 const BECKEN_TIEFE := -27.0
 
 ## Wege als Linienzüge.
@@ -69,6 +71,9 @@ var _zonen: Array = []          # [PackedVector2Array, Höhe, Rand]
 var _stadt := PackedVector2Array()
 var _becken: Array = []         # Hafenbecken, Kanal, Fahrrinne
 var _markt := PackedVector2Array()
+var _ebene := PackedVector2Array()    # Marktviertel und Hafen: flach
+var _kuppe := PackedVector2Array()    # Äußerer Zwinger: Rand der Burgkuppe
+var _treppe: Array = []               # [Anfang (x, z, y), Ende (x, z, y)]
 var stadt_strassen: Array = []
 
 var _rauschen := FastNoiseLite.new()
@@ -89,6 +94,9 @@ func _init() -> void:
 			_zonen.append([vec.call(z["punkte"]), float(z["hoehe"]), float(z["rand"])])
 		_stadt = vec.call(plan["stadt"])
 		_markt = vec.call(plan["markt"])
+		_ebene = vec.call(plan["ebene"])
+		_kuppe = vec.call(plan["kuppe"])
+		_treppe = plan["treppe"]
 		for name in ["hafen_becken", "kanal", "fahrrinne"]:
 			_becken.append(vec.call(plan[name]))
 		for linie: Array in plan["strassen"]:
@@ -228,29 +236,30 @@ func hoehe(p: Vector2) -> float:
 ## Die Burgfeste: Ein Grat steigt vom Eisgrat zum Drachenhorst und fällt zum Kernhof ab. In der Löwenward
 ## fällt die Stadt vom Treppentor zum Hafen; die Burgringe sind Terrassen auf ihren Höhen (Grundriss).
 func _drachenstein(h: float, p: Vector2) -> float:
-	if p.x < -420.0 or p.x > 760.0 or p.y < -480.0 or p.y > 600.0:
+	if p.x < -480.0 or p.x > 760.0 or p.y < -540.0 or p.y > 660.0:
 		return h
-	# Burgberg: steiler Fels um die oberen Burgen
-	var grat := _naechster_punkt([Vector2(-420, -60), Vector2(-300, -55), Vector2(-205, -70), Vector2(-60, -15)], p)
-	var kamm := lerpf(56.0, 4.0, smoothstep(0.55, 1.0, grat[1]))
-	var berg := kamm - maxf(0.0, grat[0] - 25.0) * 0.42 + _fein.get_noise_2dv(p) * 1.5
-	h = maxf(h, berg)
-	# Stadt innerhalb der Löwenward; davor fällt das Land zur Küste hin auf die Höhe der Stadt ab
+	# Nach den Schnitten A-A und B-B: Die Burgen liegen auf einer Felskuppe. Innerhalb der Löwenward fallen Gärten
+	# und Terrassen von der Kuppe ab, nur Marktviertel und Hafen liegen in der Ebene. Außen an der Löwenward bricht
+	# der Fels steil zur Ebene ab; an den Wegen vor den Toren führen flache Rampen hinunter.
 	if Geometry2D.is_point_in_polygon(p, _stadt):
-		h = stadthoehe(p) + _fein.get_noise_2dv(p) * 0.25
-	elif p.x > 60.0:
-		var aussen := _polygon_abstand(p, _stadt)
-		var ziel := stadthoehe(p) + aussen * 0.06
-		if h > ziel:
-			h = lerpf(ziel, h, smoothstep(10.0, 160.0, aussen))
+		h = _innen_hoehe(p) + _fein.get_noise_2dv(p) * 0.25
 	else:
-		# Kleine Stufen vor der Löwenward ausgleichen (sonst steht man vor den Toren an einer Kante);
-		# große Höhenunterschiede sind der Burgberg und bleiben
 		var aussen := _polygon_abstand(p, _stadt)
-		var ziel := stadthoehe(p)
-		if aussen < 30.0:
-			var angepasst := lerpf(ziel, h, smoothstep(3.0, 30.0, aussen))
-			h = lerpf(h, angepasst, smoothstep(14.0, 8.0, absf(h - ziel)))
+		var rand := _naechster_randpunkt(p, _stadt)
+		var innen := _innen_hoehe(rand + (rand - p).normalized() * 2.0)
+		if p.x > 60.0:
+			# zur Küste hin: wie bisher sanft auf die Höhe der Stadt
+			var ziel := innen + aussen * 0.06
+			if h > ziel:
+				h = lerpf(ziel, h, smoothstep(10.0, 160.0, aussen))
+		else:
+			var weg := INF
+			for linie in [WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE]:
+				weg = minf(weg, _naechster_punkt(linie, p)[0])
+			var abfall := lerpf(60.0, 14.0, smoothstep(8.0, 22.0, weg))
+			var fels := _fein.get_noise_2dv(p * 0.7) * 2.5
+			var unten := lerpf(H_EBENE + _fein.get_noise_2dv(p * 0.3) * 1.5, h, smoothstep(60.0, 260.0, aussen))
+			h = lerpf(innen + fels * (1.0 - smoothstep(0.0, abfall, aussen)), unten, smoothstep(0.0, abfall, aussen))
 	# Burgringe als Terrassen, von außen nach innen
 	for zone: Array in _zonen:
 		var d := _polygon_abstand(p, zone[0])
@@ -258,6 +267,15 @@ func _drachenstein(h: float, p: Vector2) -> float:
 			h = zone[1]
 		elif d < zone[2]:
 			h = lerpf(zone[1], h, smoothstep(0.0, zone[2], d))
+	# Die große Treppe vom Markt hinauf zum Äußeren Zwinger: gerade Rampe im Gelände
+	if not _treppe.is_empty():
+		var a := Vector2(_treppe[0][0], _treppe[0][1])
+		var b := Vector2(_treppe[1][0], _treppe[1][1])
+		var q := Geometry2D.get_closest_point_to_segment(p, a, b)
+		var d := p.distance_to(q)
+		if d < 9.0:
+			var t := (q - a).length() / maxf((b - a).length(), 0.01)
+			h = lerpf(lerpf(float(_treppe[0][2]), float(_treppe[1][2]), t), h, smoothstep(5.0, 9.0, d))
 	# Kais auf Höhe der Hafenmauern rings um die Becken
 	for becken: PackedVector2Array in _becken:
 		var d := _polygon_abstand(p, becken)
@@ -266,7 +284,14 @@ func _drachenstein(h: float, p: Vector2) -> float:
 	return h
 
 
-## Höhe der Stadt: vom Treppentor (Markt oben) zum Hafen (Markt unten), weiter bis an die Kais.
+## Höhe innerhalb der Löwenward: in der Ebene das Marktviertel, sonst der Hang der Burgkuppe.
+func _innen_hoehe(p: Vector2) -> float:
+	if Geometry2D.is_point_in_polygon(p, _ebene):
+		return stadthoehe(p)
+	return H_ZWINGER - 7.0 * pow(smoothstep(0.0, 130.0, _polygon_abstand(p, _kuppe)), 0.8)
+
+
+## Höhe der Ebene: am Fuß der Treppe (Markt oben) bis zum Hafen (Markt unten), weiter bis an die Kais.
 func stadthoehe(p: Vector2) -> float:
 	var oben: Array = plan["markt_oben"]
 	var unten: Array = plan["markt_unten"]
@@ -274,9 +299,19 @@ func stadthoehe(p: Vector2) -> float:
 	var hh := lerpf(float(oben[1]), float(unten[1]), t)
 	if p.x > float(unten[0]):
 		hh = lerpf(float(unten[1]), KAI_HOEHE + 0.8, clampf((p.x - float(unten[0])) / 220.0, 0.0, 1.0))
-	if p.x < float(oben[0]):
-		hh = lerpf(float(oben[1]), float(plan["vorburg_hoehe"]), clampf((float(oben[0]) - p.x) / 150.0, 0.0, 1.0))
 	return hh
+
+
+## Nächster Punkt auf dem Rand eines Vielecks.
+func _naechster_randpunkt(p: Vector2, ecken: PackedVector2Array) -> Vector2:
+	var bester := INF
+	var punkt := p
+	for i in ecken.size():
+		var q := Geometry2D.get_closest_point_to_segment(p, ecken[i], ecken[(i + 1) % ecken.size()])
+		if p.distance_to(q) < bester:
+			bester = p.distance_to(q)
+			punkt = q
+	return punkt
 
 
 ## Gravemarch: aufgeschütteter Hügel in der Form der Hauptmauer, darum ein Wassergraben.

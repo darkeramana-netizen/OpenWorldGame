@@ -105,20 +105,20 @@ func _initialize() -> void:
 	await setze(Vector3(0, 0.3, 46))
 	var hinauf := await gehe_ueber([Vector2(-38, 42), Vector2(-44, 0), Vector2(-40, -20), Vector2(-50, -26),
 			Vector2(-106, 34), Vector2(-109.6, 26.5), Vector2(-94.5, -10.5), Vector2(-93.6, -12.8), Vector2(-97.4, -12.5), Vector2(-102.7, -15.3)], 40.0)
-	pruefe(hinauf and spieler().global_position.y > 17.0, "Durch die Mittlere Burg hinauf in den Hohen Zwinger (y=%.1f)" % spieler().global_position.y)
+	pruefe(hinauf and spieler().global_position.y > 5.5, "Durch die Mittlere Burg hinauf in den Hohen Zwinger (y=%.1f)" % spieler().global_position.y)
 	var obere := await gehe_ueber([Vector2(-141.8, -43.2), Vector2(-141.5, -38.2), Vector2(-139.5, 3.7), Vector2(-140.3, 8.8),
 			Vector2(-152.3, 9.3)])
-	pruefe(obere and spieler().global_position.y > 33.0, "Über die Rampe an der Mauer in die Obere Burg (y=%.1f)" % spieler().global_position.y)
+	pruefe(obere and spieler().global_position.y > 11.5, "Über die Rampe an der Mauer in die Obere Burg (y=%.1f)" % spieler().global_position.y)
 	var urkern := await gehe_ueber([Vector2(-152, -40), Vector2(-154, -101), Vector2(-161.5, -101), Vector2(-160.7, -95.8),
 			Vector2(-154.2, -63.4), Vector2(-153.6, -60.5), Vector2(-160, -59.2), Vector2(-166, -58), Vector2(-175, -62)])
-	pruefe(urkern and spieler().global_position.y > 45.0, "Über die Rampe durch das Urkerntor in den Urkern (y=%.1f)" % spieler().global_position.y)
+	pruefe(urkern and spieler().global_position.y > 17.5, "Über die Rampe durch das Urkerntor in den Urkern (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("Oberer Burg · Drachenhorst") and orte.has("Hoher Zwinger"), "Ortsnamen: Hoher Zwinger und Oberer Burg")
 	# Hinab: Kernhoftor → Tor der Wolfsfeste → Äußerer Zwinger → Treppentor → Markt → Westkai → Hafentor → Mole
 	await setze(Vector3(0, 0.3, 46))
 	var hinab := await gehe_ueber([Vector2(35, 42), Vector2(45, 10), Vector2(50, -3.3), Vector2(66, -3.3), Vector2(80, -12), Vector2(84.7, -14.1),
-			Vector2(96.3, -11), Vector2(120, 5), Vector2(140, 20), Vector2(146, 23.5), Vector2(152.2, 28.4), Vector2(158, 26.7), Vector2(165, 24.7), Vector2(192, 16.8), Vector2(300, 25),
-			Vector2(415, 62), Vector2(422.4, 74.9), Vector2(435.8, 59.2), Vector2(534, 60.3)], 40.0)
-	pruefe(hinab and absf(spieler().global_position.y + 17.8) < 0.6, "Durch das Treppentor über den Markt hinunter zum Kai gelaufen")
+			Vector2(96.3, -11), Vector2(120, 5), Vector2(148, 19), Vector2(156.4, 19), Vector2(170, 18.8), Vector2(219, 17.9),
+			Vector2(234.6, 17.9), Vector2(300, 10), Vector2(406.7, 6.7), Vector2(406.7, 44.7), Vector2(422.4, 48), Vector2(435.8, 57), Vector2(534, 60.3)], 40.0)
+	pruefe(hinab and absf(spieler().global_position.y + 17.8) < 0.6, "Die Treppe hinab über den Markt zum Kai gelaufen")
 	pruefe(orte.has("Marktviertel") and orte.has("Drachenkai"), "Ortsnamen: Marktviertel und Drachenkai")
 	var mole := await gehe_ueber([Vector2(634.6, 61.4), Vector2(645, 57), Vector2(660, 54), Vector2(700, 45), Vector2(790, 58),
 			Vector2(872, 82), Vector2(940, 106)], 30.0)

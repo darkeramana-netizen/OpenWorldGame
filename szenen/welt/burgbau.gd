@@ -38,6 +38,11 @@ extends Node3D
 	set(w):
 		gebaeude = w
 		_neu_bauen()
+## Je Treppe 7 Werte: Anfang x, z, y, Ende x, z, y, Breite. Stufen mit Wangen; begehbar ist das Gelände darunter.
+@export var treppen := PackedFloat32Array():
+	set(w):
+		treppen = w
+		_neu_bauen()
 ## Ohne Kollision: nur Optik (z. B. über den alten Hofmauern aus Akt I, deren Körper bleiben)
 @export var kollision := true:
 	set(w):
@@ -94,6 +99,10 @@ func _baue() -> void:
 		_torturm(Vector2(torbauten[i], torbauten[i + 1]), Vector2(torbauten[i + 2], torbauten[i + 3]), torbauten[i + 4],
 			torbauten[i + 5], torbauten[i + 6], torbauten[i + 7], torbauten[i + 8], torbauten[i + 9])
 		i += 10
+	i = 0
+	while i + 6 < treppen.size():
+		_treppe(Vector3(treppen[i], treppen[i + 2], treppen[i + 1]), Vector3(treppen[i + 3], treppen[i + 5], treppen[i + 4]), treppen[i + 6])
+		i += 7
 	i = 0
 	while i + 11 < gebaeude.size():
 		_gebaeude(gebaeude.slice(i, i + 12))
@@ -479,6 +488,37 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 		_zinnen(c, -n, u, tiefe, b - BRUSTWEHR_DICKE, b, oben + 1.3)
 
 
+## Treppe aus Steinstufen (je 0,25 m) zwischen zwei Wangenmauern, alle 16 Stufen ein Absatz.
+func _treppe(a: Vector3, b: Vector3, breite: float) -> void:
+	var waag := Vector2(b.x - a.x, b.z - a.z)
+	var laenge := waag.length()
+	var u := waag / laenge
+	var n := Vector2(-u.y, u.x)
+	var steig := b.y - a.y
+	var stufen := maxi(1, int(absf(steig) / 0.25))
+	var hb := breite / 2.0
+	var c0 := Vector2(a.x, a.z)
+	for k in stufen:
+		var t0 := float(k) / stufen
+		var t1 := float(k + 1) / stufen
+		var y := a.y + steig * t1
+		var m := c0 + u * laenge * (t0 + t1) / 2.0
+		_klotz("boden", m, u, n, -laenge / stufen / 2.0 - 0.02, laenge / stufen / 2.0 + 0.02, -hb, hb, y - 0.6, y)
+		# Stufenkante etwas heller und vorstehend
+		_klotz("hell", c0 + u * laenge * t0, u, n, -0.12, 0.12, -hb, hb, y - 0.25, y - 0.02)
+	# Wangen: niedrige Mauern zu beiden Seiten, oben schräg mit der Treppe
+	for seite: float in [-1.0, 1.0]:
+		var teile := maxi(1, int(laenge / 8.0))
+		for k in teile:
+			var t0 := float(k) / teile
+			var t1 := float(k + 1) / teile
+			var m := c0 + u * laenge * (t0 + t1) / 2.0
+			var y_unten := a.y + steig * t0 - 3.0
+			var y_oben := a.y + steig * t1 + 0.9
+			_klotz(stein, m + n * seite * (hb + 0.4), u, n, -laenge / teile / 2.0 - 0.05, laenge / teile / 2.0 + 0.05, -0.4, 0.4,
+				y_unten, y_oben)
+
+
 ## Gebäude mit Sockel, Stockwerksgesimsen, Fenstern mit Steinrahmen, Tür, Traufgesims und Satteldach mit Überstand,
 ## Firstziegeln und Schornstein.
 func _gebaeude(w: PackedFloat32Array) -> void:
@@ -524,12 +564,12 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 			var quer := int((2.0 * B - 1.5) / 3.4)
 			for f in quer:
 				var pos := -B + 0.75 + (f + 0.5) * (2.0 * B - 1.5) / quer
-				if art == 1 and seite < 0 and k == 0 and absf(pos) < 2.0:
+				if art == 1 and seite > 0 and k == 0 and absf(pos) < 2.0:
 					continue
 				_fenster(c, nx, -uz, pos, -L * seite, -seite, ym, fb, fh, art == 1)
 	# Tür: bei Kirchen in der Giebelseite, sonst mitten in der Längsseite
 	if art == 1:
-		_tuer(c, nx, -uz, 0.0, L, -1.0, boden, 2.4, 4.2)
+		_tuer(c, nx, uz, 0.0, L, 1.0, boden, 2.4, 4.2)   # Portal in der Giebelseite gegenüber dem Turm
 	else:
 		_tuer(c, uz, nx, 0.0, B, 1.0, boden, 1.5, 2.5)
 	# Dach

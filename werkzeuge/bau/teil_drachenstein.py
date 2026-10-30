@@ -78,7 +78,13 @@ box("AbsatzZwinger", BG, round(oben_x + _rx * 2.5 + _wx * 1.5, 2), PD.H_HOHER_ZW
 AZ = WL(PD.AEUSSERER_ZWINGER)
 # Nur der Teil unterhalb der Oberen Burg ist eine eigene Mauer (oben schließt die Obere Burg an)
 mauerring("AeussererZwinger", BG, AZ[:-1], 9.0, dicke=3.0, mitte=(0, 0), turm_r=4.5,
-         tore={6: (0.7, 7.0, "Treppentor"), 3: (0.2, 6.0, "Zwingerpforte")})
+         tore={7: (0.5, 7.0, "Treppentor"), 3: (0.2, 6.0, "Zwingerpforte")})
+# Die große Treppe: vom Markt durch das Tor der Stadtmauer hinauf zum Treppentor (nur Optik, begehbar ist das
+# Gelände, das der Geländeerzeuger unter ihr zur geraden Rampe formt)
+_ta, _tb = W(PD.TREPPE[0]), W(PD.TREPPE[-1])
+N("Treppe", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+treppen = PackedFloat32Array({_zahlen([_ta[0], _ta[1], PD.H_MARKT_OBEN, _tb[0], _tb[1], PD.H_ZWINGER, 8.0])})
+kollision = false""")
 schild("SchildAeussererZwinger", BG, *(lambda p: (round(p[0], 1), 4.0, round(p[1], 1)))(W((560, 410))), "Äußerer Zwinger", 40)
 
 # --- Ostterrasse (4): spätmittelalterliche Verdichtung mit Wohnbauten ---
