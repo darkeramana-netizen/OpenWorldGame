@@ -24,7 +24,7 @@ gelaende_pflaster([STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2 + PD.BURGHO
 N("Bruecken", "Node3D", ".")
 _bfw = math.atan2(95 - 135, 212 - 250)
 _mole_a = W((755, 652))            # vor der Molenpforte
-_mole_b = (292.0, -15.5)             # an der ersten Insel
+_mole_b = (300.0, -15.0)             # bis auf die erste Insel, dort beginnt die Brücke
 box("Mole0", "Bruecken", round((_mole_a[0] + _mole_b[0]) / 2, 2), -19.0, round((_mole_a[1] + _mole_b[1]) / 2, 2),
     round(math.dist(_mole_a, _mole_b) + 6, 2), 2.4, 7, "Material_kai", gier=round(gier_zu(_mole_b[0] - _mole_a[0], _mole_b[1] - _mole_a[1]), 2))
 punkte = [(300, -15), (382, 22), (462.4, 60.4),

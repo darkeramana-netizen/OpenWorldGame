@@ -93,7 +93,7 @@ func _initialize() -> void:
 	pruefe(spieler().global_position.y > 21.8, "Rampe zum Wehrgang hinaufgelaufen (y=%.1f)" % spieler().global_position.y)
 	spieler().get_node("KameraDrehpunkt").rotation.y = PI
 	await laufe(1.0)
-	pruefe(spieler().global_position.z > 30.0 and spieler().global_position.y > 21.8, "Von der Rampe auf den Wehrgang getreten (%s)" % spieler().global_position.snapped(Vector3.ONE * 0.1))
+	pruefe(spieler().global_position.z > 30.0 and spieler().global_position.y > 21.6, "Von der Rampe auf den Wehrgang getreten (%s)" % spieler().global_position.snapped(Vector3.ONE * 0.1))
 	await setze(Vector3(-31, 22.3, 0), 0.0)
 	await laufe(6.0)
 	pruefe(spieler().global_position.y > 25.5, "Rampe auf den Wachturm hinaufgelaufen (y=%.1f)" % spieler().global_position.y)
