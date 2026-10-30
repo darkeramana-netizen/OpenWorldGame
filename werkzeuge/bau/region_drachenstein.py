@@ -142,7 +142,8 @@ for name, x, y, z in [("Hof der Burgfeste", 0, HOF_Y + 0.5, 20), ("Vor dem Tor",
 # ---------- Ankunft per Schiff, Spieler und Oberfläche ----------
 N("Ankuenfte", "Node3D", ".")
 N("von_riverlock", "Marker3D", "Ankuenfte", T(round(_lotsin[0] + 3, 2), -17.5, round(_lotsin[1], 2), 90), extra='groups=["ankunft"]')
-N("von_ashenveil", "Marker3D", "Ankuenfte", T(round(REITERIN[0] + 3, 2), round(H(REITERIN[0] + 3, REITERIN[1]) + 0.2, 2), round(REITERIN[1], 2), -53.4), extra='groups=["ankunft"]')
+_ank = W((216, 438.5))   # mitten auf der Hauptstraße neben der Reiterin
+N("von_ashenveil", "Marker3D", "Ankuenfte", T(round(_ank[0], 2), round(H(*_ank) + 0.2, 2), round(_ank[1], 2), -53.4), extra='groups=["ankunft"]')
 ankunft("von_nordstrasse", 112, -608, 145)
 ankunft("von_kuestenweg", 152, 640, 10)
 ankunft("heilstube", -10, 15)

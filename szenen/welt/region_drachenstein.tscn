@@ -5301,7 +5301,7 @@ metadata/anzeige = "Gravecrest, Palas"
 transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 108, -17.5, 22.5)
 
 [node name="von_ashenveil" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
-transform = Transform3D(0.59622, 0, -0.80282, 0, 1, 0, 0.80282, 0, 0.59622, 109, -14.23, 265)
+transform = Transform3D(0.59622, 0, -0.80282, 0, 1, 0, 0.80282, 0, 0.59622, 105.25, -14.24, 259.5)
 
 [node name="von_nordstrasse" type="Marker3D" parent="Ankuenfte" groups=["ankunft"]]
 transform = Transform3D(-0.81915, 0, 0.57358, 0, 1, 0, -0.57358, 0, -0.81915, 112, 24.32, -608)
