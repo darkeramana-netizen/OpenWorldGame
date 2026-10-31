@@ -105,17 +105,26 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
         groesse *= 0.75
     else:
         continue
-    # in die Wand setzen: die Front etwa einen Meter vor dem Hang
-    tiefe = max(0.0, FRONT[m] * groesse - 1.2)
-    x0, z0 = px - dx * tiefe, pz - dz * tiefe
-    y = reihe_h - mh * groesse * 0.3
-    if y + mh * groesse > oben + 0.4:          # nicht über die obere Kante (dort stehen die Mauern)
-        y = oben + 0.4 - mh * groesse
-    if y + mh * groesse < unten + 1.0:
+    # Die Front liegt parallel zum Hang (um die Hangneigung nach hinten gekippt) und steht etwa 2,5 m davor; der Punkt
+    # auf halber Höhe der Front sitzt über der Kandidatenstelle (px, H, pz).
+    beta = math.radians(max(0.0, min(35.0, 90.0 - math.degrees(math.atan(steil)))))
+    h0 = H(px, pz)
+    passt = False
+    for _ in range(3):
+        a_, f_ = mh * groesse * 0.5, FRONT[m] * groesse
+        y_mitte = a_ * math.cos(beta) + f_ * math.sin(beta)       # lokal gekippt, Mitte der Front
+        z_mitte = -a_ * math.sin(beta) + f_ * math.cos(beta)
+        oy = h0 - y_mitte
+        ox, oz = px + dx * (2.5 - z_mitte), pz + dz * (2.5 - z_mitte)
+        oben_stueck = oy + mh * groesse * math.cos(beta) + f_ * math.sin(beta)
+        if oben_stueck <= oben + 0.5:
+            passt = True
+            break
+        groesse *= 0.75           # oben an der Kante: kleiner, damit nichts über die Mauern ragt
+    if not passt:
         continue
-    neigung = max(0.0, min(25.0, 90.0 - math.degrees(math.atan(steil)))) * 0.8
-    gier = math.degrees(math.atan2(dx, dz)) + random.uniform(-10, 10)
-    FELSSTUECKE.append((m, round(x0, 2), round(y, 2), round(z0, 2), round(gier, 1), round(neigung + random.uniform(-3, 3), 1),
+    gier = math.degrees(math.atan2(dx, dz)) + random.uniform(-8, 8)
+    FELSSTUECKE.append((m, round(ox, 2), round(oy, 2), round(oz, 2), round(gier, 1), round(math.degrees(beta), 1),
                         round(groesse, 2)))
     nachbarn.append((px, pz, breite * groesse * 0.5))
 
