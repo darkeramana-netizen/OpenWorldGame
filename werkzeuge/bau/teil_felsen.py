@@ -34,7 +34,7 @@ _wege = [WL(w) for w in PD.BURGWEGE] + [WL(PD.KAIWEG)] + [
     # Landstraßen vor den Toren (werkzeuge/gelaende_erzeuger.gd: WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE)
     [(-27.2, 220.5), (-45, 225), (-120, 215), (-220, 170)],
     [(-45, 225), (-110, 200), (-150, 120), (-160, 0), (-155, -150), (-130, -300), (-60, -380), (40, -410), (150, -430)],
-    [(109.8, 288.8), (116, 300), (122, 390), (132, 470)]]
+    [(91, 297), (98, 312), (116, 340), (122, 390), (132, 470)]]
 # Tore und Durchgänge, vor denen nichts liegen darf (dazu der Kai am Wassertor und der Felsenhafen)
 _tore = [W(p) for p in PD.TORE.values()] + [W(PD.MOLENPFORTE), W((740, 420)), W((733, 380))]
 
@@ -72,7 +72,7 @@ for x in range(-150, 330, 2):
         px, pz = x + random.uniform(-0.8, 0.8), z + random.uniform(-0.8, 0.8)
         dx, dz, s = _gefaelle(px, pz)
         h0 = H(px, pz)
-        if s < 0.9 or h0 < -24:
+        if s < 1.3 or h0 < -24:      # nur echte Steilwände, nicht die Hänge im Zwinger
             continue
         if any(im_vieleck((px, pz), v) for v in _frei):
             continue
@@ -104,7 +104,7 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
     for _ in range(4):
         halb = breite * groesse * 0.45
         umriss = [(px - dz * t * halb, pz + dx * t * halb) for t in (-1.0, -0.5, 0.0, 0.5, 1.0)]
-        if all(_gefaelle(qx, qz)[2] > 0.55 for qx, qz in umriss) and _frei_fuer(umriss):
+        if all(_gefaelle(qx, qz)[2] > 1.0 for qx, qz in umriss) and _frei_fuer(umriss):
             break
         groesse *= 0.75
     else:

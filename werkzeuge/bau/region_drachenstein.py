@@ -117,8 +117,8 @@ gespraech("KerrinUndTilo", "KerrinImHof", "TiloBrenn", [
 ], "kerrin_anwaerter,!kerrin_gefasst", "beobachtung_kerrin",
    "Belauscht im Hof: Kerrin Fahl, für den du bürgst, fragt den Knappen Tilo Brenn nach den Fluchtgängen. Ein Warnzeichen.",
    (22, HOF_Y + 1, 1.1))
-# Reiterin aus Ashenveil am Torhaus West: nimmt Wächter über den Küstenweg mit
-REITERIN = W((205, 440))
+# Reiterin aus Ashenveil innen am Torhaus West (auf dem Burgweg): nimmt Wächter über den Küstenweg mit
+REITERIN = W((182, 401))
 person("Reiterin", "Personen/PersonenAmBoden", REITERIN[0], 0, REITERIN[1], "Reiterin Ilka Sand", "reiterin_ashenveil", 2, "0.25, 0.22, 0.18, 1", gier=-54)
 pferd("PferdReiterin", "Personen", round(REITERIN[0] - 3.5, 2), round(H(REITERIN[0] - 3.5, REITERIN[1] + 2), 2), round(REITERIN[1] + 2, 2), 36)
 # Bei Alarm leeren sich die Märkte (Konzept: Eine Welt, die kippen kann).
@@ -144,7 +144,7 @@ for name, x, y, z in [("Hof der Burgfeste", 0, HOF_Y + 0.5, 20), ("Vor dem Tor",
 # ---------- Ankunft per Schiff, Spieler und Oberfläche ----------
 N("Ankuenfte", "Node3D", ".")
 N("von_riverlock", "Marker3D", "Ankuenfte", T(round(_lotsin[0] + 3, 2), -17.5, round(_lotsin[1], 2), 90), extra='groups=["ankunft"]')
-_ank = W((216, 438.5))   # mitten auf der Hauptstraße neben der Reiterin
+_ank = W((198, 395))     # auf dem Weg vom Torhaus West, neben der Reiterin
 N("von_ashenveil", "Marker3D", "Ankuenfte", T(round(_ank[0], 2), round(H(*_ank) + 0.2, 2), round(_ank[1], 2), -53.4), extra='groups=["ankunft"]')
 ankunft("von_nordstrasse", 112, -608, 145)
 ankunft("von_kuestenweg", 152, 640, 10)

@@ -27,10 +27,9 @@ MARKT = WL(PD.MARKTPLATZ)
 STADT_UMRISS = WL(PD.STADT)
 MITTE_STADT = W((400, 540))
 
-# --- Stadtmauer mit Torhaus West und der Hafenpforte ---
+# --- Stadtmauer mit der Hafenpforte (in die Stadt kommt man vom Burgweg durch das Burgstraßentor) ---
 SM = PD.STADTMAUER
-mauerring("Stadtmauer", ST, WL(SM), 8.0, dicke=3.0, mitte=MITTE_STADT, strassen=STRASSEN, torname="Hafenpforte",
-         tore=tor_an(SM, PD.TORE["Torhaus West"], 6.0, "Torhaus West"))
+mauerring("Stadtmauer", ST, WL(SM), 8.0, dicke=3.0, mitte=MITTE_STADT, strassen=STRASSEN, torname="Hafenpforte")
 _st = []
 for pp in [(240, 600), (330, 665), (420, 674), (600, 664)]:
     x, z = W(pp)

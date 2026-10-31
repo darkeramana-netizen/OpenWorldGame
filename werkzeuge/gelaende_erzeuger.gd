@@ -59,10 +59,10 @@ const WEG_GRAVECREST := [Vector2(-460, -150), Vector2(-470, -240), Vector2(-500,
 const GRAVECREST_HOEHE := 70.0
 ## Landstraßen: Die Nordstraße zweigt vor dem Torhaus Nord vom Weg nach Gravemarch ab, läuft am Fuß des Burgbergs
 ## entlang (auf der Landseite, die Burg steht an der Klippe zum Meer) und steigt über einen Pass im Norden (nach
-## Riverlock); der Küstenweg verlässt die Stadt durch das Torhaus West über einen Pass im Süden.
+## Riverlock); der Küstenweg beginnt am Torhaus West in der Ringmauer und führt über einen Pass im Süden.
 const WEG_NORD := [Vector2(-45, 225), Vector2(-110, 200), Vector2(-150, 120), Vector2(-160, 0), Vector2(-155, -150),
 		Vector2(-130, -300), Vector2(-60, -380), Vector2(40, -410), Vector2(150, -430), Vector2(230, -500)]
-const WEG_KUESTE := [Vector2(109.8, 288.8), Vector2(116, 300), Vector2(122, 390), Vector2(132, 470), Vector2(140, 540)]
+const WEG_KUESTE := [Vector2(91, 297), Vector2(98, 312), Vector2(116, 340), Vector2(122, 390), Vector2(132, 470), Vector2(140, 540)]
 ## Passstrecken mit fester Steigung: [Linienzug, Höhe am Anfang, Höhe am Ende].
 const PASS_NORD := [[Vector2(230, -500), Vector2(150, -560), Vector2(110, -610), Vector2(85, -660)], -4.0, 30.0]
 const PASS_SUED := [[Vector2(140, 540), Vector2(150, 615), Vector2(160, 690)], -13.0, 22.0]

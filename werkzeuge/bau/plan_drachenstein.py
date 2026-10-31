@@ -100,7 +100,7 @@ MOLENPFORTE = (755, 645.5)
 # ---------- Tore ----------
 # Tore als (Kantenindex im jeweiligen Linienzug, Anteil, Breite, Name); die Punkte im Plan stehen dahinter
 TORE = {
-    "Torhaus West": (157.5, 447.5),      # in der Stadtmauer: Stadt ↔ Küstenweg
+    "Torhaus West": (154, 410),          # in der Ringmauer: Küstenweg ↔ Burgweg (in die Stadt geht es weiter durchs Burgstraßentor)
     "Torhaus Nord": (294, 173.6),        # in der Ringmauer: Burgbezirk ↔ Weg nach Gravemarch
     "Hafentor": (748, 408),              # Wassertor: Kanal vom Hafen in den Felsenhafen, daneben der Kai
     "Burgstraßentor": (233, 410.1),      # Stadt ↔ Burgweg (in der Ringmauer westlich des Grats)
@@ -167,6 +167,8 @@ WEG_BURG = [(230, 440), (233, 410.1), (237, 380), (240, 300), (262, 240), (300, 
 # das Tor des II. Burghofs zurück auf den Burgweg
 WEG_VORBURG = [(237, 380), (300, 388), (380, 382), (430, 376), (441, 356), (436.8, 339.7), (430, 325), (400, 300),
                (412, 280), (432, 264), (455.4, 258.4), (470, 256), (540, 262)]
+# Vom Torhaus West auf den Burgweg (rote Linie im Grundriss)
+WEG_TORHAUS_WEST = [(140, 412), (154, 410), (190, 398), (237, 380)]
 # Vom Torhaus Nord hinab auf den Burgweg
 WEG_TORHAUS_NORD = [(294, 160), (294, 180), (300, 205)]
 # Zwingerweg: vom Burgtor einmal um die Kernburg herum hinauf zum Kernburgtor
@@ -209,21 +211,22 @@ def hoehe_auf(linie, hoehen, p):
     return bester[1]
 
 
-# Der Berg steigt vom Hafen und der Stadt nach Osten: Der Burgweg klettert im Norden hinauf, am höchsten ist er im
-# Osten an der Kernburg über der Klippe, im Süden fällt er wieder zum Rampentor.
+# Der Burgweg ist ein Zwinger: Er läuft rings um das Felsplateau der Burgen, deutlich unter ihnen, so dass man von den
+# Mauern oben herab beschossen werden kann; nur die Rampe am Ende steigt hinauf zum Rampentor des II. Burghofs.
 _i = WEG_BURG.index
-WEG_BURG_HOEHEN = _steigend(WEG_BURG, {0: -14.3, 1: -14.0, _i((300, 205)): -9.0, _i((650, 112)): 2.0,
-                                       _i((1100, 56)): 20.0, _i((1197, 140)): 24.0, _i((1180, 290)): 24.0,
-                                       _i((950, 368)): 16.0, _i((785, 336)): 8.0,
+WEG_BURG_HOEHEN = _steigend(WEG_BURG, {0: -14.3, 1: -14.0, _i((300, 205)): -9.0, _i((650, 112)): -4.0,
+                                       _i((1100, 56)): 0.0, _i((1197, 140)): 2.0, _i((1180, 290)): 2.0,
+                                       _i((950, 368)): 0.0, _i((785, 336)): -4.0,
                                        _i(TORE["Rampentor"]): H_BURGHOF2, _i((540, 262)): H_BURGHOF2,
                                        _i(TORE["Tor des III. Burghofs"]): H_KERNHOF, len(WEG_BURG) - 1: H_KERNHOF})
 WEG_VORBURG_HOEHEN = _steigend(WEG_VORBURG, {0: hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (237, 380)),
                                              5: H_VORBURG, 7: H_VORBURG, 10: H_BURGHOF2, 12: H_BURGHOF2})
 WEG_TORHAUS_NORD_HOEHEN = [-12.5, -11.0, -9.0]
+WEG_TORHAUS_WEST_HOEHEN = [-14.0, -13.6, -13.4, round(hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (237, 380)), 2)]
 WEG_ZWINGER_HOEHEN = _steigend(WEG_ZWINGER, {1: H_KERNHOF, 12: H_KERNBURG})
 WEG_ZWINGER_HOEHEN[0] = H_KERNHOF
 # Die Wege im Burgbezirk sind keine Stadtgassen, gehören aber ins Wegenetz
-BURGWEGE = [WEG_BURG, WEG_VORBURG, WEG_TORHAUS_NORD, WEG_ZWINGER]
+BURGWEGE = [WEG_BURG, WEG_VORBURG, WEG_TORHAUS_NORD, WEG_TORHAUS_WEST, WEG_ZWINGER]
 
 
 def plan_json():
@@ -250,6 +253,7 @@ def plan_json():
         "burgwege": [[welt_liste(l), h, r] for l, h, r in [(WEG_BURG, WEG_BURG_HOEHEN, True),
                                                            (WEG_VORBURG, WEG_VORBURG_HOEHEN, True),
                                                            (WEG_TORHAUS_NORD, WEG_TORHAUS_NORD_HOEHEN, True),
+                                                           (WEG_TORHAUS_WEST, WEG_TORHAUS_WEST_HOEHEN, True),
                                                            (WEG_ZWINGER, WEG_ZWINGER_HOEHEN, False)]],
         "hafen_becken": welt_liste(HAFENBECKEN),
         "fahrrinne": welt_liste(FAHRRINNE),

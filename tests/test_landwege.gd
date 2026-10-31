@@ -218,8 +218,9 @@ func _initialize() -> void:
 	pruefe(await durch_uebergang(marke("von_drachenstein"), "NachDrachenstein") and region_id() == "drachenstein", "Gleich wieder umgekehrt")
 	pruefe(Z.absolute_minuten() - start < 60, "Wer umkehrt, verliert keine Tage")
 	await setze(marke("von_kuestenweg") + Vector3(0, 0.3, 0))
-	pruefe(await gehe_ueber([Vector2(150, 615), Vector2(140, 540), Vector2(132, 470), Vector2(122, 390), Vector2(116, 300),
-			Vector2(109.8, 288.8), Vector2(104, 280), Vector2(106, 252.5)], 30.0), "Über den Pass und durch das Torhaus West in die Stadt")
+	pruefe(await gehe_ueber([Vector2(150, 615), Vector2(140, 540), Vector2(132, 470), Vector2(122, 390), Vector2(116, 340),
+			Vector2(98, 312), Vector2(91, 297), Vector2(91, 290.5), Vector2(85, 272.5), Vector2(76, 249), Vector2(91.05, 251),
+			Vector2(106, 252.5)], 30.0), "Über den Pass, durch das Torhaus West und das Burgstraßentor in die Stadt")
 
 	print("\nFehler: ", fehler)
 	quit(fehler)

@@ -23,7 +23,7 @@ NETZ = STRASSEN + [P(*l) for l in [
     # Hafen: Kaiweg von der Hafenpforte zum Kai am Kanal
     PD.KAIWEG,
     # Burgweg um die Burg in den II. und III. Burghof, Abzweig zur Vorburg, Weg vom Torhaus Nord
-    PD.WEG_BURG, PD.WEG_VORBURG, PD.WEG_TORHAUS_NORD,
+    PD.WEG_BURG, PD.WEG_VORBURG, PD.WEG_TORHAUS_NORD, PD.WEG_TORHAUS_WEST,
     # weiter zum Tor des Hofs aus Akt I
     [(650, 228), (655, 228), (673, 228), (690, 228)],
 ]]

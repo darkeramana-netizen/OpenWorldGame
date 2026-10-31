@@ -122,12 +122,16 @@ func _baue() -> void:
 	for mat: String in _flach:
 		var st: SurfaceTool = _flach[mat]
 		st.generate_normals()
+		if mat.ends_with("_uv"):
+			st.generate_tangents()   # für die Normalenkarte der Dächer
 		st.commit(mesh)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
 		if not mat.begins_with("metall") and mat != "dunkel":
 			st.commit(fest)
 	for mat: String in _rund:
 		var st: SurfaceTool = _rund[mat]
+		if mat.ends_with("_uv"):
+			st.generate_tangents()   # Kegeldächer: ohne Tangenten wird die Schieferstruktur falsch schattiert
 		st.commit(mesh)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
 		if not mat.begins_with("metall") and mat != "dunkel":
@@ -362,7 +366,7 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 	if n.dot(aussen) < 0.0:
 		n = -n
 	var m := (a + b) / 2.0
-	var l := laenge / 2.0 + 0.15      # leicht überlappen, damit keine Fugen klaffen
+	var l := laenge / 2.0 + dicke * 0.5   # an Ecken überlappen, damit keine Lücken klaffen
 	var h := oben - unten
 	var d := dicke / 2.0
 	# Mauerkörper
@@ -413,11 +417,9 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 	if dach == 1:
 		# Kegeldach mit Traufe und Knauf
 		# Traufkranz: ein schmaler Mauerring, auf dem das Dach mit kurzem Überstand sitzt
-		_mantel(stein, c, r + 0.15, r + 0.15, oben - 0.2, oben + 0.35, teile)
-		_ring(stein, c, r, r + 0.15, oben - 0.2, teile, false)
-		_ring("dach", c, r - 0.2, r + 0.4, oben + 0.35, teile, false)
-		_kegel("dach", c, r + 0.4, oben + 0.35, dachhoehe, teile)
-		_kegel("metall", c, 0.25, oben + 0.35 + dachhoehe - 0.3, 1.4, 8)
+		_ring("dach", c, r - 0.1, r + 0.35, oben, teile, false)
+		_kegel("dach", c, r + 0.35, oben, dachhoehe, teile)
+		_kegel("metall", c, 0.25, oben + dachhoehe - 0.3, 1.4, 8)
 		_ring(stein, c, 0.0, r, oben, teile, true)
 	else:
 		# Zinnenkranz auf Kragsteinen

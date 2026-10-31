@@ -64,7 +64,7 @@ FAHNEN = []
 RING = PD.RINGMAUER + [PD.RINGMAUER[0]]
 mauerring("Ringmauer", BG, WL(RING), 9.0, dicke=3.0, mitte=MITTE_BURG,
          tore=tore_an(RING, (PD.TORE["Torhaus Nord"], 6.0, "Torhaus Nord"), (PD.TORE["Hafentor"], 16.0, "Hafentor"),
-                      (PD.TORE["Burgstraßentor"], 6.0, "Burgstraßentor")))
+                      (PD.TORE["Burgstraßentor"], 6.0, "Burgstraßentor"), (PD.TORE["Torhaus West"], 6.0, "Torhaus West")))
 # Türme der Ringmauer: Wehrturm, Zwinger, Rondell und weitere Rundtürme; Halbturm eckig
 _tuerme = []
 for pp, r, dach in [(PD.WEHRTURM, 6.0, 0), ((1190, 55), 6.0, 1), ((1230, 140), 6.5, 1), (PD.RONDELL, 10.0, 0),
@@ -114,7 +114,7 @@ mauerring("BurghofDrei", BG, WL(PD.BURGHOF3), 10.0, dicke=3.0, mitte=MITTE_BURG,
 schild("SchildBurghof3", BG, 0, PD.H_KERNHOF + 13, -36, "III. Burghof", 40)
 
 # --- Zwinger und Kernburg ---
-ZW = PD.ZWINGER_KERNBURG[1:]        # die Wand am III. Burghof gehört zu diesem
+ZW = PD.ZWINGER_KERNBURG[1:] + PD.ZWINGER_KERNBURG[:1]   # bis an den III. Burghof, dessen Wand dazwischen liegt
 mauerring("Zwingermauer", BG, WL(ZW), 8.0, dicke=3.0, mitte=W((990, 220)), turm_r=0.0)
 # Quermauer im südlichen Zwinger: Dort endet der Zwingerweg oben, westlich davon liegt der Zwinger unten
 mauerring("Quermauer", BG, WL([(945, 296), (945, 340)]), 6.0, dicke=2.5, mitte=W((990, 220)))
