@@ -28,9 +28,8 @@ FARBEN = {MITTEL: "0.74, 0.78, 0.86, 1", STUECK: "0.82, 0.85, 0.9, 1"}
 random.seed(4711)
 _frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(PD.STADT), WL(PD.HAFEN_BEZIRK),
          WL(PD.FELSENHAFEN)]
-_mauern = [WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.VORBURG + PD.VORBURG[:1]), WL(PD.BURGHOF2 + PD.BURGHOF2[:1]),
-           WL(PD.BURGHOF3), WL(PD.KERNBURG + PD.KERNBURG[:1]), WL(PD.ZWINGER_KERNBURG), WL(PD.STADTMAUER),
-           WL(PD.HAFENMAUER_OST)]
+# Äußere Mauern bleiben frei; an den Burgmauern darf der Fels bis an den Mauerfuß reichen (die Burgen stehen auf ihm)
+_mauern = [WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.STADTMAUER), WL(PD.HAFENMAUER_OST)]
 _wege = [WL(w) for w in PD.BURGWEGE] + [WL(PD.KAIWEG)] + [
     # Landstraßen vor den Toren (werkzeuge/gelaende_erzeuger.gd: WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE)
     [(-27.2, 220.5), (-45, 225), (-120, 215), (-220, 170)],
@@ -55,10 +54,11 @@ def _abstand(p, linien):
 # Wie weit die Front der Modelle vor ihrem Ursprung liegt (Meter, lokal +z): so tief kommen sie in die Wand
 FRONT = {GROSS: 4.1, MITTEL: 2.2, RIESIG: 15.2, STUECK: 0.9}
 REIHE = 6.5          # Höhe einer Felsreihe; die Stücke sind höher und überlappen die Reihe darüber
+REIHE_KLEIN = 3.5    # an niedrigeren Wänden (unter den Burgen) kleinere Reihen
 
 
 def _frei_fuer(umriss):
-    return all(not any(im_vieleck(q, v) for v in _frei) and _abstand(q, _wege) > 4.0 and _abstand(q, _mauern) > 1.5
+    return all(not any(im_vieleck(q, v) for v in _frei) and _abstand(q, _wege) > 6.5 and _abstand(q, _mauern) > 1.5
                and min(math.dist(q, t) for t in _tore) > 10.0 for q in umriss)
 
 
@@ -74,26 +74,30 @@ for x in range(-150, 330, 2):
         h0 = H(px, pz)
         if s < 0.9 or h0 < -24:
             continue
-        r = (h0 + 20.0) / REIHE
-        if abs(r - round(r)) > 0.25:
-            continue
         if any(im_vieleck((px, pz), v) for v in _frei):
             continue
-        oben = max(H(px - dx * d, pz - dz * d) for d in (3, 6, 10, 14, 20))
-        unten = min(H(px + dx * d, pz + dz * d) for d in (3, 6, 10, 14, 20))
-        kandidaten.append((oben - unten, round(r), px, pz, dx, dz, oben, unten, s))
+        oben = max(H(px - dx * d, pz - dz * d) for d in (2, 4, 6, 10, 14, 20))
+        unten = min(H(px + dx * d, pz + dz * d) for d in (2, 4, 6, 10, 14, 20))
+        reihe_m = REIHE if oben - unten >= 14 else REIHE_KLEIN
+        r = (h0 + 20.0) / reihe_m
+        if abs(r - round(r)) > 0.25:
+            continue
+        kandidaten.append((oben - unten, (reihe_m, round(r)), px, pz, dx, dz, oben, unten, s))
 kandidaten.sort(reverse=True)
 
 for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
-    if hoehe < 5:
+    if hoehe < 3:
         continue
-    reihe_h = -20.0 + reihe * REIHE
-    if reihe_h < -10 and hoehe > 20:
+    reihe_m = reihe[0]
+    reihe_h = -20.0 + reihe[1] * reihe_m
+    if reihe_m == REIHE_KLEIN:
+        m = random.choice([MITTEL, MITTEL, GROSS, STUECK])
+    elif reihe_h < -10 and hoehe > 20:
         m = random.choice([GROSS, GROSS, RIESIG])
     else:
         m = random.choice([GROSS, GROSS, GROSS, MITTEL, MITTEL])
     _, breite, mh = FELSMODELLE[m]
-    groesse = REIHE * 1.45 / mh * random.uniform(0.9, 1.15)
+    groesse = reihe_m * 1.45 / mh * random.uniform(0.9, 1.15)
     nachbarn = _reihen.setdefault(reihe, [])
     if any(math.dist((px, pz), (qx, qz)) < max(hb, breite * groesse * 0.5) * 0.85 for qx, qz, hb in nachbarn):
         continue
@@ -129,7 +133,7 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
     nachbarn.append((px, pz, breite * groesse * 0.5))
 
 # Geröll und Brocken am Fuß der Klippen an der Wasserlinie
-for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten[::3]:
+for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in [k for k in kandidaten if k[1][0] == REIHE][::3]:
     for k in range(3):
         qx, qz = px + dx * random.uniform(4, 14) + random.uniform(-3, 3), pz + dz * random.uniform(4, 14) + random.uniform(-3, 3)
         hq = H(qx, qz)
