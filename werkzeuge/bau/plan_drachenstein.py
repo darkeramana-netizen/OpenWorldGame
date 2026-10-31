@@ -90,10 +90,9 @@ FAHRRINNE = [(806, 606), (822, 548), (960, 830), (880, 860)]
 BUCHT = [(826, 556), (845, 548), (870, 505), (950, 468), (1100, 436), (1250, 425), (1450, 440), (1650, 620),
          (1720, 760), (1720, 950), (280, 950), (280, 760), (450, 748), (600, 735), (670, 712), (720, 682),
          (790, 660), (806, 642), (810, 610)]
-# Wassertor (Hafentor): ein Kanal vom Becken durch die Ringmauer bis an den Fels; dort führt ein Felsentor mit
-# Fallgitter in den Untergrundhafen (der kommt mit Höhlen im Gelände, Terrain3D)
-KANAL = [(744, 455), (744, 392), (764, 392), (764, 455)]
-HOEHLENMUND = (754, 393)
+# Wassertor (Hafentor): ein Kanal vom Becken bis an die Ringmauer; hinter dem Fallgitter geht es dunkel in den Berg zum
+# Untergrundhafen (der kommt mit Höhlen im Gelände, Terrain3D)
+KANAL = [(744, 455), (744, 410), (764, 410), (764, 455)]
 # Mole vom Speicherkai (Molenpforte) zur ersten Insel, von dort Brücken zum Schwarzen Bergfried
 MOLENPFORTE = (755, 645.5)
 
@@ -123,8 +122,9 @@ PALAS = ((995, 155), 120, 32, 4)
 DRACHENKAPELLE = ((1075, 215), 22, 80, 0)
 BURGKUECHE = ((905, 252), 52, 30, -25)
 ZEUGHAUS = ((1030, 260), 56, 26, -3)
-VORBURG_BAUTEN = [((410, 228), 60, 18, -13), ((330, 300), 22, 50, 0)]
-BURGHOF2_BAUTEN = [((565, 198), 70, 20, -8), ((585, 318), 60, 22, -10)]
+# Bauten mit Abstand zu den Mauern (sonst ragen sie durch die Wand)
+VORBURG_BAUTEN = [((405, 242), 48, 16, -13), ((342, 300), 18, 44, 0)]
+BURGHOF2_BAUTEN = [((565, 210), 60, 18, -8), ((575, 310), 50, 18, -10)]
 ST_MARIEN = ((410, 500), 76, 34, 0)      # Langhaus von West nach Ost, Turm im Osten
 ST_MARIEN_TURM = (444, 494)
 MARKTPLATZ = [(455, 480), (566, 478), (568, 556), (456, 558)]

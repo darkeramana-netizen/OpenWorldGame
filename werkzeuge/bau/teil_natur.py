@@ -54,6 +54,8 @@ NATUR = []
 
 
 def _setze(m, x, y, z, gier, neigung, groesse):
+    if m in NESSEL:
+        groesse *= 3.0      # die Teile des Nesselmodells sind nur etwa 15 cm groß
     NATUR.append((m, round(x, 2), round(y, 2), round(z, 2), round(gier, 1), round(neigung, 1), round(groesse, 2)))
 
 
@@ -83,28 +85,37 @@ for gx in range(-360, 330, 3):
                        random.uniform(0.8, 1.3))
             continue
         if wurf < 0.012 * (0.3 + dicht):
-            # umgestürzter Stamm mit Pilzen und Moos
+            # umgestürzter Stamm (nur auf flachem Boden, sonst schwebt ein Ende): daneben Pilze am Boden, Moospolster,
+            # an der Flanke Baumschwämme. Oberkante des Stamms über seinem Ursprung: dick 0,73, dünn 0,26 (je Größe 1).
+            if s > 0.22:
+                continue
             m = random.choice([STAMM, STAMM_DICK, STAMM_DICK])
-            g = random.uniform(0.9, 1.6) if m == STAMM_DICK else random.uniform(1.2, 2.4)
+            g = random.uniform(0.9, 1.5) if m == STAMM_DICK else random.uniform(1.2, 2.2)
             gier = random.uniform(0, 360)
             dicke = (1.06 if m == STAMM_DICK else 0.29) * g
-            _setze(m, x, h - dicke * 0.18, z, gier, 0, g)
+            y_stamm = h - dicke * 0.2
+            _setze(m, x, y_stamm, z, gier, 0, g)
             a = math.radians(gier)
             lx, lz = math.cos(a), -math.sin(a)          # entlang des Stamms (lokal x)
             laenge = (4.05 if m == STAMM_DICK else 3.05) * g
-            for _ in range(random.randint(2, 5)):
+            for _ in range(random.randint(2, 6)):
                 t = random.uniform(-0.4, 0.4) * laenge
-                px, pz = x + lx * t, z + lz * t
-                art = random.choice([HALLIMASCH, HALLIMASCH, SCHWAMM, MOOS_N[0]])
-                if art == SCHWAMM:
-                    seite = random.choice((-1, 1))
-                    _setze(SCHWAMM, px - lz * dicke * 0.48 * seite, h + dicke * 0.3, pz + lx * dicke * 0.48 * seite,
-                           math.degrees(math.atan2(-lz * seite, lx * seite)) + 90, 0, random.uniform(1.0, 2.2))
-                elif art == HALLIMASCH:
-                    _setze(HALLIMASCH, px, h - dicke * 0.18 + dicke * 0.95, pz, random.uniform(0, 360), 0, random.uniform(1.0, 1.8))
+                seite = random.choice((-1, 1))
+                art = random.choice([HALLIMASCH, HALLIMASCH, SCHWAMM, MOOS_N[0], FLIEGENPILZ])
+                if art == SCHWAMM and m == STAMM_DICK:
+                    px, pz = x + lx * t - lz * dicke * 0.47 * seite, z + lz * t + lx * dicke * 0.47 * seite
+                    _setze(SCHWAMM, px, y_stamm + 0.35 * g, pz, math.degrees(math.atan2(-lz * seite, lx * seite)) + 90, 0,
+                           random.uniform(1.0, 1.8))
                 else:
-                    _setze(random.choice(MOOS_N), px, h - dicke * 0.18 + dicke * 0.9, pz, random.uniform(0, 360), 0,
-                           random.uniform(2.0, 3.5) * min(1.0, dicke))
+                    # am Boden direkt neben dem Stamm
+                    abstand = dicke * 0.5 + random.uniform(0.05, 0.35)
+                    px, pz = x + lx * t - lz * abstand * seite, z + lz * t + lx * abstand * seite
+                    hb = H(px, pz)
+                    if art == MOOS_N[0]:
+                        _setze(random.choice(MOOS_N), px, hb - 0.01, pz, random.uniform(0, 360), 0, random.uniform(18, 30))
+                    else:
+                        _setze(HALLIMASCH if art == SCHWAMM else art, px, hb - 0.02, pz, random.uniform(0, 360), 0,
+                               random.uniform(1.0, 1.6))
             # Brennnesseln und Farn am Stamm
             for _ in range(random.randint(1, 4)):
                 t = random.uniform(-0.5, 0.5) * laenge

@@ -29,13 +29,14 @@ random.seed(4711)
 _frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(PD.STADT), WL(PD.HAFEN_BEZIRK)]
 # Äußere Mauern bleiben frei; an den Burgmauern darf der Fels bis an den Mauerfuß reichen (die Burgen stehen auf ihm)
 _mauern = [WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.STADTMAUER), WL(PD.HAFENMAUER_OST)]
+_ring_flaeche = WL(PD.RINGMAUER)
 _wege = [WL(w) for w in PD.BURGWEGE] + [WL(PD.KAIWEG)] + [
     # Landstraßen vor den Toren (werkzeuge/gelaende_erzeuger.gd: WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE)
     [(-27.2, 220.5), (-45, 225), (-120, 215), (-220, 170)],
     [(-45, 225), (-110, 200), (-150, 120), (-160, 0), (-155, -150), (-130, -300), (-60, -380), (40, -410), (150, -430)],
     [(91, 297), (98, 312), (116, 340), (122, 390), (132, 470)]]
 # Tore und Durchgänge, vor denen nichts liegen darf (dazu der Kai am Wassertor und das Felsentor)
-_tore = [W(p) for p in PD.TORE.values()] + [W(PD.MOLENPFORTE), W((740, 420)), W(PD.HOEHLENMUND)]
+_tore = [W(p) for p in PD.TORE.values()] + [W(PD.MOLENPFORTE), W((740, 420))]
 
 
 def _gefaelle(x, z):
@@ -73,7 +74,8 @@ for x in range(-150, 330, 2):
         h0 = H(px, pz)
         if s < 1.3 or h0 < -24:      # nur echte Steilwände, nicht die Hänge im Zwinger
             continue
-        if any(im_vieleck((px, pz), v) for v in _frei):
+        # nur außen an den Klippen (zum Meer und ins Tal); unter den Burgen bleibt das Felsplateau Gelände mit Felstextur
+        if any(im_vieleck((px, pz), v) for v in _frei) or im_vieleck((px, pz), _ring_flaeche):
             continue
         oben = max(H(px - dx * d, pz - dz * d) for d in (2, 4, 6, 10, 14, 20))
         unten = min(H(px + dx * d, pz + dz * d) for d in (2, 4, 6, 10, 14, 20))
@@ -164,7 +166,7 @@ for x in range(-150, 330, 2):
         elif wurf < 0.8:
             m, g = GRAS + random.randrange(17), random.uniform(0.8, 1.3)
         elif wurf < 0.95:
-            m, g = MOOS + random.randrange(12), random.uniform(2.5, 4.5)
+            m, g = MOOS + random.randrange(12), random.uniform(18, 30)   # das Moosmodell ist nur 2 cm groß
         else:
             m, g = random.choice(BROCKEN), random.uniform(0.8, 1.8)
         FELSSTUECKE.append((m, round(px, 2), round(h0 - 0.08, 2), round(pz, 2), round(random.uniform(0, 360), 1), 0.0, round(g, 2)))

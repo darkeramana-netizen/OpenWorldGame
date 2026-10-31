@@ -109,7 +109,7 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
         abschnitte = [(0.0, 1.0)]
         if i in tore:
             anteil, breite, tname = tore[i]
-            h_ = breite / 2 / laenge
+            h_ = (breite / 2 + dicke / 2) / laenge     # die Mauerstücke überlappen an ihren Enden um die halbe Dicke
             abschnitte = [(0.0, anteil - h_), (anteil + h_, 1.0)]
             toreliste.append((x1 + (x2 - x1) * anteil, z1 + (z2 - z1) * anteil, ux, uz, tname, breite))
         for t0, t1 in abschnitte:

@@ -39,6 +39,7 @@ func _baue() -> void:
 		koerper.name = "Kollision"
 		add_child(koerper)
 	for m in modelle.size():
+		var teil_lage := _teil_lage(modelle[m])
 		var mesh := _mesh(modelle[m], false)
 		if mesh == null:
 			continue
@@ -54,7 +55,7 @@ func _baue() -> void:
 		var i := 0
 		while i + SCHRITT - 1 < stuecke.size():
 			if int(stuecke[i]) == m:
-				lagen.append(_lage(i))
+				lagen.append(_lage(i) * teil_lage)
 			i += SCHRITT
 		if lagen.is_empty():
 			continue
@@ -103,6 +104,25 @@ func _baue() -> void:
 func _lage(i: int) -> Transform3D:
 	var b := Basis(Vector3.UP, deg_to_rad(stuecke[i + 4])) * Basis(Vector3.RIGHT, deg_to_rad(-stuecke[i + 5]))
 	return Transform3D(b.scaled(Vector3.ONE * stuecke[i + 6]), Vector3(stuecke[i + 1], stuecke[i + 2], stuecke[i + 3]))
+
+
+## Drehung und Größe des Meshes im Modell (bei Sammlungen sind die Teile gedreht und skaliert): gilt für jedes Stück.
+func _teil_lage(pfad: String) -> Transform3D:
+	var teile := pfad.split("#")
+	if not ResourceLoader.exists(teile[0]):
+		return Transform3D.IDENTITY
+	var szene: Node3D = (load(teile[0]) as PackedScene).instantiate()
+	var meshes := szene.find_children("*", "MeshInstance3D", true, false)
+	var nr := int(teile[1]) if teile.size() > 1 else 0
+	var lage := Transform3D.IDENTITY
+	if nr < meshes.size():
+		var k: Node = meshes[nr]
+		while k != szene:
+			lage = (k as Node3D).transform * lage
+			k = k.get_parent()
+	szene.free()
+	# nur Drehung und Größe: Die Teile einer Sammlung stehen im Modell nebeneinander, hier sitzt jedes an seinem Platz
+	return Transform3D(lage.basis, Vector3.ZERO)
 
 
 func _mesh(pfad: String, form: bool) -> Mesh:
