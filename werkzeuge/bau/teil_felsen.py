@@ -52,31 +52,37 @@ for x in range(-150, 330, 3):
         kandidaten.append((oben - unten, px, pz, dx, dz, oben, unten))
 kandidaten.sort(reverse=True)
 
+# In Lagen über die ganze Wand: Jedes Stück sitzt mit seiner Mitte auf dem Hang, so groß wie die Wand an dieser Stelle
+# (höchstens etwa 20 m hoch), und wird zur Hangneigung nach hinten gekippt. Abstände zählen auch in der Höhe.
 FELSSTUECKE = []
-_gesetzt = []   # (x, z, Radius)
+_gesetzt = []   # (x, y, z, Radius)
 for hoehe, px, pz, dx, dz, oben, unten in kandidaten:
-    if hoehe > 16:
-        m = random.choice([GROSS, GROSS, MITTEL, RIESIG])
-    elif hoehe > 6:
+    if hoehe > 18:
+        m = random.choice([GROSS, GROSS, MITTEL, MITTEL, RIESIG])
+    elif hoehe > 7:
         m = random.choice([MITTEL, MITTEL, GROSS])
     elif hoehe > 2.5:
         m = STUECK
     else:
         m = random.choice(BROCKEN)
     _, breite, mh = FELSMODELLE[m]
-    groesse = max(0.6, min(3.2 if m != RIESIG else 2.0, hoehe * 0.95 / mh))
-    radius = breite * groesse * 0.42
-    if any(math.dist((px, pz), (qx, qz)) < max(radius, r) * 0.85 for qx, qz, r in _gesetzt):
+    groesse = max(0.6, min(hoehe * 0.8, 20.0) / mh)
+    groesse = min(groesse, 1.6 if m == RIESIG else 2.6)
+    h0 = H(px, pz)
+    y = h0 - mh * groesse * 0.5
+    radius = breite * groesse * 0.38
+    if any(math.dist((px, y * 1.6, pz), (qx, qy * 1.6, qz)) < max(radius, r) * 0.8 for qx, qy, qz, r in _gesetzt):
         continue
-    # Fuß unter dem unteren Rand, die Oberkante nicht über die Kante oben (dort stehen die Mauern)
-    y = unten - mh * groesse * 0.12
-    groesse = min(groesse, (oben + 0.3 - y) / mh)
-    if groesse < 0.5:
-        continue
-    gier = math.degrees(math.atan2(dx, dz)) + random.uniform(-12, 12)
-    FELSSTUECKE.append((m, round(px, 2), round(y, 2), round(pz, 2), round(gier, 1), round(random.uniform(0, 8), 1),
+    # nicht über die obere Kante hinaus (dort stehen die Mauern)
+    if y + mh * groesse > oben + 0.5:
+        groesse = (oben + 0.5 - y) / mh
+        if groesse < 0.5:
+            continue
+    neigung = max(0.0, min(30.0, 90.0 - math.degrees(math.atan(_gefaelle(px, pz)[2])))) * 0.7
+    gier = math.degrees(math.atan2(dx, dz)) + random.uniform(-15, 15)
+    FELSSTUECKE.append((m, round(px, 2), round(y, 2), round(pz, 2), round(gier, 1), round(neigung + random.uniform(-4, 4), 1),
                         round(groesse, 2)))
-    _gesetzt.append((px, pz, breite * groesse * 0.42))
+    _gesetzt.append((px, y, pz, radius))
 
 N("Felsen", "Node3D", DS, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray({", ".join(f'"{p}"' for p, _, _ in FELSMODELLE)})
