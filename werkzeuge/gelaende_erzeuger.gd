@@ -197,17 +197,6 @@ func hoehe(p: Vector2) -> float:
 	h = lerpf(h, -18.6, smoothstep(-110.0, 0.0, d) * (1.0 - berg))
 	h -= smoothstep(5.0, 70.0, d) * 15.0
 
-	# Inseln zum Bergfried.
-	for insel: Array in INSELN:
-		var r: float = insel[1]
-		var abstand := p.distance_to(insel[0])
-		var insel_h := lerpf(INSEL_HOEHE, -32.0, smoothstep(r * 0.8, r * 1.4, abstand))
-		h = maxf(h, insel_h)
-
-	# Grube unter dem Schwarzen Bergfried: Dort liegt sein Unterbau mit vier Ebenen.
-	if p.distance_to(BERGFRIED) < BERGFRIED_GRUBE:
-		h = -50.0
-
 	# Burgfeste Drachenstein nach dem Grundriss: Burgberg, Stadt, Burgringe, Hafen.
 	h = _drachenstein(h, p)
 
@@ -230,6 +219,17 @@ func hoehe(p: Vector2) -> float:
 		if db < 14.0 and not Geometry2D.is_point_in_polygon(p, _hafen) and not Geometry2D.is_point_in_polygon(p, _stadt) \
 				and not Geometry2D.is_point_in_polygon(p, _ring):
 			h = minf(h, lerpf(-24.0, h, smoothstep(0.0, 14.0, db)))
+	# Inseln zum Bergfried, nach Burgberg und Bucht, damit beide sie nicht einebnen.
+	for insel: Array in INSELN:
+		var r: float = insel[1]
+		var abstand := p.distance_to(insel[0])
+		var insel_h := lerpf(INSEL_HOEHE, -32.0, smoothstep(r * 0.8, r * 1.4, abstand))
+		h = maxf(h, insel_h)
+
+	# Grube unter dem Schwarzen Bergfried: Dort liegt sein Unterbau mit vier Ebenen.
+	if p.distance_to(BERGFRIED) < BERGFRIED_GRUBE:
+		h = -50.0
+
 	# Hafenbecken und Fahrrinne zuletzt, damit nichts sie wieder auffüllt
 	for becken: PackedVector2Array in _becken:
 		if Geometry2D.is_point_in_polygon(p, becken):
