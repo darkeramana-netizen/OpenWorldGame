@@ -115,7 +115,10 @@ TORE = {
 
 # ---------- Bauten ----------
 # (Mitte, Länge, Breite, Drehung in Grad) in Bildpunkten; Länge entlang Plan-x bei Drehung 0
-BERGFRIED_KERNBURG = (1075, 140)
+# Bergfried wie im Referenzbild hinten am Palas, wie im Schnitt A-A auf dem höchsten Punkt: auf einem eigenen Felssockel
+BERGFRIED_KERNBURG = (1075, 150)
+H_BERGFRIEDFELS = H_KERNBURG + 4.0
+BERGFRIEDFELS = [(1057, 132), (1093, 132), (1093, 168), (1057, 168)]
 PALAS = ((995, 155), 120, 32, 4)
 DRACHENKAPELLE = ((1075, 215), 22, 80, 0)
 BURGKUECHE = ((905, 252), 52, 30, -25)
@@ -238,6 +241,7 @@ def plan_json():
         {"name": "Zwinger der Kernburg", "punkte": welt_liste(ZWINGER_KERNBURG), "hoehe": H_KERNHOF, "rand": 10.0,
          "weg": welt_liste(WEG_ZWINGER), "weg_hoehen": WEG_ZWINGER_HOEHEN},
         {"name": "Kernburg", "punkte": welt_liste(KERNBURG), "hoehe": H_KERNBURG, "rand": 9.0},
+        {"name": "Felssockel des Bergfrieds", "punkte": welt_liste(BERGFRIEDFELS), "hoehe": H_BERGFRIEDFELS, "rand": 4.0},
     ]
     return {
         "_hinweis": "Erzeugt von werkzeuge/bau/plan_drachenstein.py aus dem Grundriss. Nicht von Hand ändern.",
