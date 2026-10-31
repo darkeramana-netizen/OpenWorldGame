@@ -247,10 +247,11 @@ func hoehe(p: Vector2) -> float:
 	return h
 
 
-## Die Burgfeste: Ein Grat steigt vom Eisgrat zum Drachenhorst und fällt zum Kernhof ab. In der Löwenward
-## fällt die Stadt vom Treppentor zum Hafen; die Burgringe sind Terrassen auf ihren Höhen (Grundriss).
+## Die Burgfeste nach dem Grundriss: Der Burgberg steigt von Stadt und Hafen nach Osten bis zur Kernburg an der Klippe
+## über dem Meer; die Burgen stehen als Terrassen auf ihren Höhen, außen fällt der Berg steil ins Tal.
 func _drachenstein(h: float, p: Vector2) -> float:
-	if p.x < -230.0 or p.x > 330.0 or p.y < -380.0 or p.y > 420.0:
+	# so weit, dass die Ebene um den Burgberg (bis 260 m vor den Mauern) stufenlos ins übrige Land übergeht
+	if p.x < -360.0 or p.x > 490.0 or p.y < -520.0 or p.y > 555.0:
 		return h
 	# Nach dem Grundriss und den Schnitten: Die Burgen liegen auf einem Felsgrat, innerhalb der Ringmauer fallen die
 	# Zwinger von den Burgmauern ab. Stadt und Hafen liegen unten in der Ebene. Außen bricht der Fels steil zur Ebene ab;
