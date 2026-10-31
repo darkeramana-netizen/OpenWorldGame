@@ -118,7 +118,7 @@ gespraech("KerrinUndTilo", "KerrinImHof", "TiloBrenn", [
    "Belauscht im Hof: Kerrin Fahl, für den du bürgst, fragt den Knappen Tilo Brenn nach den Fluchtgängen. Ein Warnzeichen.",
    (22, HOF_Y + 1, 1.1))
 # Reiterin aus Ashenveil innen am Torhaus West (auf dem Burgweg): nimmt Wächter über den Küstenweg mit
-REITERIN = W((182, 401))
+REITERIN = W((190, 385))   # neben dem Weg, das Pferd weiter vom Weg weg
 person("Reiterin", "Personen/PersonenAmBoden", REITERIN[0], 0, REITERIN[1], "Reiterin Ilka Sand", "reiterin_ashenveil", 2, "0.25, 0.22, 0.18, 1", gier=-54)
 pferd("PferdReiterin", "Personen", round(REITERIN[0] - 3.5, 2), round(H(REITERIN[0] - 3.5, REITERIN[1] + 2), 2), round(REITERIN[1] + 2, 2), 36)
 # Bei Alarm leeren sich die Märkte (Konzept: Eine Welt, die kippen kann).
