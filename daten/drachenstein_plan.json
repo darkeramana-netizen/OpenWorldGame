@@ -38,7 +38,7 @@
     ]
    ],
    "hoehe": 0.0,
-   "rand": 6.0
+   "rand": 10.0
   },
   {
    "name": "II. Burghof",
@@ -89,7 +89,7 @@
     ]
    ],
    "hoehe": 6.0,
-   "rand": 6.0
+   "rand": 9.0
   },
   {
    "name": "III. Burghof",
@@ -124,7 +124,7 @@
     ]
    ],
    "hoehe": 14.0,
-   "rand": 6.0
+   "rand": 8.0
   },
   {
    "name": "Zwinger der Kernburg",
@@ -179,7 +179,7 @@
     ]
    ],
    "hoehe": 14.0,
-   "rand": 6.0,
+   "rand": 10.0,
    "weg": [
     [
      -3.0,
@@ -300,7 +300,7 @@
     ]
    ],
    "hoehe": 38.0,
-   "rand": 7.0
+   "rand": 9.0
   }
  ],
  "ring": [
