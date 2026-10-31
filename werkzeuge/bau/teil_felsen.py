@@ -23,7 +23,7 @@ FELSMODELLE += [(f"res://modelle/pflanzen/grass_medium_01/grass_medium_01.gltf#{
 MOOS = len(FELSMODELLE)
 FELSMODELLE += [(f"res://modelle/pflanzen/moss_01/moss_01.gltf#{k}", 0, 0) for k in range(12)]
 # Tönung: Die Scans aus Südafrika (namaqualand) und das Felsstück sind rötlich, sie passen sich dem grauen Fels an
-FARBEN = {MITTEL: "Color(0.74, 0.78, 0.86, 1)", STUECK: "Color(0.82, 0.85, 0.9, 1)"}
+FARBEN = {MITTEL: "0.74, 0.78, 0.86, 1", STUECK: "0.82, 0.85, 0.9, 1"}
 
 random.seed(4711)
 _frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(PD.STADT), WL(PD.HAFEN_BEZIRK),
@@ -131,7 +131,7 @@ for x in range(-150, 330, 2):
 
 N("Felsen", "Node3D", DS, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray({", ".join(f'"{p}"' for p, _, _ in FELSMODELLE)})
-farben = PackedColorArray({", ".join(FARBEN.get(m, "Color(1, 1, 1, 1)") for m in range(len(FELSMODELLE)))})
+farben = PackedColorArray({", ".join(FARBEN.get(m, "1, 1, 1, 1") for m in range(len(FELSMODELLE)))})
 stuecke = PackedFloat32Array({", ".join(f"{v:.6g}" for st in FELSSTUECKE for v in st)})""")
 print("Felsen:", len(FELSSTUECKE) - _bewuchs, "aus", len(kandidaten), "Steilstellen, Bewuchs:", _bewuchs,
       {FELSMODELLE[m][0].split("/")[-1]: sum(1 for s in FELSSTUECKE if s[0] == m) for m in range(4)})
