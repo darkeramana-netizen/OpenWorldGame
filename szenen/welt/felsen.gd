@@ -1,6 +1,6 @@
 @tool
 extends Node3D
-## 3D-Felsen aus Fotoscans (Poly Haven, modelle/felsen/): Klippenstücke und Felsbrocken als MultiMesh, je Modell eins.
+## 3D-Felsen und Pflanzen aus Fotoscans (Poly Haven, modelle/felsen/, modelle/pflanzen/) als MultiMesh, je Modell eins.
 ## Die Bauskripte (werkzeuge/bau/teil_felsen.py) setzen sie an Steilhänge und Klippen; die Front der Modelle zeigt
 ## nach lokal +z und wird hangabwärts gedreht. Zur Kollision dient eine stark vereinfachte Form (<name>_form.gltf).
 
@@ -16,6 +16,8 @@ extends Node3D
 		stuecke = w
 		if is_inside_tree():
 			_baue()
+## Tönung je Modell (weiß = unverändert), damit Scans aus verschiedenen Gegenden zum grauen Fels passen
+@export var farben := PackedColorArray()
 @export var sichtweite := 2500.0
 
 const SCHRITT := 7
@@ -37,6 +39,14 @@ func _baue() -> void:
 		var mesh := _mesh(modelle[m], false)
 		if mesh == null:
 			continue
+		if m < farben.size() and farben[m] != Color.WHITE:
+			mesh = mesh.duplicate()
+			for f in mesh.get_surface_count():
+				var mat := mesh.surface_get_material(f)
+				if mat is BaseMaterial3D:
+					mat = mat.duplicate()
+					(mat as BaseMaterial3D).albedo_color = farben[m]
+					mesh.surface_set_material(f, mat)
 		var lagen: Array[Transform3D] = []
 		var i := 0
 		while i + SCHRITT - 1 < stuecke.size():
