@@ -1,0 +1,82 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v3.5.30",
+  "version": "2.0"
+ },
+ "extensionsUsed": [
+  "KHR_materials_specular",
+  "KHR_materials_ior"
+ ],
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "coastal_cliff_02_LOD0"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "coastal_cliff_02_a.002",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 1228,
+   "type": "VEC3",
+   "min": [
+    -20.480417251586914,
+    -0.1602160483598709,
+    -4.495181083679199
+   ],
+   "max": [
+    20.412370681762695,
+    9.795059204101562,
+    4.046802997589111
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 4497,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 14736,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 14736,
+   "byteLength": 17988,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "coastal_cliff_02_form.bin",
+   "byteLength": 32724
+  }
+ ]
+}

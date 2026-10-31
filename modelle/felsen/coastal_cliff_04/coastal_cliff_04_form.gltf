@@ -1,0 +1,78 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v3.5.30",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "coastal_cliff_04"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "Plane.002",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 1862,
+   "type": "VEC3",
+   "min": [
+    -47.42515563964844,
+    -0.5331273078918457,
+    -9.037689208984375
+   ],
+   "max": [
+    39.346824645996094,
+    10.342107772827148,
+    15.09217643737793
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 5991,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 22344,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 22344,
+   "byteLength": 23964,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "coastal_cliff_04_form.bin",
+   "byteLength": 46308
+  }
+ ]
+}

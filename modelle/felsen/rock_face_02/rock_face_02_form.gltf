@@ -1,0 +1,78 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.0.44",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "rock_face_02"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "rock_face_section_2_proxy",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 457,
+   "type": "VEC3",
+   "min": [
+    -2.257464647293091,
+    -0.1383754312992096,
+    -1.188185453414917
+   ],
+   "max": [
+    0.4412935972213745,
+    2.331071138381958,
+    0.9009888768196106
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 1422,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 5484,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 5484,
+   "byteLength": 5688,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "rock_face_02_form.bin",
+   "byteLength": 11172
+  }
+ ]
+}

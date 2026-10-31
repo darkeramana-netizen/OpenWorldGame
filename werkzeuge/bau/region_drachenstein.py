@@ -15,6 +15,7 @@ HOF_Y = PD.HOF_Y
 N("BurgHof", None, ".", T(0, HOF_Y, 0), instanz="3_hof")
 BF_X_NEU, BF_Z_NEU = 500, 100   # Schwarzer Bergfried (werkzeuge/gelaende_erzeuger.gd, BERGFRIED)
 teil("teil_drachenstein.py")
+teil("teil_felsen.py")   # 3D-Felsen an den Klippen
 # Gepflastert sind Gassen und Markt in der Stadt, die Kais und die Höfe der Burgen
 gelaende_pflaster([STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2 + PD.BURGHOF3[1:6]), WL(PD.KERNBURG)])
 

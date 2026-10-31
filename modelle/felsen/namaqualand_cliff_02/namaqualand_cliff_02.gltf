@@ -1,0 +1,170 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.1.63",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "drone_rock_02_LOD0"
+  }
+ ],
+ "materials": [
+  {
+   "doubleSided": true,
+   "name": "drone_rock_02",
+   "normalTexture": {
+    "index": 0
+   },
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 1
+    },
+    "metallicFactor": 0,
+    "metallicRoughnessTexture": {
+     "index": 2
+    }
+   }
+  }
+ ],
+ "meshes": [
+  {
+   "name": "drone_rock_02_10m",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TEXCOORD_0": 2
+     },
+     "indices": 3,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "sampler": 0,
+   "source": 0
+  },
+  {
+   "sampler": 0,
+   "source": 1
+  },
+  {
+   "sampler": 0,
+   "source": 2
+  }
+ ],
+ "images": [
+  {
+   "mimeType": "image/jpeg",
+   "name": "namaqualand_cliff_02_nor_gl",
+   "uri": "namaqualand_cliff_02_nor_gl_2k.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "namaqualand_cliff_02_diff",
+   "uri": "namaqualand_cliff_02_diff_2k.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "namaqualand_cliff_02_rough",
+   "uri": "namaqualand_cliff_02_arm_2k.jpg"
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 35321,
+   "type": "VEC3",
+   "min": [
+    -9.681148529052734,
+    -0.15965047478675842,
+    -4.398998737335205
+   ],
+   "max": [
+    10.54635238647461,
+    7.023976802825928,
+    2.1933341026306152
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 35321,
+   "type": "VEC3",
+   "min": [
+    -0.9999173283576965,
+    -0.9986643195152283,
+    -0.9950257539749146
+   ],
+   "max": [
+    0.9998779296875,
+    0.9999836683273315,
+    0.9999840259552002
+   ]
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 35321,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5125,
+   "count": 179934,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 423852,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 423852,
+   "byteLength": 423852,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 847704,
+   "byteLength": 282568,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 1130272,
+   "byteLength": 719736,
+   "target": 34963
+  }
+ ],
+ "samplers": [
+  {
+   "magFilter": 9729,
+   "minFilter": 9987
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "namaqualand_cliff_02.bin",
+   "byteLength": 1850008
+  }
+ ]
+}

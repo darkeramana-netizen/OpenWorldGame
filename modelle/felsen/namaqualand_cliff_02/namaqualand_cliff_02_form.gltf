@@ -1,0 +1,78 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.1.63",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "drone_rock_02_LOD0"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "drone_rock_02_10m",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 1279,
+   "type": "VEC3",
+   "min": [
+    -9.617989540100098,
+    -0.1555498093366623,
+    -4.301796913146973
+   ],
+   "max": [
+    10.517380714416504,
+    7.006011009216309,
+    2.088202714920044
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 2997,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 15348,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 15348,
+   "byteLength": 11988,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "namaqualand_cliff_02_form.bin",
+   "byteLength": 27336
+  }
+ ]
+}
