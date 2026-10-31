@@ -72,7 +72,7 @@ N("Felsentor", "Node3D", HF, f"""script = ExtResource("28_burgbau")
 tore = PackedFloat32Array({_zahlen([_hm[0], _hm[1], _hu[0], _hu[1], -20.5, 9.0, KAI_OBEN + 13.0, 5.0])})
 torbauten = PackedFloat32Array({_zahlen([_hm[0], _hm[1] - 7.2, _hu[0], _hu[1], -26.0, KAI_OBEN + 15.0, 5.0, 7.0, 1, 0,
                                          _hm[0], _hm[1] + 7.2, _hu[0], _hu[1], -26.0, KAI_OBEN + 15.0, 5.0, 7.0, 1, 0])})
-stein = "bruchstein"""")
+stein = \"bruchstein\"""")
 S('''[sub_resource type="StandardMaterial3D" id="Material_dunkel"]
 albedo_color = Color(0.015, 0.015, 0.02, 1)
 roughness = 1.0''')
