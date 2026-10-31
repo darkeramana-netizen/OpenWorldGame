@@ -34,7 +34,9 @@ _wege = [WL(w) for w in PD.BURGWEGE] + [WL(PD.KAIWEG)] + [
     # Landstraßen vor den Toren (werkzeuge/gelaende_erzeuger.gd: WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE)
     [(-27.2, 220.5), (-45, 225), (-120, 215), (-220, 170)],
     [(-45, 225), (-110, 200), (-150, 120), (-160, 0), (-155, -150), (-130, -300), (-60, -380), (40, -410), (150, -430)],
-    [(91, 297), (98, 312), (116, 340), (122, 390), (132, 470)]]
+    [(-220, 170), (-300, 80), (-380, -20)],
+    [(91, 297), (98, 312), (116, 340), (122, 390), (132, 470), (140, 540), (150, 615), (160, 690)],
+    [(150, -430), (230, -500), (150, -560), (110, -610), (85, -660)]]
 # Tore und Durchgänge, vor denen nichts liegen darf (dazu der Kai am Wassertor und das Felsentor)
 _tore = [W(p) for p in PD.TORE.values()] + [W(PD.MOLENPFORTE), W((740, 420))]
 
