@@ -126,12 +126,16 @@ for pp in [(912, 138), (1100, 150), (1102, 280), (896, 288)]:
 N("KernburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_zt)})""")
 
-# Bergfried der Kernburg: hoher eckiger Turm mit Pechnasen und Zeltdach
+# Bergfried der Kernburg (wie im Referenzbild): sehr hoher eckiger Turm mit Zinnenkrone und vier Ecktürmchen
 bx, bz = W(PD.BERGFRIED_KERNBURG)
 N("BergfriedKernburg", "Node3D", BG, f"""script = ExtResource("28_burgbau")
-torbauten = PackedFloat32Array({_zahlen([bx, bz, 1, 0, PD.H_KERNBURG - 2, PD.H_KERNBURG + 38, 16, 16, 1, 1.1])})""")
-schild("SchildBergfriedKernburg", BG, bx, PD.H_KERNBURG + 62, bz, "Bergfried", 56)
-gebaeude("Palas", BG, PD.PALAS, 15, PD.H_KERNBURG, mat="Material_hell", dachhoehe=9)
+torbauten = PackedFloat32Array({_zahlen([bx, bz, 1, 0, PD.H_KERNBURG - 2, PD.H_KERNBURG + 52, 15, 15, 1, -1])})""")
+schild("SchildBergfriedKernburg", BG, bx, PD.H_KERNBURG + 64, bz, "Bergfried", 56)
+# Palas: drei Geschosse mit gotischen Doppelfenstern, steiles Schieferdach; am Westende ein schlanker Rundturm
+gebaeude("Palas", BG, PD.PALAS, 16, PD.H_KERNBURG, mat="Material_hell", dachhoehe=11, art=3)
+_pt = turmmasse((928, 150), 4.2, 0)
+N("PalasTurm", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+tuerme = PackedFloat32Array({_zahlen(_pt[:3] + [PD.H_KERNBURG + 25, 4.2, 1, 9])})""")
 gebaeude("Drachenkapelle", BG, PD.DRACHENKAPELLE, 11, PD.H_KERNBURG, mat="Material_hell", art=1, dachhoehe=8)
 gebaeude("Burgkueche", BG, PD.BURGKUECHE, 7, PD.H_KERNBURG, dach="Material_dach")
 gebaeude("Zeughaus", BG, PD.ZEUGHAUS, 8, PD.H_KERNBURG)

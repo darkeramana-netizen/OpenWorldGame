@@ -91,7 +91,7 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
     reihe_m = reihe[0]
     reihe_h = -20.0 + reihe[1] * reihe_m
     if reihe_m == REIHE_KLEIN:
-        m = random.choice([MITTEL, MITTEL, GROSS, STUECK])
+        m = random.choice([MITTEL, MITTEL, GROSS])
     elif reihe_h < -10 and hoehe > 20:
         m = random.choice([GROSS, GROSS, RIESIG])
     else:
@@ -99,7 +99,7 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
     _, breite, mh = FELSMODELLE[m]
     groesse = reihe_m * 1.45 / mh * random.uniform(0.9, 1.15)
     nachbarn = _reihen.setdefault(reihe, [])
-    if any(math.dist((px, pz), (qx, qz)) < max(hb, breite * groesse * 0.5) * 0.85 for qx, qz, hb in nachbarn):
+    if any(math.dist((px, pz), (qx, qz)) < max(hb, breite * groesse * 0.5) * 0.7 for qx, qz, hb in nachbarn):
         continue
     for _ in range(4):
         halb = breite * groesse * 0.45
@@ -109,7 +109,7 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
         groesse *= 0.75
     else:
         continue
-    # Die Front liegt parallel zum Hang (um die Hangneigung nach hinten gekippt) und steht etwa 2,5 m davor; der Punkt
+    # Die Front liegt parallel zum Hang (um die Hangneigung nach hinten gekippt) und steht etwa 1 m davor; der Punkt
     # auf halber Höhe der Front sitzt über der Kandidatenstelle (px, H, pz).
     beta = math.radians(max(0.0, min(35.0, 90.0 - math.degrees(math.atan(steil)))))
     h0 = H(px, pz)
@@ -119,7 +119,7 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
         y_mitte = a_ * math.cos(beta) + f_ * math.sin(beta)       # lokal gekippt, Mitte der Front
         z_mitte = -a_ * math.sin(beta) + f_ * math.cos(beta)
         oy = h0 - y_mitte
-        ox, oz = px + dx * (2.5 - z_mitte), pz + dz * (2.5 - z_mitte)
+        ox, oz = px + dx * (1.0 - z_mitte), pz + dz * (1.0 - z_mitte)
         oben_stueck = oy + mh * groesse * math.cos(beta) + f_ * math.sin(beta)
         if oben_stueck <= oben + 0.5:
             passt = True

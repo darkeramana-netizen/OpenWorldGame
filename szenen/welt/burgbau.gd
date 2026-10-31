@@ -459,7 +459,9 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 	for seite: float in [-1.0, 1.0]:
 		_klotz("dunkel", c, u, n, -0.08, 0.08, seite * t - 0.02 if seite > 0 else -t - 0.015, seite * t + 0.015 if seite > 0 else -t + 0.02,
 			unten + h * 0.55, unten + h * 0.55 + 1.2)
-	if dach >= 1.0:
+	if dach < 0.0:
+		_bergfried_krone(c, u, n, b, t, unten, oben)
+	elif dach >= 1.0:
 		var ue := 0.9
 		var spitze := Vector3(c.x, oben + 1.3 + maxf(breite, tiefe) * 0.9 * dach, c.y)
 		var p := func(su: float, sn: float) -> Vector3:
@@ -486,6 +488,47 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 		_zinnen(c, -u, -n, breite, t - BRUSTWEHR_DICKE, t, oben + 1.3)
 		_zinnen(c, n, -u, tiefe, b - BRUSTWEHR_DICKE, b, oben + 1.3)
 		_zinnen(c, -n, u, tiefe, b - BRUSTWEHR_DICKE, b, oben + 1.3)
+
+
+## Krone eines Bergfrieds (dach < 0): Zinnenplattform, vier Ecktürmchen mit Kegeldach auf Kragsteinen, Reihen von
+## Schießscharten und oben große Bogenfenster.
+func _bergfried_krone(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, unten: float, oben: float) -> void:
+	_klotz("boden", c, u, n, -b, b, -t, t, oben, oben + 0.05)
+	_klotz(stein, c, u, n, -b, b, -t, -t + BRUSTWEHR_DICKE, oben, oben + 1.3)
+	_klotz(stein, c, u, n, -b, b, t - BRUSTWEHR_DICKE, t, oben, oben + 1.3)
+	_klotz(stein, c, u, n, -b, -b + BRUSTWEHR_DICKE, -t, t, oben, oben + 1.3)
+	_klotz(stein, c, u, n, b - BRUSTWEHR_DICKE, b, -t, t, oben, oben + 1.3)
+	for seite in [[u, n, b * 2.0, t], [-u, -n, b * 2.0, t], [n, -u, t * 2.0, b], [-n, u, t * 2.0, b]]:
+		_zinnen(c, seite[0], seite[1], seite[2] - 3.0, seite[3] - BRUSTWEHR_DICKE, seite[3], oben + 1.3)
+	# Ecktürmchen
+	for su: float in [-1.0, 1.0]:
+		for sn: float in [-1.0, 1.0]:
+			var e := c + u * su * (b - 0.4) + n * sn * (t - 0.4)
+			var r := 1.7
+			for k in 3:
+				_mantel(stein, e, r * (0.45 + 0.2 * k), r * (0.65 + 0.2 * k), oben - 3.2 + k * 0.6, oben - 2.6 + k * 0.6, 12)
+			_mantel(stein, e, r, r, oben - 1.4, oben + 2.6, 14)
+			_ring(stein, e, 0.0, r, oben - 1.4, 14, false)
+			_ring("dach", e, r - 0.2, r + 0.3, oben + 2.6, 14, false)
+			_kegel("dach", e, r + 0.3, oben + 2.6, 4.2, 14)
+			_kegel("metall", e, 0.12, oben + 6.5, 0.9, 6)
+			var d := (e - c).normalized()
+			_klotz("dunkel", e + d * (r - 0.03), Vector2(-d.y, d.x), d, -0.07, 0.07, 0.0, 0.06, oben + 0.2, oben + 1.4)
+	# Schießscharten in Reihen und große Bogenfenster unter der Krone
+	var y := unten + 8.0
+	while y < oben - 9.0:
+		for seite in [[u, n, b, t], [-u, -n, b, t], [n, -u, t, b], [-n, u, t, b]]:
+			for pos: float in [-0.45, 0.45]:
+				_klotz("dunkel", c + seite[0] * pos * seite[2] + seite[1] * seite[3], seite[0], seite[1], -0.09, 0.09, -0.04, 0.02, y, y + 1.4)
+		y += 6.5
+	for seite in [[u, n, b, t], [-u, -n, b, t], [n, -u, t, b], [-n, u, t, b]]:
+		var m: Vector2 = c + seite[1] * seite[3]
+		var yf := oben - 6.0
+		_klotz("dunkel", m, seite[0], seite[1], -0.8, 0.8, -0.05, 0.02, yf, yf + 2.6)
+		_dreieck("dunkel", Vector3(m.x + seite[0].x * -0.8 + seite[1].x * 0.03, yf + 2.6, m.y + seite[0].y * -0.8 + seite[1].y * 0.03),
+			Vector3(m.x + seite[0].x * 0.8 + seite[1].x * 0.03, yf + 2.6, m.y + seite[0].y * 0.8 + seite[1].y * 0.03),
+			Vector3(m.x + seite[1].x * 0.03, yf + 3.5, m.y + seite[1].y * 0.03), Vector3(seite[1].x, 0, seite[1].y))
+		_klotz("hell", m, seite[0], seite[1], -1.05, 1.05, -0.02, 0.18, yf - 0.25, yf, true)
 
 
 ## Treppe aus Steinstufen (je 0,25 m) zwischen zwei Wangenmauern, alle 16 Stufen ein Absatz.
@@ -539,14 +582,16 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 	_klotz(wand, c, uz, nx, -L, L, -B, B, unten, traufe)
 	_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, boden + 0.7)
 	# Geschosse
-	var geschosse := 1 if art == 1 else maxi(1, int(w[7] / 3.6))
+	var geschosse := 1 if art == 1 else maxi(1, int(w[7] / (4.6 if art == 3 else 3.6)))
 	var gh := w[7] / geschosse
 	for k in range(1, geschosse):
 		var y := boden + k * gh
 		_klotz(wand, c, uz, nx, -L - 0.12, L + 0.12, -B - 0.12, B + 0.12, y - 0.15, y + 0.1, true)
 	_klotz(wand, c, uz, nx, -L - 0.3, L + 0.3, -B - 0.3, B + 0.3, traufe - 0.4, traufe, true)
+	if art == 3:
+		_palas_fenster(c, uz, nx, B, L, boden, gh, geschosse, wand)
 	# Fenster auf allen vier Seiten
-	for k in geschosse:
+	for k in (0 if art == 3 else geschosse):
 		if art == 2 and k > 0:
 			break
 		var fh := gh * 0.62 if art == 1 else minf(1.7, gh * 0.48)
@@ -600,11 +645,64 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 			Vector3(uz.x, 0, uz.y) * seite)
 	_klotz(dach, c, uz, nx, -L - gu, L + gu, -0.22, 0.22, first - 0.15, first + 0.12)
 	# Schornstein
-	if art == 0:
+	if art == 0 or art == 3:
 		var sx := L * 0.45
 		var sn := B * 0.35
 		_klotz("bruchstein", c + uz * sx + nx * sn, uz, nx, -0.4, 0.4, -0.4, 0.4, traufe, first + 1.0)
 		_klotz("bruchstein", c + uz * sx + nx * sn, uz, nx, -0.5, 0.5, -0.5, 0.5, first + 0.9, first + 1.15)
+
+
+## Fenster des Palas: unten kleine Rechteckfenster, darüber gotische Doppelfenster (zwei Spitzbögen unter einem
+## Bogenfeld) mit Steinrahmen; dazu Eckquader in hellem Stein.
+func _palas_fenster(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden: float, gh: float, geschosse: int,
+		wand: String) -> void:
+	for k in geschosse:
+		var ym := boden + k * gh + gh * 0.52
+		for seite: float in [-1.0, 1.0]:
+			var anzahl := int((2.0 * L - 3.0) / 4.2)
+			for f in anzahl:
+				var pos := -L + 1.5 + (f + 0.5) * (2.0 * L - 3.0) / anzahl
+				if k == 0:
+					if seite > 0 and absf(pos) < 2.0:
+						continue
+					_fenster(c, uz, nx, pos, B * seite, seite, ym, 0.8, 1.2, false)
+				else:
+					_doppelfenster(c + uz * pos + nx * B * seite, uz, nx * seite, ym, gh * 0.62)
+			var quer := int((2.0 * B - 3.0) / 4.2)
+			for f in quer:
+				var pos := -B + 1.5 + (f + 0.5) * (2.0 * B - 3.0) / quer
+				if k > 0:
+					_doppelfenster(c + nx * pos - uz * L * seite, -nx * seite, -uz * seite, ym, gh * 0.62)
+	# Eckquader
+	var y := boden
+	var wechsel := false
+	while y < boden + gh * geschosse - 0.6:
+		for su: float in [-1.0, 1.0]:
+			for sn: float in [-1.0, 1.0]:
+				var lu := 0.9 if wechsel else 0.5
+				var ln := 0.5 if wechsel else 0.9
+				_klotz("hell", c, uz, nx, su * L - (lu if su > 0 else -0.06), su * L + (0.06 if su > 0 else lu),
+					sn * B - (ln if sn > 0 else -0.06), sn * B + (0.06 if sn > 0 else ln), y, y + 0.46)
+		y += 0.5
+		wechsel = not wechsel
+
+
+func _doppelfenster(m: Vector2, u: Vector2, n: Vector2, ym: float, fh: float) -> void:
+	var y0 := ym - fh / 2.0
+	var y1 := ym + fh / 2.0 - 0.6
+	for seite: float in [-1.0, 1.0]:
+		var mx := seite * 0.48
+		_klotz("dunkel", m + u * mx, u, n, -0.32, 0.32, -0.05, 0.02, y0, y1)
+		var a := m + u * (mx - 0.32) + n * 0.03
+		var e := m + u * (mx + 0.32) + n * 0.03
+		var s_ := m + u * mx + n * 0.03
+		_dreieck("dunkel", Vector3(a.x, y1, a.y), Vector3(e.x, y1, e.y), Vector3(s_.x, y1 + 0.6, s_.y), Vector3(n.x, 0, n.y))
+	# Mittelpfosten, Rahmen, Sohlbank und Bogenfeld
+	_klotz("hell", m, u, n, -0.16, 0.16, -0.02, 0.08, y0, y1 + 0.3)
+	_klotz("hell", m, u, n, -0.98, -0.8, -0.02, 0.1, y0, y1 + 0.2)
+	_klotz("hell", m, u, n, 0.8, 0.98, -0.02, 0.1, y0, y1 + 0.2)
+	_klotz("hell", m, u, n, -1.05, 1.05, -0.02, 0.16, y0 - 0.22, y0, true)
+	_klotz("hell", m, u, n, -0.98, 0.98, -0.02, 0.12, y1 + 0.75, y1 + 0.95, true)
 
 
 ## Fenster in einer Wand: Laibung dunkel, Rahmen, Sohlbank und Sturz aus Stein. u entlang der Wand, n nach außen.
