@@ -3,7 +3,7 @@
 # Unten in der Ebene: die Stadt mit Fachwerkhäusern, St. Marien und dem Marktplatz hinter der Stadtmauer mit dem
 # Torhaus West; daneben der Drachenhafen mit Kaimauern, Hafenmauer, Speicher und Koggen. Die Hafenpforte verbindet
 # Stadt und Hafen. Die Hafeneinfahrt ist offen zum Meer; das Hafentor in der Ringmauer ist ein Wassertor, durch das
-# ein Kanal in den überwölbten Felsenhafen unter der Burg führt. Von der Molenpforte am Speicherkai geht die Mole ab.
+# ein Kanal bis an den Fels führt, wo ein Felsentor in den Untergrundhafen geht. Von der Molenpforte am Speicherkai geht die Mole ab.
 # Die Häuser zeichnet szenen/welt/stadthaeuser.gd; die Hausformen (Breite, Tiefe) stehen dort.
 import re
 
@@ -47,7 +47,7 @@ def kaimauer(name, punkte, offen=()):
 # Kaimauern ums Becken; offen bleiben die Hafeneinfahrt und der Kanal zum Wassertor
 kaimauer("KaiBecken", BECKEN, offen=(PD.HAFENEINFAHRT, 1))
 kaimauer("KaiNord", WL([(700, 444), (744, 447.5)]) + WL([(764, 449.2), (790, 452)]), offen=(1, 3))
-for k, (a_, b_) in enumerate([((744, 448), (744, 352)), ((764, 449), (764, 352)), ((744, 352), (764, 352))]):
+for k, (a_, b_) in enumerate([((744, 448), (744, 394)), ((764, 449), (764, 394))]):
     mauerring(f"KaiKanal{k}", HF, WL([a_, b_]), 0.9, dicke=2.0, zinnen=False, mat="Material_kai")
 HM = PD.HAFENMAUER_OST
 mauerring("Hafenmauer", HF, WL(HM), 8.0, dicke=3.0, mitte=W((720, 520)))
@@ -65,22 +65,19 @@ steinbau("Speicher", HF, sx, sz, PD.SPEICHER[1] * M, PD.SPEICHER[2] * M, 9, gier
          dach="Material_dach", boden=KAI_OBEN, art=2)
 schild("SchildSpeicher", HF, sx, KAI_OBEN + 18, sz, "Speicher", 40)
 
-# --- Felsenhafen hinter dem Wassertor: überwölbt, mit Kai an der Westseite ---
-FH = HF + "/Felsenhafen"
-N("Felsenhafen", "Node3D", HF)
-_fh = WL(PD.FELSENHAFEN)
-# Das Gewölbe liegt auf Höhe des Geländes ringsum (Burgbezirk unter dem Grat)
-_fh_oben = max(H(*W(pp)) for pp in [(747, 338), (712, 380), (782, 380), (712, 350), (782, 350)])
-mauerring("FelsenhafenWand", FH, WL([(720, 405.1), (720, 346), (774, 346), (774, 410.8)]), 0.0, dicke=3.0,
-         zinnen=False, mat="Material_bruchstein", mitte=W((747, 380)), hoehe_min=_fh_oben)
-_fm = W((747, 377))
-box("Gewoelbe", FH, round(_fm[0], 2), round(_fh_oben - 0.9, 2), round(_fm[1], 2), 34.0, 1.8, 30.0, "Material_bruchstein")
-for k, pp in enumerate([(730, 400), (730, 375), (730, 355), (768, 380)]):
-    lx, lz = W(pp)
-    licht(f"Fackel{k}", FH, round(lx, 2), KAI_OBEN + 3.5, round(lz, 2), 16.0)
-_tx, _tz = W((733, 349.3))
-box("Kellertuer", FH, round(_tx, 2), KAI_OBEN + 1.3, round(_tz, 2), 0.3, 2.6, 1.8, "Material_holz")
-schild("SchildFelsenhafen", FH, round(_fm[0], 2), KAI_OBEN + 6, round(_fm[1], 2), "Felsenhafen", 40)
+# --- Felsentor am Ende des Kanals: hier geht es durch den Fels in den Untergrundhafen (kommt mit Höhlen im Gelände) ---
+_hm = W(PD.HOEHLENMUND)
+_hu = (0.0, -1.0)        # entlang der Felswand (Plan-x = Welt -z)
+N("Felsentor", "Node3D", HF, f"""script = ExtResource("28_burgbau")
+tore = PackedFloat32Array({_zahlen([_hm[0], _hm[1], _hu[0], _hu[1], -20.5, 9.0, KAI_OBEN + 13.0, 5.0])})
+torbauten = PackedFloat32Array({_zahlen([_hm[0], _hm[1] - 7.2, _hu[0], _hu[1], -26.0, KAI_OBEN + 15.0, 5.0, 7.0, 1, 0,
+                                         _hm[0], _hm[1] + 7.2, _hu[0], _hu[1], -26.0, KAI_OBEN + 15.0, 5.0, 7.0, 1, 0])})
+stein = "bruchstein"""")
+S('''[sub_resource type="StandardMaterial3D" id="Material_dunkel"]
+albedo_color = Color(0.015, 0.015, 0.02, 1)
+roughness = 1.0''')
+box("FelsentorDunkel", HF, round(_hm[0] - 4.5, 2), -14.0, round(_hm[1], 2), 6.0, 14.0, 10.0, "Material_dunkel", kollision=False)
+schild("SchildFelsentor", HF, round(_hm[0] + 2, 2), KAI_OBEN + 16, round(_hm[1], 2), "Zum Untergrundhafen", 40)
 _hm = W((720, 520))
 schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
 # Koggen im Becken (szenen/welt/ausstattung.gd, Art 5; die Wasserlinie liegt bei -20)

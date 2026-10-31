@@ -301,9 +301,10 @@ func _mantel(mat: String, c: Vector2, r0: float, r1: float, y0: float, y1: float
 		var b := Vector3(c.x, y0, c.y) + d1 * r0
 		var e := Vector3(c.x, y1, c.y) + d1 * r1
 		var f := Vector3(c.x, y1, c.y) + d0 * r1
-		var reihe := [[a, n0], [e, n1], [b, n1], [a, n0], [f, n0], [e, n1]]
+		# Vorderseite nach außen (bzw. innen): sonst blendet Godot die Wand aus und man sieht die dunkle Rückwand
+		var reihe := [[a, n0], [b, n1], [e, n1], [a, n0], [e, n1], [f, n0]]
 		if innen:
-			reihe = [[a, n0], [b, n1], [e, n1], [a, n0], [e, n1], [f, n0]]
+			reihe = [[a, n0], [e, n1], [b, n1], [a, n0], [f, n0], [e, n1]]
 		for v: Array in reihe:
 			st.set_normal(v[1])
 			st.add_vertex(v[0])
@@ -336,7 +337,7 @@ func _kegel(mat: String, c: Vector2, r: float, y: float, h: float, teile: int) -
 		var a := Vector3(c.x, y, c.y) + d0 * r
 		var b := Vector3(c.x, y, c.y) + d1 * r
 		var bogen := TAU * r / teile
-		for v: Array in [[a, n0, Vector2(k * bogen, schraege)], [spitze, nm, Vector2((k + 0.5) * bogen, 0.0)], [b, n1, Vector2((k + 1) * bogen, schraege)]]:
+		for v: Array in [[a, n0, Vector2(k * bogen, schraege)], [b, n1, Vector2((k + 1) * bogen, schraege)], [spitze, nm, Vector2((k + 0.5) * bogen, 0.0)]]:
 			st.set_normal(v[1])
 			st.set_uv(v[2])
 			st.add_vertex(v[0])

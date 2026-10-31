@@ -11,7 +11,7 @@ Aufbau nach dem Plan und den Schnitten A-A und B-B:
   Eine Ringmauer (Stadtmauer) mit Torhäusern, Halbturm, Wehrturm, Zwinger und Rondell umschließt den Grat.
   Unten in der Ebene liegen die Stadt mit St. Marien und dem Marktplatz und der Drachenhafen mit Speicher; die
   Hafeneinfahrt zwischen dem Rundturm der Hafenmauer und dem Turm am Speicherkai ist offen zum Meer. Das Hafentor
-  in der Ringmauer ist ein Wassertor: Ein Kanal führt die Schiffe in den Felsenhafen unter der Burg.
+  in der Ringmauer ist ein Wassertor: Ein Kanal führt bis an den Fels, ein Felsentor geht in den Untergrundhafen.
   Zugang zur Burg (blaue Linie): vom Hafen oder vom Torhaus West durch die Stadt, durch das Burgstraßentor in der
   Ringmauer, am Halbturm vorbei hinauf (dort kommt der Weg vom Torhaus Nord dazu) und dann außen um die ganze Burg
   bis unter den II. Burghof, wo eine Rampe durch das Rampentor hinaufführt. Unten zweigt ein Weg zum Südtor der
@@ -90,10 +90,10 @@ FAHRRINNE = [(806, 606), (822, 548), (960, 830), (880, 860)]
 BUCHT = [(826, 556), (845, 548), (870, 505), (950, 468), (1100, 436), (1250, 425), (1450, 440), (1650, 620),
          (1720, 760), (1720, 950), (280, 950), (280, 760), (450, 748), (600, 735), (670, 712), (720, 682),
          (790, 660), (806, 642), (810, 610)]
-# Wassertor (Hafentor) und Felsenhafen unter der Burg: ein Kanal vom Becken durch die Ringmauer in den Fels,
-# darin ein Kai an der Westseite; der Felsenhafen ist überwölbt (teil_stadt.py)
-KANAL = [(744, 455), (744, 352), (764, 352), (764, 455)]
-FELSENHAFEN = [(722, 410), (722, 348), (772, 348), (772, 411)]
+# Wassertor (Hafentor): ein Kanal vom Becken durch die Ringmauer bis an den Fels; dort führt ein Felsentor mit
+# Fallgitter in den Untergrundhafen (der kommt mit Höhlen im Gelände, Terrain3D)
+KANAL = [(744, 455), (744, 392), (764, 392), (764, 455)]
+HOEHLENMUND = (754, 393)
 # Mole vom Speicherkai (Molenpforte) zur ersten Insel, von dort Brücken zum Schwarzen Bergfried
 MOLENPFORTE = (755, 645.5)
 
@@ -102,7 +102,7 @@ MOLENPFORTE = (755, 645.5)
 TORE = {
     "Torhaus West": (154, 410),          # in der Ringmauer: Küstenweg ↔ Burgweg (in die Stadt geht es weiter durchs Burgstraßentor)
     "Torhaus Nord": (294, 173.6),        # in der Ringmauer: Burgbezirk ↔ Weg nach Gravemarch
-    "Hafentor": (748, 408),              # Wassertor: Kanal vom Hafen in den Felsenhafen, daneben der Kai
+    "Hafentor": (748, 408),              # Wassertor: Kanal vom Hafen bis ans Felsentor, daneben der Kai
     "Burgstraßentor": (233, 410.1),      # Stadt ↔ Burgweg (in der Ringmauer westlich des Grats)
     "Tor zur Vorburg": (436.8, 339.7),   # Südtor der Vorburg, vom Weg unter der Vorburg
     "Rampentor": (628.5, 311.8),         # Südtor des II. Burghofs, am Ende des Burgwegs um die Burg
@@ -160,16 +160,18 @@ KAIWEG = [(606, 500), (612, 470), (630, 440), (680, 428), (736, 428)]
 # Burgweg (blaue Linie im Grundriss): von der Gasse an der Mauer durch das Burgstraßentor, im Westen am Halbturm
 # vorbei hinauf, wo der Weg vom Torhaus Nord dazukommt; dann außen um die ganze Burg: im Norden zwischen den Burgen und
 # der Ringmauer am Wehrturm vorbei, um den Zwinger der Kernburg, am Rondell vorbei und im Süden unter den Burgen zurück
-# über den Felsenhafen; zuletzt die Rampe hinauf durch das Rampentor in den II. Burghof und weiter in den III. Burghof.
+# über dem Wassertor; zuletzt die Rampe hinauf durch das Rampentor in den II. Burghof und weiter in den III. Burghof.
 WEG_BURG = [(230, 440), (233, 410.1), (237, 380), (240, 300), (262, 240), (300, 205), (360, 198), (450, 178),
             (530, 162), (600, 140), (650, 112), (700, 106), (760, 108), (800, 116), (850, 95), (900, 78), (965, 62),
             (1030, 58), (1100, 56), (1160, 85), (1197, 140), (1195, 205), (1180, 290), (1150, 335), (1050, 357),
             (950, 368), (870, 375), (800, 352), (785, 336), (720, 334), (668, 330), (645, 322), (628.5, 311.8),
             (612, 300), (600, 290), (560, 285), (540, 262), (600, 245), (625, 230), (636, 228), (650, 228)]
-# Unten im Westen zweigt der Weg zur Vorburg ab: unter der Vorburg nach Osten zu ihrem Südtor, durch die Vorburg und
-# das Tor des II. Burghofs zurück auf den Burgweg
-WEG_VORBURG = [(237, 380), (300, 388), (380, 382), (430, 376), (441, 356), (436.8, 339.7), (430, 325), (400, 300),
-               (412, 280), (432, 264), (455.4, 258.4), (470, 256), (540, 262)]
+# Am Fuß der Rampe zum Rampentor geht es geradeaus weiter zur Vorburg: unter dem II. Burghof nach Westen zu ihrem
+# Südtor, durch die Vorburg und das Tor des II. Burghofs auf den Burgweg im II. Burghof. Von Westen (Torhaus West,
+# Burgstraßentor) ist dieser Weg durch eine Sperrmauer versperrt.
+WEG_VORBURG = [(720, 334), (660, 352), (580, 362), (500, 356), (460, 352), (441, 356), (436.8, 339.7), (430, 325),
+               (400, 300), (412, 280), (432, 264), (455.4, 258.4), (470, 256), (540, 262)]
+SPERRMAUER = [(347, 362), (347, 400)]
 # Vom Torhaus West auf den Burgweg (rote Linie im Grundriss)
 WEG_TORHAUS_WEST = [(140, 412), (154, 410), (190, 398), (237, 380)]
 # Vom Torhaus Nord hinab auf den Burgweg
@@ -222,8 +224,8 @@ WEG_BURG_HOEHEN = _steigend(WEG_BURG, {0: -14.3, 1: -14.0, _i((300, 205)): -9.0,
                                        _i((950, 368)): 0.0, _i((785, 336)): -4.0,
                                        _i(TORE["Rampentor"]): H_BURGHOF2, _i((540, 262)): H_BURGHOF2,
                                        _i(TORE["Tor des III. Burghofs"]): H_KERNHOF, len(WEG_BURG) - 1: H_KERNHOF})
-WEG_VORBURG_HOEHEN = _steigend(WEG_VORBURG, {0: hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (237, 380)),
-                                             5: H_VORBURG, 7: H_VORBURG, 10: H_BURGHOF2, 12: H_BURGHOF2})
+WEG_VORBURG_HOEHEN = _steigend(WEG_VORBURG, {0: hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (720, 334)),
+                                             6: H_VORBURG, 8: H_VORBURG, 11: H_BURGHOF2, 13: H_BURGHOF2})
 WEG_TORHAUS_NORD_HOEHEN = [-12.5, -11.0, -9.0]
 WEG_TORHAUS_WEST_HOEHEN = [-14.0, -13.6, -13.4, round(hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (237, 380)), 2)]
 WEG_ZWINGER_HOEHEN = _steigend(WEG_ZWINGER, {1: H_KERNHOF, 12: H_KERNBURG})
@@ -262,7 +264,6 @@ def plan_json():
         "hafen_becken": welt_liste(HAFENBECKEN),
         "fahrrinne": welt_liste(FAHRRINNE),
         "kanal": welt_liste(KANAL),
-        "felsenhafen": welt_liste(FELSENHAFEN),
         "bucht": welt_liste(BUCHT),
         "grat_hoehen": [H_VORBURG, H_KERNBURG],
         "grat_abfall": 3.0,

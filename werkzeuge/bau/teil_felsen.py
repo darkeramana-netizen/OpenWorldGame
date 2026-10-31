@@ -26,8 +26,7 @@ FELSMODELLE += [(f"res://modelle/pflanzen/moss_01/moss_01.gltf#{k}", 0, 0) for k
 FARBEN = {MITTEL: "0.74, 0.78, 0.86, 1", STUECK: "0.82, 0.85, 0.9, 1"}
 
 random.seed(4711)
-_frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(PD.STADT), WL(PD.HAFEN_BEZIRK),
-         WL(PD.FELSENHAFEN)]
+_frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(PD.STADT), WL(PD.HAFEN_BEZIRK)]
 # Äußere Mauern bleiben frei; an den Burgmauern darf der Fels bis an den Mauerfuß reichen (die Burgen stehen auf ihm)
 _mauern = [WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.STADTMAUER), WL(PD.HAFENMAUER_OST)]
 _wege = [WL(w) for w in PD.BURGWEGE] + [WL(PD.KAIWEG)] + [
@@ -35,8 +34,8 @@ _wege = [WL(w) for w in PD.BURGWEGE] + [WL(PD.KAIWEG)] + [
     [(-27.2, 220.5), (-45, 225), (-120, 215), (-220, 170)],
     [(-45, 225), (-110, 200), (-150, 120), (-160, 0), (-155, -150), (-130, -300), (-60, -380), (40, -410), (150, -430)],
     [(91, 297), (98, 312), (116, 340), (122, 390), (132, 470)]]
-# Tore und Durchgänge, vor denen nichts liegen darf (dazu der Kai am Wassertor und der Felsenhafen)
-_tore = [W(p) for p in PD.TORE.values()] + [W(PD.MOLENPFORTE), W((740, 420)), W((733, 380))]
+# Tore und Durchgänge, vor denen nichts liegen darf (dazu der Kai am Wassertor und das Felsentor)
+_tore = [W(p) for p in PD.TORE.values()] + [W(PD.MOLENPFORTE), W((740, 420)), W(PD.HOEHLENMUND)]
 
 
 def _gefaelle(x, z):
@@ -86,7 +85,7 @@ for x in range(-150, 330, 2):
 kandidaten.sort(reverse=True)
 
 for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
-    if hoehe < 3:
+    if hoehe < 8:             # nur Wände ab 8 m, kleine Stufen bleiben Gelände
         continue
     reihe_m = reihe[0]
     reihe_h = -20.0 + reihe[1] * reihe_m

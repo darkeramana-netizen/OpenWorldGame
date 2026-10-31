@@ -69,12 +69,19 @@ for gx in range(-360, 330, 3):
         w = _wald(x, z)
         if w < 0.42 and random.random() > 0.15:
             continue
-        if im_vieleck((x, z), _ring) or any(im_vieleck((x, z), v) for v in _frei):
+        im_zwinger = im_vieleck((x, z), _ring)
+        if any(im_vieleck((x, z), v) for v in _frei) or (im_zwinger and (random.random() > 0.35 or s > 0.45)):
             continue
         if _abstand((x, z), _wege) < 4.0 or min(math.dist((x, z), t) for t in _tore) < 8.0:
             continue
         dicht = max(0.0, (w - 0.42) / 0.58)
         wurf = random.random()
+        if im_zwinger:
+            # im Zwinger: Gras, Nesseln und kleine Sträucher, nah an Mauern und Felsen dichter
+            if wurf < 0.25:
+                _setze(random.choice(STRAUCH_KLEIN + NESSEL + FARN_N), x, h - 0.05, z, random.uniform(0, 360), 0,
+                       random.uniform(0.8, 1.3))
+            continue
         if wurf < 0.012 * (0.3 + dicht):
             # umgestürzter Stamm mit Pilzen und Moos
             m = random.choice([STAMM, STAMM_DICK, STAMM_DICK])
@@ -121,7 +128,8 @@ for gx in range(-360, 330, 3):
 N("Natur", "Node3D", DS, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray({", ".join(f'"{p}"' for p in NATURMODELLE)})
 stuecke = PackedFloat32Array({", ".join(f"{v:.6g}" for st in NATUR for v in st)})
-sichtweite = 350.0""")
+sichtweite = 300.0
+kachel = 64.0""")
 _zaehl = lambda ms: sum(1 for n in NATUR if n[0] in ms)
 print("Natur:", len(NATUR), "Stücke –", "Stämme", _zaehl([STAMM, STAMM_DICK]), "Wurzeln", _zaehl([WURZEL]),
       "Pilze", _zaehl([HALLIMASCH, FLIEGENPILZ, SCHWAMM]), "Sträucher", _zaehl(STRAUCH_GROSS + STRAUCH_KLEIN),

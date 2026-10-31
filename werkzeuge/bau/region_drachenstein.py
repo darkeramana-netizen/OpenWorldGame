@@ -133,7 +133,7 @@ _bf = lambda r, w, y: (round(BF_X + r*math.cos(math.radians(BF_WINKEL + w)), 1),
 _sp = lambda pp, dy=0.5: (lambda p: (round(p[0], 1), round(H(*p) + dy, 1), round(p[1], 1)))(W(pp))
 for name, x, y, z in [("Hof der Burgfeste", 0, HOF_Y + 0.5, 20), ("Vor dem Tor", 0, HOF_Y + 0.5, 46), ("Kernburg", *_sp((975, 225))), ("Übungsplatz", round(UEB[0] + 4, 1), PD.H_KERNBURG + 0.5, round(UEB[1], 1)),
                       ("II. Burghof", *_sp((560, 262))), ("I. Vorburg", *_sp((390, 300))), ("Burgweg am Halbturm", *_sp((210, 330))),
-                      ("Felsenhafen", *(lambda p: (round(p[0], 1), -17.3, round(p[1], 1)))(W((732, 380)))), ("Marktplatz", *_sp((512, 530))), ("St. Marien", *_sp((410, 530))),
+                      ("Wassertor", *(lambda p: (round(p[0], 1), -17.3, round(p[1], 1)))(W((736, 428)))), ("Marktplatz", *_sp((512, 530))), ("St. Marien", *_sp((410, 530))),
                       ("Drachenkai", _lotsin[0] + 2, -17.3, _lotsin[1]), ("Bergfried, Tor", *_bf(24, 0, -17.4)),
                       ("Bergfried, Schwelle (Ebene 0)", *_bf(8.5, 4, -17.4)), ("Bergfried, Archive (Ebene 4)", *_bf(8.6, -53, 11.4)),
                       ("Bergfried, Dach", *_bf(8.9, 189, 50.6)), ("Gravemarch, Brückenpforte", round(ESME[0] - ux * 3, 1), round(ESME[1] + 0.5, 1), round(ESME[2] - uz * 3, 1)), ("Gravemarch, Burghof", -614, -3.5, -180),

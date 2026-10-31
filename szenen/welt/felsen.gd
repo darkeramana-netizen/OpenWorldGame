@@ -19,6 +19,9 @@ extends Node3D
 ## Tönung je Modell (weiß = unverändert), damit Scans aus verschiedenen Gegenden zum grauen Fels passen
 @export var farben := PackedColorArray()
 @export var sichtweite := 2500.0
+## > 0: Stücke in Kacheln dieser Größe (Meter) aufteilen, jede Kachel ein eigenes MultiMesh. So gilt die Sichtweite je
+## Kachel (für viele kleine Dinge wie Pilze und Farn); sonst gilt sie für das ganze MultiMesh von seinem Mittelpunkt.
+@export var kachel := 0.0
 
 const SCHRITT := 7
 
@@ -55,17 +58,30 @@ func _baue() -> void:
 			i += SCHRITT
 		if lagen.is_empty():
 			continue
-		var mm := MultiMesh.new()
-		mm.transform_format = MultiMesh.TRANSFORM_3D
-		mm.mesh = mesh
-		mm.instance_count = lagen.size()
-		for k in lagen.size():
-			mm.set_instance_transform(k, lagen[k])
-		var inst := MultiMeshInstance3D.new()
-		inst.name = "Felsen%d" % m
-		inst.multimesh = mm
-		inst.visibility_range_end = sichtweite
-		add_child(inst)
+		var gruppen := {}
+		for lage in lagen:
+			var schluessel := Vector2i(0, 0)
+			if kachel > 0.0:
+				schluessel = Vector2i(floori(lage.origin.x / kachel), floori(lage.origin.z / kachel))
+			if not gruppen.has(schluessel):
+				gruppen[schluessel] = []
+			gruppen[schluessel].append(lage)
+		for schluessel: Vector2i in gruppen:
+			var mitte := Vector3((schluessel.x + 0.5) * kachel, 0.0, (schluessel.y + 0.5) * kachel) if kachel > 0.0 else Vector3.ZERO
+			var teil: Array = gruppen[schluessel]
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.mesh = mesh
+			mm.instance_count = teil.size()
+			for k in teil.size():
+				var t: Transform3D = teil[k]
+				mm.set_instance_transform(k, Transform3D(t.basis, t.origin - mitte))
+			var inst := MultiMeshInstance3D.new()
+			inst.name = "Felsen%d_%d_%d" % [m, schluessel.x, schluessel.y]
+			inst.multimesh = mm
+			inst.position = mitte
+			inst.visibility_range_end = sichtweite
+			add_child(inst)
 		if koerper != null:
 			var form := _mesh(modelle[m], true)
 			if form == null:

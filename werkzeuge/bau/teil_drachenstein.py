@@ -100,6 +100,9 @@ for k, bau in enumerate(PD.VORBURG_BAUTEN):
     gebaeude(f"Vorburgbau{k}", BG, bau, 7, PD.H_VORBURG, dach="Material_dach")
 schild("SchildVorburg", BG, *(lambda p: (p[0], PD.H_VORBURG + 9, p[1]))(W((390, 300))), "I. Vorburg", 40)
 
+# Sperrmauer im Zwinger westlich der Vorburg: Von Westen kommt man nicht unter die Vorburg, nur vom Rampentor her
+mauerring("Sperrmauer", BG, WL(PD.SPERRMAUER), 7.0, dicke=2.5, mitte=W((300, 380)))
+
 # --- II. Burghof (14. Jh.); die Wand zur Vorburg gehört zur Vorburg ---
 B2 = PD.BURGHOF2[1:] + [PD.BURGHOF2[0]]
 mauerring("BurghofZwei", BG, WL(B2), 9.0, dicke=3.0, mitte=W((560, 260)),

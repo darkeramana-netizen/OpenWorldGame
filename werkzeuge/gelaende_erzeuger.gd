@@ -76,7 +76,6 @@ var _markt := PackedVector2Array()
 var _ring := PackedVector2Array()     # Burgbezirk innerhalb der Ringmauer (Grat und Zwinger)
 var _hafen := PackedVector2Array()    # Hafenbezirk: Kais
 var _bucht := PackedVector2Array()    # Bucht vor dem Hafen
-var _felsenhafen := PackedVector2Array()  # Kai im Felsenhafen hinter dem Wassertor (überwölbt)
 var _firstlinie: Array = []           # Firstlinie des Felsgrats
 var _burgwege: Array = []             # [Linienzug, Höhen je Punkt]
 var _ringwege: Array = []             # Burgwege, deren Höhe der Grund im Burgbezirk folgt
@@ -105,7 +104,6 @@ func _init() -> void:
 		_ring = vec.call(plan["ring"])
 		_hafen = vec.call(plan["hafen"])
 		_bucht = vec.call(plan["bucht"])
-		_felsenhafen = vec.call(plan["felsenhafen"])
 		_firstlinie = Array(vec.call(plan["grat"]))
 		for weg: Array in plan["burgwege"]:
 			_burgwege.append([Array(vec.call(weg[0])), weg[1]])
@@ -303,9 +301,6 @@ func _drachenstein(h: float, p: Vector2) -> float:
 	# Wege im Burgbezirk mit fester Steigung: Burgweg außen herum, vom Torhaus Nord, Zwingerweg, vom Nordtor
 	for weg: Array in _burgwege:
 		h = _burgweg(h, p, weg[0], weg[1])
-	# Kai im Felsenhafen (darüber das Gewölbe), das Wasser schneidet der Kanal hinein
-	if Geometry2D.is_point_in_polygon(p, _felsenhafen):
-		h = KAI_HOEHE + 0.2
 	# Kais auf Höhe der Hafenmauern rings um die Becken
 	for becken: PackedVector2Array in _becken:
 		var d := _polygon_abstand(p, becken)

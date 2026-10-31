@@ -113,16 +113,13 @@ func _initialize() -> void:
 			Vector2(6, -152.5)], 40.0)
 	pruefe(hinauf and spieler().global_position.y > 37.5, "Durch Burgtor und Zwingerweg hinauf in die Kernburg (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("Kernburg · Drachenhorst"), "Ortsname: Kernburg")
-	# Hinab: Tor des III. Burghofs → II. Burghof → Tor in die I. Vorburg → Südtor der Vorburg → unter der Vorburg nach
-	# Westen → Burgstraßentor → Stadt → Markt
+	# Hinab: Tor des III. Burghofs → II. Burghof → Tor in die I. Vorburg → Südtor der Vorburg → unter dem II. Burghof
+	# nach Osten bis an den Fuß der Rampe zum Rampentor (von Westen ist der Weg durch die Sperrmauer versperrt)
 	await setze(Vector3(0, 14.3, 46))
-	var hinab := await gehe_ueber([Vector2(0, 49.5), Vector2(1, 55), Vector2(8.5, 67.5), Vector2(17, 97.5), Vector2(14, 132.5),
-			Vector2(15.2, 139.8), Vector2(18, 151.5), Vector2(26, 161.5), Vector2(36, 167.5), Vector2(48.5, 152.5), Vector2(55.85, 149.1),
-			Vector2(64, 147), Vector2(74, 152.5), Vector2(77, 177.5), Vector2(80, 217.5), Vector2(76, 249), Vector2(91.05, 251),
-			Vector2(106, 252.5), Vector2(109.5, 217.5), Vector2(113.5, 182.5), Vector2(126, 140), Vector2(136, 127.5)], 40.0)
-	pruefe(hinab and absf(spieler().global_position.y + 15.5) < 1.2, "Durch die Vorburg und das Burgstraßentor hinab in die Stadt (y=%.1f)" % spieler().global_position.y)
-	pruefe(orte.has("Festungsstadt") and orte.has("I. Vorburg") and orte.has("II. Burghof"), "Ortsnamen: II. Burghof, I. Vorburg, Festungsstadt")
-	# Der ganze Burgweg: vom II. Burghof durch das Rampentor hinab, im Süden über dem Felsenhafen und an der Klippe am
+	var hinab := await gehe_ueber([Vector2(0, 49.5), Vector2(1, 55), Vector2(8.5, 67.5), Vector2(17, 97.5), Vector2(14, 132.5), Vector2(15.2, 139.8), Vector2(18, 151.5), Vector2(26, 161.5), Vector2(36, 167.5), Vector2(48.5, 152.5), Vector2(55.85, 149.1), Vector2(64, 147), Vector2(62, 137.5), Vector2(64, 117.5), Vector2(67, 77.5), Vector2(62, 37.5), Vector2(53, 7.5)], 40.0)
+	pruefe(hinab and absf(spieler().global_position.y) < 1.5, "Durch die Vorburg und unter dem II. Burghof zur Rampe (y=%.1f)" % spieler().global_position.y)
+	pruefe(orte.has("I. Vorburg") and orte.has("II. Burghof"), "Ortsnamen: II. Burghof, I. Vorburg")
+	# Der ganze Burgweg: vom II. Burghof durch das Rampentor hinab, im Süden über dem Wassertor und an der Klippe am
 	# Rondell vorbei hinauf, um den Zwinger, im Norden wieder hinab und durch das Torhaus Nord hinaus
 	await setze(Vector3(36, 6.3, 61.5))
 	pruefe(await gehe_ueber([Vector2(41.9, 53.25), Vector2(47, 45), Vector2(51, 33.5), Vector2(53, 7.5), Vector2(54, -25),
@@ -132,14 +129,13 @@ func _initialize() -> void:
 			Vector2(-44, 67.5), Vector2(-33, 102.5), Vector2(-25, 142.5), Vector2(-15, 187.5), Vector2(-11.5, 217.5), Vector2(-24, 220.5),
 			Vector2(-34, 220.5), Vector2(-44, 220.5)], 30.0) and spieler().global_position.y < -10.0,
 			"Burgweg: vom Rampentor einmal um die Burg und durch das Torhaus Nord hinaus")
-	# Durch die Hafenpforte über den Kai und neben dem Kanal durch das Wassertor in den Felsenhafen
+	# Durch die Hafenpforte über den Kai bis an den Kanal vor dem Wassertor
 	await setze(Vector3(136, g.hoehe_bei(136, 84.5) + 0.3, 84.5))
-	var fels := await gehe_ueber([Vector2(136, 64.5), Vector2(121, 61.5), Vector2(106, 52.5), Vector2(100, 27.5), Vector2(100, -0.5),
-			Vector2(92, -1.5), Vector2(83.5, 1), Vector2(71, 1.5)], 30.0)
-	pruefe(fels and absf(spieler().global_position.y + 17.4) < 0.6, "Durch das Wassertor in den Felsenhafen (y=%.1f)" % spieler().global_position.y)
+	var fels := await gehe_ueber([Vector2(136, 64.5), Vector2(121, 61.5), Vector2(106, 52.5), Vector2(100, 27.5), Vector2(100, -0.5)], 30.0)
+	pruefe(fels and absf(spieler().global_position.y + 17.4) < 0.6, "Über den Kai an den Kanal vor dem Wassertor (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("Drachenhafen"), "Ortsname: Drachenhafen")
 	# Zurück zum Becken, über den Westkai zum Speicherkai, durch die Molenpforte über Mole und Brücken zu den Inseln
-	var mole := await gehe_ueber([Vector2(83.5, 1), Vector2(92, -1.5), Vector2(100, -0.5), Vector2(100, 27.5), Vector2(106, 52.5),
+	var mole := await gehe_ueber([Vector2(100, -0.5), Vector2(100, 27.5), Vector2(106, 52.5),
 			Vector2(121, 61.5), Vector2(166, 61.5), Vector2(186, 56.5), Vector2(191.5, 47.5), Vector2(191.5, 17.5), Vector2(191.5, -8.5), Vector2(201, -10),
 			Vector2(212, -10), Vector2(292, -15.5), Vector2(300, -15), Vector2(382, 22), Vector2(450, 55)], 30.0)
 	pruefe(mole and spieler().global_position.y > -18.5, "Durch die Molenpforte über Mole und Brücken zu den Inseln")
