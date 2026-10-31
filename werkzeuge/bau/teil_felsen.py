@@ -31,7 +31,13 @@ _frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(P
 _mauern = [WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.VORBURG + PD.VORBURG[:1]), WL(PD.BURGHOF2 + PD.BURGHOF2[:1]),
            WL(PD.BURGHOF3), WL(PD.KERNBURG + PD.KERNBURG[:1]), WL(PD.ZWINGER_KERNBURG), WL(PD.STADTMAUER),
            WL(PD.HAFENMAUER_OST)]
-_wege = [WL(w) for w in PD.BURGWEGE]
+_wege = [WL(w) for w in PD.BURGWEGE] + [WL(PD.KAIWEG)] + [
+    # Landstraßen vor den Toren (werkzeuge/gelaende_erzeuger.gd: WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE)
+    [(-27.2, 220.5), (-45, 225), (-120, 215), (-220, 170)],
+    [(-45, 225), (-110, 200), (-150, 120), (-160, 0), (-155, -150), (-130, -300), (-60, -380), (40, -410), (150, -430)],
+    [(109.8, 288.8), (116, 300), (122, 390), (132, 470)]]
+# Tore und Durchgänge, vor denen nichts liegen darf (dazu der Kai am Wassertor und der Felsenhafen)
+_tore = [W(p) for p in PD.TORE.values()] + [W(PD.MOLENPFORTE), W((740, 420)), W((733, 380))]
 
 
 def _gefaelle(x, z):
@@ -88,10 +94,15 @@ for hoehe, px, pz, dx, dz, oben, unten in kandidaten:
         groesse = (oben + 0.5 - y) / mh
         if groesse < 0.5:
             continue
-    # die ganze Breite muss am Steilhang liegen, sonst ragt das Stück über das Ende der Klippe auf flaches Land
-    for _ in range(4):
-        halb = breite * groesse * 0.4
-        if all(_gefaelle(px - dz * t * halb, pz + dx * t * halb)[2] > 0.7 for t in (-1.0, -0.5, 0.5, 1.0)):
+    # Die ganze Breite muss am Steilhang liegen, sonst ragt das Stück über das Ende der Klippe auf flaches Land; und kein
+    # Teil des Umrisses darf auf Wege, Tore, Mauern oder in Burgen, Stadt und Hafen reichen
+    for _ in range(5):
+        halb = breite * groesse * 0.45
+        umriss = [(px - dz * t * halb + dx * v, pz + dx * t * halb + dz * v) for t in (-1.0, -0.5, 0.0, 0.5, 1.0)
+                  for v in (-2.0, 2.0)]
+        if all(_gefaelle(qx, qz)[2] > 0.7 for qx, qz in umriss[::2]) and all(
+                not any(im_vieleck(q, v) for v in _frei) and _abstand(q, _wege) > 4.0 and _abstand(q, _mauern) > 1.5
+                and min(math.dist(q, t) for t in _tore) > 10.0 for q in umriss):
             break
         groesse *= 0.7
     else:
@@ -115,7 +126,8 @@ for x in range(-150, 330, 2):
             continue
         if not any(abs(px - fx) < 22 and abs(pz - fz) < 22 for fx, fz in _felsen):
             continue
-        if any(im_vieleck((px, pz), v) for v in _frei) or _abstand((px, pz), _mauern) < 3.0 or _abstand((px, pz), _wege) < 4.5:
+        if any(im_vieleck((px, pz), v) for v in _frei) or _abstand((px, pz), _mauern) < 3.0 or _abstand((px, pz), _wege) < 4.5 \
+                or min(math.dist((px, pz), t) for t in _tore) < 8.0:
             continue
         wurf = random.random()
         if wurf < 0.35:
