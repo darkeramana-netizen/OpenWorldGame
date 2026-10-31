@@ -62,7 +62,7 @@ MITTE_BURG = W(PD.MITTE)
 RING = PD.RINGMAUER + [PD.RINGMAUER[0]]
 mauerring("Ringmauer", BG, WL(RING), 9.0, dicke=3.0, mitte=MITTE_BURG,
          tore=tore_an(RING, (PD.TORE["Torhaus Nord"], 6.0, "Torhaus Nord"), (PD.TORE["Hafentor"], 16.0, "Hafentor"),
-                      (PD.TORE["Nordtor"], 6.0, "Nordtor"), (PD.TORE["Burgstraßentor"], 6.0, "Burgstraßentor")))
+                      (PD.TORE["Burgstraßentor"], 6.0, "Burgstraßentor")))
 # Türme der Ringmauer: Wehrturm, Zwinger, Rondell und weitere Rundtürme; Halbturm eckig
 _tuerme = []
 for pp, r, dach in [(PD.WEHRTURM, 6.0, 0), ((1190, 55), 6.0, 1), ((1230, 140), 6.5, 1), (PD.RONDELL, 10.0, 0),

@@ -55,7 +55,7 @@ teil("teil_gravecrest.py")
 # ---------- Signaltürme an der Küste ----------
 N("Signaltuerme", "Node3D", ".", '''script = ExtResource("11_auf_gelaende")
 gelaende = NodePath("../Gelaende")''', extra='node_paths=PackedStringArray("gelaende")')
-for i,(x,z) in enumerate([(120,-320),(170,380)]):
+for i,(x,z) in enumerate([(40,-335),(170,380)]):
     N(f"Signalturm{i+1}", "Node3D", "Signaltuerme", T(x,0,z))
     box("Turm", f"Signaltuerme/Signalturm{i+1}", 0, 5, 0, 4, 14, 4, "Material_mauer")
     zyl("Feuerbecken", f"Signaltuerme/Signalturm{i+1}", 0, 12.4, 0, 1.6, 0.8, "Material_feuer", 8, False)

@@ -57,9 +57,11 @@ const WEG_GRAVEMARCH := [Vector2(-27.2, 220.5), Vector2(-45, 225), Vector2(-120,
 const WEG_GRAVECREST := [Vector2(-460, -150), Vector2(-470, -240), Vector2(-500, -310),
 	Vector2(-560, -345), Vector2(-612, -363)]
 const GRAVECREST_HOEHE := 70.0
-## Landstraßen: die Nordstraße verlässt die Stadt durch das Südöstliche Tor (19) und steigt über einen Pass
-## im Norden (nach Riverlock), der Küstenweg durch das Westtor der Löwenward über einen Pass im Süden.
-const WEG_NORD := [Vector2(-16.5, -251.5), Vector2(-14, -265), Vector2(40, -330), Vector2(150, -420), Vector2(230, -500)]
+## Landstraßen: Die Nordstraße zweigt vor dem Torhaus Nord vom Weg nach Gravemarch ab, läuft am Fuß des Burgbergs
+## entlang (auf der Landseite, die Burg steht an der Klippe zum Meer) und steigt über einen Pass im Norden (nach
+## Riverlock); der Küstenweg verlässt die Stadt durch das Torhaus West über einen Pass im Süden.
+const WEG_NORD := [Vector2(-45, 225), Vector2(-110, 200), Vector2(-150, 120), Vector2(-160, 0), Vector2(-155, -150),
+		Vector2(-130, -300), Vector2(-60, -380), Vector2(40, -410), Vector2(150, -430), Vector2(230, -500)]
 const WEG_KUESTE := [Vector2(109.8, 288.8), Vector2(116, 300), Vector2(122, 390), Vector2(132, 470), Vector2(140, 540)]
 ## Passstrecken mit fester Steigung: [Linienzug, Höhe am Anfang, Höhe am Ende].
 const PASS_NORD := [[Vector2(230, -500), Vector2(150, -560), Vector2(110, -610), Vector2(85, -660)], -4.0, 30.0]
@@ -223,7 +225,7 @@ func hoehe(p: Vector2) -> float:
 		for linie: Array in stadt_strassen:
 			h = _weg_einebnen(h, p, linie)
 	# Bucht vor dem Hafen: offenes Wasser, außerhalb der Mauern
-	if not _bucht.is_empty() and p.x > 120.0:
+	if not _bucht.is_empty() and p.x > 60.0:
 		var db := _polygon_abstand(p, _bucht)
 		if db < 14.0 and not Geometry2D.is_point_in_polygon(p, _hafen) and not Geometry2D.is_point_in_polygon(p, _stadt) \
 				and not Geometry2D.is_point_in_polygon(p, _ring):
@@ -271,7 +273,7 @@ func _drachenstein(h: float, p: Vector2) -> float:
 		var weg := INF
 		for linie in [WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE]:
 			weg = minf(weg, _naechster_punkt(linie, p)[0])
-		var abfall := lerpf(60.0, 14.0, smoothstep(8.0, 22.0, weg))
+		var abfall := lerpf(60.0, float(plan.get("abfall", 14.0)), smoothstep(8.0, 22.0, weg))
 		var fels := _fein.get_noise_2dv(p * 0.7) * 2.5
 		var unten := lerpf(H_EBENE + _fein.get_noise_2dv(p * 0.3) * 1.5, h, smoothstep(60.0, 260.0, aussen))
 		h = lerpf(am_rand + fels * (1.0 - smoothstep(0.0, abfall, aussen)), unten, smoothstep(0.0, abfall, aussen))

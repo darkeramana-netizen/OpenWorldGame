@@ -143,9 +143,10 @@ func _initialize() -> void:
 			"Anwärter wird am Pass zurückgeschickt")
 	current_scene.get_node("Entwickler").ueberspringe_akt1()
 
-	# --- Durch das Nordtor am Zwinger aus dem Burgbezirk ---
-	await setze(Vector3(-14, current_scene.get_node("Gelaende").hoehe_bei(-14, -232) + 0.3, -232))
-	pruefe(await gehe_ueber([Vector2(-16.5, -251.5), Vector2(-14, -265), Vector2(40, -330)], 30.0), "Durch das Nordtor auf die Nordstraße")
+	# --- Vor dem Torhaus Nord auf die Nordstraße, am Fuß des Burgbergs entlang ---
+	await setze(Vector3(-45, current_scene.get_node("Gelaende").hoehe_bei(-45, 225) + 0.3, 225))
+	pruefe(await gehe_ueber([Vector2(-110, 200), Vector2(-150, 120), Vector2(-160, 0), Vector2(-155, -150), Vector2(-130, -300),
+			Vector2(-60, -380), Vector2(40, -410)], 40.0), "Vom Torhaus Nord am Burgberg entlang auf die Nordstraße")
 
 	# --- Drachenstein → Nordstraße ---
 	var start: float = Z.absolute_minuten()
