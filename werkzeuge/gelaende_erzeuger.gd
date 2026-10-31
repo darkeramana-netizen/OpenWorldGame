@@ -287,7 +287,8 @@ func _drachenstein(h: float, p: Vector2) -> float:
 			unten = lerpf(unten, -24.0, see)
 			abfall = lerpf(abfall, 18.0, see)
 		var t := smoothstep(0.0, abfall, aussen)
-		h = lerpf(am_rand, unten, t) + _zacke(p) * 4.0 * t * (1.0 - t) * 4.0
+		# zerklüftet, aber nicht auf den Landstraßen vor den Toren
+		h = lerpf(am_rand, unten, t) + _zacke(p) * 4.0 * t * (1.0 - t) * 4.0 * smoothstep(6.0, 18.0, weg)
 	# Burgringe als Terrassen, von außen nach innen (der Zwinger steigt mit seinem Weg)
 	for zone: Array in _zonen:
 		var d := _polygon_abstand(p, zone[0])
