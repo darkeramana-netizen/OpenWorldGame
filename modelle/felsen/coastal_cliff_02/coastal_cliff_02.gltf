@@ -103,7 +103,7 @@
   {
    "bufferView": 0,
    "componentType": 5126,
-   "count": 64768,
+   "count": 22437,
    "type": "VEC3",
    "min": [
     -20.515243530273438,
@@ -119,18 +119,18 @@
   {
    "bufferView": 1,
    "componentType": 5126,
-   "count": 64768,
+   "count": 22437,
    "type": "VEC2"
   },
   {
    "bufferView": 2,
    "componentType": 5126,
-   "count": 64768,
+   "count": 22437,
    "type": "VEC3",
    "min": [
-    -1.0,
     -0.9998999834060669,
-    -0.9161999821662903
+    -0.9998999834060669,
+    -0.8744000196456909
    ],
    "max": [
     0.9997000098228455,
@@ -141,7 +141,7 @@
   {
    "bufferView": 3,
    "componentType": 5125,
-   "count": 359976,
+   "count": 119973,
    "type": "SCALAR"
   }
  ],
@@ -149,25 +149,25 @@
   {
    "buffer": 0,
    "byteOffset": 0,
-   "byteLength": 777216,
+   "byteLength": 269244,
    "target": 34962
   },
   {
    "buffer": 0,
-   "byteOffset": 777216,
-   "byteLength": 518144,
+   "byteOffset": 269244,
+   "byteLength": 179496,
    "target": 34962
   },
   {
    "buffer": 0,
-   "byteOffset": 1295360,
-   "byteLength": 777216,
+   "byteOffset": 448740,
+   "byteLength": 269244,
    "target": 34962
   },
   {
    "buffer": 0,
-   "byteOffset": 2072576,
-   "byteLength": 1439904,
+   "byteOffset": 717984,
+   "byteLength": 479892,
    "target": 34963
   }
  ],
@@ -180,7 +180,7 @@
  "buffers": [
   {
    "uri": "coastal_cliff_02.bin",
-   "byteLength": 3512480
+   "byteLength": 1197876
   }
  ]
 }

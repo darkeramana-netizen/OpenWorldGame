@@ -1,8 +1,8 @@
 # ---------- 3D-Felsen an den Klippen von Drachenstein (szenen/welt/felsen.gd) ----------
 # Fotoscans von Poly Haven (modelle/felsen/, CC0). Gesucht werden Steilhänge außerhalb der Burgen, der Stadt und des
-# Hafens: unter der Ringmauer zum Meer und ins Tal, und die Felsstufen zwischen den Burghöfen. Je nach Höhe der Wand
-# kommt ein großes Klippenstück, ein kleineres Felsstück oder ein Brocken; die Front zeigt hangabwärts. Auf Absätzen
-# bei den Felsen wachsen Farn, Gras und Moos (modelle/pflanzen/).
+# Hafens: unter der Ringmauer zum Meer und ins Tal, und die Felsstufen zwischen den Burghöfen. Die Klippenscans liegen
+# als Fels-Haut in Reihen entlang der Höhenlinien, überlappend und in die Wand gesetzt (Front hangabwärts); am Fuß
+# liegen Geröll und Brocken, auf Absätzen wachsen Farn, Gras und Moos (modelle/pflanzen/).
 # Wird aus region_drachenstein.py nach teil_drachenstein.py ausgeführt (H, PD, W, abstand_linie, im_vieleck).
 
 E("Script", "res://szenen/welt/felsen.gd", "30_felsen")
@@ -52,67 +52,84 @@ def _abstand(p, linien):
     return min(abstand_linie(l, *p) for l in linien)
 
 
+# Wie weit die Front der Modelle vor ihrem Ursprung liegt (Meter, lokal +z): so tief kommen sie in die Wand
+FRONT = {GROSS: 4.1, MITTEL: 2.2, RIESIG: 15.2, STUECK: 0.9}
+REIHE = 6.5          # Höhe einer Felsreihe; die Stücke sind höher und überlappen die Reihe darüber
+
+
+def _frei_fuer(umriss):
+    return all(not any(im_vieleck(q, v) for v in _frei) and _abstand(q, _wege) > 4.0 and _abstand(q, _mauern) > 1.5
+               and min(math.dist(q, t) for t in _tore) > 10.0 for q in umriss)
+
+
+# Fels-Haut: Die Klippenscans liegen in Reihen entlang der Höhenlinien, Reihe über Reihe, nebeneinander überlappend und
+# in die Wand gesetzt, so dass die Geländewand dahinter fast ganz verschwindet.
+FELSSTUECKE = []
+_reihen = {}         # Reihe → [(x, z, halbe Breite)]
 kandidaten = []
-for x in range(-150, 330, 3):
-    for z in range(-330, 330, 3):
-        px, pz = x + random.uniform(-1, 1), z + random.uniform(-1, 1)
+for x in range(-150, 330, 2):
+    for z in range(-330, 330, 2):
+        px, pz = x + random.uniform(-0.8, 0.8), z + random.uniform(-0.8, 0.8)
         dx, dz, s = _gefaelle(px, pz)
-        if s < 1.0 or H(px, pz) < -26:
+        h0 = H(px, pz)
+        if s < 0.9 or h0 < -24:
+            continue
+        r = (h0 + 20.0) / REIHE
+        if abs(r - round(r)) > 0.25:
             continue
         if any(im_vieleck((px, pz), v) for v in _frei):
             continue
-        if _abstand((px, pz), _mauern) < 4.5 or _abstand((px, pz), _wege) < 7.0:
-            continue
-        oben = max(H(px - dx * d, pz - dz * d) for d in (3, 6, 10, 14))
-        unten = min(H(px + dx * d, pz + dz * d) for d in (3, 6, 10, 14))
-        kandidaten.append((oben - unten, px, pz, dx, dz, oben, unten))
+        oben = max(H(px - dx * d, pz - dz * d) for d in (3, 6, 10, 14, 20))
+        unten = min(H(px + dx * d, pz + dz * d) for d in (3, 6, 10, 14, 20))
+        kandidaten.append((oben - unten, round(r), px, pz, dx, dz, oben, unten, s))
 kandidaten.sort(reverse=True)
 
-# In Lagen über die ganze Wand: Jedes Stück sitzt mit seiner Mitte auf dem Hang, so groß wie die Wand an dieser Stelle
-# (höchstens etwa 20 m hoch), und wird zur Hangneigung nach hinten gekippt. Abstände zählen auch in der Höhe.
-FELSSTUECKE = []
-_gesetzt = []   # (x, y, z, Radius)
-for hoehe, px, pz, dx, dz, oben, unten in kandidaten:
-    if hoehe > 18:
-        m = random.choice([GROSS, GROSS, GROSS, MITTEL, RIESIG])
-    elif hoehe > 7:
-        m = random.choice([GROSS, MITTEL])
-    elif hoehe > 2.5:
-        m = STUECK
+for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
+    if hoehe < 5:
+        continue
+    reihe_h = -20.0 + reihe * REIHE
+    if reihe_h < -10 and hoehe > 20:
+        m = random.choice([GROSS, GROSS, RIESIG])
     else:
-        m = random.choice(BROCKEN)
+        m = random.choice([GROSS, GROSS, GROSS, MITTEL, MITTEL])
     _, breite, mh = FELSMODELLE[m]
-    groesse = max(0.6, min(hoehe * 0.8, 20.0) / mh)
-    groesse = min(groesse, 1.6 if m == RIESIG else 2.6)
-    h0 = H(px, pz)
-    y = h0 - mh * groesse * 0.5
-    radius = breite * groesse * 0.38
-    if any(math.dist((px, y * 1.6, pz), (qx, qy * 1.6, qz)) < max(radius, r) * 0.8 for qx, qy, qz, r in _gesetzt):
+    groesse = REIHE * 1.45 / mh * random.uniform(0.9, 1.15)
+    nachbarn = _reihen.setdefault(reihe, [])
+    if any(math.dist((px, pz), (qx, qz)) < max(hb, breite * groesse * 0.5) * 0.85 for qx, qz, hb in nachbarn):
         continue
-    # nicht über die obere Kante hinaus (dort stehen die Mauern)
-    if y + mh * groesse > oben + 0.5:
-        groesse = (oben + 0.5 - y) / mh
-        if groesse < 0.5:
-            continue
-    # Die ganze Breite muss am Steilhang liegen, sonst ragt das Stück über das Ende der Klippe auf flaches Land; und kein
-    # Teil des Umrisses darf auf Wege, Tore, Mauern oder in Burgen, Stadt und Hafen reichen
-    for _ in range(5):
+    for _ in range(4):
         halb = breite * groesse * 0.45
-        umriss = [(px - dz * t * halb + dx * v, pz + dx * t * halb + dz * v) for t in (-1.0, -0.5, 0.0, 0.5, 1.0)
-                  for v in (-2.0, 2.0)]
-        if all(_gefaelle(qx, qz)[2] > 0.7 for qx, qz in umriss[::2]) and all(
-                not any(im_vieleck(q, v) for v in _frei) and _abstand(q, _wege) > 4.0 and _abstand(q, _mauern) > 1.5
-                and min(math.dist(q, t) for t in _tore) > 10.0 for q in umriss):
+        umriss = [(px - dz * t * halb, pz + dx * t * halb) for t in (-1.0, -0.5, 0.0, 0.5, 1.0)]
+        if all(_gefaelle(qx, qz)[2] > 0.55 for qx, qz in umriss) and _frei_fuer(umriss):
             break
-        groesse *= 0.7
+        groesse *= 0.75
     else:
         continue
-    y = h0 - mh * groesse * 0.5
-    neigung = max(0.0, min(30.0, 90.0 - math.degrees(math.atan(_gefaelle(px, pz)[2])))) * 0.7
-    gier = math.degrees(math.atan2(dx, dz)) + random.uniform(-15, 15)
-    FELSSTUECKE.append((m, round(px, 2), round(y, 2), round(pz, 2), round(gier, 1), round(neigung + random.uniform(-4, 4), 1),
+    # in die Wand setzen: die Front etwa einen Meter vor dem Hang
+    tiefe = max(0.0, FRONT[m] * groesse - 1.2)
+    x0, z0 = px - dx * tiefe, pz - dz * tiefe
+    y = reihe_h - mh * groesse * 0.3
+    if y + mh * groesse > oben + 0.4:          # nicht über die obere Kante (dort stehen die Mauern)
+        y = oben + 0.4 - mh * groesse
+    if y + mh * groesse < unten + 1.0:
+        continue
+    neigung = max(0.0, min(25.0, 90.0 - math.degrees(math.atan(steil)))) * 0.8
+    gier = math.degrees(math.atan2(dx, dz)) + random.uniform(-10, 10)
+    FELSSTUECKE.append((m, round(x0, 2), round(y, 2), round(z0, 2), round(gier, 1), round(neigung + random.uniform(-3, 3), 1),
                         round(groesse, 2)))
-    _gesetzt.append((px, y, pz, radius))
+    nachbarn.append((px, pz, breite * groesse * 0.5))
+
+# Geröll und Brocken am Fuß der Klippen an der Wasserlinie
+for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten[::3]:
+    for k in range(3):
+        qx, qz = px + dx * random.uniform(4, 14) + random.uniform(-3, 3), pz + dz * random.uniform(4, 14) + random.uniform(-3, 3)
+        hq = H(qx, qz)
+        if not -22 < hq < -16.5 or not _frei_fuer([(qx, qz)]):
+            continue
+        m = random.choice(BROCKEN + [STUECK, STUECK])
+        g = random.uniform(1.4, 3.0) if m == STUECK else random.uniform(1.5, 3.5)
+        FELSSTUECKE.append((m, round(qx, 2), round(hq - 0.4 * g, 2), round(qz, 2), round(random.uniform(0, 360), 1),
+                            round(random.uniform(0, 20), 1), round(g, 2)))
 
 # Bewuchs: auf Absätzen und Kanten bei den Felsen (nicht zu steil), Farn und Gras in Gruppen, dazu Moos und Brocken
 _felsen = [(x, z) for m, x, y, z, *_ in FELSSTUECKE if m in (GROSS, MITTEL, RIESIG)]
@@ -145,5 +162,5 @@ N("Felsen", "Node3D", DS, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray({", ".join(f'"{p}"' for p, _, _ in FELSMODELLE)})
 farben = PackedColorArray({", ".join(FARBEN.get(m, "1, 1, 1, 1") for m in range(len(FELSMODELLE)))})
 stuecke = PackedFloat32Array({", ".join(f"{v:.6g}" for st in FELSSTUECKE for v in st)})""")
-print("Felsen:", len(FELSSTUECKE) - _bewuchs, "aus", len(kandidaten), "Steilstellen, Bewuchs:", _bewuchs,
+print("Felsen:", len(FELSSTUECKE) - _bewuchs, "aus", len(kandidaten), "Stellen in Reihen, Bewuchs:", _bewuchs,
       {FELSMODELLE[m][0].split("/")[-1]: sum(1 for s in FELSSTUECKE if s[0] == m) for m in range(4)})

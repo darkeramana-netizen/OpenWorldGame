@@ -287,8 +287,10 @@ func _drachenstein(h: float, p: Vector2) -> float:
 			unten = lerpf(unten, -24.0, see)
 			abfall = lerpf(abfall, 18.0, see)
 		var t := smoothstep(0.0, abfall, aussen)
-		# zerklüftet, aber nicht auf den Landstraßen vor den Toren
-		h = lerpf(am_rand, unten, t) + _zacke(p) * 4.0 * t * (1.0 - t) * 4.0 * smoothstep(6.0, 18.0, weg)
+		# Felswand in Schichten (wie im Grundriss-Referenzbild), zerklüftet; nicht an den Landstraßen vor den Toren
+		var klippe := smoothstep(6.0, 18.0, weg)
+		h = _schichten(lerpf(am_rand, unten, t), p, klippe * minf(1.0, t * (1.0 - t) * 8.0)) \
+				+ _zacke(p) * 2.0 * t * (1.0 - t) * 4.0 * klippe
 	# Burgringe als Terrassen, von außen nach innen (der Zwinger steigt mit seinem Weg)
 	for zone: Array in _zonen:
 		var d := _polygon_abstand(p, zone[0])
@@ -297,7 +299,7 @@ func _drachenstein(h: float, p: Vector2) -> float:
 			if not zone[3].is_empty():
 				zh = _weg_hoehe(p, zone[3], zone[4])[1]
 			var t := smoothstep(0.0, zone[2], d)
-			h = zh if d <= 0.0 else lerpf(zh, h, t) + _zacke(p) * 1.5 * t * (1.0 - t) * 4.0
+			h = zh if d <= 0.0 else _schichten(lerpf(zh, h, t), p, minf(1.0, t * (1.0 - t) * 6.0)) + _zacke(p) * 1.0 * t * (1.0 - t) * 4.0
 	# Wege im Burgbezirk mit fester Steigung: Burgweg außen herum, vom Torhaus Nord, Zwingerweg, vom Nordtor
 	for weg: Array in _burgwege:
 		h = _burgweg(h, p, weg[0], weg[1])
@@ -310,6 +312,18 @@ func _drachenstein(h: float, p: Vector2) -> float:
 		if d > 0.0 and d < 14.0 and Geometry2D.is_point_in_polygon(p, _hafen):
 			h = lerpf(KAI_HOEHE, h, smoothstep(9.0, 14.0, d))
 	return h
+
+
+## Geschichteter Fels: Die Höhe wird in Bänder von etwa 5 m geteilt, je Band ein schmaler Absatz und eine steile Wand;
+## die Kanten der Bänder laufen unregelmäßig. staerke 0 lässt die Höhe, wie sie ist.
+func _schichten(h: float, p: Vector2, staerke: float) -> float:
+	if staerke <= 0.0:
+		return h
+	var band := 5.0 + _fein.get_noise_2dv(p * 0.2) * 1.5
+	var versatz := _zacken.get_noise_2dv(p * 0.5) * 1.8
+	var q := (h + versatz) / band
+	var stufe := (floorf(q) + smoothstep(0.3, 0.85, q - floorf(q))) * band - versatz
+	return lerpf(h, stufe, staerke * 0.8)
 
 
 ## Zerklüfteter Fels: Grate und Rinnen (etwa -1 bis 1), für Klippen und Felsstufen.
