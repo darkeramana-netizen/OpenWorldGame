@@ -1,0 +1,170 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.0.44",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "root_cluster_01"
+  }
+ ],
+ "materials": [
+  {
+   "doubleSided": true,
+   "name": "root_cluster_01",
+   "normalTexture": {
+    "index": 0
+   },
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 1
+    },
+    "metallicFactor": 0,
+    "metallicRoughnessTexture": {
+     "index": 2
+    }
+   }
+  }
+ ],
+ "meshes": [
+  {
+   "name": "root_cluster_5m.001",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TEXCOORD_0": 2
+     },
+     "indices": 3,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "sampler": 0,
+   "source": 0
+  },
+  {
+   "sampler": 0,
+   "source": 1
+  },
+  {
+   "sampler": 0,
+   "source": 2
+  }
+ ],
+ "images": [
+  {
+   "mimeType": "image/jpeg",
+   "name": "root_cluster_01_nor_gl",
+   "uri": "root_cluster_01_nor_gl_1k.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "root_cluster_01_diff",
+   "uri": "root_cluster_01_diff_1k.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "root_cluster_01_rough",
+   "uri": "root_cluster_01_arm_1k.jpg"
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 7331,
+   "type": "VEC3",
+   "min": [
+    -2.0620386600494385,
+    -0.04371938854455948,
+    -0.9937626123428345
+   ],
+   "max": [
+    2.0582945346832275,
+    1.4638862609863281,
+    1.6890140771865845
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 7331,
+   "type": "VEC3",
+   "min": [
+    -0.9998501539230347,
+    -0.9999802112579346,
+    -0.9977185130119324
+   ],
+   "max": [
+    0.9986863136291504,
+    0.9998846054077148,
+    0.9999634027481079
+   ]
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 7331,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5125,
+   "count": 35949,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 87972,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 87972,
+   "byteLength": 87972,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 175944,
+   "byteLength": 58648,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 234592,
+   "byteLength": 143796,
+   "target": 34963
+  }
+ ],
+ "samplers": [
+  {
+   "magFilter": 9729,
+   "minFilter": 9987
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "root_cluster_01.bin",
+   "byteLength": 378388
+  }
+ ]
+}

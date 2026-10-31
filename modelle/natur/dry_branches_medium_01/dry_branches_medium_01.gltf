@@ -1,0 +1,359 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v3.2.43",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0,
+    1,
+    2
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "dry_branches_medium_01_c",
+   "translation": [
+    0.45012858510017395,
+    0.04933696985244751,
+    -0.05088076367974281
+   ]
+  },
+  {
+   "mesh": 1,
+   "name": "dry_branches_medium_01_b",
+   "translation": [
+    0.017346084117889404,
+    0.06085515022277832,
+    -0.06261161714792252
+   ]
+  },
+  {
+   "mesh": 2,
+   "name": "dry_branches_medium_01_a",
+   "translation": [
+    -0.410437673330307,
+    0.1236923336982727,
+    -0.05545513331890106
+   ]
+  }
+ ],
+ "materials": [
+  {
+   "doubleSided": true,
+   "name": "dry_branches_medium_01",
+   "normalTexture": {
+    "index": 0
+   },
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 1
+    },
+    "metallicFactor": 0,
+    "metallicRoughnessTexture": {
+     "index": 2
+    }
+   }
+  }
+ ],
+ "meshes": [
+  {
+   "name": "branches_b_dynamesh.001",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TEXCOORD_0": 2
+     },
+     "indices": 3,
+     "material": 0
+    }
+   ]
+  },
+  {
+   "name": "branches_b_dynamesh.002",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 4,
+      "NORMAL": 5,
+      "TEXCOORD_0": 6
+     },
+     "indices": 7,
+     "material": 0
+    }
+   ]
+  },
+  {
+   "name": "branches_b_dynamesh.003",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 8,
+      "NORMAL": 9,
+      "TEXCOORD_0": 10
+     },
+     "indices": 11,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "sampler": 0,
+   "source": 0
+  },
+  {
+   "sampler": 0,
+   "source": 1
+  },
+  {
+   "sampler": 0,
+   "source": 2
+  }
+ ],
+ "images": [
+  {
+   "mimeType": "image/jpeg",
+   "name": "dry_branches_medium_01_nor_gl",
+   "uri": "dry_branches_medium_01_nor_gl_1k.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "dry_branches_medium_01_diff",
+   "uri": "dry_branches_medium_01_diff_1k.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "dry_branches_medium_01_rough",
+   "uri": "dry_branches_medium_01_arm_1k.jpg"
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 1650,
+   "type": "VEC3",
+   "min": [
+    -0.06802185624837875,
+    -0.053956836462020874,
+    -0.4047306180000305
+   ],
+   "max": [
+    0.06191990152001381,
+    0.08884792029857635,
+    0.37239524722099304
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 1650,
+   "type": "VEC3",
+   "min": [
+    -0.9996415376663208,
+    -0.9998162984848022,
+    -0.9995253682136536
+   ],
+   "max": [
+    0.9995788931846619,
+    0.9997480511665344,
+    0.9912980794906616
+   ]
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 1650,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5125,
+   "count": 6012,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 4,
+   "componentType": 5126,
+   "count": 1611,
+   "type": "VEC3",
+   "min": [
+    -0.0599491149187088,
+    -0.0626467615365982,
+    -0.45445898175239563
+   ],
+   "max": [
+    0.09121467918157578,
+    0.07852333784103394,
+    0.5840448141098022
+   ]
+  },
+  {
+   "bufferView": 5,
+   "componentType": 5126,
+   "count": 1611,
+   "type": "VEC3",
+   "min": [
+    -0.9988827705383301,
+    -0.9985040426254272,
+    -0.9736391305923462
+   ],
+   "max": [
+    0.9995221495628357,
+    0.9989829659461975,
+    0.981591522693634
+   ]
+  },
+  {
+   "bufferView": 6,
+   "componentType": 5126,
+   "count": 1611,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 7,
+   "componentType": 5125,
+   "count": 5625,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 8,
+   "componentType": 5126,
+   "count": 2130,
+   "type": "VEC3",
+   "min": [
+    -0.13700003921985626,
+    -0.13928857445716858,
+    -0.6343755125999451
+   ],
+   "max": [
+    0.18606369197368622,
+    0.20076525211334229,
+    0.664777398109436
+   ]
+  },
+  {
+   "bufferView": 9,
+   "componentType": 5126,
+   "count": 2130,
+   "type": "VEC3",
+   "min": [
+    -0.9992628693580627,
+    -0.9967340230941772,
+    -0.999344527721405
+   ],
+   "max": [
+    0.9929540753364563,
+    0.9975125193595886,
+    0.9973745942115784
+   ]
+  },
+  {
+   "bufferView": 10,
+   "componentType": 5126,
+   "count": 2130,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 11,
+   "componentType": 5125,
+   "count": 6351,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 19800,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 19800,
+   "byteLength": 19800,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 39600,
+   "byteLength": 13200,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 52800,
+   "byteLength": 24048,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 76848,
+   "byteLength": 19332,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 96180,
+   "byteLength": 19332,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 115512,
+   "byteLength": 12888,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 128400,
+   "byteLength": 22500,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 150900,
+   "byteLength": 25560,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 176460,
+   "byteLength": 25560,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 202020,
+   "byteLength": 17040,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 219060,
+   "byteLength": 25404,
+   "target": 34963
+  }
+ ],
+ "samplers": [
+  {
+   "magFilter": 9729,
+   "minFilter": 9987
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "dry_branches_medium_01.bin",
+   "byteLength": 244464
+  }
+ ]
+}

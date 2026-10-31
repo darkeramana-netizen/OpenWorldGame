@@ -1,0 +1,671 @@
+{
+ "asset": {
+  "version": "2.0",
+  "generator": "werkzeuge/pilze_erzeugen.py"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "nodes": [
+    0,
+    1,
+    2
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "name": "hallimasch",
+   "mesh": 0
+  },
+  {
+   "name": "fliegenpilz",
+   "mesh": 1
+  },
+  {
+   "name": "baumschwamm",
+   "mesh": 2
+  }
+ ],
+ "meshes": [
+  {
+   "name": "hallimasch",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1
+     },
+     "indices": 2,
+     "material": 0
+    },
+    {
+     "attributes": {
+      "POSITION": 3,
+      "NORMAL": 4
+     },
+     "indices": 5,
+     "material": 1
+    },
+    {
+     "attributes": {
+      "POSITION": 6,
+      "NORMAL": 7
+     },
+     "indices": 8,
+     "material": 2
+    }
+   ]
+  },
+  {
+   "name": "fliegenpilz",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 9,
+      "NORMAL": 10
+     },
+     "indices": 11,
+     "material": 3
+    },
+    {
+     "attributes": {
+      "POSITION": 12,
+      "NORMAL": 13
+     },
+     "indices": 14,
+     "material": 4
+    },
+    {
+     "attributes": {
+      "POSITION": 15,
+      "NORMAL": 16
+     },
+     "indices": 17,
+     "material": 5
+    },
+    {
+     "attributes": {
+      "POSITION": 18,
+      "NORMAL": 19
+     },
+     "indices": 20,
+     "material": 6
+    }
+   ]
+  },
+  {
+   "name": "baumschwamm",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 21,
+      "NORMAL": 22
+     },
+     "indices": 23,
+     "material": 7
+    },
+    {
+     "attributes": {
+      "POSITION": 24,
+      "NORMAL": 25
+     },
+     "indices": 26,
+     "material": 8
+    }
+   ]
+  }
+ ],
+ "materials": [
+  {
+   "name": "hallimasch_hut",
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     0.55,
+     0.38,
+     0.2,
+     1.0
+    ],
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.85
+   },
+   "doubleSided": true
+  },
+  {
+   "name": "hallimasch_unten",
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     0.85,
+     0.78,
+     0.62,
+     1.0
+    ],
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.85
+   },
+   "doubleSided": true
+  },
+  {
+   "name": "hallimasch_stiel",
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     0.8,
+     0.72,
+     0.55,
+     1.0
+    ],
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.85
+   },
+   "doubleSided": true
+  },
+  {
+   "name": "fliegenpilz_hut",
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     0.75,
+     0.08,
+     0.04,
+     1.0
+    ],
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.85
+   },
+   "doubleSided": true
+  },
+  {
+   "name": "fliegenpilz_unten",
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     0.95,
+     0.93,
+     0.85,
+     1.0
+    ],
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.85
+   },
+   "doubleSided": true
+  },
+  {
+   "name": "fliegenpilz_stiel",
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     0.95,
+     0.94,
+     0.88,
+     1.0
+    ],
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.85
+   },
+   "doubleSided": true
+  },
+  {
+   "name": "fliegenpilz_tupfen",
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     0.97,
+     0.96,
+     0.92,
+     1.0
+    ],
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.85
+   },
+   "doubleSided": true
+  },
+  {
+   "name": "baumschwamm_hut",
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     0.62,
+     0.52,
+     0.38,
+     1.0
+    ],
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.85
+   },
+   "doubleSided": true
+  },
+  {
+   "name": "baumschwamm_unten",
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     0.9,
+     0.86,
+     0.74,
+     1.0
+    ],
+    "metallicFactor": 0.0,
+    "roughnessFactor": 0.85
+   },
+   "doubleSided": true
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 891,
+   "type": "VEC3",
+   "min": [
+    -0.15914982746081757,
+    0.03913279774934198,
+    -0.14930632576590078
+   ],
+   "max": [
+    0.13899478045155003,
+    0.10628060069180678,
+    0.1596433008713179
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 891,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5125,
+   "count": 3780,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5126,
+   "count": 891,
+   "type": "VEC3",
+   "min": [
+    -0.15914982746081757,
+    0.03913279774934198,
+    -0.14930632576590078
+   ],
+   "max": [
+    0.13899478045155003,
+    0.10628060069180678,
+    0.1596433008713179
+   ]
+  },
+  {
+   "bufferView": 4,
+   "componentType": 5126,
+   "count": 891,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 5,
+   "componentType": 5125,
+   "count": 378,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 6,
+   "componentType": 5126,
+   "count": 144,
+   "type": "VEC3",
+   "min": [
+    -0.1277036621540778,
+    0,
+    -0.1239856822488882
+   ],
+   "max": [
+    0.1165127358422351,
+    0.08699009578215668,
+    0.12832885103541572
+   ]
+  },
+  {
+   "bufferView": 7,
+   "componentType": 5126,
+   "count": 144,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 8,
+   "componentType": 5125,
+   "count": 432,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 9,
+   "componentType": 5126,
+   "count": 198,
+   "type": "VEC3",
+   "min": [
+    -0.07,
+    0.07775,
+    -0.06824495385272768
+   ],
+   "max": [
+    0.135,
+    0.165,
+    0.09387175604818207
+   ]
+  },
+  {
+   "bufferView": 10,
+   "componentType": 5126,
+   "count": 198,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 11,
+   "componentType": 5125,
+   "count": 840,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 12,
+   "componentType": 5126,
+   "count": 198,
+   "type": "VEC3",
+   "min": [
+    -0.07,
+    0.07775,
+    -0.06824495385272768
+   ],
+   "max": [
+    0.135,
+    0.165,
+    0.09387175604818207
+   ]
+  },
+  {
+   "bufferView": 13,
+   "componentType": 5126,
+   "count": 198,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 14,
+   "componentType": 5125,
+   "count": 84,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 15,
+   "componentType": 5126,
+   "count": 32,
+   "type": "VEC3",
+   "min": [
+    -0.0161,
+    0,
+    -0.0161
+   ],
+   "max": [
+    0.10035,
+    0.13,
+    0.06035
+   ]
+  },
+  {
+   "bufferView": 16,
+   "componentType": 5126,
+   "count": 32,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 17,
+   "componentType": 5125,
+   "count": 96,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 18,
+   "componentType": 5126,
+   "count": 266,
+   "type": "VEC3",
+   "min": [
+    -0.04511487490535509,
+    0.08869080682527192,
+    -0.05588714720596532
+   ],
+   "max": [
+    0.139131613515313,
+    0.16661369322958963,
+    0.09562137004949813
+   ]
+  },
+  {
+   "bufferView": 19,
+   "componentType": 5126,
+   "count": 266,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 20,
+   "componentType": 5125,
+   "count": 504,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 21,
+   "componentType": 5126,
+   "count": 297,
+   "type": "VEC3",
+   "min": [
+    -0.09,
+    -0.0027,
+    0.0
+   ],
+   "max": [
+    0.09,
+    0.14500000000000002,
+    0.08774351209636415
+   ]
+  },
+  {
+   "bufferView": 22,
+   "componentType": 5126,
+   "count": 297,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 23,
+   "componentType": 5125,
+   "count": 1260,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 24,
+   "componentType": 5126,
+   "count": 297,
+   "type": "VEC3",
+   "min": [
+    -0.09,
+    -0.0027,
+    0.0
+   ],
+   "max": [
+    0.09,
+    0.14500000000000002,
+    0.08774351209636415
+   ]
+  },
+  {
+   "bufferView": 25,
+   "componentType": 5126,
+   "count": 297,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 26,
+   "componentType": 5125,
+   "count": 126,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 10692,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 10692,
+   "byteLength": 10692,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 21384,
+   "byteLength": 15120,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 36504,
+   "byteLength": 10692,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 47196,
+   "byteLength": 10692,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 57888,
+   "byteLength": 1512,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 59400,
+   "byteLength": 1728,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 61128,
+   "byteLength": 1728,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 62856,
+   "byteLength": 1728,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 64584,
+   "byteLength": 2376,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 66960,
+   "byteLength": 2376,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 69336,
+   "byteLength": 3360,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 72696,
+   "byteLength": 2376,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 75072,
+   "byteLength": 2376,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 77448,
+   "byteLength": 336,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 77784,
+   "byteLength": 384,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 78168,
+   "byteLength": 384,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 78552,
+   "byteLength": 384,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 78936,
+   "byteLength": 3192,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 82128,
+   "byteLength": 3192,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 85320,
+   "byteLength": 2016,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 87336,
+   "byteLength": 3564,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 90900,
+   "byteLength": 3564,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 94464,
+   "byteLength": 5040,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 99504,
+   "byteLength": 3564,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 103068,
+   "byteLength": 3564,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 106632,
+   "byteLength": 504,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "pilze.bin",
+   "byteLength": 107136
+  }
+ ]
+}

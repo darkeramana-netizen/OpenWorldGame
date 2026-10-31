@@ -1,0 +1,78 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.0.44",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "dead_tree_trunk_02"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "fallen_log_5m_PROXY.002",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 890,
+   "type": "VEC3",
+   "min": [
+    -1.9001872539520264,
+    -0.3088018596172333,
+    -0.3292889893054962
+   ],
+   "max": [
+    2.0936684608459473,
+    0.6954980492591858,
+    0.5190547108650208
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 2319,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 10680,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 10680,
+   "byteLength": 9276,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "dead_tree_trunk_02_form.bin",
+   "byteLength": 19956
+  }
+ ]
+}

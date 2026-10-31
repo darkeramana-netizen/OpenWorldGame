@@ -62,7 +62,7 @@ for m in g["meshes"]:
 
 g["accessors"] = accs; g["bufferViews"] = views
 ziel.mkdir(parents=True, exist_ok=True)
-name = quelle.stem.replace("_2k", "") + ("_form" if nur_form else "")
+name = quelle.stem.replace("_2k", "").replace("_1k", "") + ("_form" if nur_form else "")
 if nur_form:
     for k in ("images", "textures", "materials", "samplers"):
         g.pop(k, None)

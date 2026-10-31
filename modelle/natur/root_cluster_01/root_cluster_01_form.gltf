@@ -1,0 +1,78 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.0.44",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "root_cluster_01"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "root_cluster_5m.001",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 1034,
+   "type": "VEC3",
+   "min": [
+    -2.048856496810913,
+    -0.04371938854455948,
+    -0.9937626123428345
+   ],
+   "max": [
+    1.9715378284454346,
+    1.4638862609863281,
+    1.6840070486068726
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 2964,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 12408,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 12408,
+   "byteLength": 11856,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "root_cluster_01_form.bin",
+   "byteLength": 24264
+  }
+ ]
+}
