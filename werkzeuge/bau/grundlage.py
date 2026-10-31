@@ -130,7 +130,7 @@ size = Vector3({sx}, {sy}, {sz})''')
 
 GELAENDE_TEXTUREN = [("gras", "farbe"), ("gras", "normal"), ("erde", "farbe"), ("erde", "normal"), ("fels", "farbe"),
                      ("fels", "normal"), ("sand", "farbe"), ("schnee", "farbe"), ("sumpf", "farbe"),
-                     ("pflaster", "farbe"), ("pflaster", "normal")]
+                     ("pflaster", "farbe"), ("pflaster", "normal"), ("klippe", "farbe"), ("klippe", "normal")]
 
 def gelaende_pflaster(vielecke):
     """Trägt gepflasterte Flächen nachträglich in das Geländematerial ein (nach grundgeruest)."""
@@ -348,6 +348,7 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     for t, k in GELAENDE_TEXTUREN:
         E("Texture2D", f"res://texturen/{t}_{k}.jpg", f"tex_{t}_{k}")
     texturen = "".join(f'\nshader_parameter/{t}_{k} = ExtResource("tex_{t}_{k}")' for t, k in GELAENDE_TEXTUREN)
+    texturen += "\nshader_parameter/mit_klippe = true"
     S(f'''[sub_resource type="ShaderMaterial" id="Material_gelaende"]
     shader = ExtResource("8_gelaende_shader")
     shader_parameter/maske = ExtResource("9_maske")

@@ -85,6 +85,7 @@ var stadt_strassen: Array = []
 var _rauschen := FastNoiseLite.new()
 var _fein := FastNoiseLite.new()
 var _grat := FastNoiseLite.new()
+var _zacken := FastNoiseLite.new()   # zerklüftete Klippen
 
 
 func _init() -> void:
@@ -120,6 +121,10 @@ func _init() -> void:
 	_fein.frequency = 0.03
 	_grat.seed = 1065
 	_grat.frequency = 0.007
+	_zacken.seed = 512
+	_zacken.frequency = 0.07
+	_zacken.fractal_octaves = 3
+	_zacken.fractal_type = FastNoiseLite.FRACTAL_RIDGED
 
 
 ## Erzeugt alle Dateien und gibt die Anzahl der Höhenpunkte zurück.
@@ -275,9 +280,14 @@ func _drachenstein(h: float, p: Vector2) -> float:
 		for linie in [WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE]:
 			weg = minf(weg, _naechster_punkt(linie, p)[0])
 		var abfall := lerpf(60.0, float(plan.get("abfall", 14.0)), smoothstep(8.0, 22.0, weg))
-		var fels := _fein.get_noise_2dv(p * 0.7) * 2.5
 		var unten := lerpf(H_EBENE + _fein.get_noise_2dv(p * 0.3) * 1.5, h, smoothstep(60.0, 260.0, aussen))
-		h = lerpf(am_rand + fels * (1.0 - smoothstep(0.0, abfall, aussen)), unten, smoothstep(0.0, abfall, aussen))
+		# Zum Meer hin bricht die Klippe bis auf den Grund ab, ohne Strand davor
+		if not _bucht.is_empty():
+			var see := smoothstep(45.0, 0.0, _polygon_abstand(p, _bucht))
+			unten = lerpf(unten, -24.0, see)
+			abfall = lerpf(abfall, 18.0, see)
+		var t := smoothstep(0.0, abfall, aussen)
+		h = lerpf(am_rand, unten, t) + _zacke(p) * 4.0 * t * (1.0 - t) * 4.0
 	# Burgringe als Terrassen, von außen nach innen (der Zwinger steigt mit seinem Weg)
 	for zone: Array in _zonen:
 		var d := _polygon_abstand(p, zone[0])
@@ -285,7 +295,8 @@ func _drachenstein(h: float, p: Vector2) -> float:
 			var zh: float = zone[1]
 			if not zone[3].is_empty():
 				zh = _weg_hoehe(p, zone[3], zone[4])[1]
-			h = zh if d <= 0.0 else lerpf(zh, h, smoothstep(0.0, zone[2], d))
+			var t := smoothstep(0.0, zone[2], d)
+			h = zh if d <= 0.0 else lerpf(zh, h, t) + _zacke(p) * 1.5 * t * (1.0 - t) * 4.0
 	# Wege im Burgbezirk mit fester Steigung: Burgweg außen herum, vom Torhaus Nord, Zwingerweg, vom Nordtor
 	for weg: Array in _burgwege:
 		h = _burgweg(h, p, weg[0], weg[1])
@@ -298,6 +309,11 @@ func _drachenstein(h: float, p: Vector2) -> float:
 		if d > 0.0 and d < 14.0 and Geometry2D.is_point_in_polygon(p, _hafen):
 			h = lerpf(KAI_HOEHE, h, smoothstep(9.0, 14.0, d))
 	return h
+
+
+## Zerklüfteter Fels: Grate und Rinnen (etwa -1 bis 1), für Klippen und Felsstufen.
+func _zacke(p: Vector2) -> float:
+	return _zacken.get_noise_2dv(p) * 1.4 + _fein.get_noise_2dv(p * 2.3) * 0.4
 
 
 ## Höhe innerhalb der Mauern (NAN außerhalb): Hafen und Stadt in der Ebene, im Burgbezirk der Hang des Grats.

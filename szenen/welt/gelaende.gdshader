@@ -22,6 +22,11 @@ uniform sampler2D schnee_farbe : source_color, filter_linear_mipmap_anisotropic,
 uniform sampler2D sumpf_farbe : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D pflaster_farbe : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D pflaster_normal : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+// Grauer, geschichteter Fels für Steilwände und Klippen (ambientCG Rock028); Moos bleibt auf Absätzen und flacheren
+// Hängen (fels_farbe). Ältere Regionen ohne diese Textur lassen mit_klippe aus.
+uniform sampler2D klippe_farbe : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D klippe_normal : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform bool mit_klippe = false;
 
 // Gepflasterte Flächen (Städte, Burghöfe): bis zu vier Vielecke, aneinandergehängt in "pflaster_punkte",
 // "pflaster_laengen" sagt, wie viele Punkte zu jedem gehören.
@@ -46,6 +51,7 @@ const float M_SUMPF = 2.4;
 const float M_SCHNEE = 4.0;
 const float M_PFLASTER = 1.6;
 const float M_FELS = 18.0;
+const float M_KLIPPE = 7.0;
 const float FERN = 6.5;
 
 varying vec3 welt_pos;
@@ -117,6 +123,8 @@ void fragment() {
 
 	// Anteile
 	float a_fels = smoothstep(0.24, 0.42, steil + (gross - 0.5) * 0.12);
+	// An Steilwänden wird der bemooste Fels zu nacktem grauem Fels
+	float a_klippe = mit_klippe ? smoothstep(0.36, 0.55, steil + (gross - 0.5) * 0.16 + (klein - 0.5) * 0.05) : 0.0;
 	float a_sand = 1.0 - smoothstep(meeresspiegel + 0.8, meeresspiegel + 2.6, h + klein * 0.8);
 	float a_schnee = smoothstep(schneegrenze, schneegrenze + 30.0, h + gross * 20.0) * (1.0 - smoothstep(0.22, 0.42, steil));
 	float a_erde = smoothstep(0.62, 0.8, gross + klein * 0.15) * 0.55;   // kahle Stellen im Gras
@@ -140,6 +148,9 @@ void fragment() {
 	pf = mix(pf, zwei(erde_farbe, p, M_ERDE) * 0.9, smoothstep(0.68, 0.85, gross) * 0.7);
 	farbe = mix(farbe, pf, a_pflaster);
 	vec3 f = mix(dreiseitig(fels_farbe, welt_pos, gewicht, 1.0 / M_FELS), dreiseitig(fels_farbe, welt_pos, gewicht, 1.0 / (M_FELS * 4.0)), 0.4) * fels;
+	vec3 k = mix(dreiseitig(klippe_farbe, welt_pos, gewicht, 1.0 / M_KLIPPE), dreiseitig(klippe_farbe, welt_pos, gewicht, 1.0 / (M_KLIPPE * 5.0)), 0.45);
+	k *= 0.82 + rauschen(welt_pos.xz * 0.03 + welt_pos.y * 0.05) * 0.3;
+	f = mix(f, k, a_klippe);
 	farbe = mix(farbe, f, a_fels);
 	farbe = mix(farbe, zwei(schnee_farbe, p, M_SCHNEE) * schnee, a_schnee);
 	farbe *= 0.85 + gross * 0.3;
@@ -148,6 +159,10 @@ void fragment() {
 	vec3 nk_boden = texture(gras_normal, p / M_GRAS).rgb * (1.0 - a_weg - a_erde) + texture(erde_normal, p / M_ERDE).rgb * (a_weg + a_erde);
 	nk_boden = mix(nk_boden, texture(pflaster_normal, p / M_PFLASTER).rgb, a_pflaster);
 	vec3 nk_fels = texture(fels_normal, welt_pos.zy * (1.0 / M_FELS)).rgb * gewicht.x + texture(fels_normal, welt_pos.xz * (1.0 / M_FELS)).rgb * gewicht.y + texture(fels_normal, welt_pos.xy * (1.0 / M_FELS)).rgb * gewicht.z;
+	if (mit_klippe) {
+		vec3 nk_klippe = texture(klippe_normal, welt_pos.zy * (1.0 / M_KLIPPE)).rgb * gewicht.x + texture(klippe_normal, welt_pos.xz * (1.0 / M_KLIPPE)).rgb * gewicht.y + texture(klippe_normal, welt_pos.xy * (1.0 / M_KLIPPE)).rgb * gewicht.z;
+		nk_fels = mix(nk_fels, nk_klippe, a_klippe);
+	}
 	vec3 nk = mix(nk_boden, nk_fels, a_fels) * 2.0 - 1.0;
 	float staerke = mix(mix(0.45, 0.9, a_pflaster), 1.1, a_fels) * (1.0 - a_schnee * 0.6);
 	vec3 neu = normalize(n + vec3(nk.x, 0.0, -nk.y) * staerke * (1.0 - gewicht.x - gewicht.z) + vec3(0.0, nk.y, 0.0) * 0.0
