@@ -635,6 +635,11 @@ text = "Übungsplatz"
 font_size = 40
 outline_size = 14
 
+[node name="Fahnen" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+fahnen = PackedFloat32Array(-66.5, 22.965, -32.5, 30, 2.4, 3.8, 0, 58.5, 37.734, -240, 30, 2.4, 3.8, 0, 74, 13.018, 132.5, 30, 2.4, 3.8, 0, -44, 90.05, -170, 30, 3.6, 6, 0, -36.45, 84, -170, 90, 2.6, 9, 1, -51.55, 84, -170, -90, 2.6, 9, 1, -44, 84, -162.45, 0, 2.6, 9, 1, -44, 84, -177.55, 180, 2.6, 9, 1)
+kollision = false
+
 [node name="Stadt" type="Node3D" parent="Drachenstein"]
 
 [node name="Drachenhafen" type="Node3D" parent="Drachenstein"]

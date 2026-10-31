@@ -44,6 +44,12 @@ extends Node3D
 		treppen = w
 		_neu_bauen()
 ## Ohne Kollision: nur Optik (z. B. über den alten Hofmauern aus Akt I, deren Körper bleiben)
+## Fahnen und Banner (fahne.gdshader): je 7 Werte x, y, z, Gier, Breite, Länge, Art. Art 0: Fahne an einem Mast
+## (y = Fuß des Masts), weht nach lokal +x; Art 1: Banner an einer Wand (y = Oberkante), hängt herab, Wand hinter lokal -z.
+@export var fahnen := PackedFloat32Array():
+	set(w):
+		fahnen = w
+		_neu_bauen()
 @export var kollision := true:
 	set(w):
 		kollision = w
@@ -107,6 +113,7 @@ func _baue() -> void:
 	while i + 11 < gebaeude.size():
 		_gebaeude(gebaeude.slice(i, i + 12))
 		i += 12
+	_fahnen_bauen()
 	if _flach.is_empty() and _rund.is_empty():
 		return
 
@@ -137,6 +144,72 @@ func _baue() -> void:
 	form.shape = fest.create_trimesh_shape()
 	koerper.add_child(form)
 	add_child(koerper)
+
+
+## Fahnen: Mast (Holz, mit Knauf) in die Mauerteile, das Tuch als eigenes Mesh mit dem Wind-Shader.
+func _fahnen_bauen() -> void:
+	var tuecher := {0: SurfaceTool.new(), 1: SurfaceTool.new()}
+	var benutzt := {0: false, 1: false}
+	for st: SurfaceTool in tuecher.values():
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var i := 0
+	while i + 6 < fahnen.size():
+		var fuss := Vector3(fahnen[i], fahnen[i + 1], fahnen[i + 2])
+		var g := deg_to_rad(fahnen[i + 3])
+		var breite := fahnen[i + 4]
+		var laenge := fahnen[i + 5]
+		var art := int(fahnen[i + 6])
+		var ux := Vector3(cos(g), 0, -sin(g))      # lokal x
+		var uz := Vector3(sin(g), 0, cos(g))       # lokal z
+		var c2 := Vector2(fuss.x, fuss.z)
+		var u2 := Vector2(ux.x, ux.z)
+		var n2 := Vector2(uz.x, uz.z)
+		var oben: float
+		var start: Vector3
+		var richtung: Vector3
+		var quer: Vector3
+		if art == 0:
+			var mast := laenge * 0.9 + breite + 2.0
+			_klotz("holz", c2, u2, n2, -0.09, 0.09, -0.09, 0.09, fuss.y, fuss.y + mast)
+			_kegel("metall", c2, 0.16, fuss.y + mast, 0.45, 8)
+			oben = fuss.y + mast - 0.25
+			start = Vector3(fuss.x, oben, fuss.z)
+			richtung = ux * laenge
+			quer = Vector3.DOWN * breite
+		else:
+			# Stange oben an der Wand
+			_klotz("holz", c2 + n2 * 0.25, u2, n2, -breite * 0.55, breite * 0.55, -0.05, 0.05, fuss.y - 0.06, fuss.y + 0.06)
+			start = Vector3(fuss.x, fuss.y, fuss.z) + uz * 0.25 - ux * breite * 0.5
+			richtung = Vector3.DOWN * laenge
+			quer = ux * breite
+		var st: SurfaceTool = tuecher[art]
+		benutzt[art] = true
+		var teile_l := 12
+		var teile_q := 4
+		var normale := uz if art == 1 else Vector3(0, 0, 0) + uz
+		for a in teile_l:
+			for b in teile_q:
+				var p := func(ia: int, ib: int) -> Vector3:
+					return start + richtung * (float(ia) / teile_l) + quer * (float(ib) / teile_q)
+				var t := func(ia: int, ib: int) -> Vector2:
+					return Vector2(float(ia) / teile_l, float(ib) / teile_q)
+				for e in [[a, b], [a + 1, b], [a + 1, b + 1], [a, b], [a + 1, b + 1], [a, b + 1]]:
+					st.set_normal(normale)
+					st.set_uv(t.call(e[0], e[1]))
+					st.add_vertex(p.call(e[0], e[1]))
+		i += 7
+	for art: int in tuecher:
+		if not benutzt[art]:
+			continue
+		var mi := MeshInstance3D.new()
+		mi.name = "Tuch%d" % art
+		mi.mesh = tuecher[art].commit()
+		var mat := ShaderMaterial.new()
+		mat.shader = load("res://szenen/welt/fahne.gdshader")
+		mat.set_shader_parameter("art", float(art))
+		mi.material_override = mat
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED
+		add_child(mi)
 
 
 # ---------- Grundformen ----------
@@ -404,6 +477,15 @@ func _tor(c: Vector2, u: Vector2, boden: float, breite: float, oben: float, dick
 		for seite: float in [-1.0, 1.0]:
 			var q := c + u * x + n * (d + 0.04) * seite
 			_klotz(stein, q, u, n, -0.32, 0.32, -0.08, 0.08, y - 0.3, y + 0.3)
+	# Laternen beiderseits des Bogens, auf beiden Seiten der Mauer
+	for seite: float in [-1.0, 1.0]:
+		for su: float in [-1.0, 1.0]:
+			var lm := c + u * su * (w + 1.3) + n * (d + 0.05) * seite
+			var y := kaempfer + 0.4
+			_klotz("metall", lm, u, n * seite, -0.04, 0.04, 0.0, 0.45, y + 0.55, y + 0.62)
+			_klotz("metall", lm + n * seite * 0.45, u, n * seite, -0.18, 0.18, -0.18, 0.18, y + 0.5, y + 0.56)
+			_klotz("glut", lm + n * seite * 0.45, u, n * seite, -0.13, 0.13, -0.13, 0.13, y, y + 0.5)
+			_klotz("metall", lm + n * seite * 0.45, u, n * seite, -0.17, 0.17, -0.17, 0.17, y - 0.06, y)
 	# Brustwehr und Zinnen auf dem Bogen
 	_klotz(stein, c, u, n, -w - 0.8, w + 0.8, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
 	_zinnen(c, u, n, breite + 1.6, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR)
@@ -720,6 +802,13 @@ func _fenster(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, se
 		# Fensterkreuz
 		_klotz("holz", m, u, nn, -0.05, 0.05, -0.03, 0.04, ym - fh / 2.0, ym + fh / 2.0)
 		_klotz("holz", m, u, nn, -b, b, -0.03, 0.04, ym + fh * 0.1 - 0.05, ym + fh * 0.1 + 0.05)
+		# aufgeklappte Fensterläden aus Brettern, mit zwei Querleisten
+		for s_: float in [-1.0, 1.0]:
+			var a0 := s_ * (b + 0.2)
+			var a1 := s_ * (b + 0.2 + b)
+			_klotz("holz", m, u, nn, minf(a0, a1), maxf(a0, a1), 0.06, 0.11, ym - fh / 2.0, ym + fh / 2.0)
+			for q: float in [-0.3, 0.3]:
+				_klotz("holz", m, u, nn, minf(a0, a1) + 0.04, maxf(a0, a1) - 0.04, 0.11, 0.14, ym + fh * q - 0.05, ym + fh * q + 0.05)
 
 
 func _tuer(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, boden: float, tb: float, th: float) -> void:
@@ -748,7 +837,14 @@ func _material(name_: String) -> Material:
 		_materialien[name_] = basis
 		return basis
 	var m: Material
-	if name_ == "dunkel":
+	if name_ == "glut":
+		var g := StandardMaterial3D.new()
+		g.albedo_color = Color(1.0, 0.75, 0.4)
+		g.emission_enabled = true
+		g.emission = Color(1.0, 0.6, 0.25)
+		g.emission_energy_multiplier = 2.5
+		m = g
+	elif name_ == "dunkel":
 		var s := StandardMaterial3D.new()
 		s.albedo_color = Color(0.03, 0.03, 0.035)
 		s.roughness = 1.0

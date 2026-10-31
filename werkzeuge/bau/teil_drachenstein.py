@@ -58,6 +58,8 @@ def gebaeude(name, eltern, bau, hoehe, boden, mat="Material_mauer", dach="Materi
 
 
 MITTE_BURG = W(PD.MITTE)
+# Fahnen und Banner (szenen/welt/burgbau.gd, "fahnen"): x, y, z, Gier, Breite, Länge, Art (0 Mast, 1 Banner an der Wand)
+FAHNEN = []
 # --- Ringmauer um den Grat ---
 RING = PD.RINGMAUER + [PD.RINGMAUER[0]]
 mauerring("Ringmauer", BG, WL(RING), 9.0, dicke=3.0, mitte=MITTE_BURG,
@@ -72,6 +74,8 @@ for pp, r, dach in [(PD.WEHRTURM, 6.0, 0), ((1190, 55), 6.0, 1), ((1230, 140), 6
     unten = min(H(x + dx, z + dz) for dx in (-r, 0, r) for dz in (-r, 0, r)) - 2.5
     oben = max(H(x + dx, z + dz) for dx in (-r, 0, r) for dz in (-r, 0, r)) + 14
     _tuerme += [x, z, unten, oben, r, dach, r * 1.8]
+    if dach == 0:
+        FAHNEN.extend([x, oben + 0.05, z, 30, 2.4, 3.8, 0])
 hx, hz = W(PD.HALBTURM)
 _hb = H(hx, hz)
 N("RingmauerTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
@@ -131,6 +135,10 @@ bx, bz = W(PD.BERGFRIED_KERNBURG)
 N("BergfriedKernburg", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 torbauten = PackedFloat32Array({_zahlen([bx, bz, 1, 0, PD.H_KERNBURG - 2, PD.H_KERNBURG + 52, 15, 15, 1, -1])})""")
 schild("SchildBergfriedKernburg", BG, bx, PD.H_KERNBURG + 64, bz, "Bergfried", 56)
+# Große Fahne auf dem Bergfried und Banner an seinen vier Seiten
+FAHNEN.extend([bx, PD.H_KERNBURG + 52.05, bz, 30, 3.6, 6.0, 0])
+for nx_, nz_ in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+    FAHNEN.extend([bx + nx_ * 7.55, PD.H_KERNBURG + 46, bz + nz_ * 7.55, math.degrees(math.atan2(nx_, nz_)), 2.6, 9.0, 1])
 # Palas: drei Geschosse mit gotischen Doppelfenstern, steiles Schieferdach; am Westende ein schlanker Rundturm
 gebaeude("Palas", BG, PD.PALAS, 16, PD.H_KERNBURG, mat="Material_hell", dachhoehe=11, art=3)
 _pt = turmmasse((928, 150), 4.2, 0)
@@ -152,6 +160,10 @@ N("ObererBurg", "Node3D", DS, T(round(UEB[0], 2), PD.H_KERNBURG, round(UEB[1], 2
 for k, x in enumerate([-2.5, 2.5]):
     gegner(f"Uebungspuppe{k + 1}", OB, x, 0, 0, "Übungspuppe", waffe="puppe", tracht="0.55, 0.45, 0.3, 1")
 schild("SchildUebungsplatz", OB, 0, 3.5, 4, "Übungsplatz", 40)
+
+N("Fahnen", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+fahnen = PackedFloat32Array({_zahlen(FAHNEN)})
+kollision = false""")
 
 # --- Stadt und Hafen ---
 teil("teil_stadt.py")
