@@ -66,7 +66,7 @@ N("HafenTuerme", "Node3D", HF, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_ht)})""")
 sx, sz = W(PD.SPEICHER[0])
 steinbau("Speicher", HF, sx, sz, PD.SPEICHER[1] * M, PD.SPEICHER[2] * M, 9, gier=0, mat="Material_holz",
-         dach="Material_dach", boden=KAI_OBEN, art=2)
+         dach="Material_dach", boden=KAI_OBEN, art=2, begehbar=True)
 schild("SchildSpeicher", HF, sx, KAI_OBEN + 18, sz, "Speicher", 40)
 
 # --- Untergrundhafen: Hinter dem Wassertor führt der Kanal durch einen Gang unter dem Zwinger in eine gewölbte Halle
@@ -75,16 +75,19 @@ schild("SchildSpeicher", HF, sx, KAI_OBEN + 18, sz, "Speicher", 40)
 # ein Loch (region_drachenstein.py), sonst läge der Hang quer im Gang.
 _wt = W(PD.TORE["Hafentor"])
 UH_MUND = (87.6, -9.5)          # Mitte der Mündung an der Innenseite der Ringmauer, die Halle reicht nach -x
-UH_LAENGE, UH_BREITE, UH_WASSER = 24.0, 24.0, 6.0
+UH_LAENGE, UH_BREITE, UH_BECKEN, UH_KANAL = 60.0, 36.0, 12.0, 6.0
+UH_JOCH = 6.0
 N("Untergrundhafen", "Node3D", HF, f"""script = ExtResource("28_burgbau")
-hallen = PackedFloat32Array({_zahlen([*UH_MUND, -1, 0, UH_LAENGE, UH_BREITE, UH_WASSER, KAI_KRONE, 4.5, 4.0, 10.0, -19.6])})""")
-for k_, s_ in enumerate((6.0, 12.0, 18.0)):
+hallen = PackedFloat32Array({_zahlen([*UH_MUND, -1, 0, UH_LAENGE, UH_BREITE, UH_BECKEN, UH_KANAL, KAI_KRONE, 5.0, 6.0, 10.0, -19.6])})""")
+uh = lambda s_, q_: (round(UH_MUND[0] - s_, 2), round(UH_MUND[1] - q_, 2))   # lokal (in den Berg, quer) → Welt
+# Licht an jeder zweiten Laterne (Wandpfeiler bei 6, 18, 30, 42, 54 m) und vor der Tür
+for k_, s_ in enumerate(range(6, int(UH_LAENGE), 12)):
     for seite_ in (-1, 1):
-        licht(f"UHLicht{k_}{'ab'[seite_ > 0]}", HF, round(UH_MUND[0] - s_, 2), KAI_OBEN + 3.4,
-              round(UH_MUND[1] + seite_ * (UH_BREITE / 2 - 1.2), 2), 11.0)
-licht("UHLichtTuer", HF, round(UH_MUND[0] - UH_LAENGE + 1.5, 2), KAI_OBEN + 3.2, UH_MUND[1], 8.0)
-schild("SchildUntergrundhafen", HF, round(UH_MUND[0] - 4, 2), KAI_OBEN + 4.2, round(UH_MUND[1] + 6.5, 2), "Untergrundhafen", 40)
-schild("SchildUHTuer", HF, round(UH_MUND[0] - UH_LAENGE + 0.6, 2), KAI_OBEN + 4.2, UH_MUND[1], "Zur Burg (verschlossen)", 32)
+        lx_, lz_ = uh(s_, seite_ * (UH_BREITE / 2 - 1.4))
+        licht(f"UHLicht{k_}{'ab'[seite_ > 0]}", HF, lx_, KAI_OBEN + 3.2, lz_, 13.0)
+licht("UHLichtTuer", HF, *(lambda p: (p[0], KAI_OBEN + 3.2, p[1]))(uh(UH_LAENGE - 2.0, 0)), 9.0)
+schild("SchildUntergrundhafen", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(4, -7.5)), "Untergrundhafen", 40)
+schild("SchildUHTuer", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(UH_LAENGE - 0.6, 0)), "Zur Burg (verschlossen)", 32)
 schild("SchildWassertor", HF, round(_wt[0] + 4, 2), KAI_OBEN + 4, round(_wt[1] + 7, 2), "Zum Untergrundhafen", 40)
 _hm = W((720, 520))
 schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
@@ -96,7 +99,10 @@ SCHIFFE += [(6, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in [((960,
 # Ruderboote an den Stegen (Art 7)
 SCHIFFE += [(7, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in
             [((692, 468), 2), ((709, 458), -4), ((640, 515), 92), ((645, 532), 86)]]
-SCHIFFE += [(7, round(UH_MUND[0] - s_, 2), -20.0, round(UH_MUND[1] + q_, 2), g_) for s_, q_, g_ in [(7.0, 1.2, 92), (13.5, -1.1, 88)]]
+# Im Untergrundhafen: Ruderboote an den Kais, zwei beladene Prahme (Art 9), ein Tretradkran auf dem Querkai
+SCHIFFE += [(7, *uh(s_, q_)[:1], -20.0, uh(s_, q_)[1], g_) for s_, q_, g_ in [(10.0, 4.6, 92), (16.5, -4.5, 88), (47.5, 4.4, 91)]]
+SCHIFFE += [(9, *uh(s_, q_)[:1], -20.0, uh(s_, q_)[1], g_) for s_, q_, g_ in [(26.0, -3.2, 90), (36.0, 3.2, 270)]]
+SCHIFFE += [(8, *uh(56.0, 0)[:1], KAI_KRONE, uh(56.0, 0)[1], -90)]
 # Tretradkräne (Art 8): auf dem Ostkai an der Hafenmauer und am Ende des Nordkais, der Ausleger über dem Wasser
 SCHIFFE += [(8, *(lambda p: (p[0], KAI_OBEN + 0.2, p[1]))(W(pp)), g) for pp, g in [((820, 482), 180), ((784, 438), -90)]]
 
@@ -124,7 +130,7 @@ size = Vector3(2.5, 0.4, {laenge_:.2f})''')
 # Hafenkram: Fässer und Kisten (Fotoscans) in Gruppen am Nordkai und am Ostkai
 random.seed(77)
 _kram = [W(pp) for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (815, 515)]]    # an der Mauer, abseits der Laufwege
-_kram += [(UH_MUND[0] - 9.0, UH_MUND[1] + 10.0), (UH_MUND[0] - 15.0, UH_MUND[1] - 10.0), (UH_MUND[0] - 21.5, UH_MUND[1] + 8.5)]   # in der Halle
+_kram += [uh(s_ + 3.0, q_ * (UH_BREITE / 2 + 1.6)) for s_ in range(6, 54, 12) for q_ in (-1, 1)]   # in den Lagernischen
 for gx_, gz_ in _kram:
     for _ in range(random.randint(3, 6)):
         art_ = random.choice([5, 5, 6, 7, 7])

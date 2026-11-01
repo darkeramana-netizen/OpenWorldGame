@@ -167,9 +167,10 @@ WAENDE = {"Material_hell": 1, "Material_mauer": 2, "Material_holz": 3}
 
 
 def steinbau(name, eltern, x, z, laenge, breite, hoehe, gier=0.0, mat="Material_mauer", dach="Material_dach_schiefer",
-             dachhoehe=None, boden=None, kollision=True, art=None):
+             dachhoehe=None, boden=None, kollision=True, art=None, begehbar=False):
     """Gebäude mit Satteldach (First entlang der Länge), gebaut von burgbau.gd mit Sockel, Gesimsen, Fenstern,
-    Tür und Schornstein. boden: Höhe des Erdgeschosses (sonst Gelände). art: 0 Wohnbau, 1 Kirche/Saal, 2 Lager.
+    Tür und Schornstein. boden: Höhe des Erdgeschosses (sonst Gelände). art: 0 Wohnbau, 1 Kirche/Saal, 2 Lager, 3 Palas.
+    begehbar: innen hohl mit offener Tür, Geschossdecken, Treppen, Licht und Einrichtung.
     Gibt die Traufhöhe zurück."""
     a = math.radians(gier)
     ecken = [(x + math.cos(a) * dx + math.sin(a) * dz, z - math.sin(a) * dx + math.cos(a) * dz)
@@ -179,7 +180,7 @@ def steinbau(name, eltern, x, z, laenge, breite, hoehe, gier=0.0, mat="Material_
     if art is None:
         art = 1 if hoehe >= 14 and laenge >= 30 else (2 if mat == "Material_holz" else 0)
     werte = [x, z, gier, breite, laenge, b0, tief, hoehe, dachhoehe if dachhoehe is not None else breite * 0.6,
-             WAENDE.get(mat, 2), 1 if dach == "Material_dach" else 0, art]
+             WAENDE.get(mat, 2), 1 if dach == "Material_dach" else 0, art + (10 if begehbar else 0)]
     N(name, "Node3D", eltern, f"""script = ExtResource("28_burgbau")
 gebaeude = PackedFloat32Array({_zahlen(werte)})""")
     return b0 + hoehe

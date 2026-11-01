@@ -50,9 +50,9 @@ extends Node3D
 	set(w):
 		fahnen = w
 		_neu_bauen()
-## Hafenhallen (Untergrundhafen): je 12 Werte x, z (Mitte der Mündung), Richtung in den Berg x, z, Länge, Breite,
-## Wasserbreite, Boden (Kaihöhe), Wandhöhe, Stich des Gewölbes, Breite und Boden des Wassertors davor. Eine Halle mit
-## Tonnengewölbe und Gurtbögen über einem Becken, Kais an beiden Seiten und hinten, ein Gang bis in das Wassertor.
+## Hafenhallen (Untergrundhafen): je 13 Werte x, z (Mitte der Mündung), Richtung in den Berg x, z, Länge, Breite,
+## Beckenbreite, Kanalbreite, Boden (Kaihöhe), Wandhöhe, Stich des Gewölbes, Breite und Boden des Wassertors davor.
+## Eine Halle mit Tonnengewölbe und Gurtbögen über einem Becken, Kais rundum, Lagernischen, ein Gang bis in das Tor.
 @export var hallen := PackedFloat32Array():
 	set(w):
 		hallen = w
@@ -121,9 +121,9 @@ func _baue() -> void:
 		_gebaeude(gebaeude.slice(i, i + 12))
 		i += 12
 	i = 0
-	while i + 11 < hallen.size():
-		_halle(hallen.slice(i, i + 12))
-		i += 12
+	while i + 12 < hallen.size():
+		_halle(hallen.slice(i, i + 13))
+		i += 13
 	_fahnen_bauen()
 	if _flach.is_empty() and _rund.is_empty():
 		return
@@ -132,6 +132,9 @@ func _baue() -> void:
 	var fest := ArrayMesh.new()   # nur Stein und Boden: Fallgitter und Schießscharten halten niemanden auf
 	for mat: String in _flach:
 		var st: SurfaceTool = _flach[mat]
+		if mat == "rampe":
+			st.commit(fest)   # unsichtbare Lauffläche über Treppenstufen, nur Kollision
+			continue
 		st.generate_normals()
 		if mat.ends_with("_uv"):
 			st.generate_tangents()   # für die Normalenkarte der Dächer
@@ -454,46 +457,88 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 
 
 ## Untergrundhafen: gewölbte Halle im Fels (lokal: s in den Berg, q quer, y Höhe). Der Fels darüber ist das Gelände;
-## die Halle schließt sich nach oben mit einer Platte, damit kein Sonnenlicht hineinfällt.
+## die Halle schließt sich nach oben mit einer Platte, damit kein Sonnenlicht hineinfällt. Werte: x, z, Richtung x, z,
+## Länge, Breite, Beckenbreite, Kanalbreite (im Gang), Boden, Wandhöhe, Stich, Torbreite, Torboden.
 func _halle(w: PackedFloat32Array) -> void:
 	var c := Vector2(w[0], w[1])
 	var u := Vector2(w[2], w[3]).normalized()
 	var n := Vector2(-u.y, u.x)
 	var L := w[4]
 	var hb := w[5] / 2.0
-	var hw := w[6] / 2.0
-	var boden := w[7]
-	var kaempfer := boden + w[8]
-	var stich := w[9]
-	var tw := w[10] / 2.0                       # halbe Torbreite
-	var tor_k := w[11] + KAEMPFER               # Kämpfer des Torbogens
+	var hw := w[6] / 2.0                        # halbes Becken in der Halle
+	var hk := w[7] / 2.0                        # halber Kanal im Gang
+	var boden := w[8]
+	var kaempfer := boden + w[9]
+	var stich := w[10]
+	var tw := w[11] / 2.0                       # halbe Torbreite
+	var tor_k := w[12] + KAEMPFER               # Kämpfer des Torbogens
 	var scheitel := kaempfer + stich
 	var grund := boden - 6.5                    # Beckengrund
 	var kante := 0.6                            # Kantensteine am Wasser
-	var be := L - 6.0                           # Ende des Beckens, dahinter der Querkai
+	var be := L - 8.0                           # Ende des Beckens, dahinter der Querkai
 	var mauer := 1.5
 	var gang := 3.2                             # Gang von der Halle durch die Ringmauer
+	var trichter := 5.0                         # bis hier ist das Wasser so schmal wie der Kanal, dann weitet es sich
+	var nische_t := 3.2                         # Tiefe der Lagernischen
+	var nische_h := 3.4
+	var joch := 6.0
 	var U := Vector3(u.x, 0, u.y)
 	var N := Vector3(n.x, 0, n.y)
 	var p := func(su: float, sq: float, y: float) -> Vector3:
 		var q := c + u * su + n * sq
 		return Vector3(q.x, y, q.y)
-	# Beckengrund (bis unter die Kanalmündung) und Kais mit Kantensteinen
+	var seitlich := func(sq: float, a: float, b: float) -> Vector2:   # q-Bereich a..b auf der Seite sq
+		return Vector2(minf(sq * a, sq * b), maxf(sq * a, sq * b))
+	# Beckengrund (bis unter die Kanalmündung)
 	_klotz("fels", c, u, n, -gang - 4.5, be, -hw, hw, grund - 0.5, grund)
 	for sq: float in [-1.0, 1.0]:
-		var q0 := hw + kante
-		_klotz("kai", c, u, n, -gang, L, minf(sq * q0, sq * hb), maxf(sq * q0, sq * hb), grund, boden)
-		_klotz("kai", c, u, n, -gang, be, minf(sq * hw, sq * q0), maxf(sq * hw, sq * q0), grund, boden - 0.35)
-		_klotz("hell", c, u, n, -gang, be, minf(sq * hw, sq * q0), maxf(sq * hw, sq * q0), boden - 0.35, boden)
+		# Kais: im Gang und bis zum Absatz schmal am Kanal, dahinter breit um das Becken
+		var g: Vector2 = seitlich.call(sq, hk + kante, hb)
+		_klotz("kai", c, u, n, -gang, trichter, g.x, g.y, grund, boden)
+		g = seitlich.call(sq, hk, hk + kante)
+		_klotz("kai", c, u, n, -gang, trichter + kante, g.x, g.y, grund, boden - 0.35)
+		_klotz("hell", c, u, n, -gang, trichter + kante, g.x, g.y, boden - 0.35, boden)
+		g = seitlich.call(sq, hk + kante, hw + kante)
+		_klotz("kai", c, u, n, trichter, trichter + kante, g.x, g.y, grund, boden - 0.35)
+		_klotz("hell", c, u, n, trichter, trichter + kante, g.x, g.y, boden - 0.35, boden)
+		g = seitlich.call(sq, hw + kante, hb)
+		_klotz("kai", c, u, n, trichter, L, g.x, g.y, grund, boden)
+		g = seitlich.call(sq, hw, hw + kante)
+		_klotz("kai", c, u, n, trichter + kante, be, g.x, g.y, grund, boden - 0.35)
+		_klotz("hell", c, u, n, trichter + kante, be, g.x, g.y, boden - 0.35, boden)
 	_klotz("kai", c, u, n, be + kante, L, -hw - kante, hw + kante, grund, boden)
 	_klotz("kai", c, u, n, be, be + kante, -hw, hw, grund, boden - 0.35)
 	_klotz("hell", c, u, n, be, be + kante, -hw, hw, boden - 0.35, boden)
-	# Seitenwände, Rückwand, Stirnwand neben und über dem Gang
+	# Seitenwände mit Lagernischen zwischen den Wandpfeilern, Rückwand, Stirnwand neben und über dem Gang
 	for sq: float in [-1.0, 1.0]:
-		_klotz("bruchstein", c, u, n, -mauer, L + mauer, minf(sq * hb, sq * (hb + mauer)), maxf(sq * hb, sq * (hb + mauer)), grund, scheitel + 1.2)
-		_klotz("bruchstein", c, u, n, -mauer, 0.0, minf(sq * tw, sq * hb), maxf(sq * tw, sq * hb), boden, scheitel + 1.2)
+		var wand: Vector2 = seitlich.call(sq, hb, hb + mauer)
+		_klotz("bruchstein", c, u, n, -mauer, L + mauer, wand.x, wand.y, boden + nische_h, scheitel + 1.2)
+		_klotz("bruchstein", c, u, n, -mauer, L + mauer, wand.x, wand.y, grund, boden)
+		var s_ := 0.0
+		var ende := 0.0
+		while s_ < L:
+			var a := s_ + 1.0
+			var b := minf(s_ + joch - 1.0, L)
+			_klotz("bruchstein", c, u, n, ende - (mauer if ende == 0.0 else 0.0), a, wand.x, wand.y, boden, boden + nische_h)
+			if b - a > 2.0 and s_ + joch <= L:
+				var tief: Vector2 = seitlich.call(sq, hb, hb + nische_t)
+				var rueck: Vector2 = seitlich.call(sq, hb + nische_t, hb + nische_t + mauer)
+				_klotz("kai", c, u, n, a, b, tief.x, tief.y, grund, boden)
+				_klotz("bruchstein", c, u, n, a - 0.4, b + 0.4, rueck.x, rueck.y, boden, boden + nische_h + 0.6)
+				_klotz("bruchstein", c, u, n, a - 0.4, a, tief.x, tief.y, boden, boden + nische_h + 0.6)
+				_klotz("bruchstein", c, u, n, b, b + 0.4, tief.x, tief.y, boden, boden + nische_h + 0.6)
+				_klotz("bruchstein", c, u, n, a, b, tief.x, tief.y, boden + nische_h, boden + nische_h + 0.6, true)
+				# Sturz über der Nische in hellem Stein
+				_klotz("hell", c, u, n, a - 0.15, b + 0.15, seitlich.call(sq, hb - 0.08, hb + 0.3).x, seitlich.call(sq, hb - 0.08, hb + 0.3).y,
+					boden + nische_h - 0.05, boden + nische_h + 0.45, true)
+				ende = b
+			else:
+				ende = a
+			s_ += joch
+		_klotz("bruchstein", c, u, n, ende, L + mauer, wand.x, wand.y, boden, boden + nische_h)
+		_klotz("bruchstein", c, u, n, -mauer, 0.0, seitlich.call(sq, tw, hb).x, seitlich.call(sq, tw, hb).y, boden, scheitel + 1.2)
 		# Gangwände unter dem Bogen
-		_klotz("bruchstein", c, u, n, -gang, 0.0, minf(sq * tw, sq * (tw + 1.0)), maxf(sq * tw, sq * (tw + 1.0)), boden, tor_k)
+		_klotz("bruchstein", c, u, n, -gang, 0.0, seitlich.call(sq, tw, tw + 1.0).x, seitlich.call(sq, tw, tw + 1.0).y, boden, tor_k)
 	_klotz("bruchstein", c, u, n, L, L + mauer, -hb - mauer, hb + mauer, grund, scheitel + 1.2)
 	# Gangbogen (wie der Torbogen davor) und die Stirnwand darüber
 	var teile := 12
@@ -507,8 +552,8 @@ func _halle(w: PackedFloat32Array) -> void:
 		_viereck("bruchstein", p.call(0.0, x0, y0), p.call(0.0, x1, y1), p.call(0.0, x1, scheitel + 1.2), p.call(0.0, x0, scheitel + 1.2), U)
 		var zur_mitte := N * -(x0 + x1) / 2.0 + Vector3.UP * (tor_k - (y0 + y1) / 2.0)
 		_viereck("bruchstein", p.call(-gang, x0, y0), p.call(0.0, x0, y0), p.call(0.0, x1, y1), p.call(-gang, x1, y1), zur_mitte)
-	# Tonnengewölbe (Korbbogen mit Stich) über die ganze Breite, darüber eine Deckplatte
-	var gw := 16
+	# Tonnengewölbe über die ganze Breite, darüber eine Deckplatte
+	var gw := 20
 	var bogen := func(t: float) -> Vector2:   # t 0..1 über die Breite: (q, y)
 		var a := PI * t
 		return Vector2(-hb * cos(a), kaempfer + stich * sin(a))
@@ -518,8 +563,9 @@ func _halle(w: PackedFloat32Array) -> void:
 		var innen := N * -(a.x + b.x) / 2.0 + Vector3.UP * (kaempfer - (a.y + b.y) / 2.0) * hb / maxf(stich, 0.1)
 		_viereck("bruchstein", p.call(0.0, a.x, a.y), p.call(L, a.x, a.y), p.call(L, b.x, b.y), p.call(0.0, b.x, b.y), innen)
 	_klotz("bruchstein", c, u, n, -mauer, L + mauer, -hb - mauer, hb + mauer, scheitel + 1.2, scheitel + 2.0, true)
-	# Gurtbögen auf Wandpfeilern, dazwischen die Kämpfergesimse
-	var s_ := 3.0
+	# Gurtbögen auf Wandpfeilern mit Kämpfergesims, Laternen an jedem zweiten Pfeiler, Poller an der Kaikante
+	var s_ := joch
+	var nr := 0
 	while s_ < L - 1.0:
 		for k in gw:
 			var a: Vector2 = bogen.call(float(k) / gw)
@@ -527,34 +573,34 @@ func _halle(w: PackedFloat32Array) -> void:
 			var ra := Vector2(a.x * 0.97, kaempfer + (a.y - kaempfer) * 0.93)
 			var rb := Vector2(b.x * 0.97, kaempfer + (b.y - kaempfer) * 0.93)
 			var innen := N * -(ra.x + rb.x) / 2.0 + Vector3.UP * (kaempfer - (ra.y + rb.y) / 2.0)
-			_viereck("mauer", p.call(s_ - 0.45, ra.x, ra.y), p.call(s_ + 0.45, ra.x, ra.y), p.call(s_ + 0.45, rb.x, rb.y), p.call(s_ - 0.45, rb.x, rb.y), innen)
+			_viereck("mauer", p.call(s_ - 0.5, ra.x, ra.y), p.call(s_ + 0.5, ra.x, ra.y), p.call(s_ + 0.5, rb.x, rb.y), p.call(s_ - 0.5, rb.x, rb.y), innen)
 			for seite: float in [-1.0, 1.0]:
-				_viereck("mauer", p.call(s_ + 0.45 * seite, a.x, a.y), p.call(s_ + 0.45 * seite, b.x, b.y), p.call(s_ + 0.45 * seite, rb.x, rb.y),
-					p.call(s_ + 0.45 * seite, ra.x, ra.y), U * seite)
+				_viereck("mauer", p.call(s_ + 0.5 * seite, a.x, a.y), p.call(s_ + 0.5 * seite, b.x, b.y), p.call(s_ + 0.5 * seite, rb.x, rb.y),
+					p.call(s_ + 0.5 * seite, ra.x, ra.y), U * seite)
 		for sq: float in [-1.0, 1.0]:
-			var q1 := sq * hb
-			var q0 := sq * (hb - 0.55)
-			_klotz("mauer", c, u, n, s_ - 0.45, s_ + 0.45, minf(q0, q1), maxf(q0, q1), boden, kaempfer)
-			_klotz("hell", c, u, n, s_ - 0.6, s_ + 0.6, minf(sq * (hb - 0.7), q1), maxf(sq * (hb - 0.7), q1), kaempfer - 0.3, kaempfer, true)
-			# Wandlaterne zwischen den Pfeilern
-			if s_ + 3.0 < L - 1.0:
-				var lm := c + u * (s_ + 3.0) + n * sq * (hb - 0.05)
+			var pf: Vector2 = seitlich.call(sq, hb - 0.6, hb)
+			_klotz("mauer", c, u, n, s_ - 0.5, s_ + 0.5, pf.x, pf.y, boden, kaempfer)
+			_klotz("mauer", c, u, n, s_ - 0.65, s_ + 0.65, seitlich.call(sq, hb - 0.75, hb).x, seitlich.call(sq, hb - 0.75, hb).y, boden, boden + 0.5)
+			var ks: Vector2 = seitlich.call(sq, hb - 0.8, hb)
+			_klotz("hell", c, u, n, s_ - 0.65, s_ + 0.65, ks.x, ks.y, kaempfer - 0.3, kaempfer, true)
+			if nr % 2 == 0:
+				var lm := c + u * s_ + n * sq * (hb - 0.6)
 				var ni := -n * sq
 				var y := boden + 2.6
 				_klotz("metall", lm, u, ni, -0.04, 0.04, 0.0, 0.45, y + 0.55, y + 0.62)
 				_klotz("metall", lm + ni * 0.45, u, ni, -0.18, 0.18, -0.18, 0.18, y + 0.5, y + 0.56)
 				_klotz("glut", lm + ni * 0.45, u, ni, -0.13, 0.13, -0.13, 0.13, y, y + 0.5)
 				_klotz("metall", lm + ni * 0.45, u, ni, -0.17, 0.17, -0.17, 0.17, y - 0.06, y)
-		# Poller an der Kaikante
-		for sq: float in [-1.0, 1.0]:
-			if s_ < be:
+			if s_ < be and s_ > trichter:
 				var pm := c + u * s_ + n * sq * (hw + kante + 0.45)
 				_klotz("holz", pm, u, n, -0.17, 0.17, -0.17, 0.17, boden, boden + 0.7)
 				_klotz("metall", pm, u, n, -0.21, 0.21, -0.21, 0.21, boden + 0.7, boden + 0.78)
-		s_ += 6.0
+		s_ += joch
+		nr += 1
 	# Kämpfergesims durchgehend an den Längswänden
 	for sq: float in [-1.0, 1.0]:
-		_klotz("hell", c, u, n, 0.0, L, minf(sq * (hb - 0.25), sq * hb), maxf(sq * (hb - 0.25), sq * hb), kaempfer - 0.25, kaempfer, true)
+		var kg: Vector2 = seitlich.call(sq, hb - 0.25, hb)
+		_klotz("hell", c, u, n, 0.0, L, kg.x, kg.y, kaempfer - 0.25, kaempfer, true)
 	# Tür in der Rückwand: der Weg hinauf in die Burg (noch verschlossen)
 	_klotz("dunkel", c, u, n, L - 0.05, L, -1.3, 1.3, boden, boden + 3.2)
 	_klotz("holz", c, u, n, L - 0.16, L - 0.05, -1.1, 1.1, boden, boden + 3.0)
@@ -563,6 +609,162 @@ func _halle(w: PackedFloat32Array) -> void:
 	_klotz("hell", c, u, n, L - 0.25, L, -1.6, -1.3, boden, boden + 3.5)
 	_klotz("hell", c, u, n, L - 0.25, L, 1.3, 1.6, boden, boden + 3.5)
 	_klotz("hell", c, u, n, L - 0.25, L, -1.6, 1.6, boden + 3.2, boden + 3.6)
+
+
+## Begehbares Gebäude: Mauern als Schale mit offener Tür, Geschossdecken auf Balken, Treppen (abwechselnd an den
+## Längswänden, mit einer unsichtbaren Rampe als Lauffläche), Licht und Einrichtung je nach Art.
+func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden: float, unten: float, traufe: float,
+		geschosse: int, gh: float, wand: String, art: int) -> void:
+	var t := 0.6                                  # Mauerstärke
+	var fb := boden + 0.15                        # Fußboden im Erdgeschoss
+	var tb := 2.4 if art == 1 else 1.6            # Türbreite
+	var th := 4.0 if art == 1 else 2.7
+	var iL := L - t
+	var iB := B - t
+	# Mauern: Längsseite -B, Giebel; die Türseite (+B, bei der Kirche der Giebel +L) mit Öffnung
+	if art == 1:
+		_klotz(wand, c, uz, nx, -L, L, -B, -iB, unten, traufe)
+		_klotz(wand, c, uz, nx, -L, L, iB, B, unten, traufe)
+		_klotz(wand, c, uz, nx, -L, -iL, -iB, iB, unten, traufe)
+		_klotz(wand, c, uz, nx, iL, L, -iB, -tb / 2.0, unten, traufe)
+		_klotz(wand, c, uz, nx, iL, L, tb / 2.0, iB, unten, traufe)
+		_klotz(wand, c, uz, nx, iL, L, -tb / 2.0, tb / 2.0, fb + th, traufe)
+	else:
+		_klotz(wand, c, uz, nx, -L, L, -B, -iB, unten, traufe)
+		_klotz(wand, c, uz, nx, -L, -iL, -iB, iB, unten, traufe)
+		_klotz(wand, c, uz, nx, iL, L, -iB, iB, unten, traufe)
+		_klotz(wand, c, uz, nx, -L, -tb / 2.0, iB, B, unten, traufe)
+		_klotz(wand, c, uz, nx, tb / 2.0, L, iB, B, unten, traufe)
+		_klotz(wand, c, uz, nx, -tb / 2.0, tb / 2.0, iB, B, fb + th, traufe)
+	# Sockel außen nur bis Fußbodenhöhe (sonst stolpert man an der Tür), innen der Fußboden
+	_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, fb)
+	_klotz("boden", c, uz, nx, -iL, iL, -iB, iB, fb, fb + 0.03)
+	# Decke unter dem Dach
+	_klotz("holz", c, uz, nx, -iL, iL, -iB, iB, traufe - 0.3, traufe - 0.05, true)
+	var licht_hoehen: Array[float] = []
+	var stockwerke := 1 if art == 1 else geschosse
+	var lauf := gh * 1.75                       # Treppenlauf: etwa 30 Grad
+	var stufen := maxi(4, int(round(gh / 0.22)))
+	var tritt := lauf / stufen
+	var s0 := -iL + 0.3 + tritt                 # Fuß der Rampe bei s0 - tritt
+	var s1 := s0 + lauf - tritt                 # oberste Stufe endet bei s1 + tritt
+	var tb_ := 1.15                             # Treppenbreite
+	for k in range(1, stockwerke):
+		var y := fb + k * gh                    # Oberkante der Decke k
+		var y0 := y - gh                        # Boden darunter
+		var seite := -1.0 if k % 2 == 1 else 1.0
+		var q0 := -iB if seite < 0 else iB - tb_
+		var q1 := q0 + tb_
+		var ls := s0 - tritt                    # Loch in der Decke über der Treppe
+		var le := s1 + tritt
+		# Decke in Teilen um das Loch
+		if seite < 0:
+			_klotz("holz", c, uz, nx, -iL, iL, q1, iB, y - 0.25, y, true)
+		else:
+			_klotz("holz", c, uz, nx, -iL, iL, -iB, q0, y - 0.25, y, true)
+		_klotz("holz", c, uz, nx, -iL, ls, q0, q1, y - 0.25, y, true)
+		_klotz("holz", c, uz, nx, le, iL, q0, q1, y - 0.25, y, true)
+		# Balken unter der Decke
+		var bs := -iL + 0.8
+		while bs < iL - 0.3:
+			if bs > ls - 0.2 and bs < le + 0.2:
+				if seite < 0:
+					_klotz("holz", c, uz, nx, bs - 0.12, bs + 0.12, q1, iB, y - 0.5, y - 0.25, true)
+				else:
+					_klotz("holz", c, uz, nx, bs - 0.12, bs + 0.12, -iB, q0, y - 0.5, y - 0.25, true)
+			else:
+				_klotz("holz", c, uz, nx, bs - 0.12, bs + 0.12, -iB, iB, y - 0.5, y - 0.25, true)
+			bs += 1.6
+		# Stufen und darüber die Rampe (unsichtbar, nur Kollision)
+		for i in stufen:
+			var vorne := s0 - tritt + i * tritt + tritt
+			var hoch := y0 + gh * float(i + 1) / stufen
+			_klotz("holz", c, uz, nx, vorne - tritt, vorne, q0, q1, hoch - 0.12, hoch, true)
+			_klotz("hell" if i % 2 == 0 else "holz", c, uz, nx, vorne - tritt - 0.02, vorne - tritt + 0.03, q0, q1, hoch - 0.2, hoch - 0.12)
+		var r := func(s: float, q: float, yy: float) -> Vector3:
+			var w := c + uz * s + nx * q
+			return Vector3(w.x, yy, w.y)
+		_viereck("rampe", r.call(s0 - tritt, q0, y0), r.call(s1, q0, y), r.call(s1, q1, y), r.call(s0 - tritt, q1, y0), Vector3.UP)
+		# Geländer am offenen Rand des Lochs und an der Treppe
+		var qg := q1 if seite < 0 else q0
+		var qa := qg - 0.05 if seite < 0 else qg
+		_klotz("holz", c, uz, nx, ls, le, qa, qa + 0.05 if seite < 0 else qa + 0.05, y + 0.9, y + 1.0)
+		var ps := ls
+		while ps <= le + 0.01:
+			_klotz("holz", c, uz, nx, ps - 0.05, ps + 0.05, qa, qa + 0.05, y, y + 0.95)
+			ps += 1.2
+		licht_hoehen.append(y0)
+	licht_hoehen.append(fb + (stockwerke - 1) * gh)
+	# Einrichtung
+	var mitte := c
+	for k in stockwerke:
+		var y := fb + k * gh
+		if art == 1:
+			# Kapelle: Altar am Giebel -L, Bankreihen, Kerzen
+			_klotz("hell", c, uz, nx, -iL + 0.4, -iL + 1.4, -1.4, 1.4, y, y + 1.0)
+			_klotz("hell", c, uz, nx, -iL + 0.3, -iL + 1.5, -1.5, 1.5, y + 1.0, y + 1.12)
+			for kk: float in [-1.0, 1.0]:
+				_klotz("metall", c + uz * (-iL + 0.9) + nx * kk * 1.1, uz, nx, -0.05, 0.05, -0.05, 0.05, y + 1.12, y + 1.5)
+				_klotz("glut", c + uz * (-iL + 0.9) + nx * kk * 1.1, uz, nx, -0.04, 0.04, -0.04, 0.04, y + 1.5, y + 1.62)
+			var bs := -iL + 4.0
+			while bs < iL - 3.0:
+				for qq: float in [-1.0, 1.0]:
+					var qa := 1.2 if qq > 0 else -iB + 0.8
+					var qe := iB - 0.8 if qq > 0 else -1.2
+					_klotz("holz", c, uz, nx, bs - 0.2, bs + 0.2, qa, qe, y + 0.42, y + 0.48)
+					_klotz("holz", c, uz, nx, bs + 0.25, bs + 0.32, qa, qe, y + 0.48, y + 0.95)
+					_klotz("holz", c, uz, nx, bs - 0.15, bs + 0.15, qa, qa + 0.1, y, y + 0.42)
+					_klotz("holz", c, uz, nx, bs - 0.15, bs + 0.15, qe - 0.1, qe, y, y + 0.42)
+				bs += 1.6
+		elif art == 2:
+			# Lager: Kistenstapel und Säcke an den Wänden, frei bleiben Tür und Treppen
+			var ks := -iL + lauf + 1.5
+			var i := 0
+			while ks < iL - 1.0:
+				if absf(ks) > 2.0:
+					for qq: float in [-1.0, 1.0]:
+						var qk := qq * (iB - 0.6)
+						var hoch := 0.8 * (1 + (i + int(qq > 0)) % 3)
+						_klotz("holz", c + uz * ks + nx * qk, uz, nx, -0.5, 0.5, -0.5, 0.5, y, y + hoch)
+						_klotz("metall", c + uz * ks + nx * qk, uz, nx, -0.52, 0.52, -0.52, 0.52, y + hoch - 0.08, y + hoch - 0.02)
+				ks += 1.6
+				i += 1
+		else:
+			# Wohnbau, Palas, Küche, Zeughaus: in jedem Geschoss ein Tisch mit Bänken, im Erdgeschoss ein Kamin am Giebel +L,
+			# in den oberen Geschossen Betten am Giebel +L
+			var ts := iL * 0.15
+			var lang := minf(iL * 0.9, 6.0) if art == 3 else minf(iL * 0.5, 2.4)
+			_klotz("holz", c + uz * ts, uz, nx, -lang / 2.0, lang / 2.0, -0.5, 0.5, y + 0.72, y + 0.8)
+			for e: float in [-1.0, 1.0]:
+				_klotz("holz", c + uz * (ts + e * (lang / 2.0 - 0.3)), uz, nx, -0.08, 0.08, -0.4, 0.4, y, y + 0.72)
+				_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, -lang / 2.0, lang / 2.0, -0.18, 0.18, y + 0.42, y + 0.48)
+				_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, -lang / 2.0 + 0.2, -lang / 2.0 + 0.3, -0.15, 0.15, y, y + 0.42)
+				_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, lang / 2.0 - 0.3, lang / 2.0 - 0.2, -0.15, 0.15, y, y + 0.42)
+			_klotz("glut", c + uz * ts, uz, nx, -0.06, 0.06, -0.06, 0.06, y + 0.8, y + 0.98)
+			if k == 0:
+				var km := c + uz * (iL - 0.45)
+				_klotz("bruchstein", km, uz, nx, -0.45, 0.45, -1.3, -0.9, y, y + 1.4)
+				_klotz("bruchstein", km, uz, nx, -0.45, 0.45, 0.9, 1.3, y, y + 1.4)
+				_klotz("bruchstein", km, uz, nx, -0.55, 0.45, -1.4, 1.4, y + 1.4, y + 1.7, true)
+				_klotz("bruchstein", km, uz, nx, -0.3, 0.45, -1.0, 1.0, y + 1.7, traufe - 0.3 if stockwerke == 1 else y + gh - 0.25)
+				_klotz("glut", km, uz, nx, -0.25, 0.25, -0.6, 0.6, y, y + 0.35)
+				_klotz("holz", km, uz, nx, -0.2, 0.15, -0.5, 0.5, y + 0.05, y + 0.25)
+			else:
+				for e: float in [-1.0, 1.0]:
+					var bm := c + uz * (iL - 1.2) + nx * e * minf(iB - 1.2, 2.2)
+					_klotz("holz", bm, uz, nx, -1.0, 1.0, -0.5, 0.5, y, y + 0.45)
+					_klotz("stoff", bm, uz, nx, -0.95, 0.75, -0.48, 0.48, y + 0.45, y + 0.6)
+					_klotz("hell", bm, uz, nx, 0.75, 0.98, -0.4, 0.4, y + 0.45, y + 0.62)
+					_klotz("holz", bm, uz, nx, 0.95, 1.05, -0.5, 0.5, y, y + 1.0)
+	# Licht je Geschoss (warm, ohne Schatten)
+	for k in stockwerke:
+		var y := fb + k * gh
+		var l := OmniLight3D.new()
+		l.light_color = Color(1.0, 0.8, 0.55)
+		l.light_energy = 1.4
+		l.omni_range = clampf(maxf(L, B) * 1.3, 6.0, 22.0)
+		l.position = Vector3(c.x + uz.x * iL * 0.15, minf(y + gh * 0.75, traufe - 0.6), c.y + uz.y * iL * 0.15)
+		add_child(l)
 
 
 ## Torbogen: Mauerblock über der Durchfahrt mit rundem Bogen und halb hochgezogenem Fallgitter.
@@ -786,13 +988,16 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 	var dh := w[8]
 	var wand: String = [stein, "hell", "mauer", "holz"][clampi(int(w[9]), 0, 3)]
 	var dach := "dach" if int(w[10]) == 0 else "ziegel"
-	var art := int(w[11])
-	# Körper und Sockel
-	_klotz(wand, c, uz, nx, -L, L, -B, B, unten, traufe)
-	_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, boden + 0.7)
-	# Geschosse
+	var art := int(w[11]) % 10
+	var begehbar := int(w[11]) >= 10      # Art + 10: innen hohl, mit offener Tür, Geschossen und Treppen
 	var geschosse := 1 if art == 1 else maxi(1, int(w[7] / (4.6 if art == 3 else 3.6)))
 	var gh := w[7] / geschosse
+	# Körper und Sockel
+	if begehbar:
+		_innenraum(c, uz, nx, B, L, boden, unten, traufe, geschosse, gh, wand, art)
+	else:
+		_klotz(wand, c, uz, nx, -L, L, -B, B, unten, traufe)
+		_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, boden + 0.7)
 	for k in range(1, geschosse):
 		var y := boden + k * gh
 		_klotz(wand, c, uz, nx, -L - 0.12, L + 0.12, -B - 0.12, B + 0.12, y - 0.15, y + 0.1, true)
@@ -822,10 +1027,11 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 					continue
 				_fenster(c, nx, -uz, pos, -L * seite, -seite, ym, fb, fh, art == 1)
 	# Tür: bei Kirchen in der Giebelseite, sonst mitten in der Längsseite
+	var fb_ := boden + 0.15 if begehbar else boden
 	if art == 1:
-		_tuer(c, nx, uz, 0.0, L, 1.0, boden, 2.4, 4.2)   # Portal in der Giebelseite gegenüber dem Turm
+		_tuer(c, nx, uz, 0.0, L, 1.0, fb_, 2.4, 4.0, begehbar)   # Portal in der Giebelseite gegenüber dem Turm
 	else:
-		_tuer(c, uz, nx, 0.0, B, 1.0, boden, 1.5, 2.5)
+		_tuer(c, uz, nx, 0.0, B, 1.0, fb_, 1.6, 2.7, begehbar)
 	# Dach
 	var ue := 0.55
 	var gu := 0.45
@@ -938,11 +1144,16 @@ func _fenster(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, se
 				_klotz("holz", m, u, nn, minf(a0, a1) + 0.04, maxf(a0, a1) - 0.04, 0.11, 0.14, ym + fh * q - 0.05, ym + fh * q + 0.05)
 
 
-func _tuer(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, boden: float, tb: float, th: float) -> void:
+func _tuer(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, boden: float, tb: float, th: float,
+		offen := false) -> void:
 	var nn := n * signf(seite)
 	var m := c + u * pos + n * abstand
 	var b := tb / 2.0
-	_klotz("holz", m, u, nn, -b, b, -0.06, 0.04, boden, boden + th)
+	if offen:
+		# Türflügel nach innen aufgeschlagen, an der Laibung
+		_klotz("holz", m + u * (b + 0.05), u, nn, -0.06, 0.04, -0.6 - tb * 0.9, -0.6, boden, boden + th - 0.05)
+	else:
+		_klotz("holz", m, u, nn, -b, b, -0.06, 0.04, boden, boden + th)
 	_klotz("hell", m, u, nn, -b - 0.3, -b, -0.02, 0.15, boden, boden + th + 0.3)
 	_klotz("hell", m, u, nn, b, b + 0.3, -0.02, 0.15, boden, boden + th + 0.3)
 	_klotz("hell", m, u, nn, -b - 0.3, b + 0.3, -0.02, 0.18, boden + th, boden + th + 0.45, true)

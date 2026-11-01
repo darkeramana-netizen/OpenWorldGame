@@ -48,13 +48,14 @@ def tore_an(punkte, *tore):
     return erg
 
 
-def gebaeude(name, eltern, bau, hoehe, boden, mat="Material_mauer", dach="Material_dach_schiefer", dachhoehe=None, art=None):
+def gebaeude(name, eltern, bau, hoehe, boden, mat="Material_mauer", dach="Material_dach_schiefer", dachhoehe=None, art=None,
+             begehbar=True):
     """Bau aus dem Plan: ((Mitte), Länge entlang Plan-x, Breite, Drehung)."""
     (pp, laenge, breite, dreh) = bau
     x, z = W(pp)
     # Länge entlang Plan-x = Welt -z; steinbau legt die Länge entlang lokal z, Gier 0 → Welt z
     return steinbau(name, eltern, x, z, laenge * M, breite * M, hoehe, gier=-dreh, mat=mat, dach=dach,
-                    dachhoehe=dachhoehe, boden=boden, art=art)
+                    dachhoehe=dachhoehe, boden=boden, art=art, begehbar=begehbar)
 
 
 MITTE_BURG = W(PD.MITTE)

@@ -15,9 +15,10 @@ extends Node3D
 
 ## Ausdehnung der Kollisionsbox je Art (halbe Breite, Höhe, halbe Tiefe)
 const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0.6, 0.6, 0.45), Vector3(1.6, 2.6, 1.1),
-	Vector3(0.8, 1.0, 1.5), Vector3(2.6, 3.4, 9.0), Vector3(2.6, 3.4, 9.0), Vector3(0.9, 1.4, 2.6), Vector3(1.6, 9.0, 1.6)]
+	Vector3(0.8, 1.0, 1.5), Vector3(2.6, 3.4, 9.0), Vector3(2.6, 3.4, 9.0), Vector3(0.9, 1.4, 2.6), Vector3(1.6, 9.0, 1.6),
+	Vector3(2.1, 2.2, 6.2)]
 ## Wasserfahrzeuge: die Kollisionsbox reicht unter die Wasserlinie
-const TIEFGANG := {5: 1.6, 6: 1.6, 7: 0.5}
+const TIEFGANG := {5: 1.6, 6: 1.6, 7: 0.5, 9: 0.8}
 ## Farben der Markisen
 const STOFFE := [Color(0.62, 0.16, 0.12), Color(0.85, 0.78, 0.58), Color(0.2, 0.32, 0.52), Color(0.28, 0.42, 0.22)]
 
@@ -186,6 +187,8 @@ func _mesh(art: int) -> ArrayMesh:
 			_ruderboot()
 		8:
 			_tretradkran()
+		9:
+			_prahm()
 	var mesh := ArrayMesh.new()
 	for mat: String in _f:
 		var st: SurfaceTool = _f[mat]
@@ -245,6 +248,23 @@ func _ruderboot() -> void:
 		_klotz("holz", Vector3(-0.68, 0.3, z - 0.12), Vector3(0.68, 0.36, z + 0.12))
 	for s: float in [-1.0, 1.0]:
 		_seil("holz_dunkel", Vector3(s * 0.3, 0.45, 0.1), Vector3(s * 2.1, -0.05, 0.6), 0.035)
+
+
+## Prahm: flacher Lastkahn ohne Mast (passt unter das Gewölbe des Untergrundhafens), beladen mit Kisten, Fässern
+## und Säcken, dazu ein Staken.
+func _prahm() -> void:
+	_rumpf(12.0, 2.1, 10, 0.8, 1.0, false)
+	_klotz("holz", Vector3(-1.9, 0.55, -5.0), Vector3(1.9, 0.65, 5.0))
+	for z: float in [-3.6, -2.4, 2.6]:
+		_klotz("holz", Vector3(-0.9, 0.65, z - 0.4), Vector3(-0.1, 1.35, z + 0.4))
+		_klotz("holz_dunkel", Vector3(-0.92, 1.1, z - 0.42), Vector3(-0.08, 1.18, z + 0.42))
+	_klotz("holz", Vector3(0.2, 1.35, -3.4), Vector3(0.9, 1.95, -2.7))
+	for z: float in [-0.6, 0.4, 1.4]:
+		_zylinder("holz", Vector3(0.7, 0.65, z), 0.3, 0.36, 0.9, 12)
+		_zylinder("metall", Vector3(0.7, 0.8, z), 0.345, 0.37, 0.07, 12)
+	for k in 3:
+		_klotz("sack", Vector3(-1.2 + k * 0.45, 0.65, 3.9), Vector3(-0.8 + k * 0.45, 1.1, 4.5), 0.2 * (k - 1))
+	_seil("holz_dunkel", Vector3(1.6, 0.7, -4.6), Vector3(1.75, 4.2, 4.2), 0.05)
 
 
 ## Tretradkran wie an Hansehäfen: Holzbock, Pfosten mit schrägem Ausleger, großes Laufrad, Seil mit Haken.

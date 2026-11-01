@@ -140,14 +140,55 @@ func _initialize() -> void:
 	await gehe_ueber([Vector2(108, 17.5), Vector2(100, 17.5), Vector2(100, -0.5)], 20.0)
 	# Über die Krone der Kanalmauer durch das Wassertor in den Untergrundhafen, um das Becken herum und auf der anderen
 	# Seite wieder hinaus auf den Ostkai zu den beiden Kränen
-	var uh := await gehe_ueber([Vector2(97, -5.5), Vector2(89, -5.5), Vector2(84, -4.2), Vector2(66, -4.2), Vector2(66, -15),
-			Vector2(84, -15), Vector2(89, -13.5), Vector2(97, -13.5)], 30.0)
+	var uh := await gehe_ueber([Vector2(97, -5.5), Vector2(89, -5.5), Vector2(85.5, -1), Vector2(34.5, -1), Vector2(34.5, -18),
+			Vector2(85.5, -18), Vector2(89, -13.5), Vector2(97, -13.5)], 30.0)
 	pruefe(uh and absf(spieler().global_position.y + 17.4) < 0.5 and orte.has("Untergrundhafen"),
 			"Durch den Untergrundhafen auf die andere Seite des Kanals (y=%.1f)" % spieler().global_position.y)
 	var kraene := await gehe_ueber([Vector2(101, -20), Vector2(103, -21.5), Vector2(110, -33), Vector2(116, -41), Vector2(122, -43)], 30.0)
 	pruefe(kraene and absf(spieler().global_position.y + 17.4) < 0.5, "Über den Ostkai zu den Kränen (y=%.1f)" % spieler().global_position.y)
-	await gehe_ueber([Vector2(116, -41), Vector2(110, -33), Vector2(101, -20), Vector2(97, -13.5), Vector2(89, -13.5), Vector2(84, -15),
-			Vector2(66, -15), Vector2(66, -4.2), Vector2(84, -4.2), Vector2(89, -5.5), Vector2(97, -5.5), Vector2(100, -0.5)], 30.0)
+	await gehe_ueber([Vector2(116, -41), Vector2(110, -33), Vector2(101, -20), Vector2(97, -13.5), Vector2(89, -13.5), Vector2(85.5, -18),
+			Vector2(34.5, -18), Vector2(34.5, -1), Vector2(85.5, -1), Vector2(89, -5.5), Vector2(97, -5.5), Vector2(100, -0.5)], 30.0)
+	# Begehbare Gebäude (burgbau.gd, Art ab 10): von draußen durch die Tür hinein, bei mehreren Geschossen die erste
+	# Treppe hinauf. Die Lage steht in den Werten des Baus.
+	var gebaeude_ok := 0
+	var gebaeude_alle := 0
+	for bau: Node in current_scene.find_children("*", "Node3D", true, false):
+		if not "gebaeude" in bau or not "hallen" in bau:
+			continue
+		var w: PackedFloat32Array = bau.gebaeude
+		if w.size() < 12 or int(w[11]) < 10:
+			continue
+		gebaeude_alle += 1
+		var art := int(w[11]) % 10
+		var gr := deg_to_rad(w[2])
+		var nx := Vector2(cos(gr), -sin(gr))
+		var uz := Vector2(sin(gr), cos(gr))
+		var c := Vector2(w[0], w[1])
+		var B := w[3] / 2.0
+		var L := w[4] / 2.0
+		var fb := w[5] + 0.15
+		var aus := uz if art == 1 else nx
+		var tief := L if art == 1 else B
+		var draussen := c + aus * (tief + 2.5)
+		await setze(Vector3(draussen.x, maxf(g.hoehe_bei(draussen.x, draussen.y), fb) + 0.4, draussen.y))
+		var drin := c + aus * (tief - 1.8)
+		var ok := await gehe_ueber([c + aus * (tief + 0.5), drin], 15.0) and absf(spieler().global_position.y - fb) < 0.4
+		var geschosse := 1 if art == 1 else maxi(1, int(w[7] / (4.6 if art == 3 else 3.6)))
+		if ok and geschosse > 1:
+			var gh := w[7] / geschosse
+			var iL := L - 0.6
+			var iB := B - 0.6
+			var lauf := gh * 1.75
+			var fuss := -iL + 0.35
+			var q := -iB + 0.575
+			ok = await gehe_ueber([c + uz * (fuss + 1.2) + nx * (q + 1.6), c + uz * fuss + nx * (q + 1.4), c + uz * fuss + nx * q,
+					c + uz * (fuss + lauf + 1.2) + nx * q], 15.0) and absf(spieler().global_position.y - (fb + gh)) < 0.4
+		if ok:
+			gebaeude_ok += 1
+		else:
+			print("       Gebäude nicht begehbar: %s (stehe bei %s)" % [bau.name, spieler().global_position.snapped(Vector3.ONE * 0.1)])
+	pruefe(gebaeude_alle >= 8 and gebaeude_ok == gebaeude_alle,
+			"Begehbare Gebäude: %d von %d durch die Tür betreten, Treppen hinauf" % [gebaeude_ok, gebaeude_alle])
 	# Zurück zum Becken, über den Westkai zum Speicherkai, durch die Molenpforte über Mole und Brücken zu den Inseln
 	var mole := await gehe_ueber([Vector2(100, -0.5), Vector2(100, 27.5), Vector2(106, 52.5),
 			Vector2(121, 61.5), Vector2(166, 61.5), Vector2(186, 56.5), Vector2(191.5, 47.5), Vector2(191.5, 17.5), Vector2(191.5, -8.5), Vector2(201, -10),
