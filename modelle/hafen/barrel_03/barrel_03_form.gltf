@@ -1,0 +1,78 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v1.6.16",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "barrel_03"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "Circle.002",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 964,
+   "type": "VEC3",
+   "min": [
+    -0.31697171926498413,
+    -1.1793932941372987e-07,
+    -0.31929945945739746
+   ],
+   "max": [
+    0.3169717788696289,
+    0.9304735064506531,
+    0.3193000555038452
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 3597,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 11568,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 11568,
+   "byteLength": 14388,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "barrel_03_form.bin",
+   "byteLength": 25956
+  }
+ ]
+}

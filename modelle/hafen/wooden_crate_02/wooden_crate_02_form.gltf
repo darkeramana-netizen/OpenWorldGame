@@ -1,0 +1,133 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v1.7.33",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0,
+    1
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "wooden_crate_02_crate"
+  },
+  {
+   "mesh": 1,
+   "name": "wooden_crate_02_lid",
+   "translation": [
+    0.00018336623907089233,
+    0.4205015301704407,
+    -0.00017756223678588867
+   ]
+  }
+ ],
+ "meshes": [
+  {
+   "name": "Cube.006",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  },
+  {
+   "name": "Cube.008",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 2
+     },
+     "indices": 3
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 987,
+   "type": "VEC3",
+   "min": [
+    -0.26455047726631165,
+    -0.009823636151850224,
+    -0.5799446702003479
+   ],
+   "max": [
+    0.26455047726631165,
+    0.43545734882354736,
+    0.5829854607582092
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 3123,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 188,
+   "type": "VEC3",
+   "min": [
+    -0.23931372165679932,
+    -0.03334532678127289,
+    -0.5196089744567871
+   ],
+   "max": [
+    0.23894700407981873,
+    0.03362937271595001,
+    0.5199965834617615
+   ]
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5125,
+   "count": 474,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 11844,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 11844,
+   "byteLength": 12492,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 24336,
+   "byteLength": 2256,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 26592,
+   "byteLength": 1896,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "wooden_crate_02_form.bin",
+   "byteLength": 28488
+  }
+ ]
+}

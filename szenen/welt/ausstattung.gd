@@ -5,7 +5,8 @@ extends Node3D
 ## einfache Kollisionsbox. Die Bauskripte (werkzeuge/bau/teil_stadt.py) legen fest, was wo steht.
 
 ## Je Stück 5 Werte: Art, x, y (Boden), z, Gier in Grad. Arten: 0 Fass, 1 Kiste, 2 Säcke, 3 Marktstand, 4 Karren,
-## 5 Kogge (y ist dann die Wasserlinie, der Bug zeigt nach lokal -z)
+## 5 Kogge im Hafen (Segel gerefft), 6 Kogge unter vollem Segel, 7 Ruderboot (y ist bei Schiffen die Wasserlinie, der
+## Bug zeigt nach lokal -z), 8 Tretradkran (der Ausleger zeigt nach lokal -z)
 @export var stuecke := PackedFloat32Array():
 	set(w):
 		stuecke = w
@@ -14,7 +15,9 @@ extends Node3D
 
 ## Ausdehnung der Kollisionsbox je Art (halbe Breite, Höhe, halbe Tiefe)
 const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0.6, 0.6, 0.45), Vector3(1.6, 2.6, 1.1),
-	Vector3(0.8, 1.0, 1.5), Vector3(2.6, 3.4, 9.0)]
+	Vector3(0.8, 1.0, 1.5), Vector3(2.6, 3.4, 9.0), Vector3(2.6, 3.4, 9.0), Vector3(0.9, 1.4, 2.6), Vector3(1.6, 9.0, 1.6)]
+## Wasserfahrzeuge: die Kollisionsbox reicht unter die Wasserlinie
+const TIEFGANG := {5: 1.6, 6: 1.6, 7: 0.5}
 ## Farben der Markisen
 const STOFFE := [Color(0.62, 0.16, 0.12), Color(0.85, 0.78, 0.58), Color(0.2, 0.32, 0.52), Color(0.28, 0.42, 0.22)]
 
@@ -51,7 +54,7 @@ func _baue() -> void:
 			var e: Vector3 = KASTEN[art]
 			box.size = Vector3(e.x * 2.0, e.y, e.z * 2.0)
 			form.shape = box
-			form.transform = lagen[k] * Transform3D(Basis(), Vector3(0, e.y / 2.0 - (1.6 if art == 5 else 0.0), 0))
+			form.transform = lagen[k] * Transform3D(Basis(), Vector3(0, e.y / 2.0 - TIEFGANG.get(art, 0.0), 0))
 			koerper.add_child(form)
 		var inst := MultiMeshInstance3D.new()
 		inst.name = "Art%d" % art
@@ -176,7 +179,13 @@ func _mesh(art: int) -> ArrayMesh:
 			_klotz("holz", Vector3(-0.65, 0.65, -0.94), Vector3(0.65, 0.95, -0.86))
 			_klotz("sack", Vector3(-0.4, 0.65, -0.5), Vector3(0.3, 1.05, 0.3), 0.3)
 		5:
-			_kogge()
+			_kogge(false)
+		6:
+			_kogge(true)
+		7:
+			_ruderboot()
+		8:
+			_tretradkran()
 	var mesh := ArrayMesh.new()
 	for mat: String in _f:
 		var st: SurfaceTool = _f[mat]
@@ -187,18 +196,23 @@ func _mesh(art: int) -> ArrayMesh:
 	return mesh
 
 
-## Kogge: bauchiger Rumpf aus Spanten, Deck, Achter- und Vorderkastell, Mast mit gerefftem Segel, Ruder.
-func _kogge() -> void:
-	var laenge := 18.0
-	var breite := 2.7
-	var stationen := 14
+## Seil oder Stange als dünner Zylinder von a nach b.
+func _seil(mat: String, a: Vector3, b: Vector3, r: float) -> void:
+	var y := (b - a).normalized()
+	var x := y.cross(Vector3.FORWARD if absf(y.z) < 0.9 else Vector3.RIGHT).normalized()
+	var z := x.cross(y)
+	_zylinder(mat, a, r, r, a.distance_to(b), 5, Basis(x, y, z))
+
+
+## Rumpf aus Spanten (Querschnitte entlang z), für Kogge und Ruderboot.
+func _rumpf(laenge: float, breite: float, stationen: int, tief: float, hoch: float, kastelle: bool) -> void:
 	var querschnitt := func(z: float) -> Array:
 		var t := absf(z) / (laenge / 2.0)
-		var w := breite * sqrt(maxf(1.0 - pow(t, 2.4), 0.0)) + 0.12
-		var heck := 0.4 if z > 0.0 else 0.0     # das Heck ist voller und höher
-		var deck := 1.7 + pow(t, 2.0) * (0.9 + heck)
-		return [Vector2(-w * 0.98, deck), Vector2(-w, 0.6), Vector2(-w * 0.85, -0.6), Vector2(-w * 0.45, -1.3),
-			Vector2(0.0, -1.6), Vector2(w * 0.45, -1.3), Vector2(w * 0.85, -0.6), Vector2(w, 0.6), Vector2(w * 0.98, deck)]
+		var w := breite * sqrt(maxf(1.0 - pow(t, 2.4), 0.0)) + 0.06
+		var heck := 0.4 if z > 0.0 and kastelle else 0.0
+		var deck := hoch + pow(t, 2.0) * (hoch * 0.5 + heck)
+		return [Vector2(-w * 0.98, deck), Vector2(-w, hoch * 0.35), Vector2(-w * 0.85, -tief * 0.4), Vector2(-w * 0.45, -tief * 0.8),
+			Vector2(0.0, -tief), Vector2(w * 0.45, -tief * 0.8), Vector2(w * 0.85, -tief * 0.4), Vector2(w, hoch * 0.35), Vector2(w * 0.98, deck)]
 	var vorher: Array = []
 	var z_vorher := 0.0
 	for k in stationen + 1:
@@ -211,18 +225,63 @@ func _kogge() -> void:
 				var c: Vector2 = q[j + 1]
 				var d: Vector2 = q[j]
 				var mitte := (a + b + c + d) / 4.0
-				var mat := "rumpf_teer" if mitte.y < 0.3 else "holz"
+				var mat := "rumpf_teer" if mitte.y < 0.2 else "holz"
 				_viereck(mat, Vector3(a.x, a.y, z_vorher), Vector3(b.x, b.y, z_vorher), Vector3(c.x, c.y, z), Vector3(d.x, d.y, z),
 					Vector3(mitte.x, mitte.y + 0.6, 0.0))
 				_viereck(mat, Vector3(a.x, a.y, z_vorher), Vector3(b.x, b.y, z_vorher), Vector3(c.x, c.y, z), Vector3(d.x, d.y, z),
 					-Vector3(mitte.x, mitte.y + 0.6, 0.0))
-			# Deck etwas unter der Reling
 			var dv: Vector2 = vorher[0]
 			var dq: Vector2 = q[0]
-			var yd := minf(dv.y, dq.y) - 0.55
+			var yd := minf(dv.y, dq.y) - hoch * 0.32
 			_viereck("deck", Vector3(dv.x, yd, z_vorher), Vector3(-dv.x, yd, z_vorher), Vector3(-dq.x, yd, z), Vector3(dq.x, yd, z), Vector3.UP)
 		vorher = q
 		z_vorher = z
+
+
+## Ruderboot: kleiner Rumpf, drei Ducht-Bänke, zwei Riemen.
+func _ruderboot() -> void:
+	_rumpf(5.0, 0.75, 8, 0.45, 0.55, false)
+	for z: float in [-1.2, 0.0, 1.2]:
+		_klotz("holz", Vector3(-0.68, 0.3, z - 0.12), Vector3(0.68, 0.36, z + 0.12))
+	for s: float in [-1.0, 1.0]:
+		_seil("holz_dunkel", Vector3(s * 0.3, 0.45, 0.1), Vector3(s * 2.1, -0.05, 0.6), 0.035)
+
+
+## Tretradkran wie an Hansehäfen: Holzbock, Pfosten mit schrägem Ausleger, großes Laufrad, Seil mit Haken.
+func _tretradkran() -> void:
+	# Grundkreuz und Streben
+	_klotz("holz_dunkel", Vector3(-1.6, 0.0, -0.2), Vector3(1.6, 0.35, 0.2))
+	_klotz("holz_dunkel", Vector3(-0.2, 0.0, -1.6), Vector3(0.2, 0.35, 1.6))
+	_klotz("holz_dunkel", Vector3(-0.25, 0.0, -0.25), Vector3(0.25, 8.0, 0.25))
+	for d: Vector3 in [Vector3(1.5, 0.3, 0), Vector3(-1.5, 0.3, 0), Vector3(0, 0.3, 1.5), Vector3(0, 0.3, -1.5)]:
+		_seil("holz_dunkel", d, Vector3(0, 4.0, 0), 0.1)
+	# Ausleger nach vorn (lokal -z) mit Strebe
+	_seil("holz_dunkel", Vector3(0, 7.6, 0.4), Vector3(0, 8.6, -6.5), 0.16)
+	_seil("holz_dunkel", Vector3(0, 5.0, 0), Vector3(0, 8.2, -4.0), 0.1)
+	# Laufrad seitlich am Pfosten: zwei Kränze aus Speichen, Lauflatten dazwischen
+	var mitte := Vector3(0, 3.0, 1.2)
+	for x: float in [-0.9, 0.9]:
+		for k in 8:
+			var w := TAU * k / 8.0
+			_seil("holz", mitte + Vector3(x, 0, 0), mitte + Vector3(x, sin(w) * 2.6, cos(w) * 2.6), 0.06)
+		for k in 24:
+			var w0 := TAU * k / 24.0
+			var w1 := TAU * (k + 1) / 24.0
+			_seil("holz", mitte + Vector3(x, sin(w0) * 2.6, cos(w0) * 2.6), mitte + Vector3(x, sin(w1) * 2.6, cos(w1) * 2.6), 0.08)
+	for k in 24:
+		var w := TAU * (k + 0.5) / 24.0
+		_klotz("holz", mitte + Vector3(-0.9, sin(w) * 2.55 - 0.05, cos(w) * 2.55 - 0.15), mitte + Vector3(0.9, sin(w) * 2.55 + 0.05, cos(w) * 2.55 + 0.15))
+	_seil("holz_dunkel", mitte + Vector3(-1.1, 0, 0), mitte + Vector3(1.1, 0, 0), 0.12)
+	# Seil vom Auslegerende mit Haken und einem Ballen
+	_seil("seil", Vector3(0, 8.55, -6.4), Vector3(0, 3.0, -6.4), 0.025)
+	_klotz("metall", Vector3(-0.08, 2.75, -6.48), Vector3(0.08, 3.0, -6.32))
+	_klotz("sack", Vector3(-0.45, 1.95, -6.85), Vector3(0.45, 2.75, -5.95))
+
+
+## Kogge: bauchiger Rumpf aus Spanten, Deck, Achter- und Vorderkastell, Mast mit Takelage und Wimpel; im Hafen ist
+## das Segel an der Rahe gerefft, unter Segel hängt es voll und vom Wind gebläht.
+func _kogge(unter_segel: bool) -> void:
+	_rumpf(18.0, 2.7, 14, 1.6, 1.7, true)
 	# Achterkastell und Vorderkastell
 	_klotz("holz", Vector3(-2.3, 2.3, 4.6), Vector3(2.3, 2.45, 8.2))
 	for x: float in [-2.3, 2.2]:
@@ -230,14 +289,37 @@ func _kogge() -> void:
 	_klotz("holz", Vector3(-2.3, 2.45, 4.6), Vector3(2.3, 3.4, 4.7))
 	_klotz("holz", Vector3(-1.4, 2.6, -8.6), Vector3(1.4, 2.75, -6.4))
 	_klotz("holz", Vector3(-1.4, 2.75, -6.5), Vector3(1.4, 3.4, -6.4))
-	# Mast, Rahe mit gerefftem Segel, Bugspriet, Ruder
+	# Mast, Rahe (im Hafen mit gerefftem Segel), Bugspriet, Ruder
 	_zylinder("holz_dunkel", Vector3(0, 1.0, -0.5), 0.2, 0.22, 16.0, 8)
 	# liegend quer zum Schiff: Der Zylinder wächst vom Fuß nach lokal -x, also beginnt er rechts vom Mast
 	_zylinder("holz_dunkel", Vector3(5.0, 14.2, -0.5), 0.12, 0.14, 10.0, 6, Basis(Vector3.FORWARD, -PI / 2.0))
-	_zylinder("segel", Vector3(4.6, 13.75, -0.5), 0.32, 0.4, 9.2, 8, Basis(Vector3.FORWARD, -PI / 2.0))
+	if not unter_segel:
+		_zylinder("segel", Vector3(4.6, 13.75, -0.5), 0.32, 0.4, 9.2, 8, Basis(Vector3.FORWARD, -PI / 2.0))
 	_zylinder("holz_dunkel", Vector3(0, 2.6, -8.8), 0.1, 0.12, 4.5, 6, Basis(Vector3.RIGHT, -PI / 2.6))
 	_klotz("holz_dunkel", Vector3(-0.08, -1.4, 8.9), Vector3(0.08, 2.4, 9.8))
 	_zylinder("holz_dunkel", Vector3(0, 15.6, -0.5), 0.55, 0.6, 0.7, 8)   # Mastkorb
+	# Takelage: Wanten zu beiden Seiten, Vor- und Achterstag
+	var top := Vector3(0, 15.4, -0.5)
+	for s: float in [-1.0, 1.0]:
+		for dz: float in [-1.2, 0.0, 1.2]:
+			_seil("seil", top, Vector3(s * 2.55, 2.2, -0.5 + dz), 0.03)
+	_seil("seil", top, Vector3(0, 3.0, -10.6), 0.035)
+	_seil("seil", top, Vector3(0, 3.5, 8.6), 0.035)
+	# Wimpel am Masttopp (rot, nach achtern wehend)
+	_viereck("wimpel", Vector3(0, 17.0, -0.5), Vector3(0, 16.4, -0.5), Vector3(0.0, 16.75, 2.6), Vector3(0.0, 16.75, 2.6), Vector3.RIGHT)
+	_viereck("wimpel", Vector3(0, 17.0, -0.5), Vector3(0, 16.4, -0.5), Vector3(0.0, 16.75, 2.6), Vector3(0.0, 16.75, 2.6), Vector3.LEFT)
+	if unter_segel:
+		# volles Rahsegel unter der Rahe, nach vorn gebläht (in Teilen, damit es sich wölbt)
+		var teile := 8
+		for i in teile:
+			for j in 6:
+				var p := func(ii: int, jj: int) -> Vector3:
+					var u := float(ii) / teile * 2.0 - 1.0
+					var v := float(jj) / 6.0
+					var bauch := (1.0 - u * u) * sin(v * PI) * 1.4
+					return Vector3(u * 4.5, 14.0 - v * 9.5, -0.9 - bauch)
+				_viereck("segel", p.call(i, j), p.call(i + 1, j), p.call(i + 1, j + 1), p.call(i, j + 1), Vector3(0, 0, -1))
+				_viereck("segel", p.call(i, j), p.call(i + 1, j), p.call(i + 1, j + 1), p.call(i, j + 1), Vector3(0, 0, 1))
 
 
 func _material(name_: String) -> Material:
@@ -264,8 +346,9 @@ func _material(name_: String) -> Material:
 				"rumpf_teer": Color(0.22, 0.17, 0.13), "deck": Color(0.8, 0.68, 0.52), "segel": Color(0.9, 0.85, 0.72),
 				"sack": Color(0.85, 0.76, 0.58), "markise_a": STOFFE[0], "markise_b": STOFFE[1],
 				"ware_rot": Color(0.75, 0.18, 0.1), "ware_gruen": Color(0.3, 0.5, 0.15),
-				"ware_tuch": STOFFE[2], "ware_tuch2": STOFFE[3]}.get(name_, Color(0.6, 0.6, 0.6))
-			if name_.begins_with("markise"):
+				"ware_tuch": STOFFE[2], "ware_tuch2": STOFFE[3], "seil": Color(0.5, 0.42, 0.3),
+				"wimpel": Color(0.65, 0.08, 0.06)}.get(name_, Color(0.6, 0.6, 0.6))
+			if name_.begins_with("markise") or name_ in ["segel", "wimpel"]:
 				s.cull_mode = BaseMaterial3D.CULL_DISABLED
 			m = s
 	_mats[name_] = m

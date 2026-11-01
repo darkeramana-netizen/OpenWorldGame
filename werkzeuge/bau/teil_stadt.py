@@ -43,8 +43,9 @@ def kaimauer(name, punkte, offen=()):
     for i, (a, b) in enumerate(zip(punkte, punkte[1:] + punkte[:1])):
         if i in offen:
             continue
-        # 4 m dick: das Gelände fällt an der Kante über ein Rasterfeld (2,5 m) ab, die Mauer deckt den Abhang ganz ab
-        mauerring(f"{name}{i}", HF, [a, b], 0.9, dicke=4.0, zinnen=False, mat="Material_kai")
+        # 4 m dick: das Gelände fällt an der Kante über ein Rasterfeld (2,5 m) ab, die Mauer deckt den Abhang ganz ab;
+        # oben nur eine niedrige Kante, so geht man vom Kai auf die Stege
+        mauerring(f"{name}{i}", HF, [a, b], 0.2, dicke=4.0, zinnen=False, mat="Material_kai")
 # Kaimauern ums Becken; offen bleiben die Hafeneinfahrt und der Kanal zum Wassertor
 kaimauer("KaiBecken", BECKEN, offen=(PD.HAFENEINFAHRT, 1))
 kaimauer("KaiNord", WL([(700, 444), (744, 447.5)]) + WL([(764, 449.2), (790, 452)]), offen=(1, 3))
@@ -78,6 +79,39 @@ schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
 # Koggen im Becken (szenen/welt/ausstattung.gd, Art 5; die Wasserlinie liegt bei -20)
 SCHIFFE = [(5, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in
            [((660, 480), 80), ((745, 478), 95), ((700, 560), 85), ((770, 545), 60)]]
+# Draußen in der Bucht: Koggen unter vollem Segel (Art 6)
+SCHIFFE += [(6, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in [((960, 560), 150), ((1080, 640), 200)]]
+# Ruderboote an den Stegen (Art 7)
+SCHIFFE += [(7, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in
+            [((692, 468), 2), ((709, 458), -4), ((640, 515), 92), ((645, 532), 86)]]
+# Tretradkräne (Art 8): auf dem Ostkai an der Hafenmauer und am Ende des Nordkais, der Ausleger über dem Wasser
+SCHIFFE += [(8, *(lambda p: (p[0], KAI_OBEN + 0.2, p[1]))(W(pp)), g) for pp, g in [((820, 482), 180), ((784, 438), -90)]]
+
+# --- Landungsstege aus dem Steg-Fotoscan (modelle/hafen/): je Abschnitt 2,9 m, Deck 2,62 m über dem Ursprung ---
+STEG = "res://modelle/hafen/modular_wooden_pier/modular_wooden_pier.gltf"
+_steg = []
+for start, richtung, abschnitte in [((700, 447), (1, 0), 5), ((628, 525), (0, -1), 4)]:
+    sx_, sz_ = W(start)
+    dx_, dz_ = richtung                  # Weltrichtung ins Becken
+    g_ = math.degrees(math.atan2(dx_, dz_))
+    qx_, qz_ = math.cos(math.radians(g_)), -math.sin(math.radians(g_))   # lokal x (quer)
+    for k in range(abschnitte):
+        ox = sx_ + dx_ * (k * 2.9 + 0.32) - qx_ * 0.98
+        oz = sz_ + dz_ * (k * 2.9 + 0.32) - qz_ * 0.98
+        for steg_teil in (3, 0):         # Deck und Pfähle
+            _steg.append((steg_teil, round(ox, 2), round(KAI_OBEN + 0.2 - 2.62, 2), round(oz, 2), round(g_, 1), 0, 1))
+# Hafenkram: Fässer und Kisten (Fotoscans) in Gruppen am Nordkai und am Ostkai
+random.seed(77)
+for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (815, 515)]:      # an der Mauer, abseits der Laufwege
+    gx_, gz_ = W(pp)
+    for _ in range(random.randint(3, 6)):
+        art_ = random.choice([5, 5, 6, 7, 7])
+        px_, pz_ = gx_ + random.uniform(-1.6, 1.6), gz_ + random.uniform(-1.6, 1.6)
+        _steg.append((art_, round(px_, 2), round(KAI_OBEN + 0.2, 2), round(pz_, 2), round(random.uniform(0, 360), 1), 0, 1))
+N("Hafenausstattung", "Node3D", HF, f"""script = ExtResource("30_felsen")
+modelle = PackedStringArray("{STEG}#0", "{STEG}#1", "{STEG}#2", "{STEG}#3", "{STEG}#4", "res://modelle/hafen/barrel_03/barrel_03.gltf", "res://modelle/hafen/wooden_crate_01/wooden_crate_01.gltf#1", "res://modelle/hafen/wooden_crate_02/wooden_crate_02.gltf#0")
+stuecke = PackedFloat32Array({", ".join(f"{v:.6g}" for st_ in _steg for v in st_)})
+sichtweite = 400.0""")
 
 # --- Marktplatz mit Brunnen und Ständen ---
 MK = DS + "/Marktplatz"

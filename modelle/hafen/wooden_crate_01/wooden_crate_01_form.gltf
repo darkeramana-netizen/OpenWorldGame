@@ -1,0 +1,178 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.1.63",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0,
+    1,
+    2
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "wooden_crate_01_lid"
+  },
+  {
+   "mesh": 1,
+   "name": "wooden_crate_01"
+  },
+  {
+   "mesh": 2,
+   "name": "wooden_crate_01_latch"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "Cube.005",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  },
+  {
+   "name": "Cube.020",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 2
+     },
+     "indices": 3
+    }
+   ]
+  },
+  {
+   "name": "Cube.001",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 4
+     },
+     "indices": 5
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 180,
+   "type": "VEC3",
+   "min": [
+    -0.35362547636032104,
+    0.29946234822273254,
+    -0.1953081637620926
+   ],
+   "max": [
+    0.35362547636032104,
+    0.34066298604011536,
+    0.19444917142391205
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 378,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 930,
+   "type": "VEC3",
+   "min": [
+    -0.41224801540374756,
+    -0.006197920069098473,
+    -0.19384793937206268
+   ],
+   "max": [
+    0.41224801540374756,
+    0.3136237561702728,
+    0.211556538939476
+   ]
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5125,
+   "count": 3012,
+   "type": "SCALAR"
+  },
+  {
+   "bufferView": 4,
+   "componentType": 5126,
+   "count": 118,
+   "type": "VEC3",
+   "min": [
+    -0.015847735106945038,
+    0.2394731342792511,
+    0.1312473714351654
+   ],
+   "max": [
+    0.009503843262791634,
+    0.3357900381088257,
+    0.2071036398410797
+   ]
+  },
+  {
+   "bufferView": 5,
+   "componentType": 5125,
+   "count": 330,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 2160,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 2160,
+   "byteLength": 1512,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 3672,
+   "byteLength": 11160,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 14832,
+   "byteLength": 12048,
+   "target": 34963
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 26880,
+   "byteLength": 1416,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 28296,
+   "byteLength": 1320,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "wooden_crate_01_form.bin",
+   "byteLength": 29616
+  }
+ ]
+}

@@ -134,6 +134,10 @@ func _initialize() -> void:
 	var fels := await gehe_ueber([Vector2(136, 64.5), Vector2(121, 61.5), Vector2(106, 52.5), Vector2(100, 27.5), Vector2(100, -0.5)], 30.0)
 	pruefe(fels and absf(spieler().global_position.y + 17.4) < 0.6, "Über den Kai an den Kanal vor dem Wassertor (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("Drachenhafen"), "Ortsname: Drachenhafen")
+	# Vom Nordkai auf den Landungssteg bis an sein Ende (über dem Wasser, nicht hineingefallen)
+	var steg := await gehe_ueber([Vector2(100, 17.5), Vector2(108, 17.5), Vector2(122, 17.5)], 20.0)
+	pruefe(steg and absf(spieler().global_position.y + 17.4) < 0.5, "Auf dem Landungssteg bis an sein Ende (y=%.1f)" % spieler().global_position.y)
+	await gehe_ueber([Vector2(108, 17.5), Vector2(100, 17.5), Vector2(100, -0.5)], 20.0)
 	# Zurück zum Becken, über den Westkai zum Speicherkai, durch die Molenpforte über Mole und Brücken zu den Inseln
 	var mole := await gehe_ueber([Vector2(100, -0.5), Vector2(100, 27.5), Vector2(106, 52.5),
 			Vector2(121, 61.5), Vector2(166, 61.5), Vector2(186, 56.5), Vector2(191.5, 47.5), Vector2(191.5, 17.5), Vector2(191.5, -8.5), Vector2(201, -10),
