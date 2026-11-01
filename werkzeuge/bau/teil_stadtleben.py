@@ -294,7 +294,7 @@ for name, anzeige, kordel, strecke, schicht in [
 for i, (name, anzeige) in enumerate([("FischerKlaas", "Fischer Klaas Wend"), ("FischerinTora", "Fischerin Tora Lunk"),
                                      ("FischerHinnerk", "Fischer Hinnerk Saal")]):
     stadtmensch(name, anzeige, "hafen", 0, FARBEN[(i + 1) % 8], wohnung(), {
-        "morgengrauen": (W((650 + 35 * i, 436)), ["blick=90"]),
+        "morgengrauen": (W((630 + 25 * i, 436)), ["blick=90"]),
         "stille_stunde": ("heim", ["weg"]),
     }, sichtbar_wenn="alarm<3")
 for i, (name, anzeige) in enumerate([("TraegerOle", "Hafenträger Jonte Pahl"), ("TraegerinMieke", "Hafenträgerin Mieke Strand")]):
