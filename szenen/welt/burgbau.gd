@@ -592,9 +592,10 @@ func _tor(c: Vector2, u: Vector2, boden: float, breite: float, oben: float, dick
 		# Bogenlaibung, die Vorderseite zeigt zur Bogenmitte
 		var zur_mitte := Vector3(u.x, 0, u.y) * -(x0 + x1) / 2.0 + Vector3.UP * (kaempfer - (y0 + y1) / 2.0)
 		_viereck(stein, p.call(x0, -d, y0), p.call(x1, -d, y1), p.call(x1, d, y1), p.call(x0, d, y0), zur_mitte)
-	# Wangen unter dem Kämpfer (falls die Tortürme nicht bis an den Bogen reichen)
-	_klotz(stein, c, u, n, w, w + 0.8, -d, d, boden - 0.5, kaempfer)
-	_klotz(stein, c, u, n, -w - 0.8, -w, -d, d, boden - 0.5, kaempfer)
+	# Wangen beiderseits bis unter die Brustwehr: Sie decken auch die Fuge zu den Mauerstücken (deren Enden liegen
+	# wegen gerundeter Koordinaten um Millimeter neben dem Bogen, sonst sähe man dort einen Spalt Himmel)
+	_klotz(stein, c, u, n, w, w + 0.8, -d, d, boden - 0.5, oben)
+	_klotz(stein, c, u, n, -w - 0.8, -w, -d, d, boden - 0.5, oben)
 	# Bogensteine als Kranz auf beiden Seiten
 	for k in teile:
 		var wm := PI * (k + 0.5) / teile
