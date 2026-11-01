@@ -611,12 +611,23 @@ func _halle(w: PackedFloat32Array) -> void:
 	_klotz("hell", c, u, n, L - 0.25, L, -1.6, 1.6, boden + 3.2, boden + 3.6)
 
 
+## Gesims rund um ein Gebäude; bei begehbaren Bauten nur als Band außen an der Mauer (innen liegen Decken und Treppen).
+func _gesims(mat: String, c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, vor: float, y0: float, y1: float, ring: bool) -> void:
+	if not ring:
+		_klotz(mat, c, uz, nx, -L - vor, L + vor, -B - vor, B + vor, y0, y1, true)
+		return
+	_klotz(mat, c, uz, nx, -L - vor, L + vor, B - 0.3, B + vor, y0, y1, true)
+	_klotz(mat, c, uz, nx, -L - vor, L + vor, -B - vor, -B + 0.3, y0, y1, true)
+	_klotz(mat, c, uz, nx, -L - vor, -L + 0.3, -B + 0.3, B - 0.3, y0, y1, true)
+	_klotz(mat, c, uz, nx, L - 0.3, L + vor, -B + 0.3, B - 0.3, y0, y1, true)
+
+
 ## Begehbares Gebäude: Mauern als Schale mit offener Tür, Geschossdecken auf Balken, Treppen (abwechselnd an den
 ## Längswänden, mit einer unsichtbaren Rampe als Lauffläche), Licht und Einrichtung je nach Art.
 func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden: float, unten: float, traufe: float,
 		geschosse: int, gh: float, wand: String, art: int) -> void:
 	var t := 0.6                                  # Mauerstärke
-	var fb := boden + 0.15                        # Fußboden im Erdgeschoss
+	var fb := boden + 0.03                        # Fußboden im Erdgeschoss: ebenerdig, ohne Stufe an der Tür
 	var tb := 2.4 if art == 1 else 1.6            # Türbreite
 	var th := 4.0 if art == 1 else 2.7
 	var iL := L - t
@@ -637,8 +648,8 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 		_klotz(wand, c, uz, nx, tb / 2.0, L, iB, B, unten, traufe)
 		_klotz(wand, c, uz, nx, -tb / 2.0, tb / 2.0, iB, B, fb + th, traufe)
 	# Sockel außen nur bis Fußbodenhöhe (sonst stolpert man an der Tür), innen der Fußboden
-	_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, fb)
-	_klotz("boden", c, uz, nx, -iL, iL, -iB, iB, fb, fb + 0.03)
+	_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, boden + 0.01)
+	_klotz("boden", c, uz, nx, -iL, iL, -iB, iB, boden + 0.01, fb)
 	# Decke unter dem Dach
 	_klotz("holz", c, uz, nx, -iL, iL, -iB, iB, traufe - 0.3, traufe - 0.05, true)
 	var licht_hoehen: Array[float] = []
@@ -646,7 +657,7 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 	var lauf := gh * 1.75                       # Treppenlauf: etwa 30 Grad
 	var stufen := maxi(4, int(round(gh / 0.22)))
 	var tritt := lauf / stufen
-	var s0 := -iL + 0.3 + tritt                 # Fuß der Rampe bei s0 - tritt
+	var s0 := -iL + 0.9 + tritt                 # Fuß der Rampe bei s0 - tritt, davor ein Absatz am Giebel
 	var s1 := s0 + lauf - tritt                 # oberste Stufe endet bei s1 + tritt
 	var tb_ := 1.15                             # Treppenbreite
 	for k in range(1, stockwerke):
@@ -677,7 +688,7 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 			bs += 1.6
 		# Stufen und darüber die Rampe (unsichtbar, nur Kollision)
 		for i in stufen:
-			var vorne := s0 - tritt + i * tritt + tritt
+			var vorne := s0 + (i + 1) * tritt     # Vorderkanten liegen auf der Rampe
 			var hoch := y0 + gh * float(i + 1) / stufen
 			_klotz("holz", c, uz, nx, vorne - tritt, vorne, q0, q1, hoch - 0.12, hoch, true)
 			_klotz("hell" if i % 2 == 0 else "holz", c, uz, nx, vorne - tritt - 0.02, vorne - tritt + 0.03, q0, q1, hoch - 0.2, hoch - 0.12)
@@ -990,6 +1001,9 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 	var dach := "dach" if int(w[10]) == 0 else "ziegel"
 	var art := int(w[11]) % 10
 	var begehbar := int(w[11]) >= 10      # Art + 10: innen hohl, mit offener Tür, Geschossen und Treppen
+	if int(w[11]) >= 20:                  # Art + 20: ebenso, die Tür auf der anderen Seite (Bau um 180° gedreht)
+		nx = -nx
+		uz = -uz
 	var geschosse := 1 if art == 1 else maxi(1, int(w[7] / (4.6 if art == 3 else 3.6)))
 	var gh := w[7] / geschosse
 	# Körper und Sockel
@@ -1000,8 +1014,8 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 		_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, boden + 0.7)
 	for k in range(1, geschosse):
 		var y := boden + k * gh
-		_klotz(wand, c, uz, nx, -L - 0.12, L + 0.12, -B - 0.12, B + 0.12, y - 0.15, y + 0.1, true)
-	_klotz(wand, c, uz, nx, -L - 0.3, L + 0.3, -B - 0.3, B + 0.3, traufe - 0.4, traufe, true)
+		_gesims(wand, c, uz, nx, B, L, 0.12, y - 0.15, y + 0.1, begehbar)
+	_gesims(wand, c, uz, nx, B, L, 0.3, traufe - 0.4, traufe, begehbar)
 	if art == 3:
 		_palas_fenster(c, uz, nx, B, L, boden, gh, geschosse, wand)
 	# Fenster auf allen vier Seiten
@@ -1027,7 +1041,7 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 					continue
 				_fenster(c, nx, -uz, pos, -L * seite, -seite, ym, fb, fh, art == 1)
 	# Tür: bei Kirchen in der Giebelseite, sonst mitten in der Längsseite
-	var fb_ := boden + 0.15 if begehbar else boden
+	var fb_ := boden + 0.03 if begehbar else boden
 	if art == 1:
 		_tuer(c, nx, uz, 0.0, L, 1.0, fb_, 2.4, 4.0, begehbar)   # Portal in der Giebelseite gegenüber dem Turm
 	else:

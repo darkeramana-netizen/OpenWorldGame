@@ -24,7 +24,7 @@ func setze(pos: Vector3, blick_grad: float = 0.0) -> void:
 	for i in 6: await physics_frame
 
 ## Läuft nacheinander zu den Wegpunkten (nur x und z zählen). Gibt zurück, ob alle erreicht wurden.
-func gehe_ueber(punkte: Array, zeit_pro_punkt: float = 20.0) -> bool:
+func gehe_ueber(punkte: Array, zeit_pro_punkt: float = 20.0, genau: float = 0.8) -> bool:
 	Input.action_press("vor")
 	var alle := true
 	for ziel: Vector2 in punkte:
@@ -33,7 +33,7 @@ func gehe_ueber(punkte: Array, zeit_pro_punkt: float = 20.0) -> bool:
 		while Time.get_ticks_msec() < ende:
 			var p: Vector3 = spieler().global_position
 			var weg := Vector2(ziel.x - p.x, ziel.y - p.z)
-			if weg.length() < 0.8:
+			if weg.length() < genau:
 				erreicht = true
 				break
 			spieler().get_node("KameraDrehpunkt").rotation.y = atan2(-weg.x, -weg.y)
@@ -110,7 +110,7 @@ func _initialize() -> void:
 	var hinauf := await gehe_ueber([Vector2(-39, 42.5), Vector2(-39, -40), Vector2(-3, -44), Vector2(-3, -52.5), Vector2(-3, -60.5),
 			Vector2(-34, -62), Vector2(-50, -72.5), Vector2(-59, -97.5), Vector2(-62, -132.5), Vector2(-62, -172.5), Vector2(-45, -191.5),
 			Vector2(-14, -197.5), Vector2(16, -196.5), Vector2(37, -186.5), Vector2(36, -176), Vector2(31.5, -173.5), Vector2(24, -170),
-			Vector2(6, -152.5)], 40.0)
+			Vector2(15, -163), Vector2(8, -163), Vector2(6, -152.5)], 40.0)
 	pruefe(hinauf and spieler().global_position.y > 37.5, "Durch Burgtor und Zwingerweg hinauf in die Kernburg (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("Kernburg · Drachenhorst"), "Ortsname: Kernburg")
 	# Hinab: Tor des III. Burghofs → II. Burghof → Tor in die I. Vorburg → Südtor der Vorburg → unter dem II. Burghof
@@ -152,8 +152,8 @@ func _initialize() -> void:
 	# Treppe hinauf. Die Lage steht in den Werten des Baus.
 	var gebaeude_ok := 0
 	var gebaeude_alle := 0
-	for bau: Node in current_scene.find_children("*", "Node3D", true, false):
-		if not "gebaeude" in bau or not "hallen" in bau:
+	for bau in current_scene.find_children("*", "Node3D", true, false):
+		if not is_instance_valid(bau) or not "gebaeude" in bau or not "hallen" in bau:
 			continue
 		var w: PackedFloat32Array = bau.gebaeude
 		if w.size() < 12 or int(w[11]) < 10:
@@ -163,10 +163,13 @@ func _initialize() -> void:
 		var gr := deg_to_rad(w[2])
 		var nx := Vector2(cos(gr), -sin(gr))
 		var uz := Vector2(sin(gr), cos(gr))
+		if int(w[11]) >= 20:
+			nx = -nx
+			uz = -uz
 		var c := Vector2(w[0], w[1])
 		var B := w[3] / 2.0
 		var L := w[4] / 2.0
-		var fb := w[5] + 0.15
+		var fb := w[5] + 0.03
 		var aus := uz if art == 1 else nx
 		var tief := L if art == 1 else B
 		var draussen := c + aus * (tief + 2.5)
@@ -179,10 +182,11 @@ func _initialize() -> void:
 			var iL := L - 0.6
 			var iB := B - 0.6
 			var lauf := gh * 1.75
-			var fuss := -iL + 0.35
-			var q := -iB + 0.575
-			ok = await gehe_ueber([c + uz * (fuss + 1.2) + nx * (q + 1.6), c + uz * fuss + nx * (q + 1.4), c + uz * fuss + nx * q,
-					c + uz * (fuss + lauf + 1.2) + nx * q], 15.0) and absf(spieler().global_position.y - (fb + gh)) < 0.4
+			var fuss := -iL + 0.9                 # Fuß der Treppe, davor ein Absatz am Giebel
+			var q := -iB + 0.575                  # Mitte der Treppe
+			ok = await gehe_ueber([c, c + uz * (fuss - 0.45) + nx * (q + 1.6), c + uz * (fuss - 0.45) + nx * q], 15.0, 0.3) \
+					and await gehe_ueber([c + uz * (fuss + lauf + 1.0) + nx * q], 15.0, 0.4) \
+					and absf(spieler().global_position.y - (fb + gh)) < 0.4
 		if ok:
 			gebaeude_ok += 1
 		else:

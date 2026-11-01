@@ -66,7 +66,7 @@ N("HafenTuerme", "Node3D", HF, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_ht)})""")
 sx, sz = W(PD.SPEICHER[0])
 steinbau("Speicher", HF, sx, sz, PD.SPEICHER[1] * M, PD.SPEICHER[2] * M, 9, gier=0, mat="Material_holz",
-         dach="Material_dach", boden=KAI_OBEN, art=2, begehbar=True)
+         dach="Material_dach", boden=KAI_OBEN, art=2, begehbar=True, tuer_hinten=True)   # Tür zum Becken, nicht zur Speicherkaimauer
 schild("SchildSpeicher", HF, sx, KAI_OBEN + 18, sz, "Speicher", 40)
 
 # --- Untergrundhafen: Hinter dem Wassertor führt der Kanal durch einen Gang unter dem Zwinger in eine gewölbte Halle

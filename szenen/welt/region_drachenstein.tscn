@@ -825,7 +825,7 @@ tuerme = PackedFloat32Array(200, -28.5, -28, -5.8, 6, 0, 0, 156, -49.5, -28, -5.
 
 [node name="Speicher" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(200, 22.5, 0, 10, 50, -17.8, -19.3, 9, 6, 3, 1, 12)
+gebaeude = PackedFloat32Array(200, 22.5, 0, 10, 50, -17.8, -19.3, 9, 6, 3, 1, 22)
 
 [node name="SchildSpeicher" type="Label3D" parent="Drachenstein/Drachenhafen"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 200, 0.2, 22.5)
