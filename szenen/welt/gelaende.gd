@@ -51,6 +51,14 @@ func hoehe_bei(x: float, z: float) -> float:
 	return lerpf(lerpf(h00, h10, fx), lerpf(h01, h11, fx), fz)
 
 
+## Liegt (x, z) an einem Loch? Strahlen dorthin liefern bei Jolt keine gültige Normale.
+func am_loch(x: float, z: float, rand: float = 3.0) -> bool:
+	for r: Vector4 in loecher:
+		if x > r.x - rand and x < r.z + rand and z > r.y - rand and z < r.w + rand:
+			return true
+	return false
+
+
 func groesse() -> Vector2:
 	return Vector2((breite - 1) * abstand, (tiefe - 1) * abstand)
 
@@ -172,20 +180,48 @@ func _punkt(gitter: Vector2i) -> Vector3:
 func _baue_kollision() -> void:
 	var koerper := StaticBody3D.new()
 	koerper.name = "Kollision"
+	add_child(koerper)
+	if loecher.is_empty():
+		_hoehenform(koerper, 0, 0, breite - 1, tiefe - 1)
+		return
+	# Mit Löchern: je Kachel eine Höhenkarte, nur Kacheln mit Loch werden Dreiecksformen ohne die Lochdreiecke
+	# (NAN in der Höhenkarte gäbe bei Jolt ungültige Kontaktnormalen).
+	for kz in range(0, tiefe - 1, KACHEL):
+		for kx in range(0, breite - 1, KACHEL):
+			var nx := mini(KACHEL, breite - 1 - kx)
+			var nz := mini(KACHEL, tiefe - 1 - kz)
+			if _hat_loch(kx, kz, nx, nz):
+				var form := ConcavePolygonShape3D.new()
+				form.set_faces(_kachel_mesh(kx, kz, nx, nz).get_faces())
+				var kollision := CollisionShape3D.new()
+				kollision.shape = form
+				koerper.add_child(kollision)
+			else:
+				_hoehenform(koerper, kx, kz, nx, nz)
+
+
+func _hat_loch(x0: int, z0: int, nx: int, nz: int) -> bool:
+	for z in range(z0, z0 + nz + 1):
+		for x in range(x0, x0 + nx + 1):
+			if _loch[z * breite + x] == 1:
+				return true
+	return false
+
+
+## Höhenkarte über nx × nz Quadrate ab Rasterpunkt (x0, z0)
+func _hoehenform(koerper: StaticBody3D, x0: int, z0: int, nx: int, nz: int) -> void:
 	var form := HeightMapShape3D.new()
-	form.map_width = breite
-	form.map_depth = tiefe
-	var daten_ := _hoehen
-	if loecher.size() > 0:
-		daten_ = _hoehen.duplicate()
-		for i in _loch.size():
-			if _loch[i] == 1:
-				daten_[i] = NAN   # Jolt: Dreiecke an diesem Punkt haben keine Kollision
+	form.map_width = nx + 1
+	form.map_depth = nz + 1
+	var daten_ := PackedFloat32Array()
+	daten_.resize((nx + 1) * (nz + 1))
+	for z in nz + 1:
+		for x in nx + 1:
+			daten_[z * (nx + 1) + x] = _h(x0 + x, z0 + z)
 	form.map_data = daten_
 	var kollision := CollisionShape3D.new()
 	kollision.shape = form
-	# Die Höhenkarte ist um ihre Mitte zentriert und hat 1 m Rasterabstand.
-	kollision.position = Vector3(ursprung.x + groesse().x / 2.0, 0.0, ursprung.y + groesse().y / 2.0)
+	# Die Höhenkarte ist um ihre Mitte zentriert; das Raster wird mit dem Abstand skaliert.
+	kollision.position = Vector3(ursprung.x + (x0 + nx / 2.0) * abstand, 0.0, ursprung.y + (z0 + nz / 2.0) * abstand)
 	kollision.scale = Vector3(abstand, 1.0, abstand)
 	koerper.add_child(kollision)
-	add_child(koerper)

@@ -134,7 +134,7 @@ func _platz(x: float, z: float, steil_max: float, raum: float) -> float:
 	var m := _maske_bei(x, z)
 	if m.r > 0.2 or (m.g > 0.5 and raum > 1.0):
 		return NAN
-	if _ist_frei(x, z):
+	if _ist_frei(x, z) or _gelaende.am_loch(x, z, raum + 3.0):
 		return NAN
 	# Steht etwas darüber oder daneben (Mauer, Haus, Brücke)? Dann trifft der Strahl nicht den Boden.
 	var raum_abfrage := get_world_3d().direct_space_state
