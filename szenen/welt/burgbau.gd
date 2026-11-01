@@ -634,7 +634,7 @@ func _gesims(mat: String, c: Vector2, uz: Vector2, nx: Vector2, B: float, L: flo
 ## Begehbares Gebäude: Mauern als Schale mit offener Tür, Geschossdecken auf Balken, Treppen (abwechselnd an den
 ## Längswänden, mit einer unsichtbaren Rampe als Lauffläche), Licht und Einrichtung je nach Art.
 func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden: float, unten: float, traufe: float,
-		geschosse: int, gh: float, wand: String, art: int) -> void:
+		geschosse: int, gh: float, wand: String, art: int, zweck := 0) -> void:
 	var t := 0.6                                  # Mauerstärke
 	var fb := boden + 0.03                        # Fußboden im Erdgeschoss: ebenerdig, ohne Stufe an der Tür
 	var tb := 2.4 if art == 1 else 1.6            # Türbreite
@@ -761,7 +761,7 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 				_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, -lang / 2.0 + 0.2, -lang / 2.0 + 0.3, -0.15, 0.15, y, y + 0.42)
 				_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, lang / 2.0 - 0.3, lang / 2.0 - 0.2, -0.15, 0.15, y, y + 0.42)
 			_klotz("glut", c + uz * ts, uz, nx, -0.06, 0.06, -0.06, 0.06, y + 0.8, y + 0.98)
-			if k == 0:
+			if k == 0 and zweck != 1:
 				var km := c + uz * (iL - 0.45)
 				_klotz("bruchstein", km, uz, nx, -0.45, 0.45, -1.3, -0.9, y, y + 1.4)
 				_klotz("bruchstein", km, uz, nx, -0.45, 0.45, 0.9, 1.3, y, y + 1.4)
@@ -769,13 +769,15 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 				_klotz("bruchstein", km, uz, nx, -0.3, 0.45, -1.0, 1.0, y + 1.7, traufe - 0.3 if stockwerke == 1 else y + gh - 0.25)
 				_klotz("glut", km, uz, nx, -0.25, 0.25, -0.6, 0.6, y, y + 0.35)
 				_klotz("holz", km, uz, nx, -0.2, 0.15, -0.5, 0.5, y + 0.05, y + 0.25)
-			else:
+			elif k > 0 and not (zweck == 3 and k == stockwerke - 1):
 				for e: float in [-1.0, 1.0]:
 					var bm := c + uz * (iL - 1.2) + nx * e * minf(iB - 1.2, 2.2)
 					_klotz("holz", bm, uz, nx, -1.0, 1.0, -0.5, 0.5, y, y + 0.45)
 					_klotz("stoff", bm, uz, nx, -0.95, 0.75, -0.48, 0.48, y + 0.45, y + 0.6)
 					_klotz("hell", bm, uz, nx, 0.75, 0.98, -0.4, 0.4, y + 0.45, y + 0.62)
 					_klotz("holz", bm, uz, nx, 0.95, 1.05, -0.5, 0.5, y, y + 1.0)
+	if zweck > 0:
+		_einrichtung(zweck, c, uz, nx, iL, iB, fb, gh, stockwerke, lauf, traufe - 0.3)
 	# Licht je Geschoss: Hängeleuchten etwa alle 9 m entlang des Baus (warm, ohne Schatten)
 	var anzahl := maxi(1, int(ceil(2.0 * iL / 9.0)))
 	for k in stockwerke:
@@ -795,6 +797,138 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 			l.omni_attenuation = 0.8
 			l.position = Vector3(lp.x, hoehe - 0.3, lp.y)
 			add_child(l)
+
+
+## Einrichtung nach dem Zweck des Baus (Gebäudewert Art // 100): 1 Küche, 2 Zeughaus, 3 Palas, 4 Stall, 5 Gesindehaus.
+## Die Möbel stehen an den Wänden; Tür (Mitte der Längsseite +B), Treppen (am Giebel -L) und die Mitte bleiben frei.
+func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, iB: float, fb: float, gh: float, stockwerke: int,
+		lauf: float, decke_oben: float) -> void:
+	var frei_s := -iL + 0.9 + lauf + 1.2 if stockwerke > 1 else -iL + 0.6   # dahinter ist die Treppe vorbei
+	for k in stockwerke:
+		var y := fb + k * gh
+		var decke := decke_oben if k == stockwerke - 1 else y + gh - 0.5
+		match zweck:
+			1:   # Küche: großer Herd mit Rauchfang und Kessel am Giebel +L, Arbeitstische, Regale mit Töpfen, Fässer
+				if k == 0:
+					var hm := c + uz * (iL - 0.9)
+					_klotz("bruchstein", hm, uz, nx, -0.9, 0.9, -2.2, 2.2, y, y + 0.8)
+					_klotz("glut", hm, uz, nx, -0.6, 0.5, -1.4, 1.4, y + 0.8, y + 0.95)
+					_klotz("bruchstein", hm, uz, nx, -1.1, 0.9, -2.4, 2.4, y + 2.2, y + 2.5, true)
+					_klotz("bruchstein", hm, uz, nx, -0.2, 0.9, -1.6, 1.6, y + 2.5, decke)
+					for e: float in [-1.0, 1.0]:
+						_klotz("bruchstein", hm, uz, nx, -0.9, 0.9, e * 2.2 - 0.2, e * 2.2 + 0.2, y + 0.8, y + 2.2)
+					# Kessel an einer Kette über dem Feuer
+					_klotz("metall", hm, uz, nx, -0.03, 0.03, -0.03, 0.03, y + 1.6, y + 2.2)
+					_klotz("metall", hm, uz, nx, -0.38, 0.38, -0.38, 0.38, y + 1.0, y + 1.6)
+					_klotz("holz", hm, uz, nx, -0.4, 0.4, -0.4, 0.4, y + 1.6, y + 1.63)
+				for e: float in [-1.0, 1.0]:
+					var ts := iL * 0.35
+					_klotz("holz", c + uz * ts + nx * e * (iB - 0.5), uz, nx, -1.4, 1.4, -0.45, 0.45, y + 0.85, y + 0.92)
+					for f: float in [-1.0, 1.0]:
+						_klotz("holz", c + uz * (ts + f * 1.25) + nx * e * (iB - 0.5), uz, nx, -0.07, 0.07, -0.4, 0.4, y, y + 0.85)
+					# Töpfe, Krüge und Brotlaibe auf dem Tisch
+					for i in 4:
+						var tp := c + uz * (ts - 1.0 + i * 0.65) + nx * e * (iB - 0.5)
+						_klotz("metall" if i % 2 == 0 else "hell", tp, uz, nx, -0.13, 0.13, -0.13, 0.13, y + 0.92, y + 1.15 + 0.08 * (i % 3))
+				_regal(c + uz * (-iL * 0.1) + nx * -(iB - 0.25), uz, nx, -1.0, y, 1.8, 2.2)
+			2:   # Zeughaus: Waffenständer mit Spießen, Rüstungsständer, Schilde an der Wand, Kisten
+				var s_ := frei_s
+				var i := 0
+				while s_ < iL - 1.0:
+					if absf(s_) > 1.8:
+						for e: float in [-1.0, 1.0]:
+							var wm := c + uz * s_ + nx * e * (iB - 0.35)
+							if i % 2 == 0:
+								_klotz("holz", wm, uz, nx, -0.9, 0.9, -0.2, 0.2, y + 0.3, y + 0.4)
+								_klotz("holz", wm, uz, nx, -0.9, 0.9, -0.2, 0.2, y + 1.3, y + 1.38)
+								for sp in 7:
+									var px := -0.75 + sp * 0.25
+									_klotz("holz", wm, uz, nx, px - 0.025, px + 0.025, -0.03, 0.03, y, y + 2.6)
+									_klotz("metall", wm, uz, nx, px - 0.04, px + 0.04, -0.015, 0.015, y + 2.6, y + 2.9)
+							else:
+								# Rüstung auf einem Ständer: Brustpanzer, Helm, Schild an der Wand dahinter
+								_klotz("holz", wm, uz, nx, -0.04, 0.04, -0.04, 0.04, y, y + 1.6)
+								_klotz("metall", wm, uz, nx, -0.25, 0.25, -0.14, 0.14, y + 1.0, y + 1.55)
+								_klotz("metall", wm, uz, nx, -0.13, 0.13, -0.13, 0.13, y + 1.62, y + 1.9)
+								var sm := c + uz * s_ + nx * e * (iB - 0.03)
+								_klotz("stoff", sm, uz, nx, -0.35, 0.35, -0.03, 0.03, y + 1.9, y + 2.7)
+								_klotz("metall", sm, uz, nx, -0.08, 0.08, -0.05, 0.05, y + 2.22, y + 2.38)
+					s_ += 1.8
+					i += 1
+			3:   # Palas: Teppich, Thron am Giebel +L, Wandteppiche, Kerzenständer
+				_klotz("stoff", c, uz, nx, -iL * 0.6, iL * 0.6, -1.3, 1.3, y, y + 0.02)
+				if k == stockwerke - 1 or stockwerke == 1:
+					var th := c + uz * (iL - 1.0)
+					_klotz("hell", th, uz, nx, -0.9, 0.9, -1.4, 1.4, y, y + 0.3)
+					_klotz("holz", th, uz, nx, -0.35, 0.35, -0.4, 0.4, y + 0.3, y + 0.8)
+					_klotz("holz", th, uz, nx, 0.25, 0.4, -0.4, 0.4, y + 0.8, y + 2.0)
+					_klotz("stoff", th, uz, nx, -0.33, 0.25, -0.36, 0.36, y + 0.8, y + 0.88)
+					for e: float in [-1.0, 1.0]:
+						_klotz("holz", th, uz, nx, -0.35, 0.25, e * 0.4 - 0.05, e * 0.4 + 0.05, y + 0.8, y + 1.2)
+				var ws := -iL + 3.0
+				while ws < iL - 2.0:
+					if absf(ws) > 2.0 and ws > frei_s:
+						for e: float in [-1.0, 1.0]:
+							var wm := c + uz * ws + nx * e * (iB - 0.03)
+							_klotz("stoff", wm, uz, nx, -0.8, 0.8, -0.03, 0.03, y + 1.0, minf(y + 3.6, decke - 0.4))
+							_klotz("holz", wm, uz, nx, -0.95, 0.95, -0.06, 0.06, minf(y + 3.6, decke - 0.4), minf(y + 3.6, decke - 0.4) + 0.08)
+					ws += 6.0
+				for e: float in [-1.0, 1.0]:
+					_leuchter(c + uz * (iL * 0.15 + e * 3.5) + nx * 1.6, uz, nx, y)
+			4:   # Stall: Boxen mit Trennwänden und Krippen an der Längswand -B, Heu und Stroh
+				if k == 0:
+					var s_ := frei_s
+					while s_ < iL - 2.0:
+						var bm := c + uz * s_ + nx * -(iB - 1.4)
+						_klotz("holz", bm, uz, nx, -0.05, 0.05, -1.4, 1.4, y, y + 1.4)
+						_klotz("holz", bm + uz * 1.4, uz, nx, -0.7, 0.7, -1.4 + 0.05, -1.0, y + 0.6, y + 1.0)
+						_klotz("stroh", bm + uz * 1.4, uz, nx, -1.35, 1.35, -1.0, 1.4, y, y + 0.06)
+						s_ += 2.8
+					for e in 3:
+						var hm := c + uz * (iL - 1.2 - e * 1.3) + nx * (iB - 0.8)
+						_klotz("stroh", hm, uz, nx, -0.6, 0.6, -0.45, 0.45, y, y + 0.5 + 0.5 * (e % 2))
+			5:   # Gesindehaus: Truhen am Fußende der Betten, Wandbretter mit Krügen
+				_regal(c + uz * (iL * 0.5) + nx * -(iB - 0.25), uz, nx, -1.0, y, 1.6, 1.8)
+				_klotz("holz", c + uz * (iL - 2.6), uz, nx, -0.35, 0.35, -0.5, 0.5, y, y + 0.55)
+				_klotz("metall", c + uz * (iL - 2.6), uz, nx, -0.37, 0.37, -0.52, 0.52, y + 0.42, y + 0.47)
+
+
+## Regal an der Wand (Seite -1/1 über nx), Breite entlang uz, mit Krügen und Töpfen auf den Brettern.
+func _regal(m: Vector2, uz: Vector2, nx: Vector2, seite: float, y: float, breite: float, hoehe: float) -> void:
+	var n := nx * seite
+	var b := breite / 2.0
+	for e: float in [-1.0, 1.0]:
+		_klotz("holz", m + uz * e * (b - 0.04), uz, n, -0.04, 0.04, -0.2, 0.2, y, y + hoehe)
+	var brett := 0.4
+	var i := 0
+	while brett < hoehe:
+		_klotz("holz", m, uz, n, -b, b, -0.2, 0.2, y + brett - 0.04, y + brett)
+		for t in 3:
+			var tp := m + uz * (-b + 0.3 + t * (breite - 0.6) / 2.0)
+			_klotz("hell" if (t + i) % 2 == 0 else "metall", tp, uz, n, -0.1, 0.1, -0.1, 0.1, y + brett, y + brett + 0.18 + 0.06 * ((t + i) % 2))
+		brett += 0.6
+		i += 1
+
+
+## Kerzenleuchter auf dem Boden: Fuß, Schaft, drei Kerzen
+func _leuchter(m: Vector2, uz: Vector2, nx: Vector2, y: float) -> void:
+	_klotz("metall", m, uz, nx, -0.2, 0.2, -0.2, 0.2, y, y + 0.06)
+	_klotz("metall", m, uz, nx, -0.03, 0.03, -0.03, 0.03, y + 0.06, y + 1.5)
+	_klotz("metall", m, uz, nx, -0.3, 0.3, -0.03, 0.03, y + 1.5, y + 1.54)
+	for e: float in [-0.27, 0.0, 0.27]:
+		_klotz("hell", m + uz * e, uz, nx, -0.03, 0.03, -0.03, 0.03, y + 1.54, y + 1.72)
+		_klotz("glut", m + uz * e, uz, nx, -0.015, 0.015, -0.015, 0.015, y + 1.72, y + 1.77)
+
+
+## Fenster von innen: helle Scheibe (Tageslicht), Fensterkreuz und Fensterbank. seite zeigt in den Raum.
+func _fenster_innen(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, ym: float, fb: float, fh: float) -> void:
+	var nn := n * signf(seite)
+	var m := c + u * pos + n * abstand
+	var b := fb / 2.0
+	_klotz("fensterlicht", m, u, nn, -b, b, 0.005, 0.025, ym - fh / 2.0, ym + fh / 2.0)
+	_klotz("hell", m, u, nn, -b - 0.12, b + 0.12, 0.0, 0.25, ym - fh / 2.0 - 0.12, ym - fh / 2.0, true)
+	_klotz("holz", m, u, nn, -0.04, 0.04, 0.025, 0.07, ym - fh / 2.0, ym + fh / 2.0)
+	_klotz("holz", m, u, nn, -b, b, 0.025, 0.07, ym + fh * 0.1 - 0.04, ym + fh * 0.1 + 0.04)
 
 
 ## Torbogen: Mauerblock über der Durchfahrt mit rundem Bogen und halb hochgezogenem Fallgitter.
@@ -1018,16 +1152,18 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 	var dh := w[8]
 	var wand: String = [stein, "hell", "mauer", "holz"][clampi(int(w[9]), 0, 3)]
 	var dach := "dach" if int(w[10]) == 0 else "ziegel"
-	var art := int(w[11]) % 10
-	var begehbar := int(w[11]) >= 10      # Art + 10: innen hohl, mit offener Tür, Geschossen und Treppen
-	if int(w[11]) >= 20:                  # Art + 20: ebenso, die Tür auf der anderen Seite (Bau um 180° gedreht)
+	var roh := int(w[11])
+	var art := roh % 10
+	var begehbar := (roh / 10) % 10 >= 1   # Art + 10: innen hohl, mit offener Tür, Geschossen und Treppen
+	var zweck := roh / 100                 # + 100 × Zweck: Einrichtung (siehe _einrichtung)
+	if (roh / 10) % 10 == 2:               # Art + 20: ebenso, die Tür auf der anderen Seite (Bau um 180° gedreht)
 		nx = -nx
 		uz = -uz
 	var geschosse := 1 if art == 1 else maxi(1, int(w[7] / (4.6 if art == 3 else 3.6)))
 	var gh := w[7] / geschosse
 	# Körper und Sockel
 	if begehbar:
-		_innenraum(c, uz, nx, B, L, boden, unten, traufe, geschosse, gh, wand, art)
+		_innenraum(c, uz, nx, B, L, boden, unten, traufe, geschosse, gh, wand, art, zweck)
 	else:
 		_klotz(wand, c, uz, nx, -L, L, -B, B, unten, traufe)
 		_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, boden + 0.7)
@@ -1052,6 +1188,8 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 				if k == 0 and seite > 0 and absf(pos) < 1.8 and art != 1:
 					continue   # dort ist die Tür
 				_fenster(c, uz, nx, pos, B * seite, seite, ym, fb, fh, art == 1)
+				if begehbar:
+					_fenster_innen(c, uz, nx, pos, (B - 0.6) * seite, -seite, ym, fb, fh)
 			# Giebelseiten
 			var quer := int((2.0 * B - 1.5) / 3.4)
 			for f in quer:
@@ -1059,6 +1197,8 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 				if art == 1 and seite > 0 and k == 0 and absf(pos) < 2.0:
 					continue
 				_fenster(c, nx, -uz, pos, -L * seite, -seite, ym, fb, fh, art == 1)
+				if begehbar:
+					_fenster_innen(c, nx, -uz, pos, -(L - 0.6) * seite, seite, ym, fb, fh)
 	# Tür: bei Kirchen in der Giebelseite, sonst mitten in der Längsseite
 	var fb_ := boden + 0.03 if begehbar else boden
 	if art == 1:
@@ -1216,6 +1356,18 @@ func _material(name_: String) -> Material:
 		g.emission = Color(1.0, 0.6, 0.25)
 		g.emission_energy_multiplier = 2.5
 		m = g
+	elif name_ == "fensterlicht":
+		var f := StandardMaterial3D.new()
+		f.albedo_color = Color(0.78, 0.84, 0.9)
+		f.emission_enabled = true
+		f.emission = Color(0.7, 0.78, 0.88)
+		f.emission_energy_multiplier = 0.9
+		m = f
+	elif name_ == "stroh":
+		var h := StandardMaterial3D.new()
+		h.albedo_color = Color(0.74, 0.62, 0.32)
+		h.roughness = 1.0
+		m = h
 	elif name_ == "dunkel":
 		var s := StandardMaterial3D.new()
 		s.albedo_color = Color(0.03, 0.03, 0.035)

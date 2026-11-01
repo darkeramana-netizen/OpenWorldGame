@@ -163,7 +163,7 @@ func _initialize() -> void:
 		var gr := deg_to_rad(w[2])
 		var nx := Vector2(cos(gr), -sin(gr))
 		var uz := Vector2(sin(gr), cos(gr))
-		if int(w[11]) >= 20:
+		if (int(w[11]) / 10) % 10 == 2:
 			nx = -nx
 			uz = -uz
 		var c := Vector2(w[0], w[1])

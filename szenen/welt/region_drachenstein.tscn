@@ -412,11 +412,11 @@ tuerme = PackedFloat32Array(11, 208.5, -8.2411, 13, 7, 1, 11.2, 65, 192.5, -8, 1
 
 [node name="Vorburgbau0" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(7, 165, 13, 8, 24, 0, -1.5, 7, 4.8, 2, 1, 10)
+gebaeude = PackedFloat32Array(7, 165, 13, 8, 24, 0, -1.5, 7, 4.8, 2, 1, 510)
 
 [node name="Vorburgbau1" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(36, 196.5, 0, 22, 9, 0, -1.5, 7, 13.2, 2, 1, 10)
+gebaeude = PackedFloat32Array(36, 196.5, 0, 22, 9, 0, -1.5, 7, 13.2, 2, 1, 410)
 
 [node name="SchildVorburg" type="Label3D" parent="Drachenstein/Burgen"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 36, 9, 172.5)
@@ -458,11 +458,11 @@ stein = "mauer"
 
 [node name="Burghof2Bau0" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(-9, 85, 8, 9, 30, 6, 4.5, 8, 5.4, 2, 0, 10)
+gebaeude = PackedFloat32Array(-9, 85, 8, 9, 30, 6, 4.5, 8, 5.4, 2, 0, 510)
 
 [node name="Burghof2Bau1" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(41, 80, 10, 9, 25, 6, 4.5, 8, 5.4, 2, 0, 10)
+gebaeude = PackedFloat32Array(41, 80, 10, 9, 25, 6, 4.5, 8, 5.4, 2, 0, 510)
 
 [node name="SchildBurghof2" type="Label3D" parent="Drachenstein/Burgen"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 17, 15, 87.5)
@@ -561,7 +561,7 @@ outline_size = 14
 
 [node name="Palas" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(-36.5, -127.5, -4, 16, 55, 38, 36.5, 16, 11, 1, 0, 13)
+gebaeude = PackedFloat32Array(-36.5, -127.5, -4, 16, 55, 38, 36.5, 16, 11, 1, 0, 313)
 
 [node name="PalasTurm" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
@@ -573,11 +573,11 @@ gebaeude = PackedFloat32Array(-6.5, -170, 0, 40, 11, 38, 36.5, 11, 8, 1, 0, 11)
 
 [node name="Burgkueche" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(12, -85, 25, 15, 26, 38, 34.936, 7, 9, 2, 1, 10)
+gebaeude = PackedFloat32Array(12, -85, 25, 15, 26, 38, 34.936, 7, 9, 2, 1, 110)
 
 [node name="Zeughaus" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(16, -147.5, 3, 13, 28, 38, 36.5, 8, 7.8, 2, 0, 10)
+gebaeude = PackedFloat32Array(16, -147.5, 3, 13, 28, 38, 36.5, 8, 7.8, 2, 0, 210)
 
 [node name="SchildPalas" type="Label3D" parent="Drachenstein/Burgen"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -36.5, 60, -130)
