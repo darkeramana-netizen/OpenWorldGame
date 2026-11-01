@@ -160,6 +160,113 @@ tuerme = PackedFloat32Array({_zahlen(_pt[:3] + [PD.H_KERNBURG + 25, 4.2, 1, 9])}
 gebaeude("Drachenkapelle", BG, PD.DRACHENKAPELLE, 11, PD.H_KERNBURG, mat="Material_hell", art=1, dachhoehe=8)
 gebaeude("Burgkueche", BG, PD.BURGKUECHE, 7, PD.H_KERNBURG, dach="Material_dach", zweck=1)
 gebaeude("Zeughaus", BG, PD.ZEUGHAUS, 8, PD.H_KERNBURG, zweck=2)
+# --- Weitere Bauten an den Hofmauern (wie im Referenzbild): Reihen von Wirtschafts- und Wohnbauten innen an den Mauern
+# der Vorburg, des II. Burghofs und der Kernburg. Frei bleiben Tore, Wege, Türme, die vorhandenen Bauten und die Plätze
+# vor ihren Türen, der Übungsplatz und der Felssockel des Bergfrieds. Massiv (nicht begehbar), Tür zum Hof.
+def _rechteck_plan(mx, my, laenge, tiefe, ux, uy):
+    nx_, ny_ = -uy, ux
+    return [(mx + ux * a_ * laenge / 2 + nx_ * b_ * tiefe / 2, my + uy * a_ * laenge / 2 + ny_ * b_ * tiefe / 2)
+            for a_, b_ in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+
+def _ueberlappt(r1, r2):
+    for poly in (r1, r2):
+        for i in range(len(poly)):
+            (x1, z1), (x2, z2) = poly[i], poly[(i + 1) % len(poly)]
+            nx_, nz_ = z2 - z1, x1 - x2
+            p1 = [nx_ * x + nz_ * z for x, z in r1]
+            p2 = [nx_ * x + nz_ * z for x, z in r2]
+            if max(p1) <= min(p2) or max(p2) <= min(p1):
+                return False
+    return True
+
+def _im(p, poly):
+    x, z = p; innen = False
+    for (x1, z1), (x2, z2) in zip(poly, poly[1:] + poly[:1]):
+        if (z1 > z) != (z2 > z) and x < x1 + (z - z1) * (x2 - x1) / (z2 - z1):
+            innen = not innen
+    return innen
+
+def _abst_linie(p, a, b):
+    ax, ay = a; bx_, by_ = b
+    dx, dy = bx_ - ax, by_ - ay
+    t = max(0.0, min(1.0, ((p[0] - ax) * dx + (p[1] - ay) * dy) / max(dx * dx + dy * dy, 1e-9)))
+    return math.hypot(p[0] - ax - t * dx, p[1] - ay - t * dy)
+
+def _bau_plan(bau, rand=0.0):
+    (pp, laenge, breite, dreh) = bau
+    a_ = math.radians(dreh)
+    return _rechteck_plan(pp[0], pp[1], laenge + 2 * rand, breite + 2 * rand, math.cos(a_), math.sin(a_))
+
+_HOF_SPERREN = [_bau_plan(b_, 4) for b_ in PD.VORBURG_BAUTEN + PD.BURGHOF2_BAUTEN + [PD.PALAS, PD.DRACHENKAPELLE, PD.BURGKUECHE, PD.ZEUGHAUS]]
+# Plätze vor den Türen der begehbaren Bauten (Tür mitten auf der Längsseite +x lokal, bei der Kapelle am Giebel)
+for b_ in PD.VORBURG_BAUTEN + PD.BURGHOF2_BAUTEN + [PD.PALAS, PD.BURGKUECHE, PD.ZEUGHAUS]:
+    (pp_, l_, br_, dr_) = b_
+    d_ = (-math.sin(math.radians(dr_)), math.cos(math.radians(dr_)))
+    _HOF_SPERREN.append(_rechteck_plan(pp_[0] + d_[0] * (br_ / 2 + 9), pp_[1] + d_[1] * (br_ / 2 + 9), 18, 18, 1, 0))
+_kp, _kl, _kb, _kd = PD.DRACHENKAPELLE
+_HOF_SPERREN.append(_rechteck_plan(_kp[0] - (_kl / 2 + 9) * math.cos(math.radians(_kd)), _kp[1] - (_kl / 2 + 9) * math.sin(math.radians(_kd)), 18, 18, 1, 0))
+_HOF_SPERREN += [_rechteck_plan(PD.BERGFRIED_KERNBURG[0], PD.BERGFRIED_KERNBURG[1], 52, 52, 1, 0),
+                 _rechteck_plan(960, 225, 50, 50, 1, 0)]                       # Bergfriedfels, Übungsplatz
+_HOF_TUERME = [PD.plan((_tuerme[i], _tuerme[i + 1])) for i in range(0, len(_tuerme), 7)] + \
+              [PD.plan((_vt[i], _vt[i + 1])) for i in range(0, len(_vt), 7)] + \
+              [PD.plan((_bt[i], _bt[i + 1])) for i in range(0, len(_bt), 7)] + \
+              [PD.plan((_zt[i], _zt[i + 1])) for i in range(0, len(_zt), 7)]
+_HOF_WEGE = [w_ for w_ in PD.BURGWEGE]
+random.seed(4711)
+_hofbauten = []
+
+def hofbauten(name, poly, boden, rand_mauer=2.2):
+    n_ = 0
+    pk = poly + [poly[0]]
+    # Umlaufsinn: innen liegt links oder rechts der Kanten
+    flaeche = sum(a_[0] * b_[1] - b_[0] * a_[1] for a_, b_ in zip(pk, pk[1:]))
+    for a_, b_ in zip(pk, pk[1:]):
+        laenge_k = math.dist(a_, b_)
+        ux, uy = (b_[0] - a_[0]) / laenge_k, (b_[1] - a_[1]) / laenge_k
+        nx_, ny_ = (-uy, ux) if flaeche > 0 else (uy, -ux)          # nach innen
+        s_ = 6.0
+        while s_ < laenge_k - 6.0:
+            laenge = random.choice((16, 20, 24, 28))                     # Plan-Einheiten (× 0,5 m)
+            tiefe = random.choice((12, 14, 16))
+            if s_ + laenge > laenge_k - 4.0:
+                break
+            d_ = 3.0 / M * 0.5 + rand_mauer / M + tiefe / 2               # Mauer (halbe Dicke) + Abstand + halbe Tiefe
+            mx, my = a_[0] + ux * (s_ + laenge / 2) + nx_ * d_, a_[1] + uy * (s_ + laenge / 2) + ny_ * d_
+            r_ = _rechteck_plan(mx, my, laenge, tiefe, ux, uy)
+            hof = _rechteck_plan(mx + nx_ * (tiefe / 2 + 5), my + ny_ * (tiefe / 2 + 5), laenge * 0.6, 10, ux, uy)   # vor der Tür
+            ok = all(_im(e_, poly) for e_ in r_)
+            ok = ok and all(math.dist((mx, my), t_) > laenge / 2 + 9 for t_ in _HOF_TUERME)
+            ok = ok and all(math.dist((mx, my), t_) > laenge / 2 + 14 for t_ in PD.TORE.values())
+            ok = ok and not any(_ueberlappt(r_, sp) or _ueberlappt(hof, sp) for sp in _HOF_SPERREN + _hofbauten)
+            ok = ok and all(_abst_linie(e_, w_[i], w_[i + 1]) > 8 for w_ in _HOF_WEGE for i in range(len(w_) - 1)
+                            for e_ in r_ + [((r_[0][0] + r_[1][0]) / 2, (r_[0][1] + r_[1][1]) / 2), ((r_[2][0] + r_[3][0]) / 2, (r_[2][1] + r_[3][1]) / 2), (mx, my)])
+            if ok:
+                wx, wz = W((mx, my))
+                ecken = [W(e_) for e_ in r_]
+                if max(abs(H(x_, z_) - boden) for x_, z_ in ecken) < 1.5:
+                    # Gier: Länge (lokal z) entlang der Mauer, lokal +x (Tür) zum Hof
+                    wu = (W((mx + ux, my + uy))[0] - wx, W((mx + ux, my + uy))[1] - wz)
+                    gier = math.degrees(math.atan2(wu[0], wu[1]))
+                    wn = (W((mx + nx_, my + ny_))[0] - wx, W((mx + nx_, my + ny_))[1] - wz)
+                    lx = (math.cos(math.radians(gier)), -math.sin(math.radians(gier)))
+                    if lx[0] * wn[0] + lx[1] * wn[1] < 0:
+                        gier += 180.0
+                    mat = random.choice(("Material_mauer", "Material_mauer", "Material_hell", "Material_holz"))
+                    dach = random.choice(("Material_dach", "Material_dach", "Material_dach_schiefer"))
+                    steinbau(f"{name}{n_}", BG, round(wx, 2), round(wz, 2), laenge * M, tiefe * M, random.choice((6.5, 7.5, 8.5)),
+                             gier=round(gier, 1), mat=mat, dach=dach, boden=boden, art=0)
+                    _hofbauten.append(_rechteck_plan(mx, my, laenge + 4, tiefe + 4, ux, uy))
+                    n_ += 1
+                    s_ += laenge + random.choice((2, 4, 8))
+                    continue
+            s_ += 4.0
+    return n_
+
+_nh = [hofbauten("Vorburghaus", PD.VORBURG, PD.H_VORBURG), hofbauten("Burghof2Haus", PD.BURGHOF2, PD.H_BURGHOF2),
+       hofbauten("Kernburghaus", PD.KERNBURG, PD.H_KERNBURG)]
+print("Hofbauten (Vorburg, II. Burghof, Kernburg):", _nh)
+if os.environ.get("HOF_JSON"): import json as _j; open(os.environ["HOF_JSON"], "w").write(_j.dumps({"neu": _hofbauten, "sperren": _HOF_SPERREN, "tuerme": _HOF_TUERME}))
+
 for name, pp, text in [("SchildPalas", (995, 155), "Palas"), ("SchildKapelle", (1075, 215), "Drachenkapelle"),
                        ("SchildKueche", (905, 252), "Burgküche"), ("SchildZeughaus", (1030, 260), "Zeughaus")]:
     x, z = W(pp)
