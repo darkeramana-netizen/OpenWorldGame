@@ -803,7 +803,7 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 ## Die Möbel stehen an den Wänden; Tür (Mitte der Längsseite +B), Treppen (am Giebel -L) und die Mitte bleiben frei.
 func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, iB: float, fb: float, gh: float, stockwerke: int,
 		lauf: float, decke_oben: float) -> void:
-	var frei_s := -iL + 0.9 + lauf + 1.2 if stockwerke > 1 else -iL + 0.6   # dahinter ist die Treppe vorbei
+	var frei_s := -iL + 0.9 + lauf + 2.8 if stockwerke > 1 else -iL + 0.6   # dahinter sind Treppe und Austritt frei
 	for k in stockwerke:
 		var y := fb + k * gh
 		var decke := decke_oben if k == stockwerke - 1 else y + gh - 0.5
@@ -884,8 +884,11 @@ func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, i
 						_klotz("holz", bm + uz * 1.4, uz, nx, -0.7, 0.7, -1.4 + 0.05, -1.0, y + 0.6, y + 1.0)
 						_klotz("stroh", bm + uz * 1.4, uz, nx, -1.35, 1.35, -1.0, 1.4, y, y + 0.06)
 						s_ += 2.8
+					# Heuballen in den Ecken an der Türseite, nicht vor der Tür
 					for e in 3:
-						var hm := c + uz * (iL - 1.2 - e * 1.3) + nx * (iB - 0.8)
+						var hs := (iL - 0.8) * (1.0 if e != 1 else -1.0)
+						var hq := iB - (0.8 if e < 2 else 2.0)
+						var hm := c + uz * hs + nx * hq
 						_klotz("stroh", hm, uz, nx, -0.6, 0.6, -0.45, 0.45, y, y + 0.5 + 0.5 * (e % 2))
 			5:   # Gesindehaus: Truhen am Fußende der Betten, Wandbretter mit Krügen
 				_regal(c + uz * (iL * 0.5) + nx * -(iB - 0.25), uz, nx, -1.0, y, 1.6, 1.8)
