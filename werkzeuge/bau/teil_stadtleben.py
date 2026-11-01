@@ -32,7 +32,7 @@ NETZ = STRASSEN + [P(*l) for l in [
 def _bau(pp, laenge, breite, gier=0):
     x, z = W(pp)
     return (x, z, breite, laenge, gier)
-RECHTECKE = [(h[0], h[2], HAUSFORMEN[h[5]][0], HAUSFORMEN[h[5]][1] + 2 * VORKRAGUNG, h[3]) for h in HAEUSER] + [
+RECHTECKE = [(h[0], h[2], HAUSFORMEN[h[5]][0], HAUSFORMEN[h[5]][1] + 2 * VORKRAGUNG, h[3]) for h in HAEUSER + HINTERHAEUSER] + [
     (x, z, 3.4, 2.4, 0) for x, z in STAENDE] + [
     (x, z, 0.9 if art != 2 else 1.3, 0.9, gier) for art, x, y, z, gier in AUSSTATTUNG if art in (0, 1, 2)] + [
     (x, z, 1.8, 3.2, gier) for art, x, y, z, gier in AUSSTATTUNG if art == 4] + [

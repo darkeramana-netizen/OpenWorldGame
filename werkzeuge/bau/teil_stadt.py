@@ -12,7 +12,7 @@ E("Script", "res://szenen/welt/ausstattung.gd", "29_ausstattung")
 HAUSFORMEN = [(float(b), float(t), int(g)) for b, t, g in re.findall(
     r"\[(\d+\.\d+), (\d+\.\d+), (\d), \d, (?:true|false), \d, \d\]",
     (REPO / "szenen" / "welt" / "stadthaeuser.gd").read_text(encoding="utf-8"))]
-assert len(HAUSFORMEN) == 24, len(HAUSFORMEN)
+assert len(HAUSFORMEN) == 32, len(HAUSFORMEN)   # 24 Formen an den Gassen, 8 kleine für die Hinterhöfe
 VORKRAGUNG = 0.35
 KAI_OBEN = PD.H_HAFEN
 KAI_KRONE = KAI_OBEN + 0.04
@@ -31,10 +31,26 @@ MITTE_STADT = W((400, 540))
 # --- Stadtmauer mit der Hafenpforte (in die Stadt kommt man vom Burgweg durch das Burgstraßentor) ---
 SM = PD.STADTMAUER
 mauerring("Stadtmauer", ST, WL(SM), 8.0, dicke=3.0, mitte=MITTE_STADT, strassen=STRASSEN, torname="Hafenpforte")
+# Türme der Stadtmauer: an den Ecken und auf langen Strecken Rundtürme mit Kegeldach, an der Süd- und der Hafenecke
+# zwei breite Bastionen mit Zinnen (wie im Referenzbild). An der Hafenpforte bleibt die Mauer frei.
 _st = []
-for pp in [(240, 600), (330, 665), (420, 674), (600, 664)]:
+_turmorte = []
+for i_, (a_, b_) in enumerate(zip(SM, SM[1:])):
+    if i_ > 0:
+        _turmorte.append(a_)
+    laenge_ = math.dist(a_, b_)
+    for k_ in range(1, int(laenge_ // 70) + 1):
+        t_ = k_ / (int(laenge_ // 70) + 1)
+        _turmorte.append((a_[0] + (b_[0] - a_[0]) * t_, a_[1] + (b_[1] - a_[1]) * t_))
+for pp in _turmorte:
+    if math.dist(pp, PD.TORE["Hafenpforte"]) < 18:
+        continue
     x, z = W(pp)
-    _st += [x, z, H(x, z) - 4, H(x, z) + 11, 4.5, 0, 0]
+    werte_ = [H(x + dx, z + dz) for dx in (-5, 0, 5) for dz in (-5, 0, 5)]
+    if pp in [(330, 665), (600, 664)]:
+        _st += [x, z, min(werte_) - 4, max(werte_) + 10, 7.0, 0, 0]
+    else:
+        _st += [x, z, min(werte_) - 4, max(werte_) + 12, 4.5, 1, 7.5]
 N("StadtmauerTuerme", "Node3D", ST, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_st)})""")
 
@@ -91,6 +107,22 @@ for k_, s_ in enumerate(range(3, int(UH_LAENGE), 12)):
 licht("UHLichtTuer", HF, *(lambda p: (p[0], KAI_OBEN + 3.2, p[1]))(uh(UH_LAENGE - 2.0, 0)), 9.0)
 schild("SchildUntergrundhafen", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(4, -7.5)), "Untergrundhafen", 40)
 schild("SchildUHTuer", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(UH_LAENGE - 0.6, 0)), "Zur Burg (verschlossen)", 32)
+# Torhaus über dem Wassertor (wie im Referenzbild): zwei eckige Türme mit Zeltdach zu beiden Seiten des Bogens, darüber
+# ein Fachwerkhaus auf der Mauerkrone, das über die Mauer vorkragt
+_wa, _wb = W((785, 412)), W((700, 403))
+_wl = math.dist(_wa, _wb)
+_wu = ((_wb[0] - _wa[0]) / _wl, (_wb[1] - _wa[1]) / _wl)          # entlang der Ringmauer
+_wn = (-_wu[1], _wu[0])
+_ringe = [H(_wt[0] + _wu[0] * s_ + _wn[0] * q_, _wt[1] + _wu[1] * s_ + _wn[1] * q_) for s_ in (-10, 0, 10) for q_ in (-4, 0, 4)]
+_wt_oben = max(-19.6 + 9.0, max(_ringe) + 9.0)                     # wie mauerring: Krone des Torbaus
+_tt = []
+for s_ in (-1, 1):
+    _tx, _tz = _wt[0] + _wu[0] * s_ * 7.8, _wt[1] + _wu[1] * s_ * 7.8
+    _tt += [round(_tx, 2), round(_tz, 2), round(_wu[0], 4), round(_wu[1], 4), -21.0, round(_wt_oben + 7.0, 2), 5.0, 5.4, -1, 1.3]
+_tg = math.degrees(math.atan2(_wu[0], _wu[1]))
+N("HafenTorhaus", "Node3D", HF, f"""script = ExtResource("28_burgbau")
+torbauten = PackedFloat32Array({_zahlen(_tt)})
+gebaeude = PackedFloat32Array({_zahlen([round(_wt[0], 2), round(_wt[1], 2), round(_tg, 2), 6.2, 10.4, round(_wt_oben + 0.1, 2), round(_wt_oben, 2), 4.6, 3.6, 3, 1, 0])})""")
 schild("SchildWassertor", HF, round(_wt[0] + 4, 2), KAI_OBEN + 4, round(_wt[1] + 7, 2), "Zum Untergrundhafen", 40)
 _hm = W((720, 520))
 schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
@@ -239,7 +271,7 @@ for linie, halb, seiten in ZEILEN:
             nx, nz = -uz * seite, ux * seite        # von der Straße weg
             s = 2.0
             while s < laenge - 2.0:
-                form = random.randrange(24)
+                form = random.randrange(32)
                 b, t, _ = HAUSFORMEN[form]
                 if s + b / 2 > laenge - 1.0:
                     break
@@ -258,10 +290,49 @@ for linie, halb, seiten in ZEILEN:
                         continue
                 s += 1.5
 
+# Hinterhäuser: Die Blöcke zwischen den Gassen werden dicht bebaut wie in einer alten Hafenstadt. Jedes Haus richtet
+# sich nach der nächsten Gasse aus; bewohnt sind nur die Häuser an den Gassen (HAEUSER), die Hinterhäuser stehen
+# den Stadtleuten nur im Weg (RECHTECKE in teil_stadtleben.py).
+HINTERHAEUSER = []
+_xs = [p_[0] for p_ in STADT_UMRISS]; _zs = [p_[1] for p_ in STADT_UMRISS]
+_kandidaten = [(x_ + random.uniform(-1.2, 1.2), z_ + random.uniform(-1.2, 1.2))
+               for x_ in range(int(min(_xs)), int(max(_xs)), 3) for z_ in range(int(min(_zs)), int(max(_zs)), 3)]
+random.shuffle(_kandidaten)
+def _naechste_gasse(x, z):
+    beste = None
+    for s_ in STRASSEN:
+        for a_, b_ in zip(s_, s_[1:]):
+            d_ = abstand_linie([a_, b_], x, z)
+            if beste is None or d_ < beste[0]:
+                beste = (d_, a_, b_)
+    return beste
+for hx, hz in _kandidaten:
+    if not im_vieleck((hx, hz), STADT_UMRISS):
+        continue
+    _, a_, b_ = _naechste_gasse(hx, hz)
+    ux, uz = b_[0] - a_[0], b_[1] - a_[1]
+    l_ = math.hypot(ux, uz); ux, uz = ux / l_, uz / l_
+    # Vorderseite zur Gasse: Normale zur Gasse auf der Seite des Hauses
+    nx, nz = -uz, ux
+    if (hx - a_[0]) * nx + (hz - a_[1]) * nz < 0:
+        nx, nz = -nx, -nz
+    gier = math.degrees(math.atan2(-nx, -nz)) + random.choice((0, 0, 0, 180))
+    form = random.randrange(24, 32) if random.random() < 0.8 else random.randrange(24)
+    b, t, _ = HAUSFORMEN[form]
+    ecken4 = rechteck(hx, hz, b + 0.1, t + 2 * VORKRAGUNG, gier)
+    if not bauplatz_frei(ecken4, _haus_ecken, STRASSE_HALB):
+        continue
+    hoehen = [H(x, z) for x, z in ecken4]
+    y = min(hoehen)
+    if max(hoehen) - y < 3.0:
+        HINTERHAEUSER.append((round(hx, 2), round(y, 2), round(hz, 2), round(gier, 1), 0, form))
+        _haus_ecken.append(ecken4)
+
+_alle_haeuser = HAEUSER + HINTERHAEUSER
 N("Stadthaeuser", "Node3D", DS, "script = ExtResource(\"27_stadthaeuser\")\n"
-  + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _, _ in HAEUSER) + ")\n"
-  + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HAEUSER) + ")")
-print("Stadthäuser:", len(HAEUSER))
+  + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _, _ in _alle_haeuser) + ")\n"
+  + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in _alle_haeuser) + ")")
+print("Stadthäuser:", len(HAEUSER), "an den Gassen,", len(HINTERHAEUSER), "Hinterhäuser")
 
 # --- Ausstattung: Stände, Kram, Koggen ---
 AUSSTATTUNG = [(3, x, H(x, z), z, 0) for x, z in STAENDE + STAENDE_MEHR] + SCHIFFE

@@ -70,7 +70,10 @@ mauerring("Ringmauer", BG, WL(RING), 9.0, dicke=3.0, mitte=MITTE_BURG,
 _tuerme = []
 for pp, r, dach in [(PD.WEHRTURM, 6.0, 0), ((1190, 55), 6.0, 1), ((1230, 140), 6.5, 1), (PD.RONDELL, 10.0, 0),
                     ((880, 60), 5.0, 1), ((560, 100), 5.0, 1), ((330, 180), 5.0, 1), ((470, 376), 4.5, 0),
-                    ((1000, 393), 5.0, 1)]:
+                    ((1000, 393), 5.0, 1),
+                    # weitere Rundtürme mit Kegeldach wie im Referenzbild
+                    ((700, 403), 5.0, 1), ((600, 390), 5.0, 1), ((640, 72), 5.0, 1), ((1100, 30), 5.0, 1),
+                    ((1245, 250), 5.5, 1), ((1100, 375), 5.0, 1), ((900, 405), 5.0, 1)]:
     x, z = W(pp)
     unten = min(H(x + dx, z + dz) for dx in (-r, 0, r) for dz in (-r, 0, r)) - 2.5
     oben = max(H(x + dx, z + dz) for dx in (-r, 0, r) for dz in (-r, 0, r)) + 14
@@ -108,6 +111,12 @@ mauerring("Sperrmauer", BG, WL(PD.SPERRMAUER), 7.0, dicke=2.5, mitte=W((300, 380
 B2 = PD.BURGHOF2[1:] + [PD.BURGHOF2[0]]
 mauerring("BurghofZwei", BG, WL(B2), 9.0, dicke=3.0, mitte=W((560, 260)),
          tore=tore_an(B2, (PD.TORE["Rampentor"], 5.0, "Rampentor"), (PD.TORE["Tor des III. Burghofs"], 6.0, "")))
+# Rundtürme mit Kegeldach an den Ecken des II. und III. Burghofs
+_bt = []
+for pp in [(530, 192), (600, 182), (650, 136), (838, 134), (842, 310), (668, 318)]:
+    _bt += turmmasse(pp, 4.5, 13) + [4.5, 1, 7.5]
+N("BurghofTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+tuerme = PackedFloat32Array({_zahlen(_bt)})""")
 for k, bau in enumerate(PD.BURGHOF2_BAUTEN):
     gebaeude(f"Burghof2Bau{k}", BG, bau, 8, PD.H_BURGHOF2, zweck=5)
 schild("SchildBurghof2", BG, *(lambda p: (p[0], PD.H_BURGHOF2 + 9, p[1]))(W((560, 262))), "II. Burghof", 40)
