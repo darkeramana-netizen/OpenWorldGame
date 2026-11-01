@@ -107,7 +107,7 @@ func _initialize() -> void:
 	# Wege der Burgfeste nach dem Grundriss (docs/bilder/grundriss-drachenstein-2.webp)
 	# Hinauf: III. Burghof um den Hof herum → Burgtor → Zwingerweg einmal um die Kernburg → Kernburgtor
 	await setze(Vector3(0, 14.3, 46))
-	var hinauf := await gehe_ueber([Vector2(-39, 42.5), Vector2(-39, -40), Vector2(-3, -44), Vector2(-3, -52.5), Vector2(-3, -60.5),
+	var hinauf := await gehe_ueber([Vector2(-34, 41), Vector2(-34, -37), Vector2(-3, -38), Vector2(-3, -44), Vector2(-3, -52.5), Vector2(-3, -60.5),
 			Vector2(-34, -62), Vector2(-50, -72.5), Vector2(-59, -97.5), Vector2(-62, -132.5), Vector2(-62, -172.5), Vector2(-45, -191.5),
 			Vector2(-14, -197.5), Vector2(16, -196.5), Vector2(37, -186.5), Vector2(36, -176), Vector2(31.5, -173.5), Vector2(24, -170),
 			Vector2(15, -163), Vector2(8, -163), Vector2(6, -152.5)], 40.0)

@@ -583,6 +583,154 @@ gebaeude = PackedFloat32Array(12, -85, 25, 15, 26, 38, 34.936, 7, 9, 2, 1, 110)
 script = ExtResource("28_burgbau")
 gebaeude = PackedFloat32Array(16, -147.5, 3, 13, 28, 38, 36.5, 8, 7.8, 2, 0, 210)
 
+[node name="Vorburghaus0" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(14.07, 197.39, 22.4, 7, 8, 0, -1.5, 6.5, 4.2, 1, 0, 0)
+
+[node name="Vorburghaus1" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(30.89, 147.59, 263, 8, 12, 0, -1.5, 8.5, 4.8, 2, 1, 0)
+
+[node name="Vorburghaus2" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(55.01, 166.13, 184.6, 8, 10, 0, -1.5, 8.5, 4.8, 3, 1, 0)
+
+[node name="Vorburghaus3" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(56.62, 179.04, 184.6, 7, 8, 0, -1.5, 6.5, 4.2, 2, 1, 0)
+
+[node name="Burghof2Haus0" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(1.86, 135.41, 102.7, 7, 14, 6, 4.4085, 6.5, 4.2, 2, 1, 0)
+
+[node name="Burghof2Haus1" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-3.12, 120.48, 22, 7, 12, 6, 4.5, 6.5, 4.2, 2, 0, 0)
+
+[node name="Burghof2Haus2" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(43.98, 99.26, 170.7, 6, 8, 6, 4.5, 6.5, 3.6, 2, 1, 0)
+
+[node name="Burghof2Haus3" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(37.79, 111.48, 128.5, 6, 12, 6, 4.5, 6.5, 3.6, 3, 0, 0)
+
+[node name="Burghof3Haus0" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-33.87, -46.1, 271.1, 6, 12, 14, 12.557, 8.5, 3.6, 2, 1, 0)
+
+[node name="Burghof3Haus1" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-19.88, -46.41, 272.3, 6, 14, 14, 12.245, 8.5, 3.6, 2, 0, 0)
+
+[node name="Burghof3Haus2" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(10.11, -47.1, 271.1, 6, 12, 14, 12.544, 6.5, 3.6, 1, 1, 0)
+
+[node name="Burghof3Haus3" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(22.12, -46.87, 271.1, 7, 8, 14, 12.516, 7.5, 4.2, 1, 1, 0)
+
+[node name="Burghof3Haus4" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(33.12, -47.12, 271.1, 7, 8, 14, 12.486, 8.5, 4.2, 3, 0, 0)
+
+[node name="Burghof3Haus5" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(21, 43.8, 90, 6, 14, 14, 12.5, 7.5, 3.6, 2, 0, 0)
+
+[node name="Kernburghaus0" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-2.5, -78.2, 90, 6, 10, 38, 36.5, 8.5, 3.6, 1, 1, 0)
+
+[node name="Kernburghaus1" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-12.5, -79.2, 90, 8, 8, 38, 36.5, 7.5, 4.8, 1, 0, 0)
+
+[node name="Kernburghaus2" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-23.76, -82.02, 53.8, 7, 10, 38, 36.5, 6.5, 4.2, 1, 1, 0)
+
+[node name="Kernburghaus3" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(30.3, -128.5, 180, 6, 8, 38, 36.5, 8.5, 3.6, 3, 1, 0)
+
+[node name="Vorburghaus4" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(24.1, 171.89, 12.9, 6, 10, 0, -1.5, 8.5, 3.6, 3, 1, 0)
+
+[node name="Vorburghaus5" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(36.51, 184.52, 122.7, 7, 8, 0, -1.5, 6.5, 4.2, 3, 1, 0)
+
+[node name="Vorburghaus6" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(45.24, 171.8, 184.7, 6, 8, 0, -1.5, 7.5, 3.6, 3, 0, 0)
+
+[node name="Vorburghaus7" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(10.06, 184.67, 12.7, 6, 7, 0, -1.5, 9.5, 3.6, 2, 1, 0)
+
+[node name="Vorburghaus8" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(19.21, 183.62, 23.5, 6, 8, 0, -1.5, 7.5, 3.6, 1, 0, 0)
+
+[node name="Burghof2Haus4" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(5.25, 107.7, 22, 7, 8, 6, 4.5, 6.5, 4.2, 2, 1, 0)
+
+[node name="Burghof2Haus5" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(28.59, 104.89, 128.5, 6, 12, 6, 4.5, 8.5, 3.6, 3, 1, 0)
+
+[node name="Burghof2Haus6" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(24.44, 121.05, 139.9, 7, 7, 6, 4.5, 6.5, 4.2, 1, 1, 0)
+
+[node name="Burghof2Haus7" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(18.54, 64.06, 270, 7, 7, 6, 4.5, 6.5, 4.2, 2, 0, 0)
+
+[node name="Burghof2Haus8" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-11.07, 63, 8.1, 7, 10, 6, 4.5, 9.5, 4.2, 3, 1, 0)
+
+[node name="Burghof2Haus9" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-8.4, 109.67, 22, 7, 7, 6, 4.5, 9.5, 4.2, 1, 1, 0)
+
+[node name="Burghof2Haus10" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(6.59, 94.68, 8.1, 6, 8, 6, 4.5, 7.5, 3.6, 1, 1, 0)
+
+[node name="Kernburghaus4" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-11.73, -133.49, 5.8, 7, 10, 38, 36.5, 6.5, 4.2, 2, 0, 0)
+
+[node name="Kernburghaus5" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(25.69, -99.1, 166.2, 7, 7, 38, 36.5, 8.5, 4.2, 2, 0, 0)
+
+[node name="Kernburghaus6" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(24.18, -117.74, 180, 7, 7, 38, 36.5, 6.5, 4.2, 3, 0, 0)
+
+[node name="Kernburghaus7" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-12.05, -148.76, 270, 7, 10, 38, 36.5, 7.5, 4.2, 1, 1, 0)
+
+[node name="Kernburghaus8" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(19.44, -107.02, 166, 6, 8, 38, 36.5, 9.5, 3.6, 3, 1, 0)
+
+[node name="Kernburghaus9" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-21.35, -93.03, 54.1, 7, 12, 38, 36.5, 7.5, 4.2, 2, 0, 0)
+
+[node name="Kernburghaus10" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array(-7.44, -89.11, 90, 7, 7, 38, 36.5, 9.5, 4.2, 3, 1, 0)
+
 [node name="SchildPalas" type="Label3D" parent="Drachenstein/Burgen"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -36.5, 60, -130)
 billboard = 1
