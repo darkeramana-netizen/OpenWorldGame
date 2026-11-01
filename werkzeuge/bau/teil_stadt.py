@@ -95,6 +95,14 @@ for start, richtung, abschnitte in [((700, 447), (1, 0), 5), ((628, 525), (0, -1
     dx_, dz_ = richtung                  # Weltrichtung ins Becken
     g_ = math.degrees(math.atan2(dx_, dz_))
     qx_, qz_ = math.cos(math.radians(g_)), -math.sin(math.radians(g_))   # lokal x (quer)
+    # glatte, unsichtbare Lauffläche als Kollision (die Scanform des Decks ist zu uneben zum Gehen)
+    laenge_ = abschnitte * 2.9 + 0.6
+    mx_, mz_ = sx_ + dx_ * laenge_ / 2.0, sz_ + dz_ * laenge_ / 2.0
+    _nr = start[0]
+    S(f'''[sub_resource type="BoxShape3D" id="Form_steg{_nr}"]
+size = Vector3(2.5, 0.4, {laenge_:.2f})''')
+    N(f"StegBoden{_nr}", "StaticBody3D", HF, T(round(mx_, 2), round(KAI_OBEN + 0.2 - 0.2, 2), round(mz_, 2), round(g_, 1)))
+    N("Form", "CollisionShape3D", f"{HF}/StegBoden{_nr}", f'shape = SubResource("Form_steg{_nr}")')
     for k in range(abschnitte):
         ox = sx_ + dx_ * (k * 2.9 + 0.32) - qx_ * 0.98
         oz = sz_ + dz_ * (k * 2.9 + 0.32) - qz_ * 0.98
@@ -112,7 +120,7 @@ N("Hafenausstattung", "Node3D", HF, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray("{STEG}#0", "{STEG}#1", "{STEG}#2", "{STEG}#3", "{STEG}#4", "res://modelle/hafen/barrel_03/barrel_03.gltf", "res://modelle/hafen/wooden_crate_01/wooden_crate_01.gltf#1", "res://modelle/hafen/wooden_crate_02/wooden_crate_02.gltf#0")
 stuecke = PackedFloat32Array({", ".join(f"{v:.6g}" for st_ in _steg for v in st_)})
 sichtweite = 400.0
-ohne_kollision = PackedInt32Array(0)""")
+ohne_kollision = PackedInt32Array(0, 3)""")
 
 # --- Marktplatz mit Brunnen und Ständen ---
 MK = DS + "/Marktplatz"
