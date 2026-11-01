@@ -145,7 +145,7 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
         # Der Torbau reicht so hoch wie die Mauer daneben, sonst bleibt über dem Bogen eine Lücke
         oben_tor = max(boden + hoehe, max(rings) + hoehe)
         torboegen += [tx, tz, ux, uz, boden, breite, oben_tor, dicke]
-        for s_ in (-1, 1):
+        for s_ in ((-1, 1) if boden_fest is None else ()):   # ein Wassertor unten in der Mauer hat keine Tortürme
             px, pz = tx + ux * (breite / 2 + 2.6) * s_, tz + uz * (breite / 2 + 2.6) * s_
             unten = min(H(px, pz), boden) - 2.5
             torbauten += [px, pz, ux, uz, unten, oben_tor + 6, 5.0, dicke + 2, seite, 1]
