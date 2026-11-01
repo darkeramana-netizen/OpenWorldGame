@@ -44,8 +44,8 @@ def kaimauer(name, punkte, offen=()):
         if i in offen:
             continue
         # 4 m dick: das Gelände fällt an der Kante über ein Rasterfeld (2,5 m) ab, die Mauer deckt den Abhang ganz ab;
-        # oben nur eine niedrige Kante, so geht man vom Kai auf die Stege
-        mauerring(f"{name}{i}", HF, [a, b], 0.2, dicke=4.0, zinnen=False, mat="Material_kai")
+        # oben bündig mit dem Kai, so geht man vom Kai auf die Stege
+        mauerring(f"{name}{i}", HF, [a, b], 0.0, dicke=4.0, zinnen=False, mat="Material_kai")
 # Kaimauern ums Becken; offen bleiben die Hafeneinfahrt und der Kanal zum Wassertor
 kaimauer("KaiBecken", BECKEN, offen=(PD.HAFENEINFAHRT, 1))
 kaimauer("KaiNord", WL([(700, 444), (744, 447.5)]) + WL([(764, 449.2), (790, 452)]), offen=(1, 3))

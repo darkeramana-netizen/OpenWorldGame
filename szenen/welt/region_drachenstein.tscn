@@ -692,7 +692,7 @@ tuerme = PackedFloat32Array(186, 247.5, -18.527, -3.5274, 4.5, 0, 0, 218.5, 202.
 
 [node name="KaiBecken0Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array(112, 51.5, 110.67, 40.167, -29.5, -17.6, 4, 0.99315, -0.11684, 0, 110.67, 40.167, 109.33, 28.833, -29.5, -17.6, 4, 0.99315, -0.11684, 0, 109.33, 28.833, 108, 17.5, -29.5, -17.6, 4, 0.99315, -0.11684, 0)
+mauern = PackedFloat32Array(112, 51.5, 110.67, 40.167, -29.5, -17.8, 4, 0.99315, -0.11684, 0, 110.67, 40.167, 109.33, 28.833, -29.5, -17.8, 4, 0.99315, -0.11684, 0, 109.33, 28.833, 108, 17.5, -29.5, -17.8, 4, 0.99315, -0.11684, 0)
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
@@ -700,7 +700,7 @@ stein = "kai"
 
 [node name="KaiBecken2Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array(112, -27.5, 122, -38.5, -29.5, -17.6, 4, 0.73994, 0.67267, 0)
+mauern = PackedFloat32Array(112, -27.5, 122, -38.5, -29.5, -17.8, 4, 0.73994, 0.67267, 0)
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
@@ -708,7 +708,7 @@ stein = "kai"
 
 [node name="KaiBecken3Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array(122, -38.5, 134.67, -40.167, -29.5, -17.6, 4, -0.13045, -0.99145, 0, 134.67, -40.167, 147.33, -41.833, -29.5, -17.6, 4, -0.13045, -0.99145, 0, 147.33, -41.833, 160, -43.5, -29.5, -17.6, 4, -0.13045, -0.99145, 0)
+mauern = PackedFloat32Array(122, -38.5, 134.67, -40.167, -29.5, -17.8, 4, -0.13045, -0.99145, 0, 134.67, -40.167, 147.33, -41.833, -29.5, -17.8, 4, -0.13045, -0.99145, 0, 147.33, -41.833, 160, -43.5, -29.5, -17.8, 4, -0.13045, -0.99145, 0)
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
@@ -716,7 +716,7 @@ stein = "kai"
 
 [node name="KaiBecken5Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array(188, -35.5, 187, -24, -29.5, -17.6, 4, 0.99624, 0.08663, 0, 187, -24, 186, -12.5, -29.5, -17.6, 4, 0.99624, 0.08663, 0)
+mauern = PackedFloat32Array(188, -35.5, 187, -24, -29.5, -17.8, 4, 0.99624, 0.08663, 0, 187, -24, 186, -12.5, -29.5, -17.8, 4, 0.99624, 0.08663, 0)
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
@@ -724,7 +724,7 @@ stein = "kai"
 
 [node name="KaiBecken6Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array(186, -12.5, 186, 1, -29.5, -17.6, 4, 1, -0, 0, 186, 1, 186, 14.5, -29.5, -17.6, 4, 1, -0, 0, 186, 14.5, 186, 28, -29.5, -17.6, 4, 1, -0, 0, 186, 28, 186, 41.5, -29.5, -17.6, 4, 1, -0, 0)
+mauern = PackedFloat32Array(186, -12.5, 186, 1, -29.5, -17.8, 4, 1, -0, 0, 186, 1, 186, 14.5, -29.5, -17.8, 4, 1, -0, 0, 186, 14.5, 186, 28, -29.5, -17.8, 4, 1, -0, 0, 186, 28, 186, 41.5, -29.5, -17.8, 4, 1, -0, 0)
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
@@ -732,7 +732,7 @@ stein = "kai"
 
 [node name="KaiBecken7Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array(186, 41.5, 176, 46, -29.5, -17.6, 4, 0.41036, 0.91192, 0, 176, 46, 166, 50.5, -29.5, -17.6, 4, 0.41036, 0.91192, 0)
+mauern = PackedFloat32Array(186, 41.5, 176, 46, -29.5, -17.8, 4, 0.41036, 0.91192, 0, 176, 46, 166, 50.5, -29.5, -17.8, 4, 0.41036, 0.91192, 0)
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
@@ -740,7 +740,7 @@ stein = "kai"
 
 [node name="KaiBecken8Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array(166, 50.5, 153.67, 52.5, -29.5, -17.6, 4, 0.16007, 0.98711, 0, 153.67, 52.5, 141.33, 54.5, -29.5, -17.6, 4, 0.16007, 0.98711, 0, 141.33, 54.5, 129, 56.5, -29.5, -17.648, 4, 0.16007, 0.98711, 0)
+mauern = PackedFloat32Array(166, 50.5, 153.67, 52.5, -29.5, -17.8, 4, 0.16007, 0.98711, 0, 153.67, 52.5, 141.33, 54.5, -29.5, -17.8, 4, 0.16007, 0.98711, 0, 141.33, 54.5, 129, 56.5, -29.5, -17.848, 4, 0.16007, 0.98711, 0)
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
@@ -748,7 +748,7 @@ stein = "kai"
 
 [node name="KaiBecken9Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array(129, 56.5, 120.5, 54, -29.5, -17.558, 4, -0.28217, 0.95937, 0, 120.5, 54, 112, 51.5, -29.5, -17.598, 4, -0.28217, 0.95937, 0)
+mauern = PackedFloat32Array(129, 56.5, 120.5, 54, -29.5, -17.758, 4, -0.28217, 0.95937, 0, 120.5, 54, 112, 51.5, -29.5, -17.798, 4, -0.28217, 0.95937, 0)
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
@@ -756,7 +756,7 @@ stein = "kai"
 
 [node name="KaiNord0Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array(108, 17.5, 108.88, 6.5, -29.5, -17.6, 4, 0.99685, 0.079295, 0, 108.88, 6.5, 109.75, -4.5, -29.5, -17.6, 4, 0.99685, 0.079295, 0)
+mauern = PackedFloat32Array(108, 17.5, 108.88, 6.5, -29.5, -17.8, 4, 0.99685, 0.079295, 0, 108.88, 6.5, 109.75, -4.5, -29.5, -17.8, 4, 0.99685, 0.079295, 0)
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
@@ -764,7 +764,7 @@ stein = "kai"
 
 [node name="KaiNord2Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array(110.6, -14.5, 112, -27.5, -29.5, -17.6, 4, 0.99425, 0.10707, 0)
+mauern = PackedFloat32Array(110.6, -14.5, 112, -27.5, -29.5, -17.8, 4, 0.99425, 0.10707, 0)
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
