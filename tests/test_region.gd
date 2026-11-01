@@ -193,6 +193,7 @@ func _initialize() -> void:
 			print("       Gebäude nicht begehbar: %s (stehe bei %s)" % [bau.name, spieler().global_position.snapped(Vector3.ONE * 0.1)])
 	pruefe(gebaeude_alle >= 8 and gebaeude_ok == gebaeude_alle,
 			"Begehbare Gebäude: %d von %d durch die Tür betreten, Treppen hinauf" % [gebaeude_ok, gebaeude_alle])
+	await setze(Vector3(100, g.hoehe_bei(100, -0.5) + 0.3, -0.5))   # zurück auf den Nordkai für den Weg zur Mole
 	# Zurück zum Becken, über den Westkai zum Speicherkai, durch die Molenpforte über Mole und Brücken zu den Inseln
 	var mole := await gehe_ueber([Vector2(100, -0.5), Vector2(100, 27.5), Vector2(106, 52.5),
 			Vector2(121, 61.5), Vector2(166, 61.5), Vector2(186, 56.5), Vector2(191.5, 47.5), Vector2(191.5, 17.5), Vector2(191.5, -8.5), Vector2(201, -10),

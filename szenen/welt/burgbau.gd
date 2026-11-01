@@ -729,7 +729,7 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 				bs += 1.6
 		elif art == 2:
 			# Lager: Kistenstapel und Säcke an den Wänden, frei bleiben Tür und Treppen
-			var ks := -iL + lauf + 1.5
+			var ks := -iL + lauf + 3.5          # hinter dem Treppenausgang
 			var i := 0
 			while ks < iL - 1.0:
 				if absf(ks) > 2.0:

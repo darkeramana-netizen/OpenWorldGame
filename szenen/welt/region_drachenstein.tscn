@@ -561,7 +561,7 @@ outline_size = 14
 
 [node name="Palas" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(-36.5, -130, -4, 16, 60, 38, 36.5, 16, 11, 1, 0, 13)
+gebaeude = PackedFloat32Array(-36.5, -127.5, -4, 16, 55, 38, 36.5, 16, 11, 1, 0, 13)
 
 [node name="PalasTurm" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
