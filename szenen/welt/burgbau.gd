@@ -583,7 +583,7 @@ func _halle(w: PackedFloat32Array) -> void:
 			_klotz("mauer", c, u, n, s_ - 0.65, s_ + 0.65, seitlich.call(sq, hb - 0.75, hb).x, seitlich.call(sq, hb - 0.75, hb).y, boden, boden + 0.5)
 			var ks: Vector2 = seitlich.call(sq, hb - 0.8, hb)
 			_klotz("hell", c, u, n, s_ - 0.65, s_ + 0.65, ks.x, ks.y, kaempfer - 0.3, kaempfer, true)
-			if nr % 2 == 0:
+			if true:
 				var lm := c + u * s_ + n * sq * (hb - 0.6)
 				var ni := -n * sq
 				var y := boden + 2.6
@@ -597,6 +597,15 @@ func _halle(w: PackedFloat32Array) -> void:
 				_klotz("metall", pm, u, n, -0.21, 0.21, -0.21, 0.21, boden + 0.7, boden + 0.78)
 		s_ += joch
 		nr += 1
+	# Hängeleuchten über dem Becken (alle 12 m an Ketten vom Scheitel)
+	var hs := 3.0
+	while hs < L:
+		var hm := c + u * hs
+		_klotz("metall", hm, u, n, -0.03, 0.03, -0.03, 0.03, boden + 7.5, scheitel)
+		_klotz("metall", hm, u, n, -0.35, 0.35, -0.35, 0.35, boden + 7.4, boden + 7.5)
+		_klotz("glut", hm, u, n, -0.25, 0.25, -0.25, 0.25, boden + 6.8, boden + 7.4)
+		_klotz("metall", hm, u, n, -0.3, 0.3, -0.3, 0.3, boden + 6.72, boden + 6.8)
+		hs += 12.0
 	# Kämpfergesims durchgehend an den Längswänden
 	for sq: float in [-1.0, 1.0]:
 		var kg: Vector2 = seitlich.call(sq, hb - 0.25, hb)
@@ -767,15 +776,25 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 					_klotz("stoff", bm, uz, nx, -0.95, 0.75, -0.48, 0.48, y + 0.45, y + 0.6)
 					_klotz("hell", bm, uz, nx, 0.75, 0.98, -0.4, 0.4, y + 0.45, y + 0.62)
 					_klotz("holz", bm, uz, nx, 0.95, 1.05, -0.5, 0.5, y, y + 1.0)
-	# Licht je Geschoss (warm, ohne Schatten)
+	# Licht je Geschoss: Hängeleuchten etwa alle 9 m entlang des Baus (warm, ohne Schatten)
+	var anzahl := maxi(1, int(ceil(2.0 * iL / 9.0)))
 	for k in stockwerke:
 		var y := fb + k * gh
-		var l := OmniLight3D.new()
-		l.light_color = Color(1.0, 0.8, 0.55)
-		l.light_energy = 1.4
-		l.omni_range = clampf(maxf(L, B) * 1.3, 6.0, 22.0)
-		l.position = Vector3(c.x + uz.x * iL * 0.15, minf(y + gh * 0.75, traufe - 0.6), c.y + uz.y * iL * 0.15)
-		add_child(l)
+		var decke := traufe - 0.3 if k == stockwerke - 1 else y + gh - 0.5
+		for i in anzahl:
+			var s_ := -iL + (i + 0.5) * 2.0 * iL / anzahl
+			var lp := c + uz * s_
+			var hoehe := minf(y + 2.6, decke - 0.4)
+			_klotz("metall", lp, uz, nx, -0.02, 0.02, -0.02, 0.02, hoehe + 0.3, decke)
+			_klotz("metall", lp, uz, nx, -0.2, 0.2, -0.2, 0.2, hoehe + 0.25, hoehe + 0.3)
+			_klotz("glut", lp, uz, nx, -0.14, 0.14, -0.14, 0.14, hoehe - 0.15, hoehe + 0.25)
+			var l := OmniLight3D.new()
+			l.light_color = Color(1.0, 0.8, 0.55)
+			l.light_energy = 1.8
+			l.omni_range = clampf(B * 2.2, 8.0, 16.0)
+			l.omni_attenuation = 0.8
+			l.position = Vector3(lp.x, hoehe - 0.3, lp.y)
+			add_child(l)
 
 
 ## Torbogen: Mauerblock über der Durchfahrt mit rundem Bogen und halb hochgezogenem Fallgitter.
@@ -1168,11 +1187,12 @@ func _tuer(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite
 		_klotz("holz", m + u * (b + 0.05), u, nn, -0.06, 0.04, -0.6 - tb * 0.9, -0.6, boden, boden + th - 0.05)
 	else:
 		_klotz("holz", m, u, nn, -b, b, -0.06, 0.04, boden, boden + th)
+		# Eisenbänder auf dem geschlossenen Türblatt
+		_klotz("metall", m, u, nn, -b * 0.8, b * 0.8, 0.04, 0.07, boden + th * 0.3, boden + th * 0.3 + 0.08)
+		_klotz("metall", m, u, nn, -b * 0.8, b * 0.8, 0.04, 0.07, boden + th * 0.75, boden + th * 0.75 + 0.08)
 	_klotz("hell", m, u, nn, -b - 0.3, -b, -0.02, 0.15, boden, boden + th + 0.3)
 	_klotz("hell", m, u, nn, b, b + 0.3, -0.02, 0.15, boden, boden + th + 0.3)
 	_klotz("hell", m, u, nn, -b - 0.3, b + 0.3, -0.02, 0.18, boden + th, boden + th + 0.45, true)
-	_klotz("metall", m, u, nn, -b * 0.8, b * 0.8, 0.04, 0.07, boden + th * 0.3, boden + th * 0.3 + 0.08)
-	_klotz("metall", m, u, nn, -b * 0.8, b * 0.8, 0.04, 0.07, boden + th * 0.75, boden + th * 0.75 + 0.08)
 
 
 # ---------- Materialien ----------

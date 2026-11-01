@@ -845,52 +845,117 @@ hallen = PackedFloat32Array(87.6, -9.5, -1, 0, 60, 36, 12, 6, -17.76, 5, 6, 10, 
 [node name="UHLicht0a" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 81.6, -14.6, 7.1)
 light_color = Color(1, 0.82, 0.6, 1)
-omni_range = 13.0
+omni_range = 15.0
 
 [node name="UHLicht0b" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 81.6, -14.6, -26.1)
 light_color = Color(1, 0.82, 0.6, 1)
-omni_range = 13.0
+omni_range = 15.0
 
 [node name="UHLicht1a" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 69.6, -14.6, 7.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 75.6, -14.6, 7.1)
 light_color = Color(1, 0.82, 0.6, 1)
-omni_range = 13.0
+omni_range = 15.0
 
 [node name="UHLicht1b" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 69.6, -14.6, -26.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 75.6, -14.6, -26.1)
 light_color = Color(1, 0.82, 0.6, 1)
-omni_range = 13.0
+omni_range = 15.0
 
 [node name="UHLicht2a" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 57.6, -14.6, 7.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 69.6, -14.6, 7.1)
 light_color = Color(1, 0.82, 0.6, 1)
-omni_range = 13.0
+omni_range = 15.0
 
 [node name="UHLicht2b" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 57.6, -14.6, -26.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 69.6, -14.6, -26.1)
 light_color = Color(1, 0.82, 0.6, 1)
-omni_range = 13.0
+omni_range = 15.0
 
 [node name="UHLicht3a" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 45.6, -14.6, 7.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 63.6, -14.6, 7.1)
 light_color = Color(1, 0.82, 0.6, 1)
-omni_range = 13.0
+omni_range = 15.0
 
 [node name="UHLicht3b" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 45.6, -14.6, -26.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 63.6, -14.6, -26.1)
 light_color = Color(1, 0.82, 0.6, 1)
-omni_range = 13.0
+omni_range = 15.0
 
 [node name="UHLicht4a" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 33.6, -14.6, 7.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 57.6, -14.6, 7.1)
 light_color = Color(1, 0.82, 0.6, 1)
-omni_range = 13.0
+omni_range = 15.0
 
 [node name="UHLicht4b" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 57.6, -14.6, -26.1)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 15.0
+
+[node name="UHLicht5a" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 51.6, -14.6, 7.1)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 15.0
+
+[node name="UHLicht5b" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 51.6, -14.6, -26.1)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 15.0
+
+[node name="UHLicht6a" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 45.6, -14.6, 7.1)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 15.0
+
+[node name="UHLicht6b" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 45.6, -14.6, -26.1)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 15.0
+
+[node name="UHLicht7a" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 39.6, -14.6, 7.1)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 15.0
+
+[node name="UHLicht7b" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 39.6, -14.6, -26.1)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 15.0
+
+[node name="UHLicht8a" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 33.6, -14.6, 7.1)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 15.0
+
+[node name="UHLicht8b" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 33.6, -14.6, -26.1)
 light_color = Color(1, 0.82, 0.6, 1)
-omni_range = 13.0
+omni_range = 15.0
+
+[node name="UHLichtBecken0" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 84.6, -10.8, -9.5)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 18.0
+
+[node name="UHLichtBecken1" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 72.6, -10.8, -9.5)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 18.0
+
+[node name="UHLichtBecken2" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 60.6, -10.8, -9.5)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 18.0
+
+[node name="UHLichtBecken3" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 48.6, -10.8, -9.5)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 18.0
+
+[node name="UHLichtBecken4" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 36.6, -10.8, -9.5)
+light_color = Color(1, 0.82, 0.6, 1)
+omni_range = 18.0
 
 [node name="UHLichtTuer" type="OmniLight3D" parent="Drachenstein/Drachenhafen"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 29.6, -14.6, -9.5)
@@ -1024,7 +1089,7 @@ formen = PackedInt32Array(1, 15, 20, 21, 6, 22, 5, 4, 16, 3, 17, 18, 1, 2, 0, 14
 
 [node name="Ausstattung" type="Node3D" parent="Drachenstein/Stadt"]
 script = ExtResource("29_ausstattung")
-stuecke = PackedFloat32Array(3, 130.5, -15.802, 131.5, 0, 3, 130.5, -16.089, 99.5, 0, 3, 159.5, -15.789, 131.5, 0, 3, 159.5, -16.201, 99.5, 0, 3, 130.5, -15.925, 120.5, 0, 3, 159.5, -15.916, 110.5, 0, 3, 130.5, -16.07, 110.5, 0, 3, 159.5, -15.898, 121, 0, 5, 126, -20, 37.5, 80, 5, 125, -20, -5, 95, 5, 166, -20, 17.5, 85, 5, 158.5, -20, -17.5, 60, 6, 166, -20, -112.5, 150, 6, 206, -20, -172.5, 200, 7, 120, -20, 21.5, 2, 7, 115, -20, 13, -4, 7, 143.5, -20, 47.5, 92, 7, 152, -20, 45, 86, 7, 77.6, -20, -14.1, 92, 7, 71.1, -20, -5, 88, 7, 40.1, -20, -13.9, 91, 9, 61.6, -20, -6.3, 90, 9, 51.6, -20, -12.7, 270, 8, 31.6, -17.76, -9.5, -90, 8, 127, -17.6, -42.5, 180, 8, 105, -17.6, -24.5, -90, 0, 94.194, -17.8, 52.947, 191.53, 0, 92.937, -17.8, 51.056, 359.41, 0, 94.096, -17.8, 52.643, 212.09, 0, 92.734, -17.8, 45.014, 355.59, 1, 93.745, -17.8, 45.73, 337.74, 2, 92.767, -17.8, 43.521, 287.68, 0, 93.089, -17.8, 44.586, 0.53734, 2, 93.74, -17.8, 36.398, 248.07, 1, 93.912, -17.8, 39.091, 307.86, 0, 93.788, -17.8, 37.87, 43.223, 0, 93.927, -17.8, 29.92, 157.34, 2, 94.431, -17.8, 31.283, 76.093, 1, 92.902, -17.8, 28.52, 64.259, 0, 93.109, -17.8, 31.009, 75.713, 2, 95.072, -17.8, 23.441, 342.25, 1, 93.792, -17.8, 22.34, 298.33, 0, 93.918, -17.8, 22.232, 107.41, 0, 93.783, -17.8, 22.796, 292.91, 1, 93.506, -17.8, 15.506, 146.77, 0, 93.506, -17.8, 14.487, 72.442, 4, 92, -17.8, 41.5, -14.014, 4, 92, -17.8, 17.5, 11.982, 1, 130.61, -16.075, 108.06, 124.45, 0, 130.5, -16.076, 113.11, 117.11, 1, 158.92, -15.891, 118.27, 67.108, 1, 159.5, -15.873, 123.5, 50.513)
+stuecke = PackedFloat32Array(3, 130.5, -15.802, 131.5, 0, 3, 130.5, -16.089, 99.5, 0, 3, 159.5, -15.789, 131.5, 0, 3, 159.5, -16.201, 99.5, 0, 3, 130.5, -15.925, 120.5, 0, 3, 159.5, -15.916, 110.5, 0, 3, 130.5, -16.07, 110.5, 0, 3, 159.5, -15.898, 121, 0, 5, 126, -20, 37.5, 80, 5, 125, -20, -5, 95, 5, 166, -20, 17.5, 85, 5, 158.5, -20, -17.5, 60, 6, 166, -20, -112.5, 150, 6, 206, -20, -172.5, 200, 7, 120, -20, 21.5, 2, 7, 115, -20, 13, -4, 7, 143.5, -20, 47.5, 92, 7, 152, -20, 45, 86, 7, 77.6, -20, -14.1, 92, 7, 71.1, -20, -5, 88, 7, 40.1, -20, -13.9, 91, 9, 61.6, -20, -6.3, 90, 9, 51.6, -20, -12.7, 270, 8, 31.6, -17.76, -19.5, -90, 8, 127, -17.6, -42.5, 180, 8, 105, -17.6, -24.5, -90, 0, 94.194, -17.8, 52.947, 191.53, 0, 92.937, -17.8, 51.056, 359.41, 0, 94.096, -17.8, 52.643, 212.09, 0, 92.734, -17.8, 45.014, 355.59, 1, 93.745, -17.8, 45.73, 337.74, 2, 92.767, -17.8, 43.521, 287.68, 0, 93.089, -17.8, 44.586, 0.53734, 2, 93.74, -17.8, 36.398, 248.07, 1, 93.912, -17.8, 39.091, 307.86, 0, 93.788, -17.8, 37.87, 43.223, 0, 93.927, -17.8, 29.92, 157.34, 2, 94.431, -17.8, 31.283, 76.093, 1, 92.902, -17.8, 28.52, 64.259, 0, 93.109, -17.8, 31.009, 75.713, 2, 95.072, -17.8, 23.441, 342.25, 1, 93.792, -17.8, 22.34, 298.33, 0, 93.918, -17.8, 22.232, 107.41, 0, 93.783, -17.8, 22.796, 292.91, 1, 93.506, -17.8, 15.506, 146.77, 0, 93.506, -17.8, 14.487, 72.442, 4, 92, -17.8, 41.5, -14.014, 4, 92, -17.8, 17.5, 11.982, 1, 130.61, -16.075, 108.06, 124.45, 0, 130.5, -16.076, 113.11, 117.11, 1, 158.92, -15.891, 118.27, 67.108, 1, 159.5, -15.873, 123.5, 50.513)
 
 [node name="Zinnen" type="MultiMeshInstance3D" parent="Drachenstein"]
 multimesh = SubResource("Zinnen")

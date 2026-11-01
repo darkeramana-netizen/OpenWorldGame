@@ -80,11 +80,14 @@ UH_JOCH = 6.0
 N("Untergrundhafen", "Node3D", HF, f"""script = ExtResource("28_burgbau")
 hallen = PackedFloat32Array({_zahlen([*UH_MUND, -1, 0, UH_LAENGE, UH_BREITE, UH_BECKEN, UH_KANAL, KAI_KRONE, 5.0, 6.0, 10.0, -19.6])})""")
 uh = lambda s_, q_: (round(UH_MUND[0] - s_, 2), round(UH_MUND[1] - q_, 2))   # lokal (in den Berg, quer) → Welt
-# Licht an jeder zweiten Laterne (Wandpfeiler bei 6, 18, 30, 42, 54 m) und vor der Tür
-for k_, s_ in enumerate(range(6, int(UH_LAENGE), 12)):
+# Licht an jeder Laterne (Wandpfeiler alle 6 m) und über dem Becken
+for k_, s_ in enumerate(range(6, int(UH_LAENGE), 6)):
     for seite_ in (-1, 1):
         lx_, lz_ = uh(s_, seite_ * (UH_BREITE / 2 - 1.4))
-        licht(f"UHLicht{k_}{'ab'[seite_ > 0]}", HF, lx_, KAI_OBEN + 3.2, lz_, 13.0)
+        licht(f"UHLicht{k_}{'ab'[seite_ > 0]}", HF, lx_, KAI_OBEN + 3.2, lz_, 15.0)
+for k_, s_ in enumerate(range(3, int(UH_LAENGE), 12)):
+    lx_, lz_ = uh(s_, 0)
+    licht(f"UHLichtBecken{k_}", HF, lx_, KAI_OBEN + 7.0, lz_, 18.0)
 licht("UHLichtTuer", HF, *(lambda p: (p[0], KAI_OBEN + 3.2, p[1]))(uh(UH_LAENGE - 2.0, 0)), 9.0)
 schild("SchildUntergrundhafen", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(4, -7.5)), "Untergrundhafen", 40)
 schild("SchildUHTuer", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(UH_LAENGE - 0.6, 0)), "Zur Burg (verschlossen)", 32)
@@ -102,7 +105,7 @@ SCHIFFE += [(7, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in
 # Im Untergrundhafen: Ruderboote an den Kais, zwei beladene Prahme (Art 9), ein Tretradkran auf dem Querkai
 SCHIFFE += [(7, *uh(s_, q_)[:1], -20.0, uh(s_, q_)[1], g_) for s_, q_, g_ in [(10.0, 4.6, 92), (16.5, -4.5, 88), (47.5, 4.4, 91)]]
 SCHIFFE += [(9, *uh(s_, q_)[:1], -20.0, uh(s_, q_)[1], g_) for s_, q_, g_ in [(26.0, -3.2, 90), (36.0, 3.2, 270)]]
-SCHIFFE += [(8, *uh(56.0, 0)[:1], KAI_KRONE, uh(56.0, 0)[1], -90)]
+SCHIFFE += [(8, *uh(56.0, 10.0)[:1], KAI_KRONE, uh(56.0, 10.0)[1], -90)]   # neben der Tür, der Ausleger über dem Becken
 # Tretradkräne (Art 8): auf dem Ostkai an der Hafenmauer und am Ende des Nordkais, der Ausleger über dem Wasser
 SCHIFFE += [(8, *(lambda p: (p[0], KAI_OBEN + 0.2, p[1]))(W(pp)), g) for pp, g in [((820, 482), 180), ((784, 438), -90)]]
 
