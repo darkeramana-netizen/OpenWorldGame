@@ -12,6 +12,9 @@ const RAND_UNTEN := -45.0
 @export var material: Material
 ## Ordner mit hoehen.r32 und hoehen.json, für jede Region ein eigener.
 @export_dir var daten: String = "res://daten/gelaende/"
+## Löcher im Gelände, je Rechteck x0, z0, x1, z1 (Welt): Rasterpunkte darin bekommen weder Fläche noch Kollision,
+## z. B. wo ein Tunnel durch einen Steilhang in den Berg führt (darüber und darunter bleibt das Gelände).
+@export var loecher := PackedVector4Array()
 
 var breite: int = 0
 var tiefe: int = 0
@@ -19,11 +22,13 @@ var abstand: float = 1.0
 var ursprung := Vector2.ZERO
 var meeresspiegel: float = -20.0
 var _hoehen := PackedFloat32Array()
+var _loch := PackedByteArray()   # je Rasterpunkt 1 = Loch
 
 
 func _ready() -> void:
 	add_to_group("gelaende")
 	if _lade():
+		_markiere_loecher()
 		_baue_kacheln()
 		_baue_rand()
 		_baue_kollision()
@@ -68,6 +73,15 @@ func _lade() -> bool:
 	return _hoehen.size() == breite * tiefe
 
 
+func _markiere_loecher() -> void:
+	_loch = PackedByteArray()
+	_loch.resize(breite * tiefe)
+	for r: Vector4 in loecher:
+		for iz in range(maxi(ceili((r.y - ursprung.y) / abstand), 0), mini(floori((r.w - ursprung.y) / abstand), tiefe - 1) + 1):
+			for ix in range(maxi(ceili((r.x - ursprung.x) / abstand), 0), mini(floori((r.z - ursprung.x) / abstand), breite - 1) + 1):
+				_loch[iz * breite + ix] = 1
+
+
 func _baue_kacheln() -> void:
 	for kz in range(0, tiefe - 1, KACHEL):
 		for kx in range(0, breite - 1, KACHEL):
@@ -101,7 +115,15 @@ func _kachel_mesh(x0: int, z0: int, nx: int, nz: int) -> ArrayMesh:
 			var b := a + 1
 			var c := a + nx + 1
 			var d := c + 1
-			indizes.append_array([a, b, c, b, d, c])
+			# Dreiecke an einem Lochpunkt fallen weg (wie in der Kollision)
+			var la := _loch[(z0 + z) * breite + x0 + x] == 1
+			var lb := _loch[(z0 + z) * breite + x0 + x + 1] == 1
+			var lc := _loch[(z0 + z + 1) * breite + x0 + x] == 1
+			var ld := _loch[(z0 + z + 1) * breite + x0 + x + 1] == 1
+			if not (la or lb or lc):
+				indizes.append_array([a, b, c])
+			if not (lb or ld or lc):
+				indizes.append_array([b, d, c])
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = punkte
@@ -153,7 +175,13 @@ func _baue_kollision() -> void:
 	var form := HeightMapShape3D.new()
 	form.map_width = breite
 	form.map_depth = tiefe
-	form.map_data = _hoehen
+	var daten_ := _hoehen
+	if loecher.size() > 0:
+		daten_ = _hoehen.duplicate()
+		for i in _loch.size():
+			if _loch[i] == 1:
+				daten_[i] = NAN   # Jolt: Dreiecke an diesem Punkt haben keine Kollision
+	form.map_data = daten_
 	var kollision := CollisionShape3D.new()
 	kollision.shape = form
 	# Die Höhenkarte ist um ihre Mitte zentriert und hat 1 m Rasterabstand.

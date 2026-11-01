@@ -50,6 +50,13 @@ extends Node3D
 	set(w):
 		fahnen = w
 		_neu_bauen()
+## Hafenhallen (Untergrundhafen): je 12 Werte x, z (Mitte der Mündung), Richtung in den Berg x, z, Länge, Breite,
+## Wasserbreite, Boden (Kaihöhe), Wandhöhe, Stich des Gewölbes, Breite und Boden des Wassertors davor. Eine Halle mit
+## Tonnengewölbe und Gurtbögen über einem Becken, Kais an beiden Seiten und hinten, ein Gang bis in das Wassertor.
+@export var hallen := PackedFloat32Array():
+	set(w):
+		hallen = w
+		_neu_bauen()
 @export var kollision := true:
 	set(w):
 		kollision = w
@@ -112,6 +119,10 @@ func _baue() -> void:
 	i = 0
 	while i + 11 < gebaeude.size():
 		_gebaeude(gebaeude.slice(i, i + 12))
+		i += 12
+	i = 0
+	while i + 11 < hallen.size():
+		_halle(hallen.slice(i, i + 12))
 		i += 12
 	_fahnen_bauen()
 	if _flach.is_empty() and _rund.is_empty():
@@ -440,6 +451,118 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 			var w := TAU * k / zinnen
 			var d := Vector2(cos(w), sin(w))
 			_klotz(stein, c + d * (ri + ra) / 2.0, Vector2(-d.y, d.x), d, -0.65, 0.65, -0.3, 0.3, oben + BRUSTWEHR, oben + BRUSTWEHR + ZINNE_HOEHE)
+
+
+## Untergrundhafen: gewölbte Halle im Fels (lokal: s in den Berg, q quer, y Höhe). Der Fels darüber ist das Gelände;
+## die Halle schließt sich nach oben mit einer Platte, damit kein Sonnenlicht hineinfällt.
+func _halle(w: PackedFloat32Array) -> void:
+	var c := Vector2(w[0], w[1])
+	var u := Vector2(w[2], w[3]).normalized()
+	var n := Vector2(-u.y, u.x)
+	var L := w[4]
+	var hb := w[5] / 2.0
+	var hw := w[6] / 2.0
+	var boden := w[7]
+	var kaempfer := boden + w[8]
+	var stich := w[9]
+	var tw := w[10] / 2.0                       # halbe Torbreite
+	var tor_k := w[11] + KAEMPFER               # Kämpfer des Torbogens
+	var scheitel := kaempfer + stich
+	var grund := boden - 6.5                    # Beckengrund
+	var kante := 0.6                            # Kantensteine am Wasser
+	var be := L - 6.0                           # Ende des Beckens, dahinter der Querkai
+	var mauer := 1.5
+	var gang := 3.2                             # Gang von der Halle durch die Ringmauer
+	var U := Vector3(u.x, 0, u.y)
+	var N := Vector3(n.x, 0, n.y)
+	var p := func(su: float, sq: float, y: float) -> Vector3:
+		var q := c + u * su + n * sq
+		return Vector3(q.x, y, q.y)
+	# Beckengrund (bis unter die Kanalmündung) und Kais mit Kantensteinen
+	_klotz("fels", c, u, n, -gang - 4.5, be, -hw, hw, grund - 0.5, grund)
+	for sq: float in [-1.0, 1.0]:
+		var q0 := hw + kante
+		_klotz("kai", c, u, n, -gang, L, minf(sq * q0, sq * hb), maxf(sq * q0, sq * hb), grund, boden)
+		_klotz("kai", c, u, n, -gang, be, minf(sq * hw, sq * q0), maxf(sq * hw, sq * q0), grund, boden - 0.35)
+		_klotz("hell", c, u, n, -gang, be, minf(sq * hw, sq * q0), maxf(sq * hw, sq * q0), boden - 0.35, boden)
+	_klotz("kai", c, u, n, be + kante, L, -hw - kante, hw + kante, grund, boden)
+	_klotz("kai", c, u, n, be, be + kante, -hw, hw, grund, boden - 0.35)
+	_klotz("hell", c, u, n, be, be + kante, -hw, hw, boden - 0.35, boden)
+	# Seitenwände, Rückwand, Stirnwand neben und über dem Gang
+	for sq: float in [-1.0, 1.0]:
+		_klotz("bruchstein", c, u, n, -mauer, L + mauer, minf(sq * hb, sq * (hb + mauer)), maxf(sq * hb, sq * (hb + mauer)), grund, scheitel + 1.2)
+		_klotz("bruchstein", c, u, n, -mauer, 0.0, minf(sq * tw, sq * hb), maxf(sq * tw, sq * hb), boden, scheitel + 1.2)
+		# Gangwände unter dem Bogen
+		_klotz("bruchstein", c, u, n, -gang, 0.0, minf(sq * tw, sq * (tw + 1.0)), maxf(sq * tw, sq * (tw + 1.0)), boden, tor_k)
+	_klotz("bruchstein", c, u, n, L, L + mauer, -hb - mauer, hb + mauer, grund, scheitel + 1.2)
+	# Gangbogen (wie der Torbogen davor) und die Stirnwand darüber
+	var teile := 12
+	for k in teile:
+		var w0 := PI * k / teile
+		var w1 := PI * (k + 1) / teile
+		var x0 := tw * cos(w0)
+		var x1 := tw * cos(w1)
+		var y0 := tor_k + tw * sin(w0)
+		var y1 := tor_k + tw * sin(w1)
+		_viereck("bruchstein", p.call(0.0, x0, y0), p.call(0.0, x1, y1), p.call(0.0, x1, scheitel + 1.2), p.call(0.0, x0, scheitel + 1.2), U)
+		var zur_mitte := N * -(x0 + x1) / 2.0 + Vector3.UP * (tor_k - (y0 + y1) / 2.0)
+		_viereck("bruchstein", p.call(-gang, x0, y0), p.call(0.0, x0, y0), p.call(0.0, x1, y1), p.call(-gang, x1, y1), zur_mitte)
+	# Tonnengewölbe (Korbbogen mit Stich) über die ganze Breite, darüber eine Deckplatte
+	var gw := 16
+	var bogen := func(t: float) -> Vector2:   # t 0..1 über die Breite: (q, y)
+		var a := PI * t
+		return Vector2(-hb * cos(a), kaempfer + stich * sin(a))
+	for k in gw:
+		var a: Vector2 = bogen.call(float(k) / gw)
+		var b: Vector2 = bogen.call(float(k + 1) / gw)
+		var innen := N * -(a.x + b.x) / 2.0 + Vector3.UP * (kaempfer - (a.y + b.y) / 2.0) * hb / maxf(stich, 0.1)
+		_viereck("bruchstein", p.call(0.0, a.x, a.y), p.call(L, a.x, a.y), p.call(L, b.x, b.y), p.call(0.0, b.x, b.y), innen)
+	_klotz("bruchstein", c, u, n, -mauer, L + mauer, -hb - mauer, hb + mauer, scheitel + 1.2, scheitel + 2.0, true)
+	# Gurtbögen auf Wandpfeilern, dazwischen die Kämpfergesimse
+	var s_ := 3.0
+	while s_ < L - 1.0:
+		for k in gw:
+			var a: Vector2 = bogen.call(float(k) / gw)
+			var b: Vector2 = bogen.call(float(k + 1) / gw)
+			var ra := Vector2(a.x * 0.97, kaempfer + (a.y - kaempfer) * 0.93)
+			var rb := Vector2(b.x * 0.97, kaempfer + (b.y - kaempfer) * 0.93)
+			var innen := N * -(ra.x + rb.x) / 2.0 + Vector3.UP * (kaempfer - (ra.y + rb.y) / 2.0)
+			_viereck("mauer", p.call(s_ - 0.45, ra.x, ra.y), p.call(s_ + 0.45, ra.x, ra.y), p.call(s_ + 0.45, rb.x, rb.y), p.call(s_ - 0.45, rb.x, rb.y), innen)
+			for seite: float in [-1.0, 1.0]:
+				_viereck("mauer", p.call(s_ + 0.45 * seite, a.x, a.y), p.call(s_ + 0.45 * seite, b.x, b.y), p.call(s_ + 0.45 * seite, rb.x, rb.y),
+					p.call(s_ + 0.45 * seite, ra.x, ra.y), U * seite)
+		for sq: float in [-1.0, 1.0]:
+			var q1 := sq * hb
+			var q0 := sq * (hb - 0.55)
+			_klotz("mauer", c, u, n, s_ - 0.45, s_ + 0.45, minf(q0, q1), maxf(q0, q1), boden, kaempfer)
+			_klotz("hell", c, u, n, s_ - 0.6, s_ + 0.6, minf(sq * (hb - 0.7), q1), maxf(sq * (hb - 0.7), q1), kaempfer - 0.3, kaempfer, true)
+			# Wandlaterne zwischen den Pfeilern
+			if s_ + 3.0 < L - 1.0:
+				var lm := c + u * (s_ + 3.0) + n * sq * (hb - 0.05)
+				var ni := -n * sq
+				var y := boden + 2.6
+				_klotz("metall", lm, u, ni, -0.04, 0.04, 0.0, 0.45, y + 0.55, y + 0.62)
+				_klotz("metall", lm + ni * 0.45, u, ni, -0.18, 0.18, -0.18, 0.18, y + 0.5, y + 0.56)
+				_klotz("glut", lm + ni * 0.45, u, ni, -0.13, 0.13, -0.13, 0.13, y, y + 0.5)
+				_klotz("metall", lm + ni * 0.45, u, ni, -0.17, 0.17, -0.17, 0.17, y - 0.06, y)
+		# Poller an der Kaikante
+		for sq: float in [-1.0, 1.0]:
+			if s_ < be:
+				var pm := c + u * s_ + n * sq * (hw + kante + 0.45)
+				_klotz("holz", pm, u, n, -0.17, 0.17, -0.17, 0.17, boden, boden + 0.7)
+				_klotz("metall", pm, u, n, -0.21, 0.21, -0.21, 0.21, boden + 0.7, boden + 0.78)
+		s_ += 6.0
+	# Kämpfergesims durchgehend an den Längswänden
+	for sq: float in [-1.0, 1.0]:
+		_klotz("hell", c, u, n, 0.0, L, minf(sq * (hb - 0.25), sq * hb), maxf(sq * (hb - 0.25), sq * hb), kaempfer - 0.25, kaempfer, true)
+	# Tür in der Rückwand: der Weg hinauf in die Burg (noch verschlossen)
+	_klotz("dunkel", c, u, n, L - 0.05, L, -1.3, 1.3, boden, boden + 3.2)
+	_klotz("holz", c, u, n, L - 0.16, L - 0.05, -1.1, 1.1, boden, boden + 3.0)
+	for y_: float in [boden + 0.6, boden + 2.3]:
+		_klotz("metall", c, u, n, L - 0.2, L - 0.16, -1.05, 1.05, y_, y_ + 0.1)
+	_klotz("hell", c, u, n, L - 0.25, L, -1.6, -1.3, boden, boden + 3.5)
+	_klotz("hell", c, u, n, L - 0.25, L, 1.3, 1.6, boden, boden + 3.5)
+	_klotz("hell", c, u, n, L - 0.25, L, -1.6, 1.6, boden + 3.2, boden + 3.6)
 
 
 ## Torbogen: Mauerblock über der Durchfahrt mit rundem Bogen und halb hochgezogenem Fallgitter.

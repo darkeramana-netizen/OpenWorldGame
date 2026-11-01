@@ -71,7 +71,10 @@ const PASS_SUED := [[Vector2(140, 540), Vector2(150, 615), Vector2(160, 690)], -
 var plan: Dictionary = {}
 var _zonen: Array = []          # [PackedVector2Array, Höhe, Rand, Weg, Weghöhen] (mit Weg: Höhe des nächsten Wegpunkts)
 var _stadt := PackedVector2Array()
-var _becken: Array = []         # Hafenbecken, Kanal, Fahrrinne
+var _becken: Array = []         # Hafenbecken, Fahrrinne, Kanal
+## Kanten je Becken (Reihenfolge wie _becken), an denen ein Kai liegt: Hafenbecken ohne die Einfahrt (Kante 4), Fahrrinne
+## keine, Kanal die beiden Längsseiten
+const BECKEN_KAIKANTEN := [[0, 1, 2, 3, 5, 6, 7, 8, 9], [], [0, 2]]
 var _markt := PackedVector2Array()
 var _ring := PackedVector2Array()     # Burgbezirk innerhalb der Ringmauer (Grat und Zwinger)
 var _hafen := PackedVector2Array()    # Hafenbezirk: Kais
@@ -234,9 +237,25 @@ func hoehe(p: Vector2) -> float:
 		h = -50.0
 
 	# Hafenbecken und Fahrrinne zuletzt, damit nichts sie wieder auffüllt
-	for becken: PackedVector2Array in _becken:
-		if Geometry2D.is_point_in_polygon(p, becken):
-			h = minf(h, BECKEN_TIEFE)
+	# Am Kai bleibt innen ein Rand von 1 m auf Kaihöhe: So liegt der Abbruch ins Becken ganz unter der 4 m dicken
+	# Kaimauer (das Raster hat 2,5 m), und neben der Mauer klafft keine Lücke.
+	var tief := false
+	var am_rand := false
+	for k in _becken.size():
+		var becken: PackedVector2Array = _becken[k]
+		if not Geometry2D.is_point_in_polygon(p, becken):
+			continue
+		var rand := INF
+		for i: int in BECKEN_KAIKANTEN[k] if k < BECKEN_KAIKANTEN.size() else []:
+			rand = minf(rand, p.distance_to(Geometry2D.get_closest_point_to_segment(p, becken[i], becken[(i + 1) % becken.size()])))
+		if rand > 1.0:
+			tief = true
+		else:
+			am_rand = true
+	if tief:
+		h = minf(h, BECKEN_TIEFE)
+	elif am_rand:
+		h = KAI_HOEHE
 	h = _pass(h, p, PASS_NORD)
 	h = _pass(h, p, PASS_SUED)
 
@@ -329,7 +348,7 @@ func _zacke(p: Vector2) -> float:
 ## Höhe innerhalb der Mauern (NAN außerhalb): Hafen und Stadt in der Ebene, im Burgbezirk der Hang des Grats.
 func _innen_hoehe(p: Vector2) -> float:
 	if Geometry2D.is_point_in_polygon(p, _hafen):
-		return KAI_HOEHE + 0.2
+		return KAI_HOEHE
 	if Geometry2D.is_point_in_polygon(p, _stadt):
 		return stadthoehe(p)
 	if Geometry2D.is_point_in_polygon(p, _ring) and not _ringwege.is_empty():

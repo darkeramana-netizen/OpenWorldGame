@@ -15,6 +15,7 @@ HAUSFORMEN = [(float(b), float(t), int(g)) for b, t, g in re.findall(
 assert len(HAUSFORMEN) == 24, len(HAUSFORMEN)
 VORKRAGUNG = 0.35
 KAI_OBEN = PD.H_HAFEN
+KAI_KRONE = KAI_OBEN + 0.04
 
 ST = DS + "/Stadt"
 N("Stadt", "Node3D", DS)
@@ -44,13 +45,14 @@ def kaimauer(name, punkte, offen=()):
         if i in offen:
             continue
         # 4 m dick: das Gelände fällt an der Kante über ein Rasterfeld (2,5 m) ab, die Mauer deckt den Abhang ganz ab;
-        # oben bündig mit dem Kai, so geht man vom Kai auf die Stege
-        mauerring(f"{name}{i}", HF, [a, b], 0.0, dicke=4.0, zinnen=False, mat="Material_kai")
+        # oben 4 cm über dem Kai (das Gelände dort liegt genau auf Kaihöhe): kein Flimmern, und man geht ohne Kante auf die Stege
+        mauerring(f"{name}{i}", HF, [a, b], 0.0, dicke=4.0, zinnen=False, mat="Material_kai", oben_fest=KAI_KRONE)
 # Kaimauern ums Becken; offen bleiben die Hafeneinfahrt und der Kanal zum Wassertor
 kaimauer("KaiBecken", BECKEN, offen=(PD.HAFENEINFAHRT, 1))
 kaimauer("KaiNord", WL([(700, 444), (744, 447.5)]) + WL([(764, 449.2), (790, 452)]), offen=(1, 3))
-for k, (a_, b_) in enumerate([((744, 448), (744, 411)), ((764, 449), (764, 411))]):
-    mauerring(f"KaiKanal{k}", HF, WL([a_, b_]), 0.9, dicke=4.0, zinnen=False, mat="Material_kai")
+# Kanalmauern bis in das Wassertor: Ihre Kronen sind die Laufstege durch das Tor in den Untergrundhafen
+for k, (a_, b_) in enumerate([((744, 448), (744, 409)), ((764, 449), (764, 409))]):
+    mauerring(f"KaiKanal{k}", HF, WL([a_, b_]), 0.0, dicke=4.0, zinnen=False, mat="Material_kai", oben_fest=KAI_KRONE)
 HM = PD.HAFENMAUER_OST
 mauerring("Hafenmauer", HF, WL(HM), 8.0, dicke=3.0, mitte=W((720, 520)))
 mauerring("Speicherkai", HF, WL([(640, 642), (770, 646), (790, 630)]), 6.0, dicke=3.0, mitte=W((720, 520)),
@@ -67,12 +69,22 @@ steinbau("Speicher", HF, sx, sz, PD.SPEICHER[1] * M, PD.SPEICHER[2] * M, 9, gier
          dach="Material_dach", boden=KAI_OBEN, art=2)
 schild("SchildSpeicher", HF, sx, KAI_OBEN + 18, sz, "Speicher", 40)
 
-# --- Hinter dem Wassertor: dunkle Tiefe (der Gang zum Untergrundhafen, kommt mit Höhlen im Gelände) ---
-S('''[sub_resource type="StandardMaterial3D" id="Material_dunkel"]
-albedo_color = Color(0.015, 0.015, 0.02, 1)
-roughness = 1.0''')
+# --- Untergrundhafen: Hinter dem Wassertor führt der Kanal durch einen Gang unter dem Zwinger in eine gewölbte Halle
+# im Fels (burgbau.gd, hallen). Die Kronen der Kanalmauern sind die Laufstege durch das Tor; in der Halle gehen Kais
+# um das Becken herum, so kommt man vom Nordkai auf den Ostkai mit den Kränen. Im Gelände ist am Fuß des Steilhangs
+# ein Loch (region_drachenstein.py), sonst läge der Hang quer im Gang.
 _wt = W(PD.TORE["Hafentor"])
-box("WassertorTiefe", HF, round(_wt[0] - 5.0, 2), -14.5, round(_wt[1], 2), 6.0, 11.0, 11.0, "Material_dunkel")
+UH_MUND = (87.6, -9.5)          # Mitte der Mündung an der Innenseite der Ringmauer, die Halle reicht nach -x
+UH_LAENGE, UH_BREITE, UH_WASSER = 24.0, 24.0, 6.0
+N("Untergrundhafen", "Node3D", HF, f"""script = ExtResource("28_burgbau")
+hallen = PackedFloat32Array({_zahlen([*UH_MUND, -1, 0, UH_LAENGE, UH_BREITE, UH_WASSER, KAI_KRONE, 4.5, 4.0, 10.0, -19.6])})""")
+for k_, s_ in enumerate((6.0, 12.0, 18.0)):
+    for seite_ in (-1, 1):
+        licht(f"UHLicht{k_}{'ab'[seite_ > 0]}", HF, round(UH_MUND[0] - s_, 2), KAI_OBEN + 3.4,
+              round(UH_MUND[1] + seite_ * (UH_BREITE / 2 - 1.2), 2), 11.0)
+licht("UHLichtTuer", HF, round(UH_MUND[0] - UH_LAENGE + 1.5, 2), KAI_OBEN + 3.2, UH_MUND[1], 8.0)
+schild("SchildUntergrundhafen", HF, round(UH_MUND[0] - 4, 2), KAI_OBEN + 4.2, round(UH_MUND[1] + 6.5, 2), "Untergrundhafen", 40)
+schild("SchildUHTuer", HF, round(UH_MUND[0] - UH_LAENGE + 0.6, 2), KAI_OBEN + 4.2, UH_MUND[1], "Zur Burg (verschlossen)", 32)
 schild("SchildWassertor", HF, round(_wt[0] + 4, 2), KAI_OBEN + 4, round(_wt[1] + 7, 2), "Zum Untergrundhafen", 40)
 _hm = W((720, 520))
 schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
@@ -84,6 +96,7 @@ SCHIFFE += [(6, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in [((960,
 # Ruderboote an den Stegen (Art 7)
 SCHIFFE += [(7, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in
             [((692, 468), 2), ((709, 458), -4), ((640, 515), 92), ((645, 532), 86)]]
+SCHIFFE += [(7, round(UH_MUND[0] - s_, 2), -20.0, round(UH_MUND[1] + q_, 2), g_) for s_, q_, g_ in [(7.0, 1.2, 92), (13.5, -1.1, 88)]]
 # Tretradkräne (Art 8): auf dem Ostkai an der Hafenmauer und am Ende des Nordkais, der Ausleger über dem Wasser
 SCHIFFE += [(8, *(lambda p: (p[0], KAI_OBEN + 0.2, p[1]))(W(pp)), g) for pp, g in [((820, 482), 180), ((784, 438), -90)]]
 
@@ -110,8 +123,9 @@ size = Vector3(2.5, 0.4, {laenge_:.2f})''')
             _steg.append((steg_teil, round(ox, 2), round(KAI_OBEN - 2.62, 2), round(oz, 2), round(g_, 1), 0, 1))   # Deck auf Kaihöhe
 # Hafenkram: Fässer und Kisten (Fotoscans) in Gruppen am Nordkai und am Ostkai
 random.seed(77)
-for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (815, 515)]:      # an der Mauer, abseits der Laufwege
-    gx_, gz_ = W(pp)
+_kram = [W(pp) for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (815, 515)]]    # an der Mauer, abseits der Laufwege
+_kram += [(UH_MUND[0] - 9.0, UH_MUND[1] + 10.0), (UH_MUND[0] - 15.0, UH_MUND[1] - 10.0), (UH_MUND[0] - 21.5, UH_MUND[1] + 8.5)]   # in der Halle
+for gx_, gz_ in _kram:
     for _ in range(random.randint(3, 6)):
         art_ = random.choice([5, 5, 6, 7, 7])
         px_, pz_ = gx_ + random.uniform(-1.6, 1.6), gz_ + random.uniform(-1.6, 1.6)

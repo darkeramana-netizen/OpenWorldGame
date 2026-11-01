@@ -263,7 +263,7 @@ def gebaeude_lokal(name, eltern, x, z, sx, sz, hoehe, mat="Material_hell", gier=
 
 
 def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", wasser_hoehe=-20,
-                 wasser_groesse=(2600, 2200), wasser_parameter="", nebel=0.0006, gelaende_parameter=""):
+                 wasser_groesse=(2600, 2200), wasser_parameter="", nebel=0.0006, gelaende_parameter="", gelaende_extra=""):
     """Gemeinsame Ressourcen und die Wurzel einer Region: Himmel, Licht, Gelände und Wasserfläche."""
     E("Script", "res://szenen/welt/tageslicht.gd", "1_tageslicht")
     E("Script", "res://szenen/welt/gelaende.gd", "2_gelaende")
@@ -394,7 +394,7 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     mond = NodePath("../Mond")''', extra='node_paths=PackedStringArray("umgebung", "mond")')
     N("Gelaende", "Node3D", ".", f'''script = ExtResource("2_gelaende")
     material = SubResource("Material_gelaende")
-    daten = "res://daten/{gelaende_ordner}/"''')
+    daten = "res://daten/{gelaende_ordner}/"{gelaende_extra}''')
     N(wasser_name, "MeshInstance3D", ".", f'''transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, {wasser_hoehe}, 0)
     mesh = SubResource("Mesh_meer")''')
 

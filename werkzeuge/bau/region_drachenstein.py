@@ -4,7 +4,10 @@ exec(open(Path(__file__).resolve().parent / "grundlage.py", encoding="utf-8").re
 lade_hoehen("gelaende")
 
 grundgeruest("gelaende", region_eigenschaften="grenze_min = Vector2(-880, -680)\ngrenze_max = Vector2(1280, 730)",
-             wasser_groesse=(2800, 1800))
+             wasser_groesse=(2800, 1800),
+             # Loch im Steilhang hinter dem Wassertor (Rasterpunkte am Fuß, x 92,5): Dort führt der Gang unter dem Zwinger
+             # in den Untergrundhafen (teil_stadt.py); die Ringmauer und die Kanalmauern decken die Ränder.
+             gelaende_extra="\nloecher = PackedVector4Array(91.5, -13.5, 93.5, -4.0)")
 
 # ---------- Burgfeste Drachenstein ----------
 import sys
@@ -73,6 +76,7 @@ _orte = [
     ("I. Vorburg", "Der älteste Teil am Fuß des Grats.", 31, 2, 175, 70, 16, 75),
     ("Festungsstadt", "St. Marien, Markt und Fachwerkhäuser.", 140, -15, 160, 150, 16, 230),
     ("Drachenhafen", "Hafen am Wächtermeer", 150, -17, -5, 110, 12, 110),
+    ("Untergrundhafen", "Unter dem Zwinger, im Fels der Feste.", 75, -14, -9.5, 26, 8, 26),
     ("Schwarzer Bergfried", "Gründungsarchiv des Ordens", 485, -10, 85, 110, 80, 100),
     ("Gravemarch", "Nicht das Land schützt Gravemarch, sondern die Zeit, die sie gebaut hat.", -600, -5, -205, 240, 60, 240),
     ("Gravecrest", "Disziplin. Wissen. Ordnung. Sorrow bewahrt.", -694, 72, -366, 140, 40, 46),
@@ -134,7 +138,7 @@ _sp = lambda pp, dy=0.5: (lambda p: (round(p[0], 1), round(H(*p) + dy, 1), round
 for name, x, y, z in [("Hof der Burgfeste", 0, HOF_Y + 0.5, 20), ("Vor dem Tor", 0, HOF_Y + 0.5, 46), ("Kernburg", *_sp((975, 225))), ("Übungsplatz", round(UEB[0] + 4, 1), PD.H_KERNBURG + 0.5, round(UEB[1], 1)),
                       ("II. Burghof", *_sp((560, 262))), ("I. Vorburg", *_sp((390, 300))), ("Burgweg am Halbturm", *_sp((210, 330))),
                       ("Wassertor", *(lambda p: (round(p[0], 1), -17.3, round(p[1], 1)))(W((736, 428)))), ("Marktplatz", *_sp((512, 530))), ("St. Marien", *_sp((410, 530))),
-                      ("Drachenkai", _lotsin[0] + 2, -17.3, _lotsin[1]), ("Bergfried, Tor", *_bf(24, 0, -17.4)),
+                      ("Drachenkai", _lotsin[0] + 2, -17.3, _lotsin[1]), ("Untergrundhafen", 72.0, -17.2, -2.0), ("Bergfried, Tor", *_bf(24, 0, -17.4)),
                       ("Bergfried, Schwelle (Ebene 0)", *_bf(8.5, 4, -17.4)), ("Bergfried, Archive (Ebene 4)", *_bf(8.6, -53, 11.4)),
                       ("Bergfried, Dach", *_bf(8.9, 189, 50.6)), ("Gravemarch, Brückenpforte", round(ESME[0] - ux * 3, 1), round(ESME[1] + 0.5, 1), round(ESME[2] - uz * 3, 1)), ("Gravemarch, Burghof", -614, -3.5, -180),
                       ("Gravecrest, Zugbrücke", -605, 70.5, -362), ("Gravecrest, Unterer Hof", -663, 70.5, -368),

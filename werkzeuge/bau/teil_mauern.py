@@ -82,11 +82,12 @@ def _zahlen(werte):
 
 def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=None, strassen=(), torbreite=6.0,
              turm_r=0.0, turm_extra=5.0, turm_dach=True, mitte=(0, 0), zinnen=True, mat="Material_mauer",
-             torname="", hoehe_min=None):
+             torname="", hoehe_min=None, oben_fest=None):
     """Mauer entlang eines Linienzugs (Welt x, z). tore: {Kantenindex: (Anteil, Breite, Name)}; dazu Tore,
     wo Straßen kreuzen. turm_r > 0: Rundtürme an den Ecken. mitte: ein Punkt innerhalb (für die Feldseite).
     Gebaut wird von szenen/welt/burgbau.gd (Anlauf, Gesims, Wehrgang, Zinnen, Rundtürme, Torbögen); hier
-    entstehen nur die Maße. Gibt die Liste der Tore zurück: (x, z, Richtung x, Richtung z, Name)."""
+    entstehen nur die Maße. Gibt die Liste der Tore zurück: (x, z, Richtung x, Richtung z, Name).
+    oben_fest: Mauerkrone auf genau dieser Höhe (Kaimauern bündig mit dem Kai)."""
     pkt = punkte + [punkte[0]] if geschlossen else list(punkte)
     tore = dict(tore or {})
     for i in range(len(pkt) - 1):
@@ -127,6 +128,8 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
                 oben = max(werte) + hoehe
                 if hoehe_min is not None:
                     oben = max(oben, hoehe_min)
+                if oben_fest is not None:
+                    oben = oben_fest
                 mx, mz = (ax + bx) / 2 - mitte[0], (az + bz) / 2 - mitte[1]
                 aussen = (nx, nz) if nx * mx + nz * mz > 0 else (-nx, -nz)
                 mauern += [ax, az, bx, bz, unten, oben, dicke, aussen[0], aussen[1], 1 if zinnen else 0]

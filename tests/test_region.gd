@@ -138,6 +138,16 @@ func _initialize() -> void:
 	var steg := await gehe_ueber([Vector2(100, 17.5), Vector2(108, 17.5), Vector2(122, 17.5)], 20.0)
 	pruefe(steg and absf(spieler().global_position.y + 17.4) < 0.5, "Auf dem Landungssteg bis an sein Ende (y=%.1f)" % spieler().global_position.y)
 	await gehe_ueber([Vector2(108, 17.5), Vector2(100, 17.5), Vector2(100, -0.5)], 20.0)
+	# Über die Krone der Kanalmauer durch das Wassertor in den Untergrundhafen, um das Becken herum und auf der anderen
+	# Seite wieder hinaus auf den Ostkai zu den beiden Kränen
+	var uh := await gehe_ueber([Vector2(97, -5.5), Vector2(89, -5.5), Vector2(84, -4.2), Vector2(66, -4.2), Vector2(66, -15),
+			Vector2(84, -15), Vector2(89, -13.5), Vector2(97, -13.5)], 30.0)
+	pruefe(uh and absf(spieler().global_position.y + 17.4) < 0.5 and orte.has("Untergrundhafen"),
+			"Durch den Untergrundhafen auf die andere Seite des Kanals (y=%.1f)" % spieler().global_position.y)
+	var kraene := await gehe_ueber([Vector2(101, -20), Vector2(103, -21.5), Vector2(110, -33), Vector2(116, -41), Vector2(122, -43)], 30.0)
+	pruefe(kraene and absf(spieler().global_position.y + 17.4) < 0.5, "Über den Ostkai zu den Kränen (y=%.1f)" % spieler().global_position.y)
+	await gehe_ueber([Vector2(116, -41), Vector2(110, -33), Vector2(101, -20), Vector2(97, -13.5), Vector2(89, -13.5), Vector2(84, -15),
+			Vector2(66, -15), Vector2(66, -4.2), Vector2(84, -4.2), Vector2(89, -5.5), Vector2(97, -5.5), Vector2(100, -0.5)], 30.0)
 	# Zurück zum Becken, über den Westkai zum Speicherkai, durch die Molenpforte über Mole und Brücken zu den Inseln
 	var mole := await gehe_ueber([Vector2(100, -0.5), Vector2(100, 27.5), Vector2(106, 52.5),
 			Vector2(121, 61.5), Vector2(166, 61.5), Vector2(186, 56.5), Vector2(191.5, 47.5), Vector2(191.5, 17.5), Vector2(191.5, -8.5), Vector2(201, -10),
