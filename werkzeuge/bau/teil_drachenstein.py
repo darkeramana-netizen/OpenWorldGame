@@ -49,13 +49,13 @@ def tore_an(punkte, *tore):
 
 
 def gebaeude(name, eltern, bau, hoehe, boden, mat="Material_mauer", dach="Material_dach_schiefer", dachhoehe=None, art=None,
-             begehbar=True):
+             begehbar=True, zweck=0):
     """Bau aus dem Plan: ((Mitte), Länge entlang Plan-x, Breite, Drehung)."""
     (pp, laenge, breite, dreh) = bau
     x, z = W(pp)
     # Länge entlang Plan-x = Welt -z; steinbau legt die Länge entlang lokal z, Gier 0 → Welt z
     return steinbau(name, eltern, x, z, laenge * M, breite * M, hoehe, gier=-dreh, mat=mat, dach=dach,
-                    dachhoehe=dachhoehe, boden=boden, art=art, begehbar=begehbar)
+                    dachhoehe=dachhoehe, boden=boden, art=art, begehbar=begehbar, zweck=zweck)
 
 
 MITTE_BURG = W(PD.MITTE)
@@ -98,7 +98,7 @@ for pp, r in [((318, 250), 7.0), ((350, 358), 5.5)]:
 N("VorburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_vt)})""")
 for k, bau in enumerate(PD.VORBURG_BAUTEN):
-    gebaeude(f"Vorburgbau{k}", BG, bau, 7, PD.H_VORBURG, dach="Material_dach")
+    gebaeude(f"Vorburgbau{k}", BG, bau, 7, PD.H_VORBURG, dach="Material_dach", zweck=(5, 4)[k])   # Gesindehaus, Stall
 schild("SchildVorburg", BG, *(lambda p: (p[0], PD.H_VORBURG + 9, p[1]))(W((390, 300))), "I. Vorburg", 40)
 
 # Sperrmauer im Zwinger westlich der Vorburg: Von Westen kommt man nicht unter die Vorburg, nur vom Rampentor her
@@ -109,7 +109,7 @@ B2 = PD.BURGHOF2[1:] + [PD.BURGHOF2[0]]
 mauerring("BurghofZwei", BG, WL(B2), 9.0, dicke=3.0, mitte=W((560, 260)),
          tore=tore_an(B2, (PD.TORE["Rampentor"], 5.0, "Rampentor"), (PD.TORE["Tor des III. Burghofs"], 6.0, "")))
 for k, bau in enumerate(PD.BURGHOF2_BAUTEN):
-    gebaeude(f"Burghof2Bau{k}", BG, bau, 8, PD.H_BURGHOF2)
+    gebaeude(f"Burghof2Bau{k}", BG, bau, 8, PD.H_BURGHOF2, zweck=5)
 schild("SchildBurghof2", BG, *(lambda p: (p[0], PD.H_BURGHOF2 + 9, p[1]))(W((560, 262))), "II. Burghof", 40)
 
 # --- III. Burghof um den Hof aus Akt I; die Wand zum II. Burghof gehört zum II. ---
@@ -144,13 +144,13 @@ FAHNEN.extend([bx, PD.H_BERGFRIEDFELS + 52.05, bz, 30, 3.6, 6.0, 0])
 for nx_, nz_ in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
     FAHNEN.extend([bx + nx_ * 7.55, PD.H_BERGFRIEDFELS + 46, bz + nz_ * 7.55, math.degrees(math.atan2(nx_, nz_)), 2.6, 9.0, 1])
 # Palas: drei Geschosse mit gotischen Doppelfenstern, steiles Schieferdach; am Westende ein schlanker Rundturm
-gebaeude("Palas", BG, PD.PALAS, 16, PD.H_KERNBURG, mat="Material_hell", dachhoehe=11, art=3)
+gebaeude("Palas", BG, PD.PALAS, 16, PD.H_KERNBURG, mat="Material_hell", dachhoehe=11, art=3, zweck=3)
 _pt = turmmasse((928, 150), 4.2, 0)
 N("PalasTurm", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_pt[:3] + [PD.H_KERNBURG + 25, 4.2, 1, 9])})""")
 gebaeude("Drachenkapelle", BG, PD.DRACHENKAPELLE, 11, PD.H_KERNBURG, mat="Material_hell", art=1, dachhoehe=8)
-gebaeude("Burgkueche", BG, PD.BURGKUECHE, 7, PD.H_KERNBURG, dach="Material_dach")
-gebaeude("Zeughaus", BG, PD.ZEUGHAUS, 8, PD.H_KERNBURG)
+gebaeude("Burgkueche", BG, PD.BURGKUECHE, 7, PD.H_KERNBURG, dach="Material_dach", zweck=1)
+gebaeude("Zeughaus", BG, PD.ZEUGHAUS, 8, PD.H_KERNBURG, zweck=2)
 for name, pp, text in [("SchildPalas", (995, 155), "Palas"), ("SchildKapelle", (1075, 215), "Drachenkapelle"),
                        ("SchildKueche", (905, 252), "Burgküche"), ("SchildZeughaus", (1030, 260), "Zeughaus")]:
     x, z = W(pp)
