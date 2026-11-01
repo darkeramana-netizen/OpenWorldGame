@@ -111,7 +111,8 @@ for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (815, 515)]:      # a
 N("Hafenausstattung", "Node3D", HF, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray("{STEG}#0", "{STEG}#1", "{STEG}#2", "{STEG}#3", "{STEG}#4", "res://modelle/hafen/barrel_03/barrel_03.gltf", "res://modelle/hafen/wooden_crate_01/wooden_crate_01.gltf#1", "res://modelle/hafen/wooden_crate_02/wooden_crate_02.gltf#0")
 stuecke = PackedFloat32Array({", ".join(f"{v:.6g}" for st_ in _steg for v in st_)})
-sichtweite = 400.0""")
+sichtweite = 400.0
+ohne_kollision = PackedInt32Array(0)""")
 
 # --- Marktplatz mit Brunnen und Ständen ---
 MK = DS + "/Marktplatz"

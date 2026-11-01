@@ -22,6 +22,8 @@ extends Node3D
 ## > 0: Stücke in Kacheln dieser Größe (Meter) aufteilen, jede Kachel ein eigenes MultiMesh. So gilt die Sichtweite je
 ## Kachel (für viele kleine Dinge wie Pilze und Farn); sonst gilt sie für das ganze MultiMesh von seinem Mittelpunkt.
 @export var kachel := 0.0
+## Modelle (Nummern), die keine Kollision bekommen, z. B. die Pfähle unter einem Steg
+@export var ohne_kollision := PackedInt32Array()
 
 const SCHRITT := 7
 
@@ -83,7 +85,7 @@ func _baue() -> void:
 			inst.position = mitte
 			inst.visibility_range_end = sichtweite
 			add_child(inst)
-		if koerper != null:
+		if koerper != null and not m in ohne_kollision:
 			var form := _mesh(modelle[m], true)
 			if form == null:
 				continue
