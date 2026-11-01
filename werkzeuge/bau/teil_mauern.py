@@ -108,10 +108,11 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
         nx, nz = -uz, ux
         abschnitte = [(0.0, 1.0)]
         if i in tore:
-            anteil, breite, tname = tore[i]
+            anteil, breite, tname = tore[i][:3]
+            boden_fest = tore[i][3] if len(tore[i]) > 3 else None   # z. B. ein Wassertor auf dem Wasser
             h_ = (breite / 2 + dicke / 2) / laenge     # die Mauerstücke überlappen an ihren Enden um die halbe Dicke
             abschnitte = [(0.0, anteil - h_), (anteil + h_, 1.0)]
-            toreliste.append((x1 + (x2 - x1) * anteil, z1 + (z2 - z1) * anteil, ux, uz, tname, breite))
+            toreliste.append((x1 + (x2 - x1) * anteil, z1 + (z2 - z1) * anteil, ux, uz, tname, breite, boden_fest))
         for t0, t1 in abschnitte:
             if t1 - t0 <= 0.001:
                 continue
@@ -136,15 +137,18 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
             unten = min(werte) - 2.5
             oben = max(werte) + hoehe + turm_extra
             tuerme += [x, z, unten, oben, turm_r, 1 if turm_dach else 0, turm_r * 1.8]
-    for k, (tx, tz, ux, uz, tname, breite) in enumerate(toreliste):
+    for k, (tx, tz, ux, uz, tname, breite, boden_fest) in enumerate(toreliste):
         nx, nz = -uz, ux
-        boden = max(H(tx + ux * s + nx * q, tz + uz * s + nz * q) for s in (-breite, 0, breite) for q in (-4, 0, 4))
+        rings = [H(tx + ux * s + nx * q, tz + uz * s + nz * q) for s in (-breite, 0, breite) for q in (-4, 0, 4)]
+        boden = max(rings) if boden_fest is None else boden_fest
         seite = 1 if nx * (tx - mitte[0]) + nz * (tz - mitte[1]) > 0 else -1
-        torboegen += [tx, tz, ux, uz, boden, breite, boden + hoehe, dicke]
+        # Der Torbau reicht so hoch wie die Mauer daneben, sonst bleibt über dem Bogen eine Lücke
+        oben_tor = max(boden + hoehe, max(rings) + hoehe)
+        torboegen += [tx, tz, ux, uz, boden, breite, oben_tor, dicke]
         for s_ in (-1, 1):
             px, pz = tx + ux * (breite / 2 + 2.6) * s_, tz + uz * (breite / 2 + 2.6) * s_
             unten = min(H(px, pz), boden) - 2.5
-            torbauten += [px, pz, ux, uz, unten, boden + hoehe + 6, 5.0, dicke + 2, seite, 1]
+            torbauten += [px, pz, ux, uz, unten, oben_tor + 6, 5.0, dicke + 2, seite, 1]
         if tname:
             schild(f"{name}Tor{k}Schild", eltern, round(tx, 2), round(boden + hoehe + 4.5, 2), round(tz, 2), tname, 40)
     N(f"{name}Bau", "Node3D", eltern, f"""script = ExtResource("28_burgbau")
@@ -153,7 +157,7 @@ tuerme = PackedFloat32Array({_zahlen(tuerme)})
 tore = PackedFloat32Array({_zahlen(torboegen)})
 torbauten = PackedFloat32Array({_zahlen(torbauten)})
 stein = \"{STEINE.get(mat, 'mauer')}\"""")
-    return [(x, z, ux, uz, n) for x, z, ux, uz, n, _ in toreliste]
+    return [(x, z, ux, uz, n) for x, z, ux, uz, n, _, _ in toreliste]
 
 
 WAENDE = {"Material_hell": 1, "Material_mauer": 2, "Material_holz": 3}

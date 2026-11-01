@@ -101,7 +101,7 @@ MOLENPFORTE = (755, 645.5)
 TORE = {
     "Torhaus West": (154, 410),          # in der Ringmauer: Küstenweg ↔ Burgweg (in die Stadt geht es weiter durchs Burgstraßentor)
     "Torhaus Nord": (294, 173.6),        # in der Ringmauer: Burgbezirk ↔ Weg nach Gravemarch
-    "Hafentor": (748, 408),              # Wassertor: Kanal vom Hafen bis ans Felsentor, daneben der Kai
+    "Hafentor": (754, 408.6),            # Wassertor: niedriger Bogen direkt auf dem Wasser, dahinter der Gang in den Berg
     "Burgstraßentor": (233, 410.1),      # Stadt ↔ Burgweg (in der Ringmauer westlich des Grats)
     "Tor zur Vorburg": (436.8, 339.7),   # Südtor der Vorburg, vom Weg unter der Vorburg
     "Rampentor": (628.5, 311.8),         # Südtor des II. Burghofs, am Ende des Burgwegs um die Burg

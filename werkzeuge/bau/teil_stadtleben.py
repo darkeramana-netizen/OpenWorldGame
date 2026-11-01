@@ -294,7 +294,7 @@ for name, anzeige, kordel, strecke, schicht in [
 for i, (name, anzeige) in enumerate([("FischerKlaas", "Fischer Klaas Wend"), ("FischerinTora", "Fischerin Tora Lunk"),
                                      ("FischerHinnerk", "Fischer Hinnerk Saal")]):
     stadtmensch(name, anzeige, "hafen", 0, FARBEN[(i + 1) % 8], wohnung(), {
-        "morgengrauen": (W((650 + 35 * i, 442)), ["blick=90"]),
+        "morgengrauen": (W((650 + 35 * i, 436)), ["blick=90"]),
         "stille_stunde": ("heim", ["weg"]),
     }, sichtbar_wenn="alarm<3")
 for i, (name, anzeige) in enumerate([("TraegerOle", "Hafenträger Jonte Pahl"), ("TraegerinMieke", "Hafenträgerin Mieke Strand")]):
@@ -303,10 +303,10 @@ for i, (name, anzeige) in enumerate([("TraegerOle", "Hafenträger Jonte Pahl"), 
         "morgengrauen": (tragen, []),
         "stille_stunde": ("heim", ["weg"]),
     }, sichtbar_wenn="alarm<3")
-KAUFMANN = W((722, 440))
+KAUFMANN = W((722, 435))
 person("KaufmannVelmund", SL, KAUFMANN[0], hoehe(*KAUFMANN), KAUFMANN[1], "Kaufmann Teodor Vass aus Velmund",
        "kaufmann_velmund", 0, "0.5, 0.2, 0.18, 1", gier=-90, sichtbar_wenn="alarm<2")
-AUFSICHT = W((730, 440))
+AUFSICHT = W((730, 435))
 person("Hafenaufsicht", SL, AUFSICHT[0], hoehe(*AUFSICHT), AUFSICHT[1], "Hafenwächter Gunnar Fleet", "hafenaufsicht", 1,
        ORDEN, gier=_blick(AUFSICHT, KAUFMANN))
 

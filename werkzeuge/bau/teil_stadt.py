@@ -43,12 +43,13 @@ def kaimauer(name, punkte, offen=()):
     for i, (a, b) in enumerate(zip(punkte, punkte[1:] + punkte[:1])):
         if i in offen:
             continue
-        mauerring(f"{name}{i}", HF, [a, b], 0.9, dicke=2.0, zinnen=False, mat="Material_kai")
+        # 4 m dick: das Gelände fällt an der Kante über ein Rasterfeld (2,5 m) ab, die Mauer deckt den Abhang ganz ab
+        mauerring(f"{name}{i}", HF, [a, b], 0.9, dicke=4.0, zinnen=False, mat="Material_kai")
 # Kaimauern ums Becken; offen bleiben die Hafeneinfahrt und der Kanal zum Wassertor
 kaimauer("KaiBecken", BECKEN, offen=(PD.HAFENEINFAHRT, 1))
 kaimauer("KaiNord", WL([(700, 444), (744, 447.5)]) + WL([(764, 449.2), (790, 452)]), offen=(1, 3))
 for k, (a_, b_) in enumerate([((744, 448), (744, 411)), ((764, 449), (764, 411))]):
-    mauerring(f"KaiKanal{k}", HF, WL([a_, b_]), 0.9, dicke=2.0, zinnen=False, mat="Material_kai")
+    mauerring(f"KaiKanal{k}", HF, WL([a_, b_]), 0.9, dicke=4.0, zinnen=False, mat="Material_kai")
 HM = PD.HAFENMAUER_OST
 mauerring("Hafenmauer", HF, WL(HM), 8.0, dicke=3.0, mitte=W((720, 520)))
 mauerring("Speicherkai", HF, WL([(640, 642), (770, 646), (790, 630)]), 6.0, dicke=3.0, mitte=W((720, 520)),
@@ -70,7 +71,7 @@ S('''[sub_resource type="StandardMaterial3D" id="Material_dunkel"]
 albedo_color = Color(0.015, 0.015, 0.02, 1)
 roughness = 1.0''')
 _wt = W(PD.TORE["Hafentor"])
-box("WassertorTiefe", HF, round(_wt[0] - 5.0, 2), -13.0, round(_wt[1], 2), 6.0, 14.0, 17.0, "Material_dunkel")
+box("WassertorTiefe", HF, round(_wt[0] - 5.0, 2), -14.5, round(_wt[1], 2), 6.0, 11.0, 11.0, "Material_dunkel")
 schild("SchildWassertor", HF, round(_wt[0] + 4, 2), KAI_OBEN + 4, round(_wt[1] + 7, 2), "Zum Untergrundhafen", 40)
 _hm = W((720, 520))
 schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
