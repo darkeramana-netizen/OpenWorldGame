@@ -28,7 +28,7 @@ def turmmasse(pp, r, ueber):
     return [x, z, min(werte) - 2.5, max(werte) + ueber]
 
 
-def tor_an(punkte, p, breite, name):
+def tor_an(punkte, p, breite, name, boden=None):
     """Tor für mauerring: {Kantenindex: (Anteil, Breite, Name)} an der Kante des Linienzugs, die dem Planpunkt p
     am nächsten liegt (punkte und p im Plan)."""
     bester = None
@@ -38,13 +38,13 @@ def tor_an(punkte, p, breite, name):
         d = math.dist(p, (a[0] + dx * t, a[1] + dy * t))
         if bester is None or d < bester[0]:
             bester = (d, i, t)
-    return {bester[1]: (round(bester[2], 3), breite, name)}
+    return {bester[1]: (round(bester[2], 3), breite, name) + (() if boden is None else (boden,))}
 
 
 def tore_an(punkte, *tore):
     erg = {}
-    for p, breite, name in tore:
-        erg.update(tor_an(punkte, p, breite, name))
+    for p, breite, name, *boden in tore:
+        erg.update(tor_an(punkte, p, breite, name, *boden))
     return erg
 
 
