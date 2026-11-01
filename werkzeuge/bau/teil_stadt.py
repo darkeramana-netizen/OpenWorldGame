@@ -101,13 +101,13 @@ for start, richtung, abschnitte in [((700, 447), (1, 0), 5), ((628, 525), (0, -1
     _nr = start[0]
     S(f'''[sub_resource type="BoxShape3D" id="Form_steg{_nr}"]
 size = Vector3(2.5, 0.4, {laenge_:.2f})''')
-    N(f"StegBoden{_nr}", "StaticBody3D", HF, T(round(mx_, 2), round(KAI_OBEN + 0.2 - 0.2, 2), round(mz_, 2), round(g_, 1)))
+    N(f"StegBoden{_nr}", "StaticBody3D", HF, T(round(mx_, 2), round(KAI_OBEN - 0.2, 2), round(mz_, 2), round(g_, 1)))
     N("Form", "CollisionShape3D", f"{HF}/StegBoden{_nr}", f'shape = SubResource("Form_steg{_nr}")')
     for k in range(abschnitte):
         ox = sx_ + dx_ * (k * 2.9 + 0.32) - qx_ * 0.98
         oz = sz_ + dz_ * (k * 2.9 + 0.32) - qz_ * 0.98
         for steg_teil in (3, 0):         # Deck und Pfähle
-            _steg.append((steg_teil, round(ox, 2), round(KAI_OBEN + 0.2 - 2.62, 2), round(oz, 2), round(g_, 1), 0, 1))
+            _steg.append((steg_teil, round(ox, 2), round(KAI_OBEN - 2.62, 2), round(oz, 2), round(g_, 1), 0, 1))   # Deck auf Kaihöhe
 # Hafenkram: Fässer und Kisten (Fotoscans) in Gruppen am Nordkai und am Ostkai
 random.seed(77)
 for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (815, 515)]:      # an der Mauer, abseits der Laufwege
