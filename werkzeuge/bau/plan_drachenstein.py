@@ -267,7 +267,7 @@ def plan_json():
         "bucht": welt_liste(BUCHT),
         "grat_hoehen": [H_VORBURG, H_KERNBURG],
         "grat_abfall": 3.0,
-        "abfall": 18.0,              # außen an der Ringmauer fällt der Berg steil ins Tal
+        "abfall": 9.0,               # außen an der Ringmauer bricht der Fels fast senkrecht ab
         "zwinger_hoehen": [-12.0, -2.0],
         "strassen": [welt_liste(s) for s in STRASSEN],
         "markt": welt_liste(MARKTPLATZ),
