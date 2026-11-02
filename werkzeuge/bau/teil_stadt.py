@@ -126,7 +126,7 @@ gebaeude = PackedFloat32Array({_zahlen([round(_wt[0], 2), round(_wt[1], 2), roun
 schild("SchildWassertor", HF, round(_wt[0] + 4, 2), KAI_OBEN + 4, round(_wt[1] + 7, 2), "Zum Untergrundhafen", 40)
 # --- Meereshöhlen in der Klippe unter der Kernburg (wie im Referenzbild), mit Podest und Stufen ---
 _hl = []
-for px_ in (990, 1040, 1090):
+for px_ in (990, 1090):
     py_ = 395.0
     while H(*W((px_, py_))) > -19.2 and py_ < 470:
         py_ += 0.5
@@ -135,25 +135,37 @@ for px_ in (990, 1040, 1090):
     _hl += [round(hx_, 2), round(hz_, 2), 1, 0, round(max(steig_, 0.8), 2), random.choice((4.5, 5.5)), random.choice((4.0, 5.0))]
 N("Meereshoehlen", "Node3D", HF, f"""script = ExtResource("28_burgbau")
 hoehlen = PackedFloat32Array({_zahlen(_hl)})""")
-# --- Mauerhäuser auf der östlichen Hafenmauer: kleine Fachwerkhäuser auf der Mauerkrone, die nach beiden Seiten
-# vorkragen (unten auf dem schmalen Kai bleibt der Weg zu den Kränen frei) ---
-_mh = []
-for (a_, b_), t_ in [((HM[0], HM[1]), 0.5), ((HM[1], HM[2]), 0.3), ((HM[1], HM[2]), 0.55), ((HM[1], HM[2]), 0.8)]:
-    pa_, pb_ = W(a_), W(b_)
-    mx_, mz_ = pa_[0] + (pb_[0] - pa_[0]) * t_, pa_[1] + (pb_[1] - pa_[1]) * t_
-    l_ = math.dist(pa_, pb_)
-    ux_, uz_ = (pb_[0] - pa_[0]) / l_, (pb_[1] - pa_[1]) / l_
-    krone_ = max(H(mx_ + ux_ * s2_ - uz_ * q_, mz_ + uz_ * s2_ + ux_ * q_) for s2_ in (-10, -5, 0, 5, 10) for q_ in (-3.5, 0, 3.5)) + 8.0
+# --- Kaihäuser am Ostkai: eine Zeile schmaler Speicher- und Wohnhäuser unten auf dem Kai, mit dem Rücken an der
+# Hafenmauer und der Tür zum Becken (wie im Referenzbild); davor bleibt die Gasse zum Kran frei ---
+_hmitte = W((720, 520))
+pa_, pb_ = W(HM[1]), W(HM[2])
+l_ = math.dist(pa_, pb_)
+ux_, uz_ = (pb_[0] - pa_[0]) / l_, (pb_[1] - pa_[1]) / l_
+nx_, nz_ = -uz_, ux_
+if (_hmitte[0] - pa_[0]) * nx_ + (_hmitte[1] - pa_[1]) * nz_ < 0:
+    nx_, nz_ = -nx_, -nz_                       # zum Becken hin
+s_ = l_ * 0.3
+k_ = 0
+while s_ < l_ * 0.93:
+    laenge_ = random.choice((7.5, 8.5, 9.5))
+    if s_ + laenge_ > l_ * 0.95:
+        break
+    tiefe_ = 5.0
+    mx_ = pa_[0] + ux_ * (s_ + laenge_ / 2) + nx_ * (1.5 + 0.3 + tiefe_ / 2)
+    mz_ = pa_[1] + uz_ * (s_ + laenge_ / 2) + nz_ * (1.5 + 0.3 + tiefe_ / 2)
     g_ = math.degrees(math.atan2(ux_, uz_))
-    _mh += [round(mx_, 2), round(mz_, 2), round(g_, 1), 5.6, random.choice((8.0, 9.0, 10.0)), round(krone_ + 1.2, 2),
-            round(krone_ - 2.0, 2), random.choice((4.2, 5.0)), 3.4, 3, random.choice((0, 1)), 0]
-N("Mauerhaeuser", "Node3D", HF, f"""script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array({_zahlen(_mh)})""")
+    if math.cos(math.radians(g_)) * nx_ - math.sin(math.radians(g_)) * nz_ < 0:
+        g_ += 180.0                             # Tür (lokal +x) zum Becken
+    steinbau(f"Kaihaus{k_}", HF, round(mx_, 2), round(mz_, 2), laenge_, tiefe_, random.choice((6.0, 6.8, 7.4)), gier=round(g_, 1),
+             mat=random.choice(("Material_holz", "Material_hell", "Material_mauer")), dach=random.choice(("Material_dach", "Material_dach_schiefer")),
+             boden=KAI_OBEN, art=0)
+    k_ += 1
+    s_ += laenge_ + 0.4
 _hm = W((720, 520))
 schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
 # Koggen im Becken (szenen/welt/ausstattung.gd, Art 5; die Wasserlinie liegt bei -20)
 SCHIFFE = [(5, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in
-           [((660, 480), 80), ((745, 478), 95), ((700, 560), 85), ((770, 545), 60)]]
+           [((660, 480), 80), ((745, 478), 95), ((700, 560), 85), ((760, 548), 60)]]
 # Draußen in der Bucht: Koggen unter vollem Segel (Art 6)
 SCHIFFE += [(6, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in [((960, 560), 150), ((1080, 640), 200)]]
 # Ruderboote an den Stegen (Art 7)
@@ -164,7 +176,7 @@ SCHIFFE += [(7, *uh(s_, q_)[:1], -20.0, uh(s_, q_)[1], g_) for s_, q_, g_ in [(1
 SCHIFFE += [(9, *uh(s_, q_)[:1], -20.0, uh(s_, q_)[1], g_) for s_, q_, g_ in [(26.0, -3.2, 90), (36.0, 3.2, 270)]]
 SCHIFFE += [(8, *uh(56.0, 10.0)[:1], KAI_KRONE, uh(56.0, 10.0)[1], -90)]   # neben der Tür, der Ausleger über dem Becken
 # Tretradkräne (Art 8): auf dem Ostkai an der Hafenmauer und am Ende des Nordkais, der Ausleger über dem Wasser
-SCHIFFE += [(8, *(lambda p: (p[0], KAI_OBEN + 0.2, p[1]))(W(pp)), g) for pp, g in [((820, 482), 180), ((784, 438), -90)]]
+SCHIFFE += [(8, *(lambda p: (p[0], KAI_OBEN + 0.2, p[1]))(W(pp)), g) for pp, g in [((809.5, 500), 180), ((784, 438), -90)]]
 
 # --- Landungsstege aus dem Steg-Fotoscan (modelle/hafen/): je Abschnitt 2,9 m, Deck 2,62 m über dem Ursprung ---
 STEG = "res://modelle/hafen/modular_wooden_pier/modular_wooden_pier.gltf"
@@ -189,7 +201,7 @@ size = Vector3(2.5, 0.4, {laenge_:.2f})''')
             _steg.append((steg_teil, round(ox, 2), round(KAI_OBEN - 2.62, 2), round(oz, 2), round(g_, 1), 0, 1))   # Deck auf Kaihöhe
 # Hafenkram: Fässer und Kisten (Fotoscans) in Gruppen am Nordkai und am Ostkai
 random.seed(77)
-_kram = [W(pp) for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (815, 515)]]    # an der Mauer, abseits der Laufwege
+_kram = [W(pp) for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (812, 528)]]    # an der Mauer, abseits der Laufwege
 _kram += [uh(s_ + 3.0, q_ * (UH_BREITE / 2 + 1.6)) for s_ in range(6, 54, 12) for q_ in (-1, 1)]   # in den Lagernischen
 for gx_, gz_ in _kram:
     for _ in range(random.randint(3, 6)):

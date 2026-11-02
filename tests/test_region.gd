@@ -144,9 +144,9 @@ func _initialize() -> void:
 			Vector2(85.5, -18), Vector2(89, -13.5), Vector2(97, -13.5)], 30.0)
 	pruefe(uh and absf(spieler().global_position.y + 17.4) < 0.5 and orte.has("Untergrundhafen"),
 			"Durch den Untergrundhafen auf die andere Seite des Kanals (y=%.1f)" % spieler().global_position.y)
-	var kraene := await gehe_ueber([Vector2(101, -20), Vector2(103, -21.5), Vector2(110, -33), Vector2(116, -41), Vector2(122, -43)], 30.0)
+	var kraene := await gehe_ueber([Vector2(101, -20), Vector2(103, -21.5), Vector2(110, -33), Vector2(116, -41), Vector2(126, -38.5), Vector2(132, -39)], 30.0)
 	pruefe(kraene and absf(spieler().global_position.y + 17.4) < 0.5, "Über den Ostkai zu den Kränen (y=%.1f)" % spieler().global_position.y)
-	await gehe_ueber([Vector2(116, -41), Vector2(110, -33), Vector2(101, -20), Vector2(97, -13.5), Vector2(89, -13.5), Vector2(85.5, -18),
+	await gehe_ueber([Vector2(126, -38.5), Vector2(116, -41), Vector2(110, -33), Vector2(101, -20), Vector2(97, -13.5), Vector2(89, -13.5), Vector2(85.5, -18),
 			Vector2(34.5, -18), Vector2(34.5, -1), Vector2(85.5, -1), Vector2(89, -5.5), Vector2(97, -5.5), Vector2(100, -0.5)], 30.0)
 	# Begehbare Gebäude (burgbau.gd, Art ab 10): von draußen durch die Tür hinein, bei mehreren Geschossen die erste
 	# Treppe hinauf. Die Lage steht in den Werten des Baus.
