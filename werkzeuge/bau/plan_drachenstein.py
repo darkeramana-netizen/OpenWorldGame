@@ -82,12 +82,12 @@ HAFENBECKEN = [(632, 452), (700, 444), (790, 452), (800, 470), (808, 548), (806,
 HAFENEINFAHRT = 4         # Kante des Beckens zur offenen See
 HAFENMAUER_OST = [(785, 412), (828, 440), (832, 532)]
 SPEICHERKAI = [(640, 612), (770, 614), (790, 628), (660, 640), (630, 628)]
-HAFEN_BEZIRK = [(615, 425), (785, 412), (828, 440), (842, 540), (824, 552), (808, 606), (800, 622), (800, 640),
+HAFEN_BEZIRK = [(615, 425), (785, 412), (828, 440), (842, 540), (812, 549), (808, 606), (800, 622), (800, 640),
                 (770, 648), (640, 650), (600, 664), (590, 560), (600, 470)]
 FAHRRINNE = [(806, 606), (808, 548), (960, 830), (880, 860)]
 # Meer (blau markiert im Grundriss): Es reicht bis an die Klippe unter der Ringmauer zwischen Hafen und Rondell, bis an
 # die Hafeneinfahrt und südlich der Stadt bis an die Küste. Neben der Hafenmauer bleibt ein Felsstreifen.
-BUCHT = [(826, 556), (845, 548), (870, 505), (950, 468), (1100, 436), (1250, 425), (1450, 440), (1650, 620),
+BUCHT = [(813, 553), (845, 548), (870, 505), (950, 468), (1100, 436), (1250, 425), (1450, 440), (1650, 620),
          (1720, 760), (1720, 950), (280, 950), (280, 760), (450, 748), (600, 735), (670, 712), (720, 682),
          (790, 660), (806, 642), (810, 610)]
 # Wassertor (Hafentor): ein Kanal vom Becken bis an die Ringmauer; hinter dem Fallgitter geht es dunkel in den Berg zum
