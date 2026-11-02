@@ -963,16 +963,16 @@ func _hoehle(w: PackedFloat32Array) -> void:
 		var a := PI - PI * k / 12.0
 		umriss.append(Vector2(b * cos(a), hv + (h - hv) * sin(a)))
 	umriss.append_array([Vector2(b, hv), Vector2(b, 0)])
-	var mitte: Vector3 = pt.call(0.0, h * 0.4, 0.45)
+	var mitte: Vector3 = pt.call(0.0, h * 0.4, 1.0)
 	for k in umriss.size() - 1:
 		var a: Vector2 = umriss[k]
 		var e: Vector2 = umriss[k + 1]
-		_dreieck("dunkel", mitte, pt.call(a.x, a.y, 0.45), pt.call(e.x, e.y, 0.45), nrm)
+		_dreieck("dunkel", mitte, pt.call(a.x, a.y, 1.0), pt.call(e.x, e.y, 1.0), nrm)
 		# Felsrand: innen weit vorstehend, außen flach in den Fels
 		var aa := Vector2(a.x * 1.35, a.y * 1.2)
 		var ee := Vector2(e.x * 1.35, e.y * 1.2)
-		_viereck("fels", pt.call(a.x, a.y, 1.0), pt.call(e.x, e.y, 1.0), pt.call(ee.x, ee.y, -0.2), pt.call(aa.x, aa.y, -0.2), nrm + t * 0.3)
-		_viereck("fels", pt.call(a.x, a.y, 1.0), pt.call(e.x, e.y, 1.0), pt.call(e.x, e.y, 0.4), pt.call(a.x, a.y, 0.4), -nrm)
+		_viereck("fels", pt.call(a.x, a.y, 1.6), pt.call(e.x, e.y, 1.6), pt.call(ee.x, ee.y, -0.4), pt.call(aa.x, aa.y, -0.4), nrm + t * 0.3)
+		_viereck("fels", pt.call(a.x, a.y, 1.6), pt.call(e.x, e.y, 1.6), pt.call(e.x, e.y, 0.95), pt.call(a.x, a.y, 0.95), -nrm)
 	# Steinpodest vor der Öffnung, knapp über dem Wasser
 	var c2 := Vector2(fuss.x, fuss.z) + Vector2(o.x, o.z) * 1.0
 	_klotz("bruchstein", c2, Vector2(r.x, r.z), Vector2(o.x, o.z), -b - 1.2, b + 3.5, -1.2, 1.8, -21.5, -19.45)
