@@ -57,6 +57,13 @@ extends Node3D
 	set(w):
 		hallen = w
 		_neu_bauen()
+## Meereshöhlen an der Klippe: je 7 Werte x, z (Fuß der Öffnung am Wasser), außen x, z (waagrecht, vom Fels weg), Steigung
+## des Felsens (Meter Höhe je Meter in den Fels), Breite, Höhe. Dunkle Öffnung mit Felsrand, die sich an den schrägen
+## Fels legt, davor ein Steinpodest knapp über dem Wasser und Stufen am Fels hinauf.
+@export var hoehlen := PackedFloat32Array():
+	set(w):
+		hoehlen = w
+		_neu_bauen()
 @export var kollision := true:
 	set(w):
 		kollision = w
@@ -124,6 +131,10 @@ func _baue() -> void:
 	while i + 12 < hallen.size():
 		_halle(hallen.slice(i, i + 13))
 		i += 13
+	i = 0
+	while i + 6 < hoehlen.size():
+		_hoehle(hoehlen.slice(i, i + 7))
+		i += 7
 	_fahnen_bauen()
 	if _flach.is_empty() and _rund.is_empty():
 		return
@@ -932,6 +943,46 @@ func _fenster_innen(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: flo
 	_klotz("hell", m, u, nn, -b - 0.12, b + 0.12, 0.0, 0.25, ym - fh / 2.0 - 0.12, ym - fh / 2.0, true)
 	_klotz("holz", m, u, nn, -0.04, 0.04, 0.025, 0.07, ym - fh / 2.0, ym + fh / 2.0)
 	_klotz("holz", m, u, nn, -b, b, 0.025, 0.07, ym + fh * 0.1 - 0.04, ym + fh * 0.1 + 0.04)
+
+
+func _hoehle(w: PackedFloat32Array) -> void:
+	var o := Vector3(w[2], 0, w[3]).normalized()
+	var steig := w[4]
+	var b := w[5] / 2.0
+	var h := w[6]
+	var fuss := Vector3(w[0], -19.4, w[1])
+	var r := Vector3(-o.z, 0, o.x)
+	var t := (Vector3.UP * steig - o).normalized()             # am Fels hinauf
+	var nrm := (o * steig + Vector3.UP).normalized()            # aus dem Fels heraus
+	var pt := func(u: float, v: float, ab: float) -> Vector3:
+		return fuss + r * u + t * v + nrm * ab
+	# Umriss: gerade Seiten bis 45 % der Höhe, darüber ein Bogen
+	var hv := h * 0.45
+	var umriss: Array[Vector2] = [Vector2(-b, 0), Vector2(-b, hv)]
+	for k in range(1, 12):
+		var a := PI - PI * k / 12.0
+		umriss.append(Vector2(b * cos(a), hv + (h - hv) * sin(a)))
+	umriss.append_array([Vector2(b, hv), Vector2(b, 0)])
+	var mitte: Vector3 = pt.call(0.0, h * 0.4, 0.45)
+	for k in umriss.size() - 1:
+		var a: Vector2 = umriss[k]
+		var e: Vector2 = umriss[k + 1]
+		_dreieck("dunkel", mitte, pt.call(a.x, a.y, 0.45), pt.call(e.x, e.y, 0.45), nrm)
+		# Felsrand: innen weit vorstehend, außen flach in den Fels
+		var aa := Vector2(a.x * 1.35, a.y * 1.2)
+		var ee := Vector2(e.x * 1.35, e.y * 1.2)
+		_viereck("fels", pt.call(a.x, a.y, 1.0), pt.call(e.x, e.y, 1.0), pt.call(ee.x, ee.y, -0.2), pt.call(aa.x, aa.y, -0.2), nrm + t * 0.3)
+		_viereck("fels", pt.call(a.x, a.y, 1.0), pt.call(e.x, e.y, 1.0), pt.call(e.x, e.y, 0.4), pt.call(a.x, a.y, 0.4), -nrm)
+	# Steinpodest vor der Öffnung, knapp über dem Wasser
+	var c2 := Vector2(fuss.x, fuss.z) + Vector2(o.x, o.z) * 1.0
+	_klotz("bruchstein", c2, Vector2(r.x, r.z), Vector2(o.x, o.z), -b - 1.2, b + 3.5, -1.2, 1.8, -21.5, -19.45)
+	# Stufen seitlich am Fels hinauf
+	for k in 8:
+		var y := -19.45 + (k + 1) * 0.28
+		var s_ := b + 1.2 + k * 0.42
+		var m := Vector2(fuss.x, fuss.z) + Vector2(r.x, r.z) * s_
+		var hinten := -(y + 19.4) / maxf(steig, 0.5) - 0.6
+		_klotz("bruchstein", m, Vector2(r.x, r.z), Vector2(o.x, o.z), -0.21, 0.21, hinten, 0.9, -21.5, y)
 
 
 ## Torbogen: Mauerblock über der Durchfahrt mit rundem Bogen und halb hochgezogenem Fallgitter.

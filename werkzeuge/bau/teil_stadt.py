@@ -124,6 +124,31 @@ N("HafenTorhaus", "Node3D", HF, f"""script = ExtResource("28_burgbau")
 torbauten = PackedFloat32Array({_zahlen(_tt)})
 gebaeude = PackedFloat32Array({_zahlen([round(_wt[0], 2), round(_wt[1], 2), round(_tg, 2), 6.2, 10.4, round(_wt_oben + 0.1, 2), round(_wt_oben, 2), 4.6, 3.6, 3, 1, 0])})""")
 schild("SchildWassertor", HF, round(_wt[0] + 4, 2), KAI_OBEN + 4, round(_wt[1] + 7, 2), "Zum Untergrundhafen", 40)
+# --- Meereshöhlen in der Klippe unter der Kernburg (wie im Referenzbild), mit Podest und Stufen ---
+_hl = []
+for px_ in (990, 1040, 1090):
+    py_ = 395.0
+    while H(*W((px_, py_))) > -19.2 and py_ < 470:
+        py_ += 0.5
+    hx_, hz_ = W((px_, py_))
+    steig_ = (H(hx_ - 4, hz_) - H(hx_, hz_)) / 4.0
+    _hl += [round(hx_, 2), round(hz_, 2), 1, 0, round(max(steig_, 0.8), 2), random.choice((4.5, 5.5)), random.choice((4.0, 5.0))]
+N("Meereshoehlen", "Node3D", HF, f"""script = ExtResource("28_burgbau")
+hoehlen = PackedFloat32Array({_zahlen(_hl)})""")
+# --- Mauerhäuser auf der östlichen Hafenmauer: kleine Fachwerkhäuser auf der Mauerkrone, die nach beiden Seiten
+# vorkragen (unten auf dem schmalen Kai bleibt der Weg zu den Kränen frei) ---
+_mh = []
+for (a_, b_), t_ in [((HM[0], HM[1]), 0.5), ((HM[1], HM[2]), 0.3), ((HM[1], HM[2]), 0.55), ((HM[1], HM[2]), 0.8)]:
+    pa_, pb_ = W(a_), W(b_)
+    mx_, mz_ = pa_[0] + (pb_[0] - pa_[0]) * t_, pa_[1] + (pb_[1] - pa_[1]) * t_
+    l_ = math.dist(pa_, pb_)
+    ux_, uz_ = (pb_[0] - pa_[0]) / l_, (pb_[1] - pa_[1]) / l_
+    krone_ = max(H(mx_ + ux_ * s2_ - uz_ * q_, mz_ + uz_ * s2_ + ux_ * q_) for s2_ in (-10, -5, 0, 5, 10) for q_ in (-3.5, 0, 3.5)) + 8.0
+    g_ = math.degrees(math.atan2(ux_, uz_))
+    _mh += [round(mx_, 2), round(mz_, 2), round(g_, 1), 5.6, random.choice((8.0, 9.0, 10.0)), round(krone_ + 1.2, 2),
+            round(krone_ - 2.0, 2), random.choice((4.2, 5.0)), 3.4, 3, random.choice((0, 1)), 0]
+N("Mauerhaeuser", "Node3D", HF, f"""script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array({_zahlen(_mh)})""")
 _hm = W((720, 520))
 schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
 # Koggen im Becken (szenen/welt/ausstattung.gd, Art 5; die Wasserlinie liegt bei -20)
