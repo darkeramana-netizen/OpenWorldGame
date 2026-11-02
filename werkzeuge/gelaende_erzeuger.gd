@@ -48,6 +48,7 @@ const BERGFRIED_GRUBE := 17.0
 const KUESTE_X := 245.0
 const KAI_HOEHE := -17.8
 const H_EBENE := -14.0      # Land vor der Ringmauer
+const GRUND_VORGEBIRGE := -18.6   # Felsgrund direkt vor den Mauern (über dem Meeresspiegel)
 const BECKEN_TIEFE := -27.0
 
 ## Wege als Linienzüge.
@@ -297,7 +298,11 @@ func _drachenstein(h: float, p: Vector2) -> float:
 		for linie in [WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE]:
 			weg = minf(weg, _naechster_punkt(linie, p)[0])
 		var abfall := lerpf(60.0, float(plan.get("abfall", 14.0)), smoothstep(8.0, 22.0, weg))
-		var unten := lerpf(H_EBENE + _fein.get_noise_2dv(p * 0.3) * 1.5, h, smoothstep(60.0, 260.0, aussen))
+		# Vor den Mauern liegt ein tiefer Felsgrund knapp über dem Meer (wie ein Vorgebirge): Die Burg steht hoch über
+		# der Ebene; an den Landstraßen vor den Toren bleibt die Ebene auf ihrer Höhe, dort führen die Rampen hinunter.
+		var tiefgrund := lerpf(GRUND_VORGEBIRGE, H_EBENE, smoothstep(25.0, 150.0, aussen))
+		tiefgrund = lerpf(H_EBENE, tiefgrund, smoothstep(10.0, 40.0, weg))
+		var unten := lerpf(tiefgrund + _fein.get_noise_2dv(p * 0.3) * 1.5, h, smoothstep(60.0, 260.0, aussen))
 		# Zum Meer hin bricht die Klippe bis auf den Grund ab, ohne Strand davor
 		if not _bucht.is_empty():
 			var see := smoothstep(45.0, 0.0, _polygon_abstand(p, _bucht))
