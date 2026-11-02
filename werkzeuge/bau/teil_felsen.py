@@ -176,7 +176,7 @@ for x in range(-150, 330, 2):
 
 # Vor den Meereshöhlen (teil_stadt.py) bleibt der Fels frei, sonst verdecken Brocken die Öffnungen
 _hoehlen_orte = [(_hl[k], _hl[k + 1]) for k in range(0, len(_hl), 7)] if "_hl" in globals() else []
-FELSSTUECKE = [f_ for f_ in FELSSTUECKE if all(math.dist((f_[1], f_[3]), h_) > 11.0 or f_[2] > -6.0 for h_ in _hoehlen_orte)]
+FELSSTUECKE = [f_ for f_ in FELSSTUECKE if all(math.dist((f_[1], f_[3]), h_) > 11.0 for h_ in _hoehlen_orte)]
 N("Felsen", "Node3D", DS, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray({", ".join(f'"{p}"' for p, _, _ in FELSMODELLE)})
 farben = PackedColorArray({", ".join(FARBEN.get(m, "1, 1, 1, 1") for m in range(len(FELSMODELLE)))})
