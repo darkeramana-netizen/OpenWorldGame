@@ -66,6 +66,16 @@ RING = PD.RINGMAUER + [PD.RINGMAUER[0]]
 mauerring("Ringmauer", BG, WL(RING), 9.0, dicke=3.0, mitte=MITTE_BURG,
          tore=tore_an(RING, (PD.TORE["Torhaus Nord"], 6.0, "Torhaus Nord"), (PD.TORE["Hafentor"], 10.0, "Hafentor", -19.6),
                       (PD.TORE["Burgstraßentor"], 6.0, "Burgstraßentor"), (PD.TORE["Torhaus West"], 6.0, "Torhaus West")))
+# Mauerwachen auf dem Wehrgang der Ringmauer: auf jedem fünften langen Mauerstück eine Wache, mit Blick nach außen
+# (die Personen selbst setzt region_drachenstein.py, wenn es den Knoten "Personen" gibt)
+MAUERWACHEN = []
+_rs = [m_ for m_ in MAUERSTUECKE if m_[0] == "Ringmauer" and math.dist(m_[1:3], m_[3:5]) > 10.0]
+for k_, (_, ax_, az_, bx_, bz_, oben_, dicke_, aussen_) in enumerate(_rs):
+    if k_ % 5 != 2 or len(MAUERWACHEN) >= 8:
+        continue
+    mx_, mz_ = (ax_ + bx_) / 2 - aussen_[0] * 0.4, (az_ + bz_) / 2 - aussen_[1] * 0.4
+    MAUERWACHEN.append((round(mx_, 2), round(oben_ + 0.1, 2), round(mz_, 2), round(math.degrees(math.atan2(aussen_[0], aussen_[1])), 1)))
+print("Mauerwachen:", len(MAUERWACHEN))
 # Türme der Ringmauer: Wehrturm, Zwinger, Rondell und weitere Rundtürme; Halbturm eckig
 _tuerme = []
 for pp, r, dach in [(PD.WEHRTURM, 6.0, 0), ((1190, 55), 6.0, 1), ((1230, 140), 6.5, 1), (PD.RONDELL, 10.0, 0),

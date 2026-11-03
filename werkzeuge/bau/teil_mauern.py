@@ -80,6 +80,9 @@ def _zahlen(werte):
     return ", ".join(f"{v:.5g}" for v in werte)
 
 
+MAUERSTUECKE = []   # (Name, ax, az, bx, bz, Wehrgang, Dicke, außen) aller Mauerstücke, z. B. für Wachen auf der Mauer
+
+
 def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=None, strassen=(), torbreite=6.0,
              turm_r=0.0, turm_extra=5.0, turm_dach=True, mitte=(0, 0), zinnen=True, mat="Material_mauer",
              torname="", hoehe_min=None, oben_fest=None):
@@ -133,6 +136,7 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
                 mx, mz = (ax + bx) / 2 - mitte[0], (az + bz) / 2 - mitte[1]
                 aussen = (nx, nz) if nx * mx + nz * mz > 0 else (-nx, -nz)
                 mauern += [ax, az, bx, bz, unten, oben, dicke, aussen[0], aussen[1], 1 if zinnen else 0]
+                MAUERSTUECKE.append((name, ax, az, bx, bz, oben, dicke, aussen))
     if turm_r > 0:
         ecken = pkt[:-1] if geschlossen else pkt
         for x, z in ecken:

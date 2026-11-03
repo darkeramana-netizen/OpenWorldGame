@@ -1,0 +1,25 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Mauerwache. Von hier oben sieht man jedes Segel, lange bevor es den Hafen erreicht.",
+				{
+					"text": "Wächter {name}. Alles ruhig auf der Mauer.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm. Bleib von den Zinnen weg, wenn du keinen Bogen trägst.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Nachtwache. Kalt hier oben, aber wenigstens schläft man nicht ein.",
+					"bedingung": "abschnitt=nacht"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Geh weiter, ich hab die Bucht im Blick zu behalten."
+		}
+	}
+}

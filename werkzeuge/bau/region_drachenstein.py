@@ -97,6 +97,10 @@ bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2 + PD.BU
 
 # ---------- Personen der Region ----------
 N("Personen", "Node3D", ".")
+for k_, (x_, y_, z_, g_) in enumerate(MAUERWACHEN):
+    person(f"Mauerwache{k_}", "Personen", x_, y_, z_, ["Mauerwache Rolf Behn", "Mauerwache Ida Kern", "Mauerwache Hagen Lutz",
+           "Mauerwache Wenke Ohm", "Mauerwache Arnd Fels", "Mauerwache Liv Sander", "Mauerwache Jost Brandt", "Mauerwache Ebba Holm"][k_ % 8],
+           "mauerwache", 1, "0.27, 0.24, 0.2, 1", gier=g_)
 _bw = polar(23.5, BF_WINKEL + 14, -17.8)
 person("Bergwaechter", "Personen", BF_X + _bw[0], -17.8, BF_Z + _bw[2], "Bergwächter Tjark Halm", "bergwaechter", 2, "0.05, 0.05, 0.06, 1", gier=round(-BF_WINKEL - 90, 1))
 _lotsin = W((705, 434))   # am Nordkai, nah am Becken, mit Abstand zu den Fischern
