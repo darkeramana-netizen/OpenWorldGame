@@ -145,6 +145,31 @@ func _form_mesh(f: int) -> ArrayMesh:
 				_fenster(flaechen, Vector3(x, y0, z_g), seite, hoehe_f, stil == 3)
 	_quader(flaechen, "tuer", Vector3(-0.65, 0.0, t / 2 - 0.05), Vector3(0.65, 2.3, t / 2 + 0.06))
 	_quader(flaechen, "balken", Vector3(-0.8, 2.3, t / 2), Vector3(0.8, 2.5, t / 2 + 0.12))
+	# Ladenschild an einem Ausleger neben der Tür (bei etwa jedem dritten Haus)
+	if zufall.randf() < 0.35:
+		var sx_ := (b * 0.3) * (1.0 if zufall.randf() < 0.5 else -1.0)
+		_quader(flaechen, "balken", Vector3(sx_ - 0.05, 2.75, t / 2), Vector3(sx_ + 0.05, 2.85, t / 2 + 1.0))
+		_quader(flaechen, "balken", Vector3(sx_ - 0.04, 2.45, t / 2), Vector3(sx_ + 0.04, 2.8, t / 2 + 0.08))
+		_quader(flaechen, "rahmen", Vector3(sx_ - 0.01, 2.68, t / 2 + 0.85), Vector3(sx_ + 0.01, 2.75, t / 2 + 0.87))
+		_quader(flaechen, "laden", Vector3(sx_ - 0.03, 2.15, t / 2 + 0.5), Vector3(sx_ + 0.03, 2.68, t / 2 + 0.95))
+	# Holzbalkon vor dem ersten Obergeschoss (bei etwa jedem vierten Haus mit Obergeschoss), mit Knaggen und Geländer
+	if og >= 1 and zufall.randf() < 0.28:
+		var z0 := t / 2 + (VORKRAGUNG if fachwerk else 0.0)
+		var bb := minf(b * 0.32, 1.8)
+		var by := EG + 0.02
+		_quader(flaechen, "balken", Vector3(-bb, by - 0.12, z0), Vector3(bb, by + 0.06, z0 + 0.95))
+		for k in 3:
+			var kx := -bb + 0.15 + k * (2.0 * bb - 0.3) / 2.0
+			_quader(flaechen, "balken", Vector3(kx - 0.07, by - 0.7, z0), Vector3(kx + 0.07, by - 0.12, z0 + 0.2))
+			_quader(flaechen, "balken", Vector3(kx - 0.06, by - 0.45, z0 + 0.2), Vector3(kx + 0.06, by - 0.12, z0 + 0.6))
+		var px_ := -bb
+		while px_ <= bb + 0.01:
+			_quader(flaechen, "rahmen", Vector3(px_ - 0.035, by + 0.06, z0 + 0.86), Vector3(px_ + 0.035, by + 0.95, z0 + 0.93))
+			px_ += 0.3
+		_quader(flaechen, "balken", Vector3(-bb - 0.05, by + 0.92, z0 + 0.83), Vector3(bb + 0.05, by + 1.0, z0 + 0.97))
+		for e: float in [-1.0, 1.0]:
+			_quader(flaechen, "rahmen", Vector3(e * bb - 0.035, by + 0.06, z0), Vector3(e * bb + 0.035, by + 0.95, z0 + 0.93))
+			_quader(flaechen, "balken", Vector3(e * bb - 0.04, by + 0.92, z0), Vector3(e * bb + 0.04, by + 1.0, z0 + 0.93))
 	# Sockelleiste aus Stein
 	_quader(flaechen, "quader", Vector3(-b / 2 - 0.08, -0.6, -t / 2 - 0.08), Vector3(b / 2 + 0.08, 0.45, t / 2 + 0.08))
 
