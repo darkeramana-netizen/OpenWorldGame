@@ -174,6 +174,35 @@ for x in range(-150, 330, 2):
         FELSSTUECKE.append((m, round(px, 2), round(h0 - 0.08, 2), round(pz, 2), round(random.uniform(0, 360), 1), 0.0, round(g, 2)))
         _bewuchs += 1
 
+# Grün an den steilen Wänden (wie im Referenzbild): Moospolster, Gras und Farn in Nischen der Felswand, an die
+# Neigung des Felsens angelegt; dichter, wo Wasser herabläuft (Rauschen), nicht unter der Hochwasserlinie
+_wand = 0
+for x in range(-150, 330, 2):
+    for z in range(-330, 330, 2):
+        px, pz = x + random.uniform(-0.9, 0.9), z + random.uniform(-0.9, 0.9)
+        dx, dz, s = _gefaelle(px, pz)
+        h0 = H(px, pz)
+        if not 0.85 <= s < 3.0 or h0 < -17.5:
+            continue
+        feucht = 0.5 + 0.5 * math.sin(px * 0.11 + math.cos(pz * 0.07) * 3.0) * math.cos(pz * 0.09)
+        if random.random() > 0.05 + 0.25 * feucht:
+            continue
+        if any(im_vieleck((px, pz), v) for v in _frei) or _abstand((px, pz), _mauern) < 2.0 or _abstand((px, pz), _wege) < 4.5 \
+                or min(math.dist((px, pz), t) for t in _tore) < 8.0:
+            continue
+        neigung = -math.degrees(math.atan(s))            # Pflanze steht senkrecht auf der Wand
+        gier = math.degrees(math.atan2(dx, dz))
+        wurf = random.random()
+        if wurf < 0.55:
+            m, g = MOOS + random.randrange(12), random.uniform(22, 36)
+        elif wurf < 0.85:
+            m, g = GRAS + random.randrange(17), random.uniform(0.7, 1.1)
+        else:
+            m, g = FARN + random.randrange(4), random.uniform(0.7, 1.1)
+        FELSSTUECKE.append((m, round(px + dx * 0.15, 2), round(h0 - 0.12, 2), round(pz + dz * 0.15, 2), round(gier, 1), round(neigung, 1), round(g, 2)))
+        _wand += 1
+print("Grün an den Felswänden:", _wand)
+
 # Vor den Meereshöhlen (teil_stadt.py) bleibt der Fels frei, sonst verdecken Brocken die Öffnungen
 _hoehlen_orte = [(_hl[k], _hl[k + 1]) for k in range(0, len(_hl), 7)] if "_hl" in globals() else []
 FELSSTUECKE = [f_ for f_ in FELSSTUECKE if all(math.dist((f_[1], f_[3]), h_) > (11.0 + 3.0 * f_[6] if f_[0] < 4 else 11.0) for h_ in _hoehlen_orte)]   # große Klippenmodelle reichen weit über ihren Ursprung

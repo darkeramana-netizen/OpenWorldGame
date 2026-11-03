@@ -384,6 +384,15 @@ for px in range(630, 720, 15):
 for pp in [(652, 417), (700, 417)]:
     x, z = W(pp)
     AUSSTATTUNG.append((4, x - 2.5, KAI_OBEN, z, random.uniform(-15, 15)))
+# Speicherkai: Fässer, Kisten und Säcke an der Wand des Speichers (die Tür in der Mitte und der Weg zur Molenpforte
+# bleiben frei), dazu ein Karren
+for px_ in (652, 662, 672, 708, 718, 728):
+    gx, gz = W((px_, random.uniform(615.5, 616.5)))
+    for k in range(random.randint(2, 4)):
+        art = random.choice((0, 0, 1, 1, 2))
+        AUSSTATTUNG.append((art, gx + random.uniform(-0.6, 0.6), KAI_OBEN, gz + random.uniform(-1.3, 1.3), random.uniform(0, 360)))
+_kx, _kz = W((740, 616))
+AUSSTATTUNG.append((4, _kx, KAI_OBEN, _kz, random.uniform(-8, 8)))   # längs an der Wand
 for x, z in STAENDE_MEHR:
     # neben dem Stand in der Reihe, nicht auf den Wegen davor und dahinter
     for seite in (-1, 1):
