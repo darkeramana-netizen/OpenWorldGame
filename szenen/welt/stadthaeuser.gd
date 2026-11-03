@@ -45,6 +45,7 @@ const FORMEN := [
 const PUTZFARBEN := [Color(1.0, 0.97, 0.9), Color(0.98, 0.86, 0.66), Color(0.92, 0.8, 0.78)]
 
 static var _mesh_cache := {}
+static var _schornsteine := {}   # Form → Oberkante des Schornsteins (lokal), für den Rauch
 static var _mat_cache := {}
 
 
@@ -85,6 +86,69 @@ func _baue() -> void:
 		mmi.name = "Form%d" % f
 		mmi.multimesh = mm
 		add_child(mmi)
+		# Rauch aus etwa jedem siebten Schornstein
+		for k in je_form[f].size():
+			if je_form[f][k] % 7 != 3:
+				continue
+			var h: Vector4 = haeuser[je_form[f][k]]
+			var t := Transform3D(Basis(Vector3.UP, deg_to_rad(h.w)), Vector3(h.x, h.y, h.z))
+			add_child(_rauch(t * (_schornsteine[f] as Vector3)))
+
+
+## Dünner, langsam aufsteigender Rauch über einem Schornstein (wenige weiche Teilchen).
+static var _rauch_mesh: QuadMesh = null
+
+func _rauch(p: Vector3) -> GPUParticles3D:
+	if _rauch_mesh == null:
+		_rauch_mesh = QuadMesh.new()
+		_rauch_mesh.size = Vector2(1.2, 1.2)
+		var m := StandardMaterial3D.new()
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+		m.vertex_color_use_as_albedo = true
+		var verlauf := Gradient.new()
+		verlauf.set_color(0, Color(1, 1, 1, 1))
+		verlauf.set_color(1, Color(1, 1, 1, 0))
+		var tex := GradientTexture2D.new()
+		tex.gradient = verlauf
+		tex.fill = GradientTexture2D.FILL_RADIAL
+		tex.fill_from = Vector2(0.5, 0.5)
+		tex.fill_to = Vector2(1.0, 0.5)
+		tex.width = 64
+		tex.height = 64
+		m.albedo_texture = tex
+		_rauch_mesh.material = m
+	var t := GPUParticles3D.new()
+	t.amount = 14
+	t.lifetime = 7.0
+	t.preprocess = 7.0
+	t.position = p
+	t.draw_pass_1 = _rauch_mesh
+	t.visibility_range_end = 260.0
+	var pm := ParticleProcessMaterial.new()
+	pm.direction = Vector3(0.2, 1, 0)
+	pm.spread = 12.0
+	pm.initial_velocity_min = 0.6
+	pm.initial_velocity_max = 1.0
+	pm.gravity = Vector3(0.12, 0.05, 0.04)
+	pm.scale_min = 0.6
+	pm.scale_max = 1.0
+	var groesse := Curve.new()
+	groesse.add_point(Vector2(0, 0.5))
+	groesse.add_point(Vector2(1, 2.6))
+	var gt := CurveTexture.new()
+	gt.curve = groesse
+	pm.scale_curve = gt
+	var farbe := Gradient.new()
+	farbe.set_color(0, Color(0.55, 0.53, 0.5, 0.0))
+	farbe.add_point(0.15, Color(0.55, 0.53, 0.5, 0.32))
+	farbe.set_color(farbe.get_point_count() - 1, Color(0.7, 0.7, 0.7, 0.0))
+	var ft := GradientTexture1D.new()
+	ft.gradient = farbe
+	pm.color_ramp = ft
+	t.process_material = pm
+	return t
 
 
 ## Tür eines Hauses (für Wege): Weltpunkt vor der Tür.
@@ -145,6 +209,13 @@ func _form_mesh(f: int) -> ArrayMesh:
 				_fenster(flaechen, Vector3(x, y0, z_g), seite, hoehe_f, stil == 3)
 	_quader(flaechen, "tuer", Vector3(-0.65, 0.0, t / 2 - 0.05), Vector3(0.65, 2.3, t / 2 + 0.06))
 	_quader(flaechen, "balken", Vector3(-0.8, 2.3, t / 2), Vector3(0.8, 2.5, t / 2 + 0.12))
+	# Wandlaterne neben der Tür (bei etwa jedem zweiten Haus), leuchtet warm
+	if zufall.randf() < 0.5:
+		var lx := 1.05 * (1.0 if zufall.randf() < 0.5 else -1.0)
+		_quader(flaechen, "metall", Vector3(lx - 0.03, 2.35, t / 2), Vector3(lx + 0.03, 2.41, t / 2 + 0.32))
+		_quader(flaechen, "metall", Vector3(lx - 0.13, 2.28, t / 2 + 0.2), Vector3(lx + 0.13, 2.32, t / 2 + 0.46))
+		_quader(flaechen, "glut", Vector3(lx - 0.1, 1.95, t / 2 + 0.23), Vector3(lx + 0.1, 2.28, t / 2 + 0.43))
+		_quader(flaechen, "metall", Vector3(lx - 0.12, 1.9, t / 2 + 0.21), Vector3(lx + 0.12, 1.95, t / 2 + 0.45))
 	# Ladenschild an einem Ausleger neben der Tür (bei etwa jedem dritten Haus)
 	if zufall.randf() < 0.35:
 		var sx_ := (b * 0.3) * (1.0 if zufall.randf() < 0.5 else -1.0)
@@ -184,6 +255,32 @@ func _form_mesh(f: int) -> ArrayMesh:
 	var sx := zufall.randf_range(-b * 0.25, b * 0.25) if not giebelstaendig else 0.0
 	var sz := 0.0 if not giebelstaendig else zufall.randf_range(-t * 0.25, t * 0.25)
 	_quader(flaechen, "bruchstein", Vector3(sx - 0.35, traufe + firsthoehe * 0.4, sz - 0.35), Vector3(sx + 0.35, traufe + firsthoehe + 0.9, sz + 0.35))
+	_quader(flaechen, "bruchstein", Vector3(sx - 0.42, traufe + firsthoehe + 0.82, sz - 0.42), Vector3(sx + 0.42, traufe + firsthoehe + 0.95, sz + 0.42))
+	_schornsteine[f] = Vector3(sx, traufe + firsthoehe + 1.0, sz)
+	# Dachgaube auf der vorderen Dachfläche traufständiger Häuser (Breite ab 7 m): Fensterkasten mit eigenem Satteldach
+	if not giebelstaendig and b >= 6.8:
+		var neig := tan(deg_to_rad(DACHNEIGUNG))
+		var zf := halbe - 1.4
+		var y0 := traufe - 0.35 + (halbe - zf) * neig - 0.1
+		var y1 := y0 + 1.5
+		var zb := halbe - (y1 + 0.6 - (traufe - 0.35)) / neig
+		var gw := 0.85
+		_quader(flaechen, oben_mat, Vector3(-gw, y0 - 1.0, zb), Vector3(gw, y1, zf))
+		_quader(flaechen, "rahmen", Vector3(-0.5, y0 + 0.3, zf - 0.02), Vector3(0.5, y1 - 0.25, zf + 0.04))
+		_quader(flaechen, "glas", Vector3(-0.42, y0 + 0.38, zf + 0.04), Vector3(0.42, y1 - 0.33, zf + 0.06))
+		_quader(flaechen, "rahmen", Vector3(-0.04, y0 + 0.38, zf + 0.06), Vector3(0.04, y1 - 0.33, zf + 0.08))
+		var gs_ := _st(flaechen, dach_mat)
+		var first_ := Vector3(0, y1 + 0.75, 0)
+		for e: float in [-1.0, 1.0]:
+			var a1 := Vector3(e * (gw + 0.25), y1 - 0.05, zf + 0.25)
+			var a2 := Vector3(e * (gw + 0.25), y1 - 0.05, zb)
+			var f1 := Vector3(0, first_.y, zf + 0.25)
+			var f2 := Vector3(0, first_.y, zb)
+			if e > 0:
+				_viereck(gs_, a1, a2, f2, f1)
+			else:
+				_viereck(gs_, a2, a1, f1, f2)
+		_dreieck(_st(flaechen, oben_mat), Vector3(-gw, y1, zf), Vector3(gw, y1, zf), Vector3(0, y1 + 0.7, zf))
 
 	var mesh := ArrayMesh.new()
 	for mat: String in flaechen:
@@ -403,6 +500,15 @@ func _material(name_: String) -> Material:
 			m.albedo_color = Color(0.7, 0.5, 0.35)
 		"laden":
 			m.albedo_color = Color(0.45, 0.6, 0.5)
+		"glut":
+			m.albedo_color = Color(1.0, 0.78, 0.45)
+			m.emission_enabled = true
+			m.emission = Color(1.0, 0.62, 0.28)
+			m.emission_energy_multiplier = 2.0
+		"metall":
+			m.albedo_color = Color(0.12, 0.12, 0.13)
+			m.metallic = 0.6
+			m.roughness = 0.5
 		"glas":
 			m.albedo_color = Color(0.08, 0.1, 0.12)
 			m.metallic = 0.4
