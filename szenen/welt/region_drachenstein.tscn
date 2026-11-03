@@ -5145,6 +5145,62 @@ wald_anteil = 0.24
 
 [node name="Personen" type="Node3D" parent="."]
 
+[node name="Mauerwache0" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(0.97667, 0, -0.21474, 0, 1, 0, 0.21474, 0, 0.97667, 57.03, -3.42, 282.42)
+anzeige_name = "Mauerwache Rolf Behn"
+dialog_id = "mauerwache"
+kordel = 1
+tracht = Color(0.27, 0.24, 0.2, 1)
+
+[node name="Mauerwache1" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(0.51504, 0, -0.85717, 0, 1, 0, 0.85717, 0, 0.51504, -4.91, -0.64, 266.04)
+anzeige_name = "Mauerwache Ida Kern"
+dialog_id = "mauerwache"
+kordel = 1
+tracht = Color(0.27, 0.24, 0.2, 1)
+
+[node name="Mauerwache2" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(0.28067, 0, -0.95981, 0, 1, 0, 0.95981, 0, 0.28067, -25.8, 1.17, 194.89)
+anzeige_name = "Mauerwache Hagen Lutz"
+dialog_id = "mauerwache"
+kordel = 1
+tracht = Color(0.27, 0.24, 0.2, 1)
+
+[node name="Mauerwache3" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(0.37784, 0, -0.92587, 0, 1, 0, 0.92587, 0, 0.37784, -49.57, 3.78, 121.72)
+anzeige_name = "Mauerwache Wenke Ohm"
+dialog_id = "mauerwache"
+kordel = 1
+tracht = Color(0.27, 0.24, 0.2, 1)
+
+[node name="Mauerwache4" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(0.33051, 0, -0.9438, 0, 1, 0, 0.9438, 0, 0.33051, -75.29, 5.36, 54.03)
+anzeige_name = "Mauerwache Arnd Fels"
+dialog_id = "mauerwache"
+kordel = 1
+tracht = Color(0.27, 0.24, 0.2, 1)
+
+[node name="Mauerwache5" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(-0.23175, 0, -0.97278, 0, 1, 0, 0.97278, 0, -0.23175, -70.86, 6.14, -12.41)
+anzeige_name = "Mauerwache Liv Sander"
+dialog_id = "mauerwache"
+kordel = 1
+tracht = Color(0.27, 0.24, 0.2, 1)
+
+[node name="Mauerwache6" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(0.28736, 0, -0.95782, 0, 1, 0, 0.95782, 0, 0.28736, -85.62, 7.53, -79.28)
+anzeige_name = "Mauerwache Jost Brandt"
+dialog_id = "mauerwache"
+kordel = 1
+tracht = Color(0.27, 0.24, 0.2, 1)
+
+[node name="Mauerwache7" parent="Personen" instance=ExtResource("4_person")]
+transform = Transform3D(0.043619, 0, -0.99905, 0, 1, 0, 0.99905, 0, 0.043619, -97.1, 8.48, -147.52)
+anzeige_name = "Mauerwache Ebba Holm"
+dialog_id = "mauerwache"
+kordel = 1
+tracht = Color(0.27, 0.24, 0.2, 1)
+
 [node name="Bergwaechter" parent="Personen" instance=ExtResource("4_person")]
 transform = Transform3D(0.72537, 0, 0.68835, 0, 1, 0, -0.68835, 0, 0.72537, 488.42, -17.8, 79.553)
 anzeige_name = "Bergwächter Tjark Halm"
