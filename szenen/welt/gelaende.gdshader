@@ -2,7 +2,7 @@ shader_type spatial;
 // Das Gelände aus Texturen (werkzeuge/texturen_erzeugen.py): Gras, Erde, Fels, Sand, Schnee und Sumpf,
 // gemischt nach Höhe, Steilheit und Rauschen. Fels liegt triplanar auf Steilhängen, damit er nicht verzerrt.
 // Jede Textur wird in zwei Größen gelesen und gemischt, so sieht man keine Kachelmuster.
-// Die Maske (daten/<gelaende>/maske.png) malt Wege (Rot) und Sumpf (Grün).
+// Die Maske (daten/<gelaende>/maske.png) malt Wege (Rot), Sumpf (Grün) und gepflasterte Burghöfe (Blau).
 
 uniform sampler2D maske : source_color, filter_linear;
 uniform vec2 welt_ursprung = vec2(-900.0, -650.0);
@@ -135,6 +135,8 @@ void fragment() {
 	float a_pflaster = in_stadt * smoothstep(0.1, 0.5, m.r) * (1.0 - a_fels);
 	// Kais am Hafen (Höhe der Kaimauern) sind gepflastert
 	a_pflaster = max(a_pflaster, in_stadt * (1.0 - smoothstep(-17.6, -17.0, h)) * step(meeresspiegel + 0.5, h) * (1.0 - a_fels));
+	// Burghöfe: ganz gepflastert
+	a_pflaster = max(a_pflaster, smoothstep(0.3, 0.7, m.b) * (1.0 - a_fels));
 	a_erde = max(a_erde, in_stadt * (1.0 - a_fels) * smoothstep(0.45, 0.75, gross) * 0.6);
 	a_weg *= 1.0 - in_stadt;
 

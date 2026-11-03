@@ -71,6 +71,7 @@ const PASS_SUED := [[Vector2(140, 540), Vector2(150, 615), Vector2(160, 690)], -
 ## Grundriss der Burgfeste (werkzeuge/bau/plan_drachenstein.py schreibt ihn)
 var plan: Dictionary = {}
 var _zonen: Array = []          # [PackedVector2Array, Höhe, Rand, Weg, Weghöhen] (mit Weg: Höhe des nächsten Wegpunkts)
+var _hoefe: Array = []          # Burghöfe (ganz gepflastert, Blau in der Maske)
 var _stadt := PackedVector2Array()
 var _becken: Array = []         # Hafenbecken, Fahrrinne, Kanal
 ## Kanten je Becken (Reihenfolge wie _becken), an denen ein Kai liegt: Hafenbecken ohne die Einfahrt (Kante 4), Fahrrinne
@@ -103,6 +104,8 @@ func _init() -> void:
 		for z: Dictionary in plan["zonen"]:
 			_zonen.append([vec.call(z["punkte"]), float(z["hoehe"]), float(z["rand"]),
 					Array(vec.call(z.get("weg", []))), z.get("weg_hoehen", [])])
+			if not "Zwinger" in str(z["name"]) and not "Felssockel" in str(z["name"]):
+				_hoefe.append(vec.call(z["punkte"]))
 		_stadt = vec.call(plan["stadt"])
 		_markt = vec.call(plan["markt"])
 		_ring = vec.call(plan["ring"])
@@ -447,7 +450,7 @@ func _polygon_abstand(p: Vector2, ecken: Array) -> float:
 	return bester
 
 
-## Farbmaske für den Gelände-Shader: Rot = Weg, Grün = Sumpf.
+## Farbmaske für den Gelände-Shader: Rot = Weg, Grün = Sumpf, Blau = gepflasterter Burghof.
 func maske_bei(p: Vector2) -> Color:
 	var weg := INF
 	for linie in [WEG_GRAVEMARCH, WEG_GRAVECREST, WEG_NORD, WEG_KUESTE, PASS_NORD[0], PASS_SUED[0]] + stadt_strassen + _burgwege.map(func(w): return w[0]):
@@ -457,7 +460,11 @@ func maske_bei(p: Vector2) -> Color:
 	var gm := p.distance_to(GRAVEMARCH)
 	var sumpf := (1.0 - smoothstep(115.0, 140.0, gm)) * smoothstep(17.0, 26.0, _polygon_abstand(p - GRAVEMARCH, GRAVEMARCH_UMRISS))
 	sumpf *= clampf(0.6 + _fein.get_noise_2dv(p * 0.5), 0.0, 1.0)
-	return Color(1.0 - smoothstep(2.5, 4.5, weg), sumpf, 0.0)
+	var hof := 0.0
+	for vieleck: PackedVector2Array in _hoefe:
+		if Geometry2D.is_point_in_polygon(p, vieleck):
+			hof = 1.0
+	return Color(1.0 - smoothstep(2.5, 4.5, weg), sumpf, hof)
 
 
 func _weg_einebnen(h: float, p: Vector2, linie: Array) -> float:
