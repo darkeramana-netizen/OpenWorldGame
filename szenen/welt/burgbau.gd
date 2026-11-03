@@ -467,6 +467,27 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 			_klotz(stein, c + d * (ri + ra) / 2.0, Vector2(-d.y, d.x), d, -0.65, 0.65, -0.3, 0.3, oben + BRUSTWEHR, oben + BRUSTWEHR + ZINNE_HOEHE)
 
 
+## Erkertürmchen: rund, unten auf einem kegelförmigen Kragstein, Schießscharten, Gesims und spitzes Kegeldach.
+func _erkerturm(c: Vector2, mat: String, unten: float, oben: float, r: float, dachhoehe: float) -> void:
+	var teile := 16
+	_mantel(mat, c, 0.25, r, unten, unten + 1.8, teile)
+	for k in 4:
+		var w := TAU * (k + 0.5) / 4.0
+		var d := Vector2(cos(w), sin(w))
+		_klotz(mat, c + d * r * 0.7, Vector2(-d.y, d.x), d, -0.15, 0.15, -0.2, r * 0.32, unten + 0.6, unten + 1.85)
+	_mantel(mat, c, r, r, unten + 1.8, oben, teile)
+	_mantel(mat, c, r + 0.18, r + 0.18, oben - 0.4, oben - 0.15, teile)
+	_ring(mat, c, r, r + 0.18, oben - 0.4, teile, false)
+	for k in 3:
+		var w := TAU * k / 3.0 + 0.5
+		var d := Vector2(cos(w), sin(w))
+		_klotz("dunkel", c + d * (r - 0.04), Vector2(-d.y, d.x), d, -0.06, 0.06, 0.0, 0.06, (unten + oben) / 2.0 - 0.4, (unten + oben) / 2.0 + 0.5)
+	_ring("dach", c, r - 0.1, r + 0.3, oben, teile, false)
+	_kegel("dach", c, r + 0.3, oben, dachhoehe, teile)
+	_kegel("metall", c, 0.12, oben + dachhoehe - 0.2, 0.9, 6)
+	_ring(mat, c, 0.0, r, oben, teile, true)
+
+
 ## Untergrundhafen: gewölbte Halle im Fels (lokal: s in den Berg, q quer, y Höhe). Der Fels darüber ist das Gelände;
 ## die Halle schließt sich nach oben mit einer Platte, damit kein Sonnenlicht hineinfällt. Werte: x, z, Richtung x, z,
 ## Länge, Breite, Beckenbreite, Kanalbreite (im Gang), Boden, Wandhöhe, Stich, Torbreite, Torboden.
@@ -1227,6 +1248,10 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 	_gesims(wand, c, uz, nx, B, L, 0.3, traufe - 0.4, traufe, begehbar)
 	if art == 3:
 		_palas_fenster(c, uz, nx, B, L, boden, gh, geschosse, wand)
+		# Ecktürmchen auf Kragsteinen an den vier Ecken, mit spitzem Kegeldach über die Traufe hinaus
+		for su: float in [-1.0, 1.0]:
+			for sn: float in [-1.0, 1.0]:
+				_erkerturm(c + uz * su * (L - 0.6) + nx * sn * (B - 0.6), wand, traufe - 4.5, traufe + 2.2, 1.9, dh * 0.75)
 	# Fenster auf allen vier Seiten
 	for k in (0 if art == 3 else geschosse):
 		if art == 2 and k > 0:

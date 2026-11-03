@@ -170,7 +170,8 @@ SCHIFFE = [(5, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in
 SCHIFFE += [(6, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in [((960, 560), 150), ((1080, 640), 200)]]
 # Ruderboote an den Stegen (Art 7)
 SCHIFFE += [(7, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in
-            [((692, 468), 2), ((709, 458), -4), ((640, 515), 92), ((645, 532), 86)]]
+            [((692, 468), 2), ((709, 458), -4), ((640, 515), 92), ((645, 532), 86), ((642, 490), 88), ((646, 505), 94),
+             ((648, 545), 90), ((650, 560), 86)]]
 # Im Untergrundhafen: Ruderboote an den Kais, zwei beladene Prahme (Art 9), ein Tretradkran auf dem Querkai
 SCHIFFE += [(7, *uh(s_, q_)[:1], -20.0, uh(s_, q_)[1], g_) for s_, q_, g_ in [(10.0, 4.6, 92), (16.5, -4.5, 88), (47.5, 4.4, 91)]]
 SCHIFFE += [(9, *uh(s_, q_)[:1], -20.0, uh(s_, q_)[1], g_) for s_, q_, g_ in [(26.0, -3.2, 90), (36.0, 3.2, 270)]]
@@ -181,7 +182,7 @@ SCHIFFE += [(8, *(lambda p: (p[0], KAI_OBEN + 0.2, p[1]))(W(pp)), g) for pp, g i
 # --- Landungsstege aus dem Steg-Fotoscan (modelle/hafen/): je Abschnitt 2,9 m, Deck 2,62 m über dem Ursprung ---
 STEG = "res://modelle/hafen/modular_wooden_pier/modular_wooden_pier.gltf"
 _steg = []
-for start, richtung, abschnitte in [((700, 447), (1, 0), 5), ((628, 525), (0, -1), 4)]:
+for start, richtung, abschnitte in [((700, 447), (1, 0), 5), ((628, 525), (0, -1), 4), ((625, 497), (0, -1), 4), ((632, 552), (0, -1), 4)]:
     sx_, sz_ = W(start)
     dx_, dz_ = richtung                  # Weltrichtung ins Becken
     g_ = math.degrees(math.atan2(dx_, dz_))
