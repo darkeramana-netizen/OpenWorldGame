@@ -24,6 +24,7 @@ const EG := 3.2            # Höhe Erdgeschoss
 const OG := 2.8            # Höhe Obergeschoss
 const VORKRAGUNG := 0.35   # so weit steht jedes Fachwerkgeschoss vor
 const DACHNEIGUNG := 52.0
+const VARIANTEN := 3       # Ausstattungen je Hausform
 const SOCKEL_TIEFE := 7.0  # Mauern reichen so weit hinunter (Hanglage)
 
 ## Formen: [Breite, Tiefe, Obergeschosse, Stil, Giebel zur Straße, Putzfarbe, Dach]
@@ -58,24 +59,26 @@ func _baue() -> void:
 		k.free()
 	if haeuser.is_empty():
 		return
+	# je Hausform drei Ausstattungen (Balkon, Schild, Laterne, Gaube, Schornstein gewürfelt), je Haus eine davon
 	var je_form := {}
 	for i in haeuser.size():
 		var f := formen[i] if i < formen.size() else i % FORMEN.size()
-		je_form.get_or_add(f, []).append(i)
+		je_form.get_or_add(f * VARIANTEN + (i * 7 + 3) % VARIANTEN, []).append(i)
 	var koerper := StaticBody3D.new()
 	koerper.name = "Kollision"
 	add_child(koerper)
-	for f: int in je_form:
-		var mesh := _form_mesh(f)
+	for fv: int in je_form:
+		var f := fv / VARIANTEN
+		var mesh := _form_mesh(f, fv % VARIANTEN)
 		var mm := MultiMesh.new()
 		mm.transform_format = MultiMesh.TRANSFORM_3D
 		mm.mesh = mesh
-		mm.instance_count = je_form[f].size()
+		mm.instance_count = je_form[fv].size()
 		var form: Array = FORMEN[f]
 		var kiste := BoxShape3D.new()
 		kiste.size = Vector3(form[0] + 2 * VORKRAGUNG, EG + OG * form[2], form[1] + 2 * VORKRAGUNG)
-		for k in je_form[f].size():
-			var h: Vector4 = haeuser[je_form[f][k]]
+		for k in je_form[fv].size():
+			var h: Vector4 = haeuser[je_form[fv][k]]
 			var t := Transform3D(Basis(Vector3.UP, deg_to_rad(h.w)), Vector3(h.x, h.y, h.z))
 			mm.set_instance_transform(k, t)
 			var form_k := CollisionShape3D.new()
@@ -83,16 +86,16 @@ func _baue() -> void:
 			form_k.transform = t * Transform3D(Basis(), Vector3(0, kiste.size.y / 2.0, 0))
 			koerper.add_child(form_k)
 		var mmi := MultiMeshInstance3D.new()
-		mmi.name = "Form%d" % f
+		mmi.name = "Form%d_%d" % [f, fv % VARIANTEN]
 		mmi.multimesh = mm
 		add_child(mmi)
 		# Rauch aus etwa jedem siebten Schornstein
-		for k in je_form[f].size():
-			if je_form[f][k] % 7 != 3:
+		for k in je_form[fv].size():
+			if je_form[fv][k] % 7 != 3:
 				continue
-			var h: Vector4 = haeuser[je_form[f][k]]
+			var h: Vector4 = haeuser[je_form[fv][k]]
 			var t := Transform3D(Basis(Vector3.UP, deg_to_rad(h.w)), Vector3(h.x, h.y, h.z))
-			add_child(_rauch(t * (_schornsteine[f] as Vector3)))
+			add_child(_rauch(t * (_schornsteine[fv] as Vector3)))
 
 
 ## Dünner, langsam aufsteigender Rauch über einem Schornstein (wenige weiche Teilchen).
@@ -159,9 +162,10 @@ static func tuer(h: Vector4, form: int) -> Vector3:
 
 # ---------- Ein Haus bauen ----------
 
-func _form_mesh(f: int) -> ArrayMesh:
-	if _mesh_cache.has(f):
-		return _mesh_cache[f]
+func _form_mesh(f: int, variante := 0) -> ArrayMesh:
+	var schluessel := f * VARIANTEN + variante
+	if _mesh_cache.has(schluessel):
+		return _mesh_cache[schluessel]
 	var form: Array = FORMEN[f]
 	var b: float = form[0]
 	var t: float = form[1]
@@ -169,7 +173,7 @@ func _form_mesh(f: int) -> ArrayMesh:
 	var stil: int = form[3]
 	var giebelstaendig: bool = form[4]
 	var zufall := RandomNumberGenerator.new()
-	zufall.seed = 1750 + f
+	zufall.seed = 1750 + f + 977 * variante
 	var flaechen := {}   # Material → SurfaceTool
 	var fachwerk := stil == 0 or stil == 1
 	var unten_mat := "quader" if stil in [0, 2] else "putz%d" % form[5]
@@ -256,9 +260,9 @@ func _form_mesh(f: int) -> ArrayMesh:
 	var sz := 0.0 if not giebelstaendig else zufall.randf_range(-t * 0.25, t * 0.25)
 	_quader(flaechen, "bruchstein", Vector3(sx - 0.35, traufe + firsthoehe * 0.4, sz - 0.35), Vector3(sx + 0.35, traufe + firsthoehe + 0.9, sz + 0.35))
 	_quader(flaechen, "bruchstein", Vector3(sx - 0.42, traufe + firsthoehe + 0.82, sz - 0.42), Vector3(sx + 0.42, traufe + firsthoehe + 0.95, sz + 0.42))
-	_schornsteine[f] = Vector3(sx, traufe + firsthoehe + 1.0, sz)
+	_schornsteine[schluessel] = Vector3(sx, traufe + firsthoehe + 1.0, sz)
 	# Dachgaube auf der vorderen Dachfläche traufständiger Häuser (Breite ab 7 m): Fensterkasten mit eigenem Satteldach
-	if not giebelstaendig and b >= 6.8:
+	if not giebelstaendig and b >= 6.8 and zufall.randf() < 0.7:
 		var neig := tan(deg_to_rad(DACHNEIGUNG))
 		var zf := halbe - 1.4
 		var y0 := traufe - 0.35 + (halbe - zf) * neig - 0.1
@@ -289,7 +293,7 @@ func _form_mesh(f: int) -> ArrayMesh:
 		st.generate_tangents()
 		st.commit(mesh)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
-	_mesh_cache[f] = mesh
+	_mesh_cache[schluessel] = mesh
 	return mesh
 
 
