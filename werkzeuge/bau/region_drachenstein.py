@@ -92,7 +92,8 @@ untertitel = "{untertitel}"''')
 # ---------- Bewuchs: Wälder, Büsche, Gras; Stadt, Burgen und Hafen bleiben frei ----------
 bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2 + PD.BURGHOF3[1:6]), WL(PD.KERNBURG),
                        WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG)],
-        frei_rechtecke=[(BF_X_NEU, BF_Z_NEU, 90, 90), (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24)
+        frei_rechtecke=[(BF_X_NEU, BF_Z_NEU, 90, 90), (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24,
+        feste_baeume=STADTBAEUME)   # Hausbäume in den Höfen der Stadt (teil_stadt.py)
 
 # ---------- Personen der Region ----------
 N("Personen", "Node3D", ".")

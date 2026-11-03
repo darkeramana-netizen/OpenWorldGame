@@ -366,6 +366,24 @@ for hx, hz in _kandidaten:
         HINTERHAEUSER.append((round(hx, 2), round(y, 2), round(hz, 2), round(gier, 1), 0, form))
         _haus_ecken.append(ecken4)
 
+# Hausbäume in den Höfen zwischen den Häusern: wo kein Haus mehr Platz fand, abseits der Gassen und Mauern
+STADTBAEUME = []
+_hof_kandidaten = [(x_ + random.uniform(-1, 1), z_ + random.uniform(-1, 1))
+                   for x_ in range(int(min(_xs)), int(max(_xs)), 3) for z_ in range(int(min(_zs)), int(max(_zs)), 3)]
+random.shuffle(_hof_kandidaten)
+for hx, hz in _hof_kandidaten:
+    if len(STADTBAEUME) >= 16 or not im_vieleck((hx, hz), STADT_UMRISS):
+        continue
+    if min(abstand_linie(s_, hx, hz) for s_ in STRASSEN) < STRASSE_HALB + 3.0 or min(abstand_linie(m_, hx, hz) for m_ in MAUERN) < 5.0:
+        continue
+    kreis = rechteck(hx, hz, 6.0, 6.0, 0)
+    if any(ueberlappen(kreis, r_) for r_ in _haus_ecken + SPERR):
+        continue
+    if any(math.dist((hx, hz), (b_[0], b_[2])) < 14.0 for b_ in STADTBAEUME):
+        continue
+    STADTBAEUME.append((round(hx, 2), round(H(hx, hz), 2), round(hz, 2), round(random.uniform(0.8, 1.15), 2)))
+print("Hausbäume in der Stadt:", len(STADTBAEUME))
+
 _alle_haeuser = HAEUSER + HINTERHAEUSER
 N("Stadthaeuser", "Node3D", DS, "script = ExtResource(\"27_stadthaeuser\")\n"
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _, _ in _alle_haeuser) + ")\n"
