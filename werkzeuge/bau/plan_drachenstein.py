@@ -229,6 +229,7 @@ BURGHOF3 = oval(*OVAL_BURGHOF3, tore=[TORE["Tor des III. Burghofs"], TORE["Burgt
 ZWINGER_KERNBURG = [(round(OVAL_BURGHOF3[0][0] + OVAL_BURGHOF3[1] * math.cos(math.radians(w)), 2),
                      round(OVAL_BURGHOF3[0][1] + OVAL_BURGHOF3[2] * math.sin(math.radians(w)), 2))
                     for w in range(60, -61, -10)] + ZWINGER_KERNBURG[2:]
+ZWINGER_BOGEN = 13            # so viele Punkte am Anfang liegen auf dem Bogen des III. Burghofs (dort keine Zwingermauer)
 KERNBURG = oval(*OVAL_KERNBURG, teile=36, tore=[TORE["Kernburgtor"]])
 for _alt in VORBURG_ECKIG + BURGHOF2_ECKIG + BURGHOF3_ECKIG + KERNBURG_ECKIG:   # alte Ecken (für Türme): nächster Punkt auf dem Oval
     if _alt not in ECKEN:

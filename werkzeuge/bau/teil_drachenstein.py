@@ -28,7 +28,7 @@ def turmmasse(pp, r, ueber):
     return [x, z, min(werte) - 2.5, max(werte) + ueber]
 
 
-def tor_an(punkte, p, breite, name, boden=None, tuerme=True):
+def tor_an(punkte, p, breite, name, boden=None, tuerme=None):
     """Tor für mauerring: {Kantenindex: (Anteil, Breite, Name)} an der Kante des Linienzugs, die dem Planpunkt p
     am nächsten liegt (punkte und p im Plan)."""
     bester = None
@@ -38,7 +38,8 @@ def tor_an(punkte, p, breite, name, boden=None, tuerme=True):
         d = math.dist(p, (a[0] + dx * t, a[1] + dy * t))
         if bester is None or d < bester[0]:
             bester = (d, i, t)
-    rest = () if boden is None and tuerme else (boden, tuerme)   # tuerme=False: Tor ohne eigene Tortürme
+    # tuerme=False: Tor ohne eigene Tortürme (sonst wie in mauerring: Tortürme, außer bei einem Wassertor mit boden)
+    rest = () if boden is None and tuerme is None else (boden, boden is None if tuerme is None else tuerme)
     return {bester[1]: (round(bester[2], 3), breite, name) + rest}
 
 
@@ -182,7 +183,7 @@ for k, bau in enumerate(PD.BURGHOF3_BAUTEN):
 schild("SchildBurghof3", BG, 0, PD.H_KERNHOF + 13, -36, "III. Burghof", 40)
 
 # --- Zwinger und Kernburg ---
-ZW = PD.ZWINGER_KERNBURG[1:] + PD.ZWINGER_KERNBURG[:1]   # bis an den III. Burghof, dessen Wand dazwischen liegt
+ZW = PD.ZWINGER_KERNBURG[PD.ZWINGER_BOGEN - 1:] + PD.ZWINGER_KERNBURG[:1]   # bis an den III. Burghof, dessen Ostbogen dazwischen liegt
 mauerring("Zwingermauer", BG, WL(ZW), 8.0, dicke=3.0, mitte=W((990, 220)), turm_r=0.0)
 # Quermauer im südlichen Zwinger: Dort endet der Zwingerweg oben, westlich davon liegt der Zwinger unten
 mauerring("Quermauer", BG, WL([(945, 296), (945, 340)]), 6.0, dicke=2.5, mitte=W((990, 220)))
