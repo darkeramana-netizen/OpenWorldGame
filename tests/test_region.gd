@@ -8,6 +8,19 @@ var orte: Array = []
 var meldungen: Array = []
 var D; var S; var SP
 
+
+## Punkt im Hof aus Akt I (lokal wie in burg_hof.tscn, y über dem Hofboden) → Welt. Der Hof ist das Ordensvorwerk.
+func hp(x: float, y: float, z: float) -> Vector3:
+	return current_scene.get_node("BurgHof").to_global(Vector3(x, y, z))
+
+## Spielerposition im Hof aus Akt I (lokal)
+func im_hof() -> Vector3:
+	return current_scene.get_node("BurgHof").to_local(spieler().global_position)
+
+## Blickrichtung im Hof (lokal, Grad) → Welt
+func hof_blick(grad: float) -> float:
+	return grad + current_scene.get_node("BurgHof").rotation_degrees.y
+
 func pruefe(bed: bool, was: String) -> void:
 	if bed: print("OK     ", was)
 	else:
@@ -80,23 +93,25 @@ func _initialize() -> void:
 	await wechsle(func(): SP.neues_spiel("Wanderer"))
 	var g = current_scene.get_node("Gelaende")
 	pruefe(g.breite > 500 and g.tiefe > 400, "Gelände geladen (%d x %d Punkte)" % [g.breite, g.tiefe])
-	pruefe(absf(spieler().global_position.y - g.hoehe_bei(0, 46)) < 0.5, "Spieler steht am Start auf dem Boden")
+	var start: Vector3 = spieler().global_position
+	pruefe(start.distance_to(hp(0, 0, 46)) < 0.5 and absf(start.y - g.hoehe_bei(start.x, start.z)) < 0.5, "Spieler steht am Start vor dem Tor des Ordensvorwerks auf dem Boden")
 
 	# Laufen: vom Vorplatz durch das Tor in den Hof
-	var vorher: Vector3 = spieler().global_position
+	spieler().get_node("KameraDrehpunkt").rotation.y = deg_to_rad(hof_blick(0.0))
+	var vorher: Vector3 = im_hof()
 	await laufe(3.0)
-	pruefe(vorher.z - spieler().global_position.z > 8.0 and absf(spieler().global_position.y - 14.0) < 0.6, "Mit W durch das Tor in den Hof gelaufen")
+	pruefe(vorher.z - im_hof().z > 8.0 and absf(im_hof().y) < 0.6, "Mit W durch das Tor in den Hof gelaufen")
 
 	# Rampen im Hof: zum Wehrgang und weiter auf den Wachturm, mit echtem Gehen
-	await setze(Vector3(-6, 14.3, 28.5), 90.0)
+	await setze(hp(-6, 0.3, 28.5), hof_blick(90.0))
 	await laufe(6.5)
-	pruefe(spieler().global_position.y > 21.8, "Rampe zum Wehrgang hinaufgelaufen (y=%.1f)" % spieler().global_position.y)
-	spieler().get_node("KameraDrehpunkt").rotation.y = PI
+	pruefe(im_hof().y > 7.8, "Rampe zum Wehrgang hinaufgelaufen (y=%.1f)" % im_hof().y)
+	spieler().get_node("KameraDrehpunkt").rotation.y = deg_to_rad(hof_blick(180.0))
 	await laufe(1.0)
-	pruefe(spieler().global_position.z > 30.0 and spieler().global_position.y > 21.6, "Von der Rampe auf den Wehrgang getreten (%s)" % spieler().global_position.snapped(Vector3.ONE * 0.1))
-	await setze(Vector3(-31, 22.3, 0), 0.0)
+	pruefe(im_hof().z > 30.0 and im_hof().y > 7.6, "Von der Rampe auf den Wehrgang getreten (%s)" % im_hof().snapped(Vector3.ONE * 0.1))
+	await setze(hp(-31, 8.3, 0), hof_blick(0.0))
 	await laufe(6.0)
-	pruefe(spieler().global_position.y > 25.5, "Rampe auf den Wachturm hinaufgelaufen (y=%.1f)" % spieler().global_position.y)
+	pruefe(im_hof().y > 11.5, "Rampe auf den Wachturm hinaufgelaufen (y=%.1f)" % im_hof().y)
 
 	# Orte
 	# Die Stadtleute gehen dieselben Wege; damit keiner dem Testläufer im Weg steht, sind sie hier durchlässig
@@ -105,9 +120,9 @@ func _initialize() -> void:
 		if p is CollisionObject3D:
 			p.collision_layer = 0
 	# Wege der Burgfeste nach dem Grundriss (docs/bilder/grundriss-drachenstein-2.webp)
-	# Hinauf: III. Burghof um den Hof herum → Burgtor → Zwingerweg einmal um die Kernburg → Kernburgtor
+	# Hinauf: quer über den III. Burghof → Burgtor → Zwingerweg einmal um die Kernburg → Kernburgtor
 	await setze(Vector3(0, 14.3, 46))
-	var hinauf := await gehe_ueber([Vector2(-34, 41), Vector2(-34, -37), Vector2(-3, -38), Vector2(-3, -44), Vector2(-3, -52.5), Vector2(-3, -60.5),
+	var hinauf := await gehe_ueber([Vector2(0, 20), Vector2(0, -20), Vector2(0, -44), Vector2(0, -52.5), Vector2(0, -60.5),
 			Vector2(-34, -62), Vector2(-50, -72.5), Vector2(-59, -97.5), Vector2(-62, -132.5), Vector2(-62, -172.5), Vector2(-45, -191.5),
 			Vector2(-14, -197.5), Vector2(16, -196.5), Vector2(37, -186.5), Vector2(36, -176), Vector2(30.5, -171.5), Vector2(24.45, -166.4),
 			Vector2(18, -158), Vector2(6, -152.5)], 40.0)
@@ -257,7 +272,7 @@ func _initialize() -> void:
 	var marke: Label = hud.get_node("%KarteMarke")
 	var massstab := minf(bild.size.x / bild.texture.get_width(), bild.size.y / bild.texture.get_height())
 	var versatz := (bild.size - bild.texture.get_size() * massstab) / 2.0
-	var erwartet := bild.position + versatz + (Vector2(272, 491) + Vector2(0, 46) / 5.0) * massstab
+	var erwartet := bild.position + versatz + (Vector2(272, 491) + Vector2(spieler().global_position.x, spieler().global_position.z) / 5.0) * massstab
 	pruefe((marke.position + marke.size / 2.0).distance_to(erwartet) < 2.0, "Markierung auf der Karte bei Drachenstein")
 	await druecke(KEY_M)
 	pruefe(not hud.get_node("%Karte").visible, "Karte mit M geschlossen")
@@ -284,7 +299,7 @@ func _initialize() -> void:
 	await wechsle(func(): SP.laden("2"))
 	var steine := get_nodes_in_group("interagierbar").filter(func(n): return n.get("zaehler_name") == "bruchsteine")
 	pruefe(steine.size() == 2 and not current_scene.has_node("BurgHof/Bauhof/Bruchstein1"), "Alter Spielstand: aufgehobener Stein bleibt weg")
-	pruefe(spieler().global_position.distance_to(Vector3(-10, 14, 10)) < 1.0 and S.spieler_name == "Alt", "Alter Spielstand: Position im Hof stimmt")
+	pruefe(spieler().global_position.distance_to(hp(-10, 0, 10)) < 1.0 and S.spieler_name == "Alt", "Alter Spielstand: Position im Hof (jetzt im Ordensvorwerk) stimmt")
 
 	print("\nFehler: ", fehler)
 	quit(fehler)

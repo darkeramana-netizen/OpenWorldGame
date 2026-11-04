@@ -33,8 +33,8 @@ size = Vector3(60, 0.04, 60)
 material = ExtResource("m_pflaster")
 
 [node name="Weg" type="CSGBox3D" parent="Gelaende"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 50)
-size = Vector3(5, 0.04, 40)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 45)
+size = Vector3(5, 0.04, 28)
 material = ExtResource("m_pflaster")
 
 [node name="Mauern" type="Node3D" parent="."]

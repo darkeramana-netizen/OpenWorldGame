@@ -50,12 +50,20 @@ H_HAFEN = -17.8
 H_STADT_WEST = -14.0      # am Torhaus West
 H_STADT_OST = -16.5       # am Hafen
 H_MARKT = -15.2
-HOF_Y = 14.0              # Höhe des Hofs aus Akt I (III. Burghof); szenen/welt/burg_hof.tscn liegt dort
+HOF_Y = 14.0              # III. Burghof (hier lag früher der Hof aus Akt I, jetzt das Ordensvorwerk, siehe VORWERK)
 H_VORBURG = 0.0
 H_BURGHOF2 = 6.0
 H_KERNHOF = HOF_Y         # III. Burghof
 H_KERNBURG = 38.0         # auf dem höchsten Fels; der Zwinger steigt vom III. Burghof hinauf
 H_EBENE = -14.0           # Land vor der Ringmauer
+
+# ---------- Ordensvorwerk (Akt I) ----------
+# Der Hof aus Akt I (szenen/welt/burg_hof.tscn) liegt nicht in der Burg, sondern als Vorwerk des Ordens vor der
+# Stadt auf der Hochfläche am Küstenweg: Wer von Valdrenn kommt und dem Orden beitreten will, wird hier geprüft,
+# bevor er die Burg betritt. Weltkoordinaten; das Tor (lokal +z) zeigt nach Osten zur Straße.
+VORWERK = (75.0, 490.0)
+VORWERK_DREH = 90.0
+H_VORWERK = 1.0
 
 # ---------- Burgen auf dem Grat ----------
 VORBURG = [(318, 250), (360, 232), (445, 212), (458, 270), (450, 330), (420, 352), (350, 358), (312, 300)]
@@ -106,8 +114,8 @@ TORE = {
     "Tor zur Vorburg": (436.8, 339.7),   # Südtor der Vorburg, vom Weg unter der Vorburg
     "Rampentor": (602.8, 274.0),         # Südtor des II. Burghofs (auf dem Oval), am Ende des Burgwegs um die Burg
     "Tor des II. Burghofs": (455.4, 258.4),  # zwischen I. Vorburg und II. Burghof
-    "Tor des III. Burghofs": (636, 228), # II. ↔ III. Burghof, vor dem Tor des Hofs aus Akt I
-    "Burgtor": (840, 222),               # III. Burghof ↔ Zwinger der Kernburg
+    "Tor des III. Burghofs": (636, 228), # II. ↔ III. Burghof (Westende des Ovals)
+    "Burgtor": (840, 228),               # III. Burghof ↔ Zwinger der Kernburg (Ostende des Ovals)
     "Kernburgtor": (1067.8, 276.9),      # Zwinger ↔ Kernburg (auf dem Oval), am Ende des Zwingerwegs
     # Die ovalen Höfe berühren sich an den Toren; jede Hofmauer hat dort ihr eigenes Tor (Rücken an Rücken)
     "Tor des II. Burghofs, Ostseite": (461.4, 258.4),
@@ -215,12 +223,17 @@ OVAL_BURGHOF2 = ((540.5, 228), 89.5, 65)
 OVAL_KERNBURG = ((990, 210), 112, 93)
 VORBURG = oval(*OVAL_VORBURG, tore=[TORE["Tor zur Vorburg"], TORE["Tor des II. Burghofs"]])
 BURGHOF2 = oval(*OVAL_BURGHOF2, tore=[TORE["Rampentor"], TORE["Tor des II. Burghofs, Ostseite"], TORE["Tor des III. Burghofs, Westseite"]])
-_geteilt = {(636, 160), (636, 290)}
-BURGHOF3 = runden(BURGHOF3, fest=_geteilt)                      # um den Hof aus Akt I (bleibt vorerst eckig)
+OVAL_BURGHOF3 = ((738, 228), 102, 88)   # vom Tor des III. Burghofs (Westende) bis zum Burgtor (Ostende)
+BURGHOF3 = oval(*OVAL_BURGHOF3, tore=[TORE["Tor des III. Burghofs"], TORE["Burgtor"]])
+# Der Zwinger der Kernburg schließt mit seiner Westseite an den Ostbogen des III. Burghofs an
+ZWINGER_KERNBURG = [(round(OVAL_BURGHOF3[0][0] + OVAL_BURGHOF3[1] * math.cos(math.radians(w)), 2),
+                     round(OVAL_BURGHOF3[0][1] + OVAL_BURGHOF3[2] * math.sin(math.radians(w)), 2))
+                    for w in range(60, -61, -10)] + ZWINGER_KERNBURG[2:]
 KERNBURG = oval(*OVAL_KERNBURG, teile=36, tore=[TORE["Kernburgtor"]])
-for _alt in VORBURG_ECKIG + BURGHOF2_ECKIG + KERNBURG_ECKIG:   # alte Ecken (für Türme): nächster Punkt auf dem Oval
+for _alt in VORBURG_ECKIG + BURGHOF2_ECKIG + BURGHOF3_ECKIG + KERNBURG_ECKIG:   # alte Ecken (für Türme): nächster Punkt auf dem Oval
     if _alt not in ECKEN:
-        _ov = VORBURG if _alt in VORBURG_ECKIG else (BURGHOF2 if _alt in BURGHOF2_ECKIG else KERNBURG)
+        _ov = VORBURG if _alt in VORBURG_ECKIG else (BURGHOF2 if _alt in BURGHOF2_ECKIG else
+                                                     (BURGHOF3 if _alt in BURGHOF3_ECKIG else KERNBURG))
         ECKEN[_alt] = min(_ov, key=lambda q, _a=_alt: math.dist(q, _a))
 
 
@@ -238,6 +251,7 @@ ZEUGHAUS = an_wand(*OVAL_KERNBURG, 100, 56, 26)
 # Bauten mit Abstand zu den Mauern (sonst ragen sie durch die Wand)
 VORBURG_BAUTEN = [an_wand(*OVAL_VORBURG, -100, 48, 16), an_wand(*OVAL_VORBURG, 180, 44, 18)]   # Gesindehaus, Stall
 BURGHOF2_BAUTEN = [an_wand(*OVAL_BURGHOF2, -95, 60, 18), an_wand(*OVAL_BURGHOF2, 100, 50, 18)]
+BURGHOF3_BAUTEN = [an_wand(*OVAL_BURGHOF3, -90, 64, 20), an_wand(*OVAL_BURGHOF3, 90, 56, 20)]
 ST_MARIEN = ((410, 500), 76, 34, 0)      # Langhaus von West nach Ost, Turm im Osten
 ST_MARIEN_TURM = (444, 494)
 MARKTPLATZ = [(455, 480), (566, 478), (568, 556), (456, 558)]
@@ -290,7 +304,7 @@ WEG_TORHAUS_WEST = [(140, 412), (154, 410), (190, 398), (237, 380)]
 # Vom Torhaus Nord hinab auf den Burgweg
 WEG_TORHAUS_NORD = [(294, 160), (294, 180), (300, 205)]
 # Zwingerweg: vom Burgtor einmal um die Kernburg herum hinauf zum Kernburgtor
-WEG_ZWINGER = [(840, 222), (856, 222), (859, 160), (880, 128), (930, 110), (1000, 104), (1080, 104), (1118, 138),
+WEG_ZWINGER = [(840, 228), (856, 228), (859, 160), (880, 128), (930, 110), (1000, 104), (1080, 104), (1118, 138),
                (1130, 200), (1128, 260), (1108, 302), (1087, 300), (1078, 289), (1067.8, 276.9), (1058, 266)]
 
 
@@ -345,11 +359,35 @@ WEG_ZWINGER_HOEHEN = _steigend(WEG_ZWINGER, {1: H_KERNHOF, 13: H_KERNBURG})
 WEG_ZWINGER_HOEHEN[0] = H_KERNHOF
 # Die Wege im Burgbezirk sind keine Stadtgassen, gehören aber ins Wegenetz
 BURGWEGE = [WEG_BURG, WEG_VORBURG, WEG_TORHAUS_NORD, WEG_TORHAUS_WEST, WEG_ZWINGER]
+# Ab hier steigt der Burgweg als gemauerte Rampe im II. Burghof zum Tor des III. Burghofs (von H_BURGHOF2 auf H_KERNHOF)
+RAMPE_III = WEG_BURG.index((540, 262))
+RAMPE_FLANKE = [3.6, 4.8]      # eben bis 3,6 m neben der Mitte, dann fällt sie bis 4,8 m auf den Hof (die Futtermauer)
+
+
+def zwickel(a_, b_, tor, reichweite=45.0):
+    """Keil zwischen zwei Höfen, die sich an einem Tor berühren: die Bögen beider Ovale nahe am Tor als ein Vieleck.
+    Eingeebnet vor den Höfen (die gewinnen), so bleibt nur der Keil zwischen den Mauern; er liegt auf der Höhe des
+    tieferen Hofs, damit dort keine Rinne zwischen den Mauern klafft."""
+    def bogen(punkte):
+        i = min(range(len(punkte)), key=lambda k: math.dist(punkte[k], tor))
+        n = len(punkte)
+        vor = [punkte[(i + k) % n] for k in range(n // 2) if math.dist(punkte[(i + k) % n], tor) < reichweite]
+        zur = [punkte[(i - k) % n] for k in range(1, n // 2) if math.dist(punkte[(i - k) % n], tor) < reichweite]
+        return list(reversed(zur)) + vor
+    pa, pb = bogen(a_), bogen(b_)
+    # Richtung angleichen: pb beginnt nahe am Ende von pa
+    if math.dist(pa[-1], pb[-1]) < math.dist(pa[-1], pb[0]):
+        pb = list(reversed(pb))
+    return pa + pb
 
 
 def plan_json():
     # Die Burghöfe stehen auf Felsterrassen: Der Rand (Meter) ist schmal, darunter bricht der Fels steil ab.
     zonen = [
+        {"name": "Zwickel Vorburg/II", "punkte": welt_liste(zwickel(VORBURG, BURGHOF2, TORE["Tor des II. Burghofs"])),
+         "hoehe": H_VORBURG, "rand": 5.0},
+        {"name": "Zwickel II/III", "punkte": welt_liste(zwickel(BURGHOF2, BURGHOF3, TORE["Tor des III. Burghofs"])),
+         "hoehe": H_BURGHOF2, "rand": 5.0},
         {"name": "I. Vorburg", "punkte": welt_liste(VORBURG), "hoehe": H_VORBURG, "rand": 5.0},
         {"name": "II. Burghof", "punkte": welt_liste(BURGHOF2), "hoehe": H_BURGHOF2, "rand": 5.0},
         {"name": "III. Burghof", "punkte": welt_liste(BURGHOF3), "hoehe": H_KERNHOF, "rand": 5.0},
@@ -369,7 +407,9 @@ def plan_json():
         "hafen_hoehe": H_HAFEN,
         # [Linienzug, Höhen, folgt der Burgbezirk diesem Weg?] – der Grund zwischen Burgen und Ringmauer liegt auf
         # der Höhe des nächsten Burgwegs; die Burgen stehen darüber auf ihren Felsen
-        "burgwege": [[welt_liste(l), h, r] for l, h, r in [(WEG_BURG, WEG_BURG_HOEHEN, True),
+        # Die Torrampe im II. Burghof hinauf zum Tor des III. Burghofs ist gemauert: steile Flanken (Futtermauern)
+        "burgwege": [[welt_liste(l), h, r] + rest for l, h, r, *rest in [(WEG_BURG[:RAMPE_III + 1], WEG_BURG_HOEHEN[:RAMPE_III + 1], True),
+                                                           (WEG_BURG[RAMPE_III:], WEG_BURG_HOEHEN[RAMPE_III:], False, RAMPE_FLANKE),
                                                            (WEG_VORBURG, WEG_VORBURG_HOEHEN, True),
                                                            (WEG_TORHAUS_NORD, WEG_TORHAUS_NORD_HOEHEN, True),
                                                            (WEG_TORHAUS_WEST, WEG_TORHAUS_WEST_HOEHEN, True),
@@ -385,6 +425,9 @@ def plan_json():
         "strassen": [welt_liste(s) for s in STRASSEN],
         "markt": welt_liste(MARKTPLATZ),
         "ebene": H_EBENE,
+        # eben: der Hof (±halb) und der Weg vom Tor bis zur Straße (lokal z 0 … weg); rand: Übergang ins Gelände
+        "vorwerk": {"mitte": list(VORWERK), "dreh": VORWERK_DREH, "hoehe": H_VORWERK, "halb": 38.0, "weg": 66.0,
+                    "rand": 24.0},
     }
 
 

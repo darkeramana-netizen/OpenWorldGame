@@ -17,9 +17,12 @@ const HAUPTMENUE := "res://szenen/oberflaeche/hauptmenue.tscn"
 ## Manuelle Plätze im Pausemenü. "auto" und "schnell" kommen dazu.
 const PLAETZE: Array[String] = ["1", "2", "3"]
 ## 1: Hof als eigene Szene (Akt I). 2: Hof liegt in der Region Drachenstein.
-const VERSION := 3
+const VERSION := 4
 ## Höhe des Hofs aus Akt I in der Region Drachenstein (werkzeuge/bau/plan_drachenstein.py, HOF_Y)
 const HOF_Y := 14.0
+## Seit Version 4 liegt der Hof aus Akt I als Ordensvorwerk vor der Stadt am Küstenweg (plan_drachenstein.py, VORWERK)
+const VORWERK := Vector3(75.0, 1.0, 490.0)
+const VORWERK_DREH := 90.0
 
 ## Position und Blickrichtung des Spielers aus dem geladenen Spielstand.
 ## Die Spielfigur holt sie sich beim Start ab.
@@ -202,8 +205,22 @@ func _ziehe_um(daten: Dictionary) -> void:
 				pos[1] = float(pos[1]) + HOF_Y
 			elif x > -480.0:
 				# alte Stadt, Hafen oder Bergfried (Gravemarch und Gravecrest im Westen sind gleich geblieben)
-				spieler["position"] = [0.0, HOF_Y + 0.3, 46.0]
+				spieler["position"] = [0.0, HOF_Y + 0.3, 46.0]   # vor dem Tor des Hofs (Version 4 zieht ihn ins Vorwerk)
 		daten["letzte_ankunft"] = ""
+	if int(daten.get("version", 1)) < 4 and String(daten.get("region", START_REGION)) == START_REGION:
+		# Der Hof aus Akt I ist aus dem III. Burghof hinaus ins Ordensvorwerk gezogen: Wer im Hof oder vor
+		# seinem Tor stand, steht an derselben Stelle im Vorwerk.
+		var spieler: Dictionary = daten.get("spieler", {})
+		var pos: Array = spieler.get("position", [])
+		if pos.size() == 3:
+			var lokal := Vector3(float(pos[0]), float(pos[1]) - HOF_Y, float(pos[2]))
+			if absf(lokal.x) <= 33.0 and lokal.z >= -33.0 and lokal.z <= 50.0 and lokal.y > -1.0 and lokal.y < 15.0:
+				var welt := VORWERK + Basis(Vector3.UP, deg_to_rad(VORWERK_DREH)) * lokal
+				spieler["position"] = [welt.x, welt.y, welt.z]
+				if spieler.has("kamera"):
+					spieler["kamera"][1] = float(spieler["kamera"][1]) + deg_to_rad(VORWERK_DREH)
+				if spieler.has("koerper"):
+					spieler["koerper"] = float(spieler["koerper"]) + deg_to_rad(VORWERK_DREH)
 
 
 func _spieler_daten() -> Dictionary:

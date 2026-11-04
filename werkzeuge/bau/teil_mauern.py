@@ -114,9 +114,10 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
         if i in tore:
             anteil, breite, tname = tore[i][:3]
             boden_fest = tore[i][3] if len(tore[i]) > 3 else None   # z. B. ein Wassertor auf dem Wasser
+            mit_tuermen = tore[i][4] if len(tore[i]) > 4 else boden_fest is None
             h_ = (breite / 2 + dicke / 2) / laenge     # die Mauerstücke überlappen an ihren Enden um die halbe Dicke
             abschnitte = [(0.0, anteil - h_), (anteil + h_, 1.0)]
-            toreliste.append((x1 + (x2 - x1) * anteil, z1 + (z2 - z1) * anteil, ux, uz, tname, breite, boden_fest))
+            toreliste.append((x1 + (x2 - x1) * anteil, z1 + (z2 - z1) * anteil, ux, uz, tname, breite, boden_fest, mit_tuermen))
         for t0, t1 in abschnitte:
             if t1 - t0 <= 0.001:
                 continue
@@ -144,7 +145,7 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
             unten = min(werte) - 2.5
             oben = max(werte) + hoehe + turm_extra
             tuerme += [x, z, unten, oben, turm_r, 1 if turm_dach else 0, turm_r * 1.8]
-    for k, (tx, tz, ux, uz, tname, breite, boden_fest) in enumerate(toreliste):
+    for k, (tx, tz, ux, uz, tname, breite, boden_fest, mit_tuermen) in enumerate(toreliste):
         nx, nz = -uz, ux
         rings = [H(tx + ux * s + nx * q, tz + uz * s + nz * q) for s in (-breite, 0, breite) for q in (-4, 0, 4)]
         boden = max(rings) if boden_fest is None else boden_fest
@@ -152,7 +153,7 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
         # Der Torbau reicht so hoch wie die Mauer daneben, sonst bleibt über dem Bogen eine Lücke
         oben_tor = max(boden + hoehe, max(rings) + hoehe)
         torboegen += [tx, tz, ux, uz, boden, breite, oben_tor, dicke]
-        for s_ in ((-1, 1) if boden_fest is None else ()):   # ein Wassertor unten in der Mauer hat keine Tortürme
+        for s_ in ((-1, 1) if mit_tuermen else ()):   # ein Wassertor unten in der Mauer hat keine Tortürme
             px, pz = tx + ux * (breite / 2 + 2.6) * s_, tz + uz * (breite / 2 + 2.6) * s_
             unten = min(H(px, pz), boden) - 2.5
             torbauten += [px, pz, ux, uz, unten, oben_tor + 6, 5.0, dicke + 2, seite, 1]
@@ -164,7 +165,7 @@ tuerme = PackedFloat32Array({_zahlen(tuerme)})
 tore = PackedFloat32Array({_zahlen(torboegen)})
 torbauten = PackedFloat32Array({_zahlen(torbauten)})
 stein = \"{STEINE.get(mat, 'mauer')}\"""")
-    return [(x, z, ux, uz, n) for x, z, ux, uz, n, _, _ in toreliste]
+    return [(x, z, ux, uz, n) for x, z, ux, uz, n, *_ in toreliste]
 
 
 WAENDE = {"Material_hell": 1, "Material_mauer": 2, "Material_holz": 3}

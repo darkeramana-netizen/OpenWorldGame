@@ -113,7 +113,8 @@ func _init() -> void:
 		_bucht = vec.call(plan["bucht"])
 		_firstlinie = Array(vec.call(plan["grat"]))
 		for weg: Array in plan["burgwege"]:
-			_burgwege.append([Array(vec.call(weg[0])), weg[1]])
+			# [Linienzug, Höhen, folgt der Grund?, Flanke]: Flanke [innen, außen] (Meter), sonst 3,5 bis 7 m Böschung
+			_burgwege.append([Array(vec.call(weg[0])), weg[1], weg[3] if weg.size() > 3 else [3.5, 7.0]])
 			if weg.size() > 2 and weg[2]:
 				_ringwege.append(_burgwege[-1])
 		for name in ["hafen_becken", "fahrrinne", "kanal"]:
@@ -220,6 +221,7 @@ func hoehe(p: Vector2) -> float:
 	h = _weg_gravecrest(h, p)
 	h = _weg_einebnen(h, p, WEG_NORD)
 	h = _weg_einebnen(h, p, WEG_KUESTE)
+	h = _vorwerk(h, p)
 	if p.x > -100.0 and p.x < 300.0 and absf(p.y - 60.0) < 300.0:
 		for linie: Array in stadt_strassen:
 			h = _weg_einebnen(h, p, linie)
@@ -327,7 +329,7 @@ func _drachenstein(h: float, p: Vector2) -> float:
 			h = zh if d <= 0.0 else _schichten(lerpf(zh, h, t), p, minf(1.0, t * (1.0 - t) * 6.0)) + _zacke(p) * 1.0 * t * (1.0 - t) * 4.0
 	# Wege im Burgbezirk mit fester Steigung: Burgweg außen herum, vom Torhaus Nord, Zwingerweg, vom Nordtor
 	for weg: Array in _burgwege:
-		h = _burgweg(h, p, weg[0], weg[1])
+		h = _burgweg(h, p, weg[0], weg[1], weg[2])
 	# Kais auf Höhe der Hafenmauern rings um die Becken
 	for becken: PackedVector2Array in _becken:
 		var d := _polygon_abstand(p, becken)
@@ -387,11 +389,11 @@ func stadthoehe(p: Vector2) -> float:
 
 
 ## Weg mit fester Höhe je Punkt (dazwischen linear), 7 m breit eben, bis 7 m ins Gelände übergehend.
-func _burgweg(h: float, p: Vector2, linie: Array, hoehen: Array) -> float:
+func _burgweg(h: float, p: Vector2, linie: Array, hoehen: Array, flanke: Array = [3.5, 7.0]) -> float:
 	var info := _weg_hoehe(p, linie, hoehen)
-	if info[0] > 7.0:
+	if info[0] > float(flanke[1]):
 		return h
-	return lerpf(info[1], h, smoothstep(3.5, 7.0, info[0]))
+	return lerpf(info[1], h, smoothstep(float(flanke[0]), float(flanke[1]), info[0]))
 
 
 ## [Abstand, Höhe] des nächsten Punkts auf einem Weg mit Höhen je Punkt.
@@ -465,6 +467,25 @@ func maske_bei(p: Vector2) -> Color:
 		if Geometry2D.is_point_in_polygon(p, vieleck):
 			hof = 1.0
 	return Color(1.0 - smoothstep(2.5, 4.5, weg), sumpf, hof)
+
+
+## Ordensvorwerk (Hof aus Akt I) vor der Stadt am Küstenweg: ein ebener, gedrehter Platz mit dem Weg vom Tor
+## (lokal +z) zur Straße. Maße aus daten/drachenstein_plan.json ("vorwerk").
+func _vorwerk(h: float, p: Vector2) -> float:
+	var vw: Dictionary = plan.get("vorwerk", {})
+	if vw.is_empty():
+		return h
+	var d := p - Vector2(vw["mitte"][0], vw["mitte"][1])
+	var a := deg_to_rad(float(vw["dreh"]))
+	# Welt → lokal (Drehung um y wie in Godot: lokal +z zeigt nach (sin a, cos a))
+	var lokal := Vector2(d.x * cos(a) - d.y * sin(a), d.x * sin(a) + d.y * cos(a))
+	var halb := float(vw["halb"])
+	var abstand := minf(_rechteck_abstand(lokal, Vector2(-halb, -halb), Vector2(halb, halb)),
+			_rechteck_abstand(lokal, Vector2(-4.0, 0.0), Vector2(4.0, float(vw["weg"]))))
+	var rand := float(vw["rand"])
+	if abstand >= rand:
+		return h
+	return lerpf(float(vw["hoehe"]), h, smoothstep(0.0, rand, abstand))
 
 
 func _weg_einebnen(h: float, p: Vector2, linie: Array) -> float:

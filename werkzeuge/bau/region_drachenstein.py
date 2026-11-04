@@ -14,8 +14,18 @@ import sys
 sys.path.insert(0, str(BAU))
 import plan_drachenstein as PD
 HOF_Y = PD.HOF_Y
-# Der Hof aus Akt I liegt im III. Burghof oben auf dem Grat
-N("BurgHof", None, ".", T(0, HOF_Y, 0), instanz="3_hof")
+# Der Hof aus Akt I ist das Ordensvorwerk vor der Stadt am Küstenweg (nicht in der Burg)
+_vwa = math.radians(PD.VORWERK_DREH)
+H_VW = PD.H_VORWERK
+
+
+def VW(lx, lz):
+    """Punkt im Hof aus Akt I (lokal wie in burg_hof.tscn) → Welt (x, z)."""
+    return (round(PD.VORWERK[0] + lx * math.cos(_vwa) + lz * math.sin(_vwa), 2),
+            round(PD.VORWERK[1] - lx * math.sin(_vwa) + lz * math.cos(_vwa), 2))
+
+
+N("BurgHof", None, ".", T(PD.VORWERK[0], H_VW, PD.VORWERK[1], PD.VORWERK_DREH), instanz="3_hof")
 BF_X_NEU, BF_Z_NEU = 500, 100   # Schwarzer Bergfried (werkzeuge/gelaende_erzeuger.gd, BERGFRIED)
 teil("teil_drachenstein.py")
 teil("teil_felsen.py")   # 3D-Felsen an den Klippen
@@ -90,7 +100,7 @@ untertitel = "{untertitel}"''')
     N("Form", "CollisionShape3D", f"Orte/Ort{i+1}", f'shape = SubResource("Form_ort{i+1}")')
 
 # ---------- Bewuchs: Wälder, Büsche, Gras; Stadt, Burgen und Hafen bleiben frei ----------
-bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2 + PD.BURGHOF3[1:-1]), WL(PD.KERNBURG),
+bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG),
                        WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG)],
         frei_rechtecke=[(BF_X_NEU, BF_Z_NEU, 90, 90), (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24,
         feste_baeume=STADTBAEUME)   # Hausbäume in den Höfen der Stadt (teil_stadt.py)
@@ -112,11 +122,11 @@ N("PersonenAmBoden", "Node3D", "Personen", '''script = ExtResource("11_auf_gelae
 gelaende = NodePath("../../Gelaende")''', extra='node_paths=PackedStringArray("gelaende")')
 # Bürgschaft (Regel 10): Nach dem Haupteid wartet ein Bewerber an der Schwelle. Bürgt man für ihn, steht er
 # im Hof und fragt einen Knappen nach den Fluchtgängen aus. Wer das belauscht, kann ihn melden.
-person("KerrinVorTor", "Personen", -4, HOF_Y, 40, "Bewerber Kerrin Fahl", "bewerber_kerrin", 0, "0.4, 0.33, 0.25, 1", gier=180,
+person("KerrinVorTor", "Personen", *(lambda q: (q[0], H_VW, q[1]))(VW(-4, 40)), "Bewerber Kerrin Fahl", "bewerber_kerrin", 0, "0.4, 0.33, 0.25, 1", gier=180 + PD.VORWERK_DREH,
        sichtbar_wenn="eid_waechter,!kerrin_entschieden")
-person("KerrinImHof", "Personen", 22, HOF_Y, 0, "Anwärter Kerrin Fahl", "bewerber_kerrin", 0, "0.27, 0.24, 0.2, 1",
+person("KerrinImHof", "Personen", *(lambda q: (q[0], H_VW, q[1]))(VW(22, 0)), "Anwärter Kerrin Fahl", "bewerber_kerrin", 0, "0.27, 0.24, 0.2, 1", gier=PD.VORWERK_DREH,
        sichtbar_wenn="kerrin_anwaerter,!kerrin_gefasst")
-person("TiloBrenn", "Personen", 22, HOF_Y, 2.2, "Knappe Tilo Brenn", "knappe_tilo", 1, "0.27, 0.24, 0.2, 1",
+person("TiloBrenn", "Personen", *(lambda q: (q[0], H_VW, q[1]))(VW(22, 2.2)), "Knappe Tilo Brenn", "knappe_tilo", 1, "0.27, 0.24, 0.2, 1", gier=PD.VORWERK_DREH,
        sichtbar_wenn="kerrin_anwaerter,!kerrin_gefasst")
 gespraech("KerrinUndTilo", "KerrinImHof", "TiloBrenn", [
     ("a", "Du warst doch schon im Bergfried. Stimmt es, dass es unter Ashenveil Gänge bis in die Sümpfe gibt?"),
@@ -125,7 +135,7 @@ gespraech("KerrinUndTilo", "KerrinImHof", "TiloBrenn", [
     ("b", "Frag den Kammerhüter, wenn du es so genau wissen willst."),
 ], "kerrin_anwaerter,!kerrin_gefasst", "beobachtung_kerrin",
    "Belauscht im Hof: Kerrin Fahl, für den du bürgst, fragt den Knappen Tilo Brenn nach den Fluchtgängen. Ein Warnzeichen.",
-   (22, HOF_Y + 1, 1.1))
+   (lambda q: (q[0], H_VW + 1, q[1]))(VW(22, 1.1)))
 # Reiterin aus Ashenveil innen am Torhaus West (auf dem Burgweg): nimmt Wächter über den Küstenweg mit
 REITERIN = W((190, 385))   # neben dem Weg, das Pferd weiter vom Weg weg
 person("Reiterin", "Personen/PersonenAmBoden", REITERIN[0], 0, REITERIN[1], "Reiterin Ilka Sand", "reiterin_ashenveil", 2, "0.25, 0.22, 0.18, 1", gier=-54)
@@ -140,7 +150,8 @@ teil("teil_stadtleben.py")
 N("Sprungpunkte", "Node3D", ".")
 _bf = lambda r, w, y: (round(BF_X + r*math.cos(math.radians(BF_WINKEL + w)), 1), y, round(BF_Z + r*math.sin(math.radians(BF_WINKEL + w)), 1))
 _sp = lambda pp, dy=0.5: (lambda p: (round(p[0], 1), round(H(*p) + dy, 1), round(p[1], 1)))(W(pp))
-for name, x, y, z in [("Hof der Burgfeste", 0, HOF_Y + 0.5, 20), ("Vor dem Tor", 0, HOF_Y + 0.5, 46), ("Kernburg", *_sp((975, 225))), ("Übungsplatz", round(UEB[0] + 4, 1), PD.H_KERNBURG + 0.5, round(UEB[1], 1)),
+for name, x, y, z in [("Ordensvorwerk, Hof", *(lambda q: (q[0], H_VW + 0.5, q[1]))(VW(0, 20))), ("Ordensvorwerk, vor dem Tor", *(lambda q: (q[0], H_VW + 0.5, q[1]))(VW(0, 46))),
+                      ("III. Burghof", 0, HOF_Y + 0.5, 20), ("Kernburg", *_sp((975, 225))), ("Übungsplatz", round(UEB[0] + 4, 1), PD.H_KERNBURG + 0.5, round(UEB[1], 1)),
                       ("II. Burghof", *_sp((560, 262))), ("I. Vorburg", *_sp((390, 300))), ("Burgweg am Halbturm", *_sp((210, 330))),
                       ("Wassertor", *(lambda p: (round(p[0], 1), -17.3, round(p[1], 1)))(W((736, 428)))), ("Marktplatz", *_sp((512, 530))), ("St. Marien", *_sp((410, 530))),
                       ("Drachenkai", _lotsin[0] + 2, -17.3, _lotsin[1]), ("Untergrundhafen", 72.0, -17.2, -2.0), ("Bergfried, Tor", *_bf(24, 0, -17.4)),
@@ -165,7 +176,7 @@ uebergang("ZurNordstrasse", (88, H(88, -652) + 2, -652), (30, 40, 16), "nordstra
           (112, round(H(112, -608) + 0.5, 2), -608))
 uebergang("ZumKuestenweg", (161, H(161, 700) + 2, 700), (30, 40, 20), "kuestenweg", "von_drachenstein",
           (152, round(H(152, 640) + 0.5, 2), 640))
-spieler_und_oberflaeche(0, HOF_Y, 46)
+spieler_und_oberflaeche(*(lambda q: (q[0], H_VW, q[1]))(VW(0, 46)))
 
 # Person "kordel": person.tscn nutzt KEINE=0, SCHWARZ=1, GRAU=2, GOLDEN=3
 schreibe("region_drachenstein.tscn")
