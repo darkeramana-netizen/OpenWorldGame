@@ -158,10 +158,9 @@ bx, bz = W(PD.BERGFRIED_KERNBURG)
 N("BergfriedKernburg", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 torbauten = PackedFloat32Array({_zahlen([bx, bz, 1, 0, PD.H_KERNBURG - 3, PD.H_BERGFRIEDFELS + 52, 15, 15, 1, -1])})""")
 schild("SchildBergfriedKernburg", BG, bx, PD.H_BERGFRIEDFELS + 64, bz, "Bergfried", 56)
-# Große Fahne auf dem Bergfried und Banner an seinen vier Seiten
+# Fahne auf dem Bergfried (der Turm selbst bleibt schlicht wie im Referenzbild)
 FAHNEN.extend([bx, PD.H_BERGFRIEDFELS + 52.05, bz, 30, 3.6, 6.0, 0])
-for nx_, nz_ in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
-    FAHNEN.extend([bx + nx_ * 7.55, PD.H_BERGFRIEDFELS + 46, bz + nz_ * 7.55, math.degrees(math.atan2(nx_, nz_)), 2.6, 9.0, 1])
+
 # Palas: drei Geschosse mit gotischen Doppelfenstern, steiles Schieferdach; am Westende ein schlanker Rundturm
 gebaeude("Palas", BG, PD.PALAS, 16, PD.H_KERNBURG, mat="Material_hell", dachhoehe=11, art=3, zweck=3)
 # Links vorn am Palas ein runder Eckturm mit Kegeldach, rechts ein eckiger Turmbau mit Zinnen und einem Ecktürmchen

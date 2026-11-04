@@ -682,7 +682,7 @@ outline_size = 14
 
 [node name="Fahnen" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-fahnen = PackedFloat32Array(-66.5, 11.781, -32.5, 30, 2.4, 3.8, 0, 58.5, 15.96, -240, 30, 2.4, 3.8, 0, 74, 14, 132.5, 30, 2.4, 3.8, 0, -42.5, 94.05, -127.5, 30, 3.6, 6, 0, -34.95, 88, -127.5, 90, 2.6, 9, 1, -50.05, 88, -127.5, -90, 2.6, 9, 1, -42.5, 88, -119.95, 0, 2.6, 9, 1, -42.5, 88, -135.05, 180, 2.6, 9, 1)
+fahnen = PackedFloat32Array(-66.5, 11.781, -32.5, 30, 2.4, 3.8, 0, 58.5, 15.96, -240, 30, 2.4, 3.8, 0, 74, 14, 132.5, 30, 2.4, 3.8, 0, -42.5, 94.05, -127.5, 30, 3.6, 6, 0)
 kollision = false
 
 [node name="Stadt" type="Node3D" parent="Drachenstein"]
