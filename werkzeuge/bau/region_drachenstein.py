@@ -21,7 +21,7 @@ teil("teil_drachenstein.py")
 teil("teil_felsen.py")   # 3D-Felsen an den Klippen
 teil("teil_natur.py")    # Stämme, Pilze, Moos, Sträucher, Farne um Drachenstein
 # Gepflastert sind Gassen und Markt in der Stadt, die Kais und die Höfe der Burgen
-gelaende_pflaster([STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2 + PD.BURGHOF3[1:6]), WL(PD.KERNBURG)])
+gelaende_pflaster([STADT_UMRISS, WL(PD.HAFEN_BEZIRK)])   # die Burghöfe pflastert die Geländemaske (Blau)
 
 # ---------- Mole und Brücken über die Inseln zum Schwarzen Bergfried ----------
 # Von der Molenpforte am Speicherkai führt eine Mole westlich der Hafeneinfahrt zur ersten Insel, von dort Brücken
@@ -90,7 +90,7 @@ untertitel = "{untertitel}"''')
     N("Form", "CollisionShape3D", f"Orte/Ort{i+1}", f'shape = SubResource("Form_ort{i+1}")')
 
 # ---------- Bewuchs: Wälder, Büsche, Gras; Stadt, Burgen und Hafen bleiben frei ----------
-bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2 + PD.BURGHOF3[1:6]), WL(PD.KERNBURG),
+bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2 + PD.BURGHOF3[1:-1]), WL(PD.KERNBURG),
                        WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG)],
         frei_rechtecke=[(BF_X_NEU, BF_Z_NEU, 90, 90), (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24,
         feste_baeume=STADTBAEUME)   # Hausbäume in den Höfen der Stadt (teil_stadt.py)

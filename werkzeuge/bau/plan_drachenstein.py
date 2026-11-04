@@ -112,6 +112,61 @@ TORE = {
     "Hafenpforte": (596, 500),           # Stadt ↔ Hafenkai
 }
 
+# ---------- Runde Burghöfe (wie im Referenzbild) ----------
+# Die Ecken der Burghöfe werden zu weiten Bögen; gerade bleiben die Mauern, die zwei Höfe teilen (fest), und die
+# Mauerstücke mit Toren. ECKEN ordnet jeder alten Ecke die Mitte ihres Bogens zu (für Türme an den Ecken).
+VORBURG_ECKIG, BURGHOF2_ECKIG, BURGHOF3_ECKIG, KERNBURG_ECKIG = VORBURG, BURGHOF2, BURGHOF3, KERNBURG
+ECKEN = {}
+
+
+def runden(punkte, fest=(), stufen=3):
+    """Glättet einen Umriss zu weichen Bögen (Chaikin). Feste Punkte bleiben; Kanten mit einem Tor bleiben gerade."""
+    import math as _m
+    fest = set(fest)
+    n = len(punkte)
+    for i in range(n):                         # Torkanten: beide Enden fest
+        a, b = punkte[i], punkte[(i + 1) % n]
+        l = _m.dist(a, b)
+        for tor in TORE.values():
+            ux, uy = (b[0] - a[0]) / l, (b[1] - a[1]) / l
+            t = (tor[0] - a[0]) * ux + (tor[1] - a[1]) * uy
+            if 0 < t < l and abs((tor[0] - a[0]) * uy - (tor[1] - a[1]) * ux) < 4.0:
+                fest |= {a, b}
+    alt = list(punkte)
+    for _ in range(stufen):
+        neu = []
+        m = len(alt)
+        for i in range(m):
+            a, b = alt[i], alt[(i + 1) % m]
+            if a in fest:
+                neu.append(a)
+            if a in fest and b in fest:
+                continue                       # gerade Kante zwischen zwei festen Punkten
+            q = (0.75 * a[0] + 0.25 * b[0], 0.75 * a[1] + 0.25 * b[1])
+            r = (0.25 * a[0] + 0.75 * b[0], 0.25 * a[1] + 0.75 * b[1])
+            if a not in fest:
+                neu.append(q)
+            if b not in fest:
+                neu.append(r)
+        alt = neu
+    ergebnis = [(round(x, 2), round(y, 2)) for x, y in alt]
+    for v in punkte:
+        if v not in fest:
+            ECKEN[v] = min(ergebnis, key=lambda q: _m.dist(q, v))
+    return ergebnis
+
+
+def ecke(p):
+    """Lage einer alten Ecke auf dem gerundeten Umriss (nächster Punkt), sonst die Ecke selbst."""
+    return ECKEN.get(p, p)
+
+
+_geteilt = {(445, 212), (458, 270), (636, 160), (636, 290)}     # Mauern zwischen den Höfen
+VORBURG = runden(VORBURG, fest=_geteilt)
+BURGHOF2 = runden(BURGHOF2, fest=_geteilt)
+BURGHOF3 = runden(BURGHOF3, fest=_geteilt)                      # um den Hof aus Akt I
+KERNBURG = runden(KERNBURG)
+
 # ---------- Bauten ----------
 # (Mitte, Länge, Breite, Drehung in Grad) in Bildpunkten; Länge entlang Plan-x bei Drehung 0
 # Bergfried wie im Referenzbild hinten am Palas, wie im Schnitt A-A auf dem höchsten Punkt: auf einem eigenen Felssockel

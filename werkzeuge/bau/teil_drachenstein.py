@@ -106,7 +106,7 @@ mauerring("Vorburg", BG, WL(VB), 8.0, dicke=3.0, mitte=W((385, 290)),
                       (PD.TORE["Tor des II. Burghofs"], 5.0, "")))
 _vt = []
 for pp, r in [((318, 250), 7.0), ((350, 358), 5.5)]:
-    x, z = W(pp)
+    x, z = W(PD.ecke(pp))
     _vt += [x, z, H(x, z) - 8, PD.H_VORBURG + 13, r, 1, r * 1.6]
 N("VorburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_vt)})""")
@@ -124,7 +124,7 @@ mauerring("BurghofZwei", BG, WL(B2), 9.0, dicke=3.0, mitte=W((560, 260)),
 # Rundtürme mit Kegeldach an den Ecken des II. und III. Burghofs
 _bt = []
 for pp in [(530, 192), (600, 182), (650, 136), (838, 134), (842, 310), (668, 318)]:
-    _bt += turmmasse(pp, 4.5, 13) + [4.5, 1, 7.5]
+    _bt += turmmasse(PD.ecke(pp), 4.5, 13) + [4.5, 1, 7.5]
 N("BurghofTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_bt)})""")
 for k, bau in enumerate(PD.BURGHOF2_BAUTEN):
@@ -148,7 +148,7 @@ KB = PD.KERNBURG + [PD.KERNBURG[0]]
 mauerring("Kernburg", BG, WL(KB), 12.0, dicke=3.5, mitte=W((990, 220)),
          tore=tor_an(KB, PD.TORE["Kernburgtor"], 5.0, "Kernburgtor"))
 for pp in [(912, 138), (1100, 150), (1102, 280), (896, 288)]:
-    m = turmmasse(pp, 4.5, 0)
+    m = turmmasse(PD.ecke(pp), 4.5, 0)
     _zt += m[:3] + [PD.H_KERNBURG + 17, 4.5, 1, 9]
 N("KernburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_zt)})""")
@@ -244,44 +244,64 @@ _FORMEN = [(float(b_), float(t_)) for b_, t_ in _re.findall(r"\[(\d+\.\d+), (\d+
 _STEIN_FORMEN = [k_ for k_ in range(len(_FORMEN)) if _FORMEN[k_][1] <= 10.0]    # nicht zu tief für die Höfe
 HOFHAEUSER = []          # (x, y, z, Gier, Form)
 
+def _punkt_auf(pk, laengen, s_):
+    """Punkt auf dem geschlossenen Linienzug pk bei Bogenlänge s_."""
+    gesamt = laengen[-1]
+    s_ %= gesamt
+    for k_ in range(len(pk) - 1):
+        if s_ <= laengen[k_ + 1]:
+            t_ = (s_ - laengen[k_]) / max(laengen[k_ + 1] - laengen[k_], 1e-9)
+            return (pk[k_][0] + (pk[k_ + 1][0] - pk[k_][0]) * t_, pk[k_][1] + (pk[k_ + 1][1] - pk[k_][1]) * t_)
+    return pk[-1]
+
+
 def hofbauten(name, poly, boden, rand_mauer=0.6):
+    """Ein geschlossener Ring von Häusern entlang der ganzen Hofmauer (auch um die Rundungen), Lücken nur an Toren,
+    Türmen, Wegen und vor den Türen der großen Bauten."""
     n_ = 0
     pk = poly + [poly[0]]
     flaeche = sum(a_[0] * b_[1] - b_[0] * a_[1] for a_, b_ in zip(pk, pk[1:]))
+    laengen = [0.0]
     for a_, b_ in zip(pk, pk[1:]):
-        laenge_k = math.dist(a_, b_)
-        ux, uy = (b_[0] - a_[0]) / laenge_k, (b_[1] - a_[1]) / laenge_k
-        nx_, ny_ = (-uy, ux) if flaeche > 0 else (uy, -ux)          # nach innen
-        s_ = 4.0
-        while s_ < laenge_k - 4.0:
-            form = random.choice(_STEIN_FORMEN)
-            b, t = _FORMEN[form]
-            laenge, tiefe = b / M, (t + 0.7) / M                          # in Planeinheiten (mit Vorkragung)
-            if s_ + laenge > laenge_k - 3.0:
-                break
-            d_ = 3.0 / M * 0.5 + rand_mauer / M + tiefe / 2
-            mx, my = a_[0] + ux * (s_ + laenge / 2) + nx_ * d_, a_[1] + uy * (s_ + laenge / 2) + ny_ * d_
-            r_ = _rechteck_plan(mx, my, laenge, tiefe, ux, uy)
-            hof = _rechteck_plan(mx + nx_ * (tiefe / 2 + 4), my + ny_ * (tiefe / 2 + 4), laenge * 0.5, 7, ux, uy)
-            ok = all(_im(e_, poly) for e_ in r_)
-            punkte_ = r_ + [((r_[k_][0] + r_[(k_ + 1) % 4][0]) / 2, (r_[k_][1] + r_[(k_ + 1) % 4][1]) / 2) for k_ in range(4)] + [(mx, my)]
-            ok = ok and all(math.dist(e_, t_) > 10.5 for t_ in _HOF_TUERME for e_ in punkte_)        # Turm r 4,5 m
-            ok = ok and all(math.dist(e_, t_) > 12.0 for t_ in PD.TORE.values() for e_ in punkte_)
-            ok = ok and not any(_ueberlappt(r_, sp) or _ueberlappt(hof, sp) for sp in _HOF_SPERREN + _hofbauten)
-            ok = ok and all(_abst_linie(e_, w_[i], w_[i + 1]) > 7 for w_ in _HOF_WEGE for i in range(len(w_) - 1)
-                            for e_ in punkte_)
-            if ok:
-                wx, wz = W((mx, my))
-                if max(abs(H(*W(e_)) - boden) for e_ in r_) < 1.5:
-                    wn = (W((mx + nx_, my + ny_))[0] - wx, W((mx + nx_, my + ny_))[1] - wz)
-                    gier = math.degrees(math.atan2(wn[0], wn[1]))         # Vorderseite (lokal +z) zum Hof
-                    HOFHAEUSER.append((round(wx, 2), round(boden, 2), round(wz, 2), round(gier, 1), form))
-                    _hofbauten.append(_rechteck_plan(mx, my, laenge + 0.2, tiefe + 0.2, ux, uy))
-                    n_ += 1
-                    s_ += laenge + 0.3                                    # geschlossene Reihe
-                    continue
-            s_ += 1.0
+        laengen.append(laengen[-1] + math.dist(a_, b_))
+    s_ = 0.0
+    while s_ < laengen[-1] - 6.0:
+        form = random.choice(_STEIN_FORMEN)
+        b, t = _FORMEN[form]
+        laenge, tiefe = b / M, (t + 0.7) / M
+        pa, pb = _punkt_auf(pk, laengen, s_), _punkt_auf(pk, laengen, s_ + laenge)
+        sehne = math.dist(pa, pb)
+        if sehne < laenge * 0.7:
+            s_ += 2.0
+            continue
+        ux, uy = (pb[0] - pa[0]) / sehne, (pb[1] - pa[1]) / sehne
+        nx_, ny_ = (-uy, ux) if flaeche > 0 else (uy, -ux)              # nach innen
+        # auf Rundungen etwas weiter hinein, damit die Hausecken nicht in der Mauer stecken
+        pm = _punkt_auf(pk, laengen, s_ + laenge / 2)
+        bogen = max(0.0, (pm[0] - (pa[0] + pb[0]) / 2) * nx_ + (pm[1] - (pa[1] + pb[1]) / 2) * ny_)
+        d_ = 3.0 / M * 0.5 + rand_mauer / M + tiefe / 2 + bogen
+        mx, my = (pa[0] + pb[0]) / 2 + nx_ * d_, (pa[1] + pb[1]) / 2 + ny_ * d_
+        r_ = _rechteck_plan(mx, my, laenge, tiefe, ux, uy)
+        hof = _rechteck_plan(mx + nx_ * (tiefe / 2 + 4), my + ny_ * (tiefe / 2 + 4), laenge * 0.5, 7, ux, uy)
+        punkte_ = r_ + [((r_[k_][0] + r_[(k_ + 1) % 4][0]) / 2, (r_[k_][1] + r_[(k_ + 1) % 4][1]) / 2) for k_ in range(4)] + [(mx, my)]
+        ok = all(_im(e_, poly) for e_ in r_)
+        ok = ok and all(math.dist(e_, t_) > 10.5 for t_ in _HOF_TUERME for e_ in punkte_)
+        ok = ok and all(math.dist(e_, t_) > 12.0 for t_ in PD.TORE.values() for e_ in punkte_)
+        ok = ok and not any(_ueberlappt(r_, sp) or _ueberlappt(hof, sp) for sp in _HOF_SPERREN + _hofbauten)
+        ok = ok and all(_abst_linie(e_, w_[i], w_[i + 1]) > 7 for w_ in _HOF_WEGE for i in range(len(w_) - 1) for e_ in punkte_)
+        if ok:
+            wx, wz = W((mx, my))
+            if max(abs(H(*W(e_)) - boden) for e_ in r_) < 1.5:
+                wn = (W((mx + nx_, my + ny_))[0] - wx, W((mx + nx_, my + ny_))[1] - wz)
+                gier = math.degrees(math.atan2(wn[0], wn[1]))             # Vorderseite (lokal +z) zum Hof
+                HOFHAEUSER.append((round(wx, 2), round(boden, 2), round(wz, 2), round(gier, 1), form))
+                _hofbauten.append(_rechteck_plan(mx, my, laenge - 0.4, tiefe - 0.4, ux, uy))   # Nachbarn dürfen anstoßen
+                n_ += 1
+                s_ += laenge + 0.2
+                continue
+        s_ += 1.0
     return n_
+
 
 _nh = [hofbauten("Vorburg", PD.VORBURG, PD.H_VORBURG), hofbauten("II", PD.BURGHOF2, PD.H_BURGHOF2),
        hofbauten("III", PD.BURGHOF3, PD.H_KERNHOF), hofbauten("Kernburg", PD.KERNBURG, PD.H_KERNBURG)]
