@@ -784,7 +784,7 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 		else:
 			# Wohnbau, Palas, Küche, Zeughaus: in jedem Geschoss ein Tisch mit Bänken, im Erdgeschoss ein Kamin am Giebel +L,
 			# in den oberen Geschossen Betten am Giebel +L
-			var ts := iL * 0.15
+			var ts := iL * (0.42 if art == 3 else 0.15)   # im Palas die Tafel hinten, vorn bleibt der Weg zur Treppe frei
 			var lang := minf(iL * 0.9, 6.0) if art == 3 else minf(iL * 0.5, 2.4)
 			_klotz("holz", c + uz * ts, uz, nx, -lang / 2.0, lang / 2.0, -0.5, 0.5, y + 0.72, y + 0.8)
 			for e: float in [-1.0, 1.0]:
@@ -906,7 +906,7 @@ func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, i
 							_klotz("holz", wm, uz, nx, -0.95, 0.95, -0.06, 0.06, minf(y + 3.6, decke - 0.4), minf(y + 3.6, decke - 0.4) + 0.08)
 					ws += 6.0
 				for e: float in [-1.0, 1.0]:
-					_leuchter(c + uz * (iL * 0.15 + e * 3.5) + nx * 1.6, uz, nx, y)
+					_leuchter(c + uz * (iL * 0.42 + e * 3.5) + nx * 1.6, uz, nx, y)
 			4:   # Stall: Boxen mit Trennwänden und Krippen an der Längswand -B, Heu und Stroh
 				if k == 0:
 					var s_ := frei_s
