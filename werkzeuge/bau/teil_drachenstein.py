@@ -101,7 +101,7 @@ schild("SchildRondell", BG, *(lambda p: (p[0], H(*p) + 26, p[1]))(W(PD.RONDELL))
 
 # --- I. Vorburg (12. Jh.) mit zwei Rundtürmen ---
 VB = PD.VORBURG + [PD.VORBURG[0]]
-mauerring("Vorburg", BG, WL(VB), 8.0, dicke=3.0, mitte=W((385, 290)),
+mauerring("Vorburg", BG, WL(VB), 8.0, dicke=3.0, mitte=W(PD.OVAL_VORBURG[0]),
          tore=tore_an(VB, (PD.TORE["Tor zur Vorburg"], 5.0, "Tor zur Vorburg"),
                       (PD.TORE["Tor des II. Burghofs"], 5.0, "")))
 _vt = []
@@ -118,9 +118,10 @@ schild("SchildVorburg", BG, *(lambda p: (p[0], PD.H_VORBURG + 9, p[1]))(W((390, 
 mauerring("Sperrmauer", BG, WL(PD.SPERRMAUER), 7.0, dicke=2.5, mitte=W((300, 380)))
 
 # --- II. Burghof (14. Jh.); die Wand zur Vorburg gehört zur Vorburg ---
-B2 = PD.BURGHOF2[1:] + [PD.BURGHOF2[0]]
-mauerring("BurghofZwei", BG, WL(B2), 9.0, dicke=3.0, mitte=W((560, 260)),
-         tore=tore_an(B2, (PD.TORE["Rampentor"], 5.0, "Rampentor"), (PD.TORE["Tor des III. Burghofs"], 6.0, "")))
+B2 = PD.BURGHOF2 + [PD.BURGHOF2[0]]          # oval, mit eigenen Toren zur Vorburg und zum III. Burghof
+mauerring("BurghofZwei", BG, WL(B2), 9.0, dicke=3.0, mitte=W(PD.OVAL_BURGHOF2[0]),
+         tore=tore_an(B2, (PD.TORE["Rampentor"], 5.0, "Rampentor"), (PD.TORE["Tor des III. Burghofs, Westseite"], 6.0, ""),
+                      (PD.TORE["Tor des II. Burghofs, Ostseite"], 5.0, "")))
 # Rundtürme mit Kegeldach an den Ecken des II. und III. Burghofs
 _bt = []
 for pp in [(530, 192), (600, 182), (650, 136), (838, 134), (842, 310), (668, 318)]:
@@ -132,8 +133,9 @@ for k, bau in enumerate(PD.BURGHOF2_BAUTEN):
 schild("SchildBurghof2", BG, *(lambda p: (p[0], PD.H_BURGHOF2 + 9, p[1]))(W((560, 262))), "II. Burghof", 40)
 
 # --- III. Burghof um den Hof aus Akt I; die Wand zum II. Burghof gehört zum II. ---
-mauerring("BurghofDrei", BG, WL(PD.BURGHOF3), 10.0, dicke=3.0, mitte=MITTE_BURG,
-         tore=tor_an(PD.BURGHOF3, PD.TORE["Burgtor"], 6.0, "Burgtor"))
+B3 = PD.BURGHOF3 + [PD.BURGHOF3[0]]          # jetzt mit eigener Westmauer (der II. Burghof berührt ihn nur am Tor)
+mauerring("BurghofDrei", BG, WL(B3), 10.0, dicke=3.0, mitte=MITTE_BURG,
+         tore=tore_an(B3, (PD.TORE["Burgtor"], 6.0, "Burgtor"), (PD.TORE["Tor des III. Burghofs"], 6.0, "")))
 schild("SchildBurghof3", BG, 0, PD.H_KERNHOF + 13, -36, "III. Burghof", 40)
 
 # --- Zwinger und Kernburg ---
@@ -145,7 +147,7 @@ _zt = []
 for pp in [(965, 88), (1152, 130), (1112, 322), (895, 332)]:
     _zt += turmmasse(pp, 4.5, 12) + [4.5, 1, 8]
 KB = PD.KERNBURG + [PD.KERNBURG[0]]
-mauerring("Kernburg", BG, WL(KB), 12.0, dicke=3.5, mitte=W((990, 220)),
+mauerring("Kernburg", BG, WL(KB), 12.0, dicke=3.5, mitte=W(PD.OVAL_KERNBURG[0]),
          tore=tor_an(KB, PD.TORE["Kernburgtor"], 5.0, "Kernburgtor"))
 for pp in [(912, 138), (1100, 150), (1102, 280), (896, 288)]:
     m = turmmasse(PD.ecke(pp), 4.5, 0)
@@ -231,7 +233,7 @@ _HOF_WEGE = [w_ for w_ in PD.BURGWEGE]
 GASSE_BURGHOF3 = [PD.plan(p_) for p_ in [(0, 46), (-34, 41), (-34, -37), (-3, -38), (-3, -52.5)]]
 _HOF_WEGE.append(GASSE_BURGHOF3)
 # Kernburg: vom Kernburgtor über den Hof zum Übungsplatz und vor die Kapelle
-_HOF_WEGE.append([(1082, 291), (1040, 240), (990, 225), (940, 225)])
+_HOF_WEGE.append([PD.TORE["Kernburgtor"], (1040, 240), (990, 225), (940, 225)])
 _HOF_WEGE.append([(1040, 240), (1060, 200)])
 random.seed(4711)
 _hofbauten = []

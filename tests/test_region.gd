@@ -109,8 +109,8 @@ func _initialize() -> void:
 	await setze(Vector3(0, 14.3, 46))
 	var hinauf := await gehe_ueber([Vector2(-34, 41), Vector2(-34, -37), Vector2(-3, -38), Vector2(-3, -44), Vector2(-3, -52.5), Vector2(-3, -60.5),
 			Vector2(-34, -62), Vector2(-50, -72.5), Vector2(-59, -97.5), Vector2(-62, -132.5), Vector2(-62, -172.5), Vector2(-45, -191.5),
-			Vector2(-14, -197.5), Vector2(16, -196.5), Vector2(37, -186.5), Vector2(36, -176), Vector2(31.5, -173.5), Vector2(24, -170),
-			Vector2(15, -163), Vector2(8, -163), Vector2(6, -152.5)], 40.0)
+			Vector2(-14, -197.5), Vector2(16, -196.5), Vector2(37, -186.5), Vector2(36, -176), Vector2(30.5, -171.5), Vector2(24.45, -166.4),
+			Vector2(18, -158), Vector2(6, -152.5)], 40.0)
 	pruefe(hinauf and spieler().global_position.y > 37.5, "Durch Burgtor und Zwingerweg hinauf in die Kernburg (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("Kernburg · Drachenhorst"), "Ortsname: Kernburg")
 	# Hinab: Tor des III. Burghofs → II. Burghof → Tor in die I. Vorburg → Südtor der Vorburg → unter dem II. Burghof
@@ -121,8 +121,8 @@ func _initialize() -> void:
 	pruefe(orte.has("I. Vorburg") and orte.has("II. Burghof"), "Ortsnamen: II. Burghof, I. Vorburg")
 	# Der ganze Burgweg: vom II. Burghof durch das Rampentor hinab, im Süden über dem Wassertor und an der Klippe am
 	# Rondell vorbei hinauf, um den Zwinger, im Norden wieder hinab und durch das Torhaus Nord hinaus
-	await setze(Vector3(36, 6.3, 61.5))
-	pruefe(await gehe_ueber([Vector2(41.9, 53.25), Vector2(47, 45), Vector2(51, 33.5), Vector2(53, 7.5), Vector2(54, -25),
+	await setze(Vector3(17, 6.3, 72.5))
+	pruefe(await gehe_ueber([Vector2(23, 66.1), Vector2(34, 56.5), Vector2(47, 45), Vector2(51, 33.5), Vector2(53, 7.5), Vector2(54, -25),
 			Vector2(62, -32.5), Vector2(73.5, -67.5), Vector2(70, -107.5), Vector2(64.5, -157.5), Vector2(53.5, -207.5), Vector2(31, -222.5),
 			Vector2(-11.5, -230), Vector2(-44, -231), Vector2(-71.5, -212.5), Vector2(-86, -182.5), Vector2(-85, -147.5), Vector2(-83, -115),
 			Vector2(-75, -82.5), Vector2(-66.5, -57.5), Vector2(-56, -32.5), Vector2(-60, -12.5), Vector2(-61, 17.5), Vector2(-58, 42.5),
