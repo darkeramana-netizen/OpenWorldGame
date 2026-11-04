@@ -76,8 +76,8 @@ for x in range(-150, 330, 2):
         h0 = H(px, pz)
         if s < 1.3 or h0 < -24:      # nur echte Steilwände, nicht die Hänge im Zwinger
             continue
-        # nur außen an den Klippen (zum Meer und ins Tal); unter den Burgen bleibt das Felsplateau Gelände mit Felstextur
-        if any(im_vieleck((px, pz), v) for v in _frei) or im_vieleck((px, pz), _ring_flaeche):
+        # an allen Steilwänden außerhalb der Höfe: außen an den Klippen und innen unter den Terrassen der Burghöfe
+        if any(im_vieleck((px, pz), v) for v in _frei):
             continue
         oben = max(H(px - dx * d, pz - dz * d) for d in (2, 4, 6, 10, 14, 20))
         unten = min(H(px + dx * d, pz + dz * d) for d in (2, 4, 6, 10, 14, 20))
@@ -89,7 +89,7 @@ for x in range(-150, 330, 2):
 kandidaten.sort(reverse=True)
 
 for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
-    if hoehe < 8:             # nur Wände ab 8 m, kleine Stufen bleiben Gelände
+    if hoehe < (5 if im_vieleck((px, pz), _ring_flaeche) else 8):   # Wände ab 8 m, unter den Terrassen ab 5 m
         continue
     reihe_m = reihe[0]
     reihe_h = -20.0 + reihe[1] * reihe_m

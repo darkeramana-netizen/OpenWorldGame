@@ -115,10 +115,10 @@ TORE = {
 # ---------- Bauten ----------
 # (Mitte, Länge, Breite, Drehung in Grad) in Bildpunkten; Länge entlang Plan-x bei Drehung 0
 # Bergfried wie im Referenzbild hinten am Palas, wie im Schnitt A-A auf dem höchsten Punkt: auf einem eigenen Felssockel
-BERGFRIED_KERNBURG = (1075, 150)
+BERGFRIED_KERNBURG = (990, 143)   # mittig hinter dem Palas an der Nordmauer der Kernburg
 H_BERGFRIEDFELS = H_KERNBURG + 4.0
 BERGFRIEDFELS = [(1057, 132), (1093, 132), (1093, 168), (1057, 168)]
-PALAS = ((990, 155), 110, 32, 4)          # Ostende mit Abstand zum Felssockel des Bergfrieds
+PALAS = ((990, 175), 72, 32, 0)          # vor dem Bergfried, die Hofseite nach Süden (wie im Referenzbild)
 DRACHENKAPELLE = ((1075, 215), 22, 80, 0)
 BURGKUECHE = ((905, 252), 52, 30, -25)
 ZEUGHAUS = ((1030, 260), 56, 26, -3)
@@ -235,15 +235,15 @@ BURGWEGE = [WEG_BURG, WEG_VORBURG, WEG_TORHAUS_NORD, WEG_TORHAUS_WEST, WEG_ZWING
 
 
 def plan_json():
+    # Die Burghöfe stehen auf Felsterrassen: Der Rand (Meter) ist schmal, darunter bricht der Fels steil ab.
     zonen = [
-        {"name": "I. Vorburg", "punkte": welt_liste(VORBURG), "hoehe": H_VORBURG, "rand": 10.0},
-        {"name": "II. Burghof", "punkte": welt_liste(BURGHOF2), "hoehe": H_BURGHOF2, "rand": 9.0},
-        {"name": "III. Burghof", "punkte": welt_liste(BURGHOF3), "hoehe": H_KERNHOF, "rand": 8.0},
+        {"name": "I. Vorburg", "punkte": welt_liste(VORBURG), "hoehe": H_VORBURG, "rand": 5.0},
+        {"name": "II. Burghof", "punkte": welt_liste(BURGHOF2), "hoehe": H_BURGHOF2, "rand": 5.0},
+        {"name": "III. Burghof", "punkte": welt_liste(BURGHOF3), "hoehe": H_KERNHOF, "rand": 5.0},
         # Der Zwinger steigt mit dem Zwingerweg: Höhe des nächsten Wegpunkts
         {"name": "Zwinger der Kernburg", "punkte": welt_liste(ZWINGER_KERNBURG), "hoehe": H_KERNHOF, "rand": 10.0,
          "weg": welt_liste(WEG_ZWINGER), "weg_hoehen": WEG_ZWINGER_HOEHEN},
-        {"name": "Kernburg", "punkte": welt_liste(KERNBURG), "hoehe": H_KERNBURG, "rand": 9.0},
-        {"name": "Felssockel des Bergfrieds", "punkte": welt_liste(BERGFRIEDFELS), "hoehe": H_BERGFRIEDFELS, "rand": 4.0},
+        {"name": "Kernburg", "punkte": welt_liste(KERNBURG), "hoehe": H_KERNBURG, "rand": 5.5},
     ]
     return {
         "_hinweis": "Erzeugt von werkzeuge/bau/plan_drachenstein.py aus dem Grundriss. Nicht von Hand ändern.",

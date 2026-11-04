@@ -1143,42 +1143,43 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 ## Krone eines Bergfrieds (dach < 0): Zinnenplattform, vier Ecktürmchen mit Kegeldach auf Kragsteinen, Reihen von
 ## Schießscharten und oben große Bogenfenster.
 func _bergfried_krone(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, unten: float, oben: float) -> void:
+	# Schlichter Vierkantturm wie im Referenzbild: Bogenfries unter einer leicht vorkragenden Brustwehr mit Zinnen,
+	# oben auf jeder Seite ein gekuppeltes Rundbogenfenster, darunter nur Schlitze.
+	var vor := 0.35
 	_klotz("boden", c, u, n, -b, b, -t, t, oben, oben + 0.05)
-	_klotz(stein, c, u, n, -b, b, -t, -t + BRUSTWEHR_DICKE, oben, oben + 1.3)
-	_klotz(stein, c, u, n, -b, b, t - BRUSTWEHR_DICKE, t, oben, oben + 1.3)
-	_klotz(stein, c, u, n, -b, -b + BRUSTWEHR_DICKE, -t, t, oben, oben + 1.3)
-	_klotz(stein, c, u, n, b - BRUSTWEHR_DICKE, b, -t, t, oben, oben + 1.3)
-	for seite in [[u, n, b * 2.0, t], [-u, -n, b * 2.0, t], [n, -u, t * 2.0, b], [-n, u, t * 2.0, b]]:
-		_zinnen(c, seite[0], seite[1], seite[2] - 3.0, seite[3] - BRUSTWEHR_DICKE, seite[3], oben + 1.3)
-	# Ecktürmchen
-	for su: float in [-1.0, 1.0]:
-		for sn: float in [-1.0, 1.0]:
-			var e := c + u * su * (b - 0.4) + n * sn * (t - 0.4)
-			var r := 1.7
-			for k in 3:
-				_mantel(stein, e, r * (0.45 + 0.2 * k), r * (0.65 + 0.2 * k), oben - 3.2 + k * 0.6, oben - 2.6 + k * 0.6, 12)
-			_mantel(stein, e, r, r, oben - 1.4, oben + 2.6, 14)
-			_ring(stein, e, 0.0, r, oben - 1.4, 14, false)
-			_ring("dach", e, r - 0.2, r + 0.3, oben + 2.6, 14, false)
-			_kegel("dach", e, r + 0.3, oben + 2.6, 4.2, 14)
-			_kegel("metall", e, 0.12, oben + 6.5, 0.9, 6)
-			var d := (e - c).normalized()
-			_klotz("dunkel", e + d * (r - 0.03), Vector2(-d.y, d.x), d, -0.07, 0.07, 0.0, 0.06, oben + 0.2, oben + 1.4)
-	# Schießscharten in Reihen und große Bogenfenster unter der Krone
-	var y := unten + 8.0
-	while y < oben - 9.0:
-		for seite in [[u, n, b, t], [-u, -n, b, t], [n, -u, t, b], [-n, u, t, b]]:
-			for pos: float in [-0.45, 0.45]:
-				_klotz("dunkel", c + seite[0] * pos * seite[2] + seite[1] * seite[3], seite[0], seite[1], -0.09, 0.09, -0.04, 0.02, y, y + 1.4)
-		y += 6.5
 	for seite in [[u, n, b, t], [-u, -n, b, t], [n, -u, t, b], [-n, u, t, b]]:
-		var m: Vector2 = c + seite[1] * seite[3]
-		var yf := oben - 6.0
-		_klotz("dunkel", m, seite[0], seite[1], -0.8, 0.8, -0.05, 0.02, yf, yf + 2.6)
-		_dreieck("dunkel", Vector3(m.x + seite[0].x * -0.8 + seite[1].x * 0.03, yf + 2.6, m.y + seite[0].y * -0.8 + seite[1].y * 0.03),
-			Vector3(m.x + seite[0].x * 0.8 + seite[1].x * 0.03, yf + 2.6, m.y + seite[0].y * 0.8 + seite[1].y * 0.03),
-			Vector3(m.x + seite[1].x * 0.03, yf + 3.5, m.y + seite[1].y * 0.03), Vector3(seite[1].x, 0, seite[1].y))
-		_klotz("hell", m, seite[0], seite[1], -1.05, 1.05, -0.02, 0.18, yf - 0.25, yf, true)
+		var su: Vector2 = seite[0]
+		var sn: Vector2 = seite[1]
+		var lb: float = seite[2]
+		var lt: float = seite[3]
+		# Bogenfries: kleine Konsolen, darüber die vorkragende Brustwehr
+		var k := -lb + 0.45
+		while k < lb - 0.3:
+			_klotz(stein, c, su, sn, k - 0.16, k + 0.16, lt - 0.02, lt + vor, oben - 0.9, oben - 0.2)
+			k += 0.9
+		_klotz(stein, c, su, sn, -lb - vor, lb + vor, lt - BRUSTWEHR_DICKE, lt + vor, oben - 0.2, oben + 1.3, true)
+		_zinnen(c, su, sn, lb * 2.0 + vor * 2.0 - 1.0, lt + vor - BRUSTWEHR_DICKE, lt + vor, oben + 1.3)
+		# gekuppeltes Rundbogenfenster unter der Krone
+		var m: Vector2 = c + sn * lt
+		var yf := oben - 6.5
+		for e: float in [-0.75, 0.75]:
+			var fm := m + su * e
+			_klotz("dunkel", fm, su, sn, -0.45, 0.45, -0.05, 0.02, yf, yf + 2.2)
+			for kk in 6:
+				var w0 := PI * kk / 6.0
+				var w1 := PI * (kk + 1) / 6.0
+				var p0 := fm + su * (0.45 * cos(w0)) + sn * 0.03
+				var p1 := fm + su * (0.45 * cos(w1)) + sn * 0.03
+				_dreieck("dunkel", Vector3(fm.x + sn.x * 0.03, yf + 2.2, fm.y + sn.y * 0.03), Vector3(p0.x, yf + 2.2 + 0.45 * sin(w0), p0.y),
+					Vector3(p1.x, yf + 2.2 + 0.45 * sin(w1), p1.y), Vector3(sn.x, 0, sn.y))
+		_klotz("hell", m, su, sn, -0.08, 0.08, -0.02, 0.1, yf, yf + 2.4)          # Mittelsäule
+		_klotz("hell", m, su, sn, -1.4, 1.4, -0.02, 0.2, yf - 0.25, yf, true)    # Sohlbank
+	# Schlitze in Reihen
+	var y := unten + 8.0
+	while y < oben - 10.0:
+		for seite in [[u, n, b, t], [-u, -n, b, t], [n, -u, t, b], [-n, u, t, b]]:
+			_klotz("dunkel", c + seite[1] * seite[3], seite[0], seite[1], -0.09, 0.09, -0.04, 0.02, y, y + 1.4)
+		y += 7.0
 
 
 ## Treppe aus Steinstufen (je 0,25 m) zwischen zwei Wangenmauern, alle 16 Stufen ein Absatz.
@@ -1247,11 +1248,7 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 		_gesims(wand, c, uz, nx, B, L, 0.12, y - 0.15, y + 0.1, begehbar)
 	_gesims(wand, c, uz, nx, B, L, 0.3, traufe - 0.4, traufe, begehbar)
 	if art == 3:
-		_palas_fenster(c, uz, nx, B, L, boden, gh, geschosse, wand)
-		# Ecktürmchen auf Kragsteinen an den vier Ecken, mit spitzem Kegeldach über die Traufe hinaus
-		for su: float in [-1.0, 1.0]:
-			for sn: float in [-1.0, 1.0]:
-				_erkerturm(c + uz * su * (L - 0.6) + nx * sn * (B - 0.6), wand, traufe - 4.5, traufe + 2.2, 1.9, dh * 0.75)
+		_palas_fassade(c, uz, nx, B, L, boden, gh, geschosse, traufe, dh)
 	# Fenster auf allen vier Seiten
 	for k in (0 if art == 3 else geschosse):
 		if art == 2 and k > 0:
@@ -1317,6 +1314,89 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 		var sn := B * 0.35
 		_klotz("bruchstein", c + uz * sx + nx * sn, uz, nx, -0.4, 0.4, -0.4, 0.4, traufe, first + 1.0)
 		_klotz("bruchstein", c + uz * sx + nx * sn, uz, nx, -0.5, 0.5, -0.5, 0.5, first + 0.9, first + 1.15)
+
+
+## Palas wie im Referenzbild: zum Hof (+B) unten eine Arkade aus Rundbögen, darüber Reihen von Rundbogenfenstern
+## zwischen Lisenen, unter der Traufe ein Bogenfries, auf dem Dach zwei Gauben; hinten und an den Giebeln kleinere
+## Rundbogenfenster; Eckquader in hellem Stein.
+func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden: float, gh: float, geschosse: int,
+		traufe: float, dh: float) -> void:
+	var achsen := maxi(5, int((2.0 * L - 2.0) / 4.4))
+	var abst := (2.0 * L - 2.0) / achsen
+	for f in achsen:
+		var pos := -L + 1.0 + (f + 0.5) * abst
+		var m := c + uz * pos + nx * B
+		# Arkadenbogen im Erdgeschoss (in der Mitte die Tür)
+		if absf(pos) > abst * 0.6:
+			_rundbogen(m, uz, nx, boden + 0.15, 2.6, gh * 0.62, 0.35)
+		# Rundbogenfenster in den Obergeschossen
+		for k in range(1, geschosse):
+			_rundbogen(m, uz, nx, boden + k * gh + gh * 0.22, 1.3, gh * 0.5, 0.25)
+		# Rückseite und Giebel: kleinere Fenster
+		for k in range(1, geschosse):
+			_rundbogen(c + uz * pos - nx * B, uz, -nx, boden + k * gh + gh * 0.3, 0.9, gh * 0.38, 0.2)
+	# Lisenen zwischen den Achsen, vom ersten Obergeschoss bis unter den Fries
+	for f in achsen + 1:
+		var pos := -L + 1.0 + f * abst
+		_klotz("hell", c + uz * pos + nx * B, uz, nx, -0.3, 0.3, -0.02, 0.14, boden + gh - 0.2, traufe - 0.9)
+	# Stockwerksgesims über der Arkade
+	_klotz("hell", c, uz, nx, -L, L, B - 0.02, B + 0.22, boden + gh - 0.35, boden + gh - 0.1, true)
+	# Bogenfries unter der Traufe auf beiden Längsseiten
+	for seite: float in [-1.0, 1.0]:
+		var k := -L + 0.6
+		while k < L - 0.4:
+			_klotz("hell", c + uz * k + nx * B * seite, uz, nx * seite, -0.22, 0.22, -0.02, 0.2, traufe - 0.9, traufe - 0.45, true)
+			k += 1.1
+	for seite: float in [-1.0, 1.0]:
+		for f in 3:
+			var pos := (f - 1) * B * 0.55
+			_rundbogen(c + uz * L * seite + nx * pos, nx, uz * seite, boden + gh + gh * 0.3, 0.9, gh * 0.38, 0.2)
+	# Gauben auf der Hofseite des Daches
+	var neig := dh / B
+	for e: float in [-0.45, 0.45]:
+		var gm := c + uz * (e * L) + nx * (B * 0.45)
+		var gy := traufe + (B - B * 0.45) * neig - 0.6
+		_klotz("dach", gm, uz, nx, -0.9, 0.9, -1.6, 0.0, gy - 1.5, gy + 1.4)
+		_klotz(stein, gm, uz, nx, -0.85, 0.85, -1.5, 0.05, gy - 1.5, gy + 1.3)
+		_klotz("dunkel", gm, uz, nx, -0.45, 0.45, 0.04, 0.07, gy - 0.4, gy + 0.9)
+		for s2: float in [-1.0, 1.0]:
+			_viereck("dach", Vector3(gm.x + uz.x * s2 * 1.05 + nx.x * 0.3, gy + 1.3, gm.y + uz.y * s2 * 1.05 + nx.y * 0.3),
+				Vector3(gm.x + nx.x * 0.3, gy + 2.2, gm.y + nx.y * 0.3), Vector3(gm.x - nx.x * 1.8, gy + 2.2, gm.y - nx.y * 1.8),
+				Vector3(gm.x + uz.x * s2 * 1.05 - nx.x * 1.8, gy + 1.3, gm.y + uz.y * s2 * 1.05 - nx.y * 1.8), Vector3(uz.x * s2, 1, uz.y * s2))
+	# Eckquader
+	var y := boden
+	var wechsel := false
+	while y < traufe - 0.6:
+		for su: float in [-1.0, 1.0]:
+			for sn: float in [-1.0, 1.0]:
+				var lu := 0.9 if wechsel else 0.5
+				var ln := 0.5 if wechsel else 0.9
+				_klotz("hell", c, uz, nx, su * L - (lu if su > 0 else -0.06), su * L + (0.06 if su > 0 else lu),
+					sn * B - (ln if sn > 0 else -0.06), sn * B + (0.06 if sn > 0 else ln), y, y + 0.46)
+		y += 0.5
+		wechsel = not wechsel
+
+
+## Rundbogenöffnung in einer Wand (Mitte m auf der Außenfläche, n nach außen): dunkle Fläche mit Halbkreis oben,
+## Gewände und Bogensteine in hellem Stein.
+func _rundbogen(m: Vector2, u: Vector2, n: Vector2, unten: float, breite: float, hoehe: float, rahmen: float) -> void:
+	var b := breite / 2.0
+	var kaempfer := unten + hoehe - b
+	_klotz("dunkel", m, u, n, -b, b, -0.06, 0.02, unten, kaempfer)
+	var N3 := Vector3(n.x, 0, n.y)
+	var mitte := Vector3(m.x + n.x * 0.02, kaempfer, m.y + n.y * 0.02)
+	for k in 8:
+		var w0 := PI * k / 8.0
+		var w1 := PI * (k + 1) / 8.0
+		var p0 := m + u * (b * cos(w0)) + n * 0.02
+		var p1 := m + u * (b * cos(w1)) + n * 0.02
+		_dreieck("dunkel", mitte, Vector3(p0.x, kaempfer + b * sin(w0), p0.y), Vector3(p1.x, kaempfer + b * sin(w1), p1.y), N3)
+		var wm := PI * (k + 0.5) / 8.0
+		var q := m + u * ((b + rahmen * 0.5) * cos(wm))
+		_klotz("hell", q, u, n, -0.18, 0.18, -0.02, 0.1, kaempfer + (b + rahmen * 0.5) * sin(wm) - rahmen * 0.5,
+			kaempfer + (b + rahmen * 0.5) * sin(wm) + rahmen * 0.5)
+	_klotz("hell", m, u, n, -b - rahmen, -b, -0.02, 0.1, unten, kaempfer)
+	_klotz("hell", m, u, n, b, b + rahmen, -0.02, 0.1, unten, kaempfer)
 
 
 ## Fenster des Palas: unten kleine Rechteckfenster, darüber gotische Doppelfenster (zwei Spitzbögen unter einem

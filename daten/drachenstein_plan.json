@@ -38,7 +38,7 @@
     ]
    ],
    "hoehe": 0.0,
-   "rand": 10.0
+   "rand": 5.0
   },
   {
    "name": "II. Burghof",
@@ -89,7 +89,7 @@
     ]
    ],
    "hoehe": 6.0,
-   "rand": 9.0
+   "rand": 5.0
   },
   {
    "name": "III. Burghof",
@@ -124,7 +124,7 @@
     ]
    ],
    "hoehe": 14.0,
-   "rand": 8.0
+   "rand": 5.0
   },
   {
    "name": "Zwinger der Kernburg",
@@ -300,30 +300,7 @@
     ]
    ],
    "hoehe": 38.0,
-   "rand": 9.0
-  },
-  {
-   "name": "Felssockel des Bergfrieds",
-   "punkte": [
-    [
-     -48.0,
-     -161.0
-    ],
-    [
-     -48.0,
-     -179.0
-    ],
-    [
-     -30.0,
-     -179.0
-    ],
-    [
-     -30.0,
-     -161.0
-    ]
-   ],
-   "hoehe": 42.0,
-   "rand": 4.0
+   "rand": 5.5
   }
  ],
  "ring": [
