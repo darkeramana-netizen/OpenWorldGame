@@ -126,7 +126,7 @@ func _initialize() -> void:
 			Vector2(62, -32.5), Vector2(73.5, -67.5), Vector2(70, -107.5), Vector2(64.5, -157.5), Vector2(53.5, -207.5), Vector2(31, -222.5),
 			Vector2(-11.5, -230), Vector2(-44, -231), Vector2(-71.5, -212.5), Vector2(-86, -182.5), Vector2(-85, -147.5), Vector2(-83, -115),
 			Vector2(-75, -82.5), Vector2(-66.5, -57.5), Vector2(-56, -32.5), Vector2(-60, -12.5), Vector2(-61, 17.5), Vector2(-58, 42.5),
-			Vector2(-44, 67.5), Vector2(-33, 102.5), Vector2(-25, 142.5), Vector2(-15, 187.5), Vector2(-11.5, 217.5), Vector2(-24, 220.5),
+			Vector2(-44, 67.5), Vector2(-39, 102.5), Vector2(-25, 142.5), Vector2(-15, 187.5), Vector2(-11.5, 217.5), Vector2(-24, 220.5),
 			Vector2(-34, 220.5), Vector2(-44, 220.5)], 30.0) and spieler().global_position.y < -10.0,
 			"Burgweg: vom Rampentor einmal um die Burg und durch das Torhaus Nord hinaus")
 	# Durch die Hafenpforte über den Kai bis an den Kanal vor dem Wassertor
