@@ -1155,7 +1155,7 @@ func _bergfried_krone(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, un
 		# Bogenfries: kleine Konsolen, darüber die vorkragende Brustwehr
 		var k := -lb + 0.45
 		while k < lb - 0.3:
-			_klotz(stein, c, su, sn, k - 0.16, k + 0.16, lt - 0.02, lt + vor, oben - 0.9, oben - 0.2)
+			_klotz(stein, c, su, sn, k - 0.18, k + 0.18, lt - 0.02, lt + vor, oben - 1.2, oben - 0.2)
 			k += 0.9
 		_klotz(stein, c, su, sn, -lb - vor, lb + vor, lt - BRUSTWEHR_DICKE, lt + vor, oben - 0.2, oben + 1.3, true)
 		_zinnen(c, su, sn, lb * 2.0 + vor * 2.0 - 1.0, lt + vor - BRUSTWEHR_DICKE, lt + vor, oben + 1.3)
@@ -1174,9 +1174,16 @@ func _bergfried_krone(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, un
 					Vector3(p1.x, yf + 2.2 + 0.45 * sin(w1), p1.y), Vector3(sn.x, 0, sn.y))
 		_klotz("hell", m, su, sn, -0.08, 0.08, -0.02, 0.1, yf, yf + 2.4)          # Mittelsäule
 		_klotz("hell", m, su, sn, -1.4, 1.4, -0.02, 0.2, yf - 0.25, yf, true)    # Sohlbank
+	# Gliederung wie im Referenzbild: geböschter Sockel, ein Gesimsband unter dem Obergeschoss, darunter auf jeder
+	# Seite ein einzelnes Rundbogenfenster
+	_klotz(stein, c, u, n, -b - 0.6, b + 0.6, -t - 0.6, t + 0.6, unten, unten + 5.5, true)
+	_klotz("hell", c, u, n, -b - 0.7, b + 0.7, -t - 0.7, t + 0.7, unten + 5.5, unten + 5.85, true)
+	_klotz("hell", c, u, n, -b - 0.18, b + 0.18, -t - 0.18, t + 0.18, oben - 9.6, oben - 9.25, true)
+	for seite in [[u, n, b, t], [-u, -n, b, t], [n, -u, t, b], [-n, u, t, b]]:
+		_rundbogen(c + seite[1] * (seite[3] + 0.02), seite[0], seite[1], oben - 16.5, 1.0, 2.4, 0.22)
 	# Schlitze in Reihen
-	var y := unten + 8.0
-	while y < oben - 10.0:
+	var y := unten + 9.0
+	while y < oben - 19.0:
 		for seite in [[u, n, b, t], [-u, -n, b, t], [n, -u, t, b], [-n, u, t, b]]:
 			_klotz("dunkel", c + seite[1] * seite[3], seite[0], seite[1], -0.09, 0.09, -0.04, 0.02, y, y + 1.4)
 		y += 7.0

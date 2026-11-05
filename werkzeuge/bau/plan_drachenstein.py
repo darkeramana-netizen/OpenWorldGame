@@ -241,7 +241,9 @@ for _alt in VORBURG_ECKIG + BURGHOF2_ECKIG + BURGHOF3_ECKIG + KERNBURG_ECKIG:   
 # ---------- Bauten ----------
 # (Mitte, Länge, Breite, Drehung in Grad) in Bildpunkten; Länge entlang Plan-x bei Drehung 0
 # Bergfried wie im Referenzbild hinten am Palas, wie im Schnitt A-A auf dem höchsten Punkt: auf einem eigenen Felssockel
-BERGFRIED_KERNBURG = (990, 143)   # mittig hinter dem Palas an der Nordmauer der Kernburg
+BERGFRIED_KERNBURG = (990, 139)   # mittig hinter dem Palas, mit dem Rücken an der Nordmauer der Kernburg
+BERGFRIED_SEITE = 18.5            # Meter: so wuchtig wie im Referenzbild (gut die halbe Länge des Palas)
+BERGFRIED_HOEHE = 56.0            # über H_BERGFRIEDFELS bis zur Plattform
 H_BERGFRIEDFELS = H_KERNBURG + 4.0
 BERGFRIEDFELS = [(1057, 132), (1093, 132), (1093, 168), (1057, 168)]
 PALAS = ((990, 175), 72, 32, 0)          # vor dem Bergfried, die Hofseite nach Süden (wie im Referenzbild)

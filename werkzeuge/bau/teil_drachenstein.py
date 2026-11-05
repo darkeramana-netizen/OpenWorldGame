@@ -204,10 +204,10 @@ tuerme = PackedFloat32Array({_zahlen(_zt)})""")
 # Bergfried der Kernburg (wie im Referenzbild): sehr hoher, schlichter Vierkantturm mit Zinnenkrone, mittig hinter dem Palas
 bx, bz = W(PD.BERGFRIED_KERNBURG)
 N("BergfriedKernburg", "Node3D", BG, f"""script = ExtResource("28_burgbau")
-torbauten = PackedFloat32Array({_zahlen([bx, bz, 1, 0, PD.H_KERNBURG - 3, PD.H_BERGFRIEDFELS + 52, 15, 15, 1, -1])})""")
-schild("SchildBergfriedKernburg", BG, bx, PD.H_BERGFRIEDFELS + 64, bz, "Bergfried", 56)
+torbauten = PackedFloat32Array({_zahlen([bx, bz, 1, 0, PD.H_KERNBURG - 3, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE, PD.BERGFRIED_SEITE, PD.BERGFRIED_SEITE, 1, -1])})""")
+schild("SchildBergfriedKernburg", BG, bx, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE + 12, bz, "Bergfried", 56)
 # Fahne auf dem Bergfried (der Turm selbst bleibt schlicht wie im Referenzbild)
-FAHNEN.extend([bx, PD.H_BERGFRIEDFELS + 52.05, bz, 30, 3.6, 6.0, 0])
+FAHNEN.extend([bx, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE + 0.05, bz, 30, 3.6, 6.0, 0])
 
 # Palas: drei Geschosse mit gotischen Doppelfenstern, steiles Schieferdach; am Westende ein schlanker Rundturm
 gebaeude("Palas", BG, PD.PALAS, 16, PD.H_KERNBURG, mat="Material_hell", dachhoehe=11, art=3, zweck=3)
@@ -266,7 +266,7 @@ for b_ in PD.VORBURG_BAUTEN + PD.BURGHOF2_BAUTEN + PD.BURGHOF3_BAUTEN + [PD.PALA
 _kp, _kl, _kb, _kd = PD.DRACHENKAPELLE
 _HOF_SPERREN.append(_rechteck_plan(_kp[0] - (_kl / 2 + 9) * math.cos(math.radians(_kd)), _kp[1] - (_kl / 2 + 9) * math.sin(math.radians(_kd)), 18, 18, 1, 0))
 _HOF_SPERREN += [_rechteck_plan(951, 192, 22, 22, 1, 0), _rechteck_plan(1037, 178, 26, 26, 1, 0)]   # Palastürme
-_HOF_SPERREN += [_rechteck_plan(PD.BERGFRIED_KERNBURG[0], PD.BERGFRIED_KERNBURG[1], 36, 36, 1, 0),
+_HOF_SPERREN += [_rechteck_plan(PD.BERGFRIED_KERNBURG[0], PD.BERGFRIED_KERNBURG[1], PD.BERGFRIED_SEITE * 2 + 6, PD.BERGFRIED_SEITE * 2 + 6, 1, 0),
                  _rechteck_plan(960, 225, 36, 36, 1, 0)]                       # Bergfriedfels, Übungsplatz
 _HOF_TUERME = [PD.plan((_tuerme[i], _tuerme[i + 1])) for i in range(0, len(_tuerme), 7)] + \
               [PD.plan((_vt[i], _vt[i + 1])) for i in range(0, len(_vt), 7)] + \
