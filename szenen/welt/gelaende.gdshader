@@ -126,7 +126,8 @@ void fragment() {
 	// Maske Blau: 1 = gepflasterter Burghof, 0,5 = Felsgrund im Burgbezirk (Zwinger und Absätze zwischen den
 	// Terrassen): grauer Fels mit Grasflecken, wie der Burgberg im Referenzbild
 	float a_hof = smoothstep(0.75, 0.95, m.b);
-	float a_felsgrund = smoothstep(0.25, 0.45, m.b) * (1.0 - a_hof) * (1.0 - m.r);
+	// (die Maske ist als Farbe hinterlegt: 0,5 kommt hier als etwa 0,21 an)
+	float a_felsgrund = smoothstep(0.1, 0.18, m.b) * (1.0 - a_hof) * (1.0 - m.r);
 	a_fels = max(a_fels, a_felsgrund * smoothstep(0.3, 0.55, gross + (klein - 0.5) * 0.25 + 0.12));
 	// An Steilwänden wird der bemooste Fels zu nacktem grauem Fels
 	float a_klippe = mit_klippe ? smoothstep(0.36, 0.55, steil + (gross - 0.5) * 0.16 + (klein - 0.5) * 0.05) : 0.0;

@@ -1329,9 +1329,16 @@ func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, bo
 		# Arkadenbogen im Erdgeschoss (in der Mitte die Tür)
 		if absf(pos) > abst * 0.6:
 			_rundbogen(m, uz, nx, boden + 0.15, 2.6, gh * 0.62, 0.35)
-		# Rundbogenfenster in den Obergeschossen
+		# Gekuppelte Rundbogenfenster in den Obergeschossen (wie im Referenzbild): zwei hohe Bögen, dazwischen
+		# eine Säule, darunter eine durchgehende Sohlbank
 		for k in range(1, geschosse):
-			_rundbogen(m, uz, nx, boden + k * gh + gh * 0.22, 1.3, gh * 0.5, 0.25)
+			var fu := boden + k * gh + gh * 0.18
+			var fh := gh * 0.62
+			for e: float in [-1.0, 1.0]:
+				_rundbogen(m + uz * e * 0.52, uz, nx, fu, 0.8, fh, 0.2)
+			_klotz("hell", m, uz, nx, -0.09, 0.09, -0.04, 0.1, fu, fu + fh - 0.45)
+			_klotz("hell", m, uz, nx, -0.16, 0.16, -0.04, 0.14, fu + fh - 0.45, fu + fh - 0.32)
+			_klotz("hell", m, uz, nx, -1.15, 1.15, -0.02, 0.18, fu - 0.16, fu)
 		# Rückseite und Giebel: kleinere Fenster
 		for k in range(1, geschosse):
 			_rundbogen(c + uz * pos - nx * B, uz, -nx, boden + k * gh + gh * 0.3, 0.9, gh * 0.38, 0.2)
