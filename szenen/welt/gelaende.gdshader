@@ -130,6 +130,10 @@ void fragment() {
 	a_fels = max(a_fels, a_felsgrund * smoothstep(0.3, 0.55, gross + (klein - 0.5) * 0.25 + 0.12));
 	// An Steilwänden wird der bemooste Fels zu nacktem grauem Fels
 	float a_klippe = mit_klippe ? smoothstep(0.36, 0.55, steil + (gross - 0.5) * 0.16 + (klein - 0.5) * 0.05) : 0.0;
+	// Der Felsgrund ist grauer, nackter Fels (wie die Klippen), nur in Mulden bemoost
+	if (mit_klippe) {
+		a_klippe = max(a_klippe, a_felsgrund * smoothstep(0.35, 0.6, gross + (klein - 0.5) * 0.3 + 0.15));
+	}
 	float a_sand = 1.0 - smoothstep(meeresspiegel + 0.8, meeresspiegel + 2.6, h + klein * 0.8);
 	float a_schnee = smoothstep(schneegrenze, schneegrenze + 30.0, h + gross * 20.0) * (1.0 - smoothstep(0.22, 0.42, steil));
 	float a_erde = smoothstep(0.62, 0.8, gross + klein * 0.15) * 0.55;   // kahle Stellen im Gras
