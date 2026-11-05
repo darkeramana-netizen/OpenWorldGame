@@ -134,6 +134,11 @@ func _platz(x: float, z: float, steil_max: float, raum: float) -> float:
 	var m := _maske_bei(x, z)
 	if m.r > 0.2 or (m.g > 0.5 and raum > 1.0):
 		return NAN
+	# Bäume und Büsche ragen mit Stamm und Krone über ihren Fußpunkt hinaus: auch der Umkreis bleibt vom Weg frei
+	if raum > 1.0:
+		for versatz in [Vector2(raum + 1.5, 0), Vector2(-raum - 1.5, 0), Vector2(0, raum + 1.5), Vector2(0, -raum - 1.5)]:
+			if _maske_bei(x + versatz.x, z + versatz.y).r > 0.2:
+				return NAN
 	if _ist_frei(x, z) or _gelaende.am_loch(x, z, raum + 3.0):
 		return NAN
 	# Steht etwas darüber oder daneben (Mauer, Haus, Brücke)? Dann trifft der Strahl nicht den Boden.

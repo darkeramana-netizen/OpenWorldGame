@@ -1358,18 +1358,25 @@ func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, bo
 		for f in 3:
 			var pos := (f - 1) * B * 0.55
 			_rundbogen(c + uz * L * seite + nx * pos, nx, uz * seite, boden + gh + gh * 0.3, 0.9, gh * 0.38, 0.2)
-	# Gauben auf der Hofseite des Daches
+	# Gauben auf der Hofseite des Daches (wie im Referenzbild zwei kräftige Steingauben mit Rundbogenfenster und
+	# eigenem Satteldach)
 	var neig := dh / B
-	for e: float in [-0.45, 0.45]:
-		var gm := c + uz * (e * L) + nx * (B * 0.45)
-		var gy := traufe + (B - B * 0.45) * neig - 0.6
-		_klotz("dach", gm, uz, nx, -0.9, 0.9, -1.6, 0.0, gy - 1.5, gy + 1.4)
-		_klotz(stein, gm, uz, nx, -0.85, 0.85, -1.5, 0.05, gy - 1.5, gy + 1.3)
-		_klotz("dunkel", gm, uz, nx, -0.45, 0.45, 0.04, 0.07, gy - 0.4, gy + 0.9)
+	for e: float in [-0.4, 0.4]:
+		var gm := c + uz * (e * L) + nx * (B * 0.55)
+		var gy := traufe + (B - B * 0.55) * neig - 0.4
+		var gb := 1.5      # halbe Breite
+		var gt := 3.2      # Tiefe in das Dach
+		_klotz(stein, gm, uz, nx, -gb, gb, -gt, 0.05, gy - 2.2, gy + 2.0)
+		_klotz("hell", gm, uz, nx, -gb - 0.08, gb + 0.08, -0.02, 0.14, gy + 1.85, gy + 2.05, true)
+		_rundbogen(gm + nx * 0.05, uz, nx, gy - 0.6, 1.1, 2.0, 0.2)
 		for s2: float in [-1.0, 1.0]:
-			_viereck("dach", Vector3(gm.x + uz.x * s2 * 1.05 + nx.x * 0.3, gy + 1.3, gm.y + uz.y * s2 * 1.05 + nx.y * 0.3),
-				Vector3(gm.x + nx.x * 0.3, gy + 2.2, gm.y + nx.y * 0.3), Vector3(gm.x - nx.x * 1.8, gy + 2.2, gm.y - nx.y * 1.8),
-				Vector3(gm.x + uz.x * s2 * 1.05 - nx.x * 1.8, gy + 1.3, gm.y + uz.y * s2 * 1.05 - nx.y * 1.8), Vector3(uz.x * s2, 1, uz.y * s2))
+			_viereck("dach", Vector3(gm.x + uz.x * s2 * (gb + 0.25) + nx.x * 0.35, gy + 2.0, gm.y + uz.y * s2 * (gb + 0.25) + nx.y * 0.35),
+				Vector3(gm.x + nx.x * 0.35, gy + 3.4, gm.y + nx.y * 0.35), Vector3(gm.x - nx.x * gt, gy + 3.4, gm.y - nx.y * gt),
+				Vector3(gm.x + uz.x * s2 * (gb + 0.25) - nx.x * gt, gy + 2.0, gm.y + uz.y * s2 * (gb + 0.25) - nx.y * gt), Vector3(uz.x * s2, 1, uz.y * s2))
+		# Giebeldreieck über dem Fenster
+		_viereck(stein, Vector3(gm.x + uz.x * gb + nx.x * 0.05, gy + 2.0, gm.y + uz.y * gb + nx.y * 0.05),
+			Vector3(gm.x + nx.x * 0.05, gy + 3.3, gm.y + nx.y * 0.05), Vector3(gm.x - uz.x * gb + nx.x * 0.05, gy + 2.0, gm.y - uz.y * gb + nx.y * 0.05),
+			Vector3(gm.x - uz.x * gb + nx.x * 0.05, gy + 2.0, gm.y - uz.y * gb + nx.y * 0.05), Vector3(nx.x, 0, nx.y))
 	# Eckquader
 	var y := boden
 	var wechsel := false
