@@ -13,6 +13,12 @@ extends Node3D
 		haeuser = wert
 		if is_inside_tree():
 			_baue()
+## Nur Ziegeldächer (die Hofhäuser der Burgfeste wie im Referenzbild: warm braunrot statt Schiefer)
+@export var nur_ziegel := false:
+	set(wert):
+		nur_ziegel = wert
+		if is_inside_tree():
+			_baue()
 ## Je Haus die Nummer der Form (0 bis 23)
 @export var formen: PackedInt32Array = PackedInt32Array():
 	set(wert):
@@ -249,7 +255,7 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 	_quader(flaechen, "quader", Vector3(-b / 2 - 0.08, -0.6, -t / 2 - 0.08), Vector3(b / 2 + 0.08, 0.45, t / 2 + 0.08))
 
 	# Dach: Satteldach mit Überstand; First entlang z (Giebel zur Straße) oder entlang x
-	var dach_mat := "dach%d" % form[6]
+	var dach_mat := "dach0" if nur_ziegel else "dach%d" % form[6]
 	var halbe := (b / 2.0 if giebelstaendig else front) + 0.45
 	var laenge := (front + 0.35) if giebelstaendig else (b / 2.0 + 0.35)
 	var firsthoehe := halbe * tan(deg_to_rad(DACHNEIGUNG))
@@ -498,6 +504,8 @@ func _material(name_: String) -> Material:
 		m.uv1_scale = Vector3(s, s, s)
 		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	match name_:
+		"quader", "bruchstein":
+			m.albedo_color = Color(1.25, 1.18, 1.05)   # heller, warmer Kalkstein wie an den Burgmauern
 		"balken", "rahmen":
 			m.albedo_color = Color(0.62, 0.5, 0.4)
 		"tuer":

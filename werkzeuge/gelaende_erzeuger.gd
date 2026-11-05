@@ -466,6 +466,10 @@ func maske_bei(p: Vector2) -> Color:
 	for vieleck: PackedVector2Array in _hoefe:
 		if Geometry2D.is_point_in_polygon(p, vieleck):
 			hof = 1.0
+	# Felsgrund im Burgbezirk außerhalb der Höfe (Zwinger, Absätze zwischen den Terrassen)
+	if hof < 0.5 and not _ring.is_empty() and Geometry2D.is_point_in_polygon(p, _ring) \
+			and not Geometry2D.is_point_in_polygon(p, _stadt) and not Geometry2D.is_point_in_polygon(p, _hafen):
+		hof = 0.5
 	return Color(1.0 - smoothstep(2.5, 4.5, weg), sumpf, hof)
 
 

@@ -123,6 +123,11 @@ void fragment() {
 
 	// Anteile
 	float a_fels = smoothstep(0.24, 0.42, steil + (gross - 0.5) * 0.12);
+	// Maske Blau: 1 = gepflasterter Burghof, 0,5 = Felsgrund im Burgbezirk (Zwinger und Absätze zwischen den
+	// Terrassen): grauer Fels mit Grasflecken, wie der Burgberg im Referenzbild
+	float a_hof = smoothstep(0.75, 0.95, m.b);
+	float a_felsgrund = smoothstep(0.25, 0.45, m.b) * (1.0 - a_hof) * (1.0 - m.r);
+	a_fels = max(a_fels, a_felsgrund * smoothstep(0.3, 0.55, gross + (klein - 0.5) * 0.25 + 0.12));
 	// An Steilwänden wird der bemooste Fels zu nacktem grauem Fels
 	float a_klippe = mit_klippe ? smoothstep(0.36, 0.55, steil + (gross - 0.5) * 0.16 + (klein - 0.5) * 0.05) : 0.0;
 	float a_sand = 1.0 - smoothstep(meeresspiegel + 0.8, meeresspiegel + 2.6, h + klein * 0.8);
@@ -136,7 +141,7 @@ void fragment() {
 	// Kais am Hafen (Höhe der Kaimauern) sind gepflastert
 	a_pflaster = max(a_pflaster, in_stadt * (1.0 - smoothstep(-17.6, -17.0, h)) * step(meeresspiegel + 0.5, h) * (1.0 - a_fels));
 	// Burghöfe: ganz gepflastert
-	a_pflaster = max(a_pflaster, smoothstep(0.3, 0.7, m.b) * (1.0 - a_fels));
+	a_pflaster = max(a_pflaster, a_hof * (1.0 - a_fels));
 	a_erde = max(a_erde, in_stadt * (1.0 - a_fels) * smoothstep(0.45, 0.75, gross) * 0.6);
 	a_weg *= 1.0 - in_stadt;
 

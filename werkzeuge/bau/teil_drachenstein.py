@@ -101,9 +101,11 @@ schild("SchildHalbturm", BG, hx, _hb + 30, hz, "Halbturm", 40)
 schild("SchildWehrturm", BG, *(lambda p: (p[0], H(*p) + 26, p[1]))(W(PD.WEHRTURM)), "Wehrturm", 40)
 schild("SchildRondell", BG, *(lambda p: (p[0], H(*p) + 26, p[1]))(W(PD.RONDELL)), "Rondell", 40)
 
+# Die Hofmauern sind nur so hoch, dass die Häuser an ihnen mit Obergeschossen und Dächern darüber hinausragen
+# (wie im Referenzbild); höher sind die Ringmauer außen und die Türme.
 # --- I. Vorburg (12. Jh.) mit zwei Rundtürmen ---
 VB = PD.VORBURG + [PD.VORBURG[0]]
-mauerring("Vorburg", BG, WL(VB), 8.0, dicke=3.0, mitte=W(PD.OVAL_VORBURG[0]),
+mauerring("Vorburg", BG, WL(VB), 6.0, dicke=3.0, mitte=W(PD.OVAL_VORBURG[0]),
          tore=tore_an(VB, (PD.TORE["Tor zur Vorburg"], 5.0, "Tor zur Vorburg"),
                       (PD.TORE["Tor des II. Burghofs"], 5.0, "")))
 _vt = []
@@ -121,7 +123,7 @@ mauerring("Sperrmauer", BG, WL(PD.SPERRMAUER), 7.0, dicke=2.5, mitte=W((300, 380
 
 # --- II. Burghof (14. Jh.); die Wand zur Vorburg gehört zur Vorburg ---
 B2 = PD.BURGHOF2 + [PD.BURGHOF2[0]]          # oval, mit eigenen Toren zur Vorburg und zum III. Burghof
-mauerring("BurghofZwei", BG, WL(B2), 9.0, dicke=3.0, mitte=W(PD.OVAL_BURGHOF2[0]),
+mauerring("BurghofZwei", BG, WL(B2), 6.5, dicke=3.0, mitte=W(PD.OVAL_BURGHOF2[0]),
          tore=tore_an(B2, (PD.TORE["Rampentor"], 5.0, "Rampentor"), (PD.TORE["Tor des III. Burghofs, Westseite"], 6.0, "", None, False),
                       (PD.TORE["Tor des II. Burghofs, Ostseite"], 5.0, "", None, False)))   # die Tortürme stehen an der Nachbarmauer
 # Torrampe im II. Burghof: Futtermauern mit Brüstung zu beiden Seiten, vom Fuß bis an das Tor zum III. Burghof
@@ -176,7 +178,7 @@ schild("SchildBurghof2", BG, *(lambda p: (p[0], PD.H_BURGHOF2 + 9, p[1]))(W((560
 
 # --- III. Burghof (oval, der Hof aus Akt I ist ins Ordensvorwerk vor der Stadt gezogen) ---
 B3 = PD.BURGHOF3 + [PD.BURGHOF3[0]]          # oval; berührt den II. Burghof am Tor des III. Burghofs
-mauerring("BurghofDrei", BG, WL(B3), 10.0, dicke=3.0, mitte=MITTE_BURG,
+mauerring("BurghofDrei", BG, WL(B3), 7.0, dicke=3.0, mitte=MITTE_BURG,
          tore=tore_an(B3, (PD.TORE["Burgtor"], 6.0, "Burgtor"), (PD.TORE["Tor des III. Burghofs"], 6.0, "")))
 for k, bau in enumerate(PD.BURGHOF3_BAUTEN):
     gebaeude(f"Burghof3Bau{k}", BG, bau, 9, PD.H_KERNHOF, zweck=(5, 1)[k])   # Heilstube und Ordenshaus, Küche
@@ -191,7 +193,7 @@ _zt = []
 for pp in [(965, 88), (1152, 130), (1112, 322), (895, 332)]:
     _zt += turmmasse(pp, 4.5, 12) + [4.5, 1, 8]
 KB = PD.KERNBURG + [PD.KERNBURG[0]]
-mauerring("Kernburg", BG, WL(KB), 12.0, dicke=3.5, mitte=W(PD.OVAL_KERNBURG[0]),
+mauerring("Kernburg", BG, WL(KB), 8.0, dicke=3.5, mitte=W(PD.OVAL_KERNBURG[0]),
          tore=tor_an(KB, PD.TORE["Kernburgtor"], 5.0, "Kernburgtor"))
 for pp in [(912, 138), (1100, 150), (1102, 280), (896, 288)]:
     m = turmmasse(PD.ecke(pp), 4.5, 0)
@@ -348,7 +350,7 @@ def hofbauten(name, poly, boden, rand_mauer=0.6):
 
 _nh = [hofbauten("Vorburg", PD.VORBURG, PD.H_VORBURG), hofbauten("II", PD.BURGHOF2, PD.H_BURGHOF2),
        hofbauten("III", PD.BURGHOF3, PD.H_KERNHOF), hofbauten("Kernburg", PD.KERNBURG, PD.H_KERNBURG)]
-N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\n"
+N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\n"
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _ in HOFHAEUSER) + ")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HOFHAEUSER) + ")")
 print("Hofhäuser an den Mauern (Vorburg, II., III., Kernburg):", _nh)
