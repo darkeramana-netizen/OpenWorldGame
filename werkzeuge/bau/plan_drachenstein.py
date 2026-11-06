@@ -349,9 +349,11 @@ def hoehe_auf(linie, hoehen, p):
 # Der Burgweg ist ein Zwinger: Er läuft rings um das Felsplateau der Burgen, deutlich unter ihnen, so dass man von den
 # Mauern oben herab beschossen werden kann; nur die Rampe am Ende steigt hinauf zum Rampentor des II. Burghofs.
 _i = WEG_BURG.index
-WEG_BURG_HOEHEN = _steigend(WEG_BURG, {0: -14.3, 1: -14.0, _i((300, 205)): -9.0, _i((650, 112)): -4.0,
-                                       _i((1100, 56)): 0.0, _i((1197, 140)): 2.0, _i((1180, 290)): 2.0,
-                                       _i((950, 368)): 0.0, _i((785, 336)): -4.0,
+# Im Norden und Osten liegt der Burgweg (und mit ihm der Grund innen an der Ringmauer) hoch auf dem Felsvorgebirge:
+# Die Ringmauer steht dort auf hohen Klippen über der Ebene wie im Referenzbild.
+WEG_BURG_HOEHEN = _steigend(WEG_BURG, {0: -14.3, 1: -14.0, _i((300, 205)): -9.0, _i((650, 112)): 4.0,
+                                       _i((1100, 56)): 8.0, _i((1197, 140)): 8.0, _i((1180, 290)): 8.0,
+                                       _i((950, 368)): 4.0, _i((785, 336)): -4.0,
                                        _i(TORE["Rampentor"]): H_BURGHOF2, _i((540, 262)): H_BURGHOF2,
                                        _i(TORE["Tor des III. Burghofs"]): H_KERNHOF, len(WEG_BURG) - 1: H_KERNHOF})
 WEG_VORBURG_HOEHEN = _steigend(WEG_VORBURG, {0: hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (720, 334)),
