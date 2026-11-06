@@ -45,14 +45,17 @@ func _baue() -> void:
 		var mesh := _mesh(modelle[m], false)
 		if mesh == null:
 			continue
-		if m < farben.size() and farben[m] != Color.WHITE:
-			mesh = mesh.duplicate()
-			for f in mesh.get_surface_count():
-				var mat := mesh.surface_get_material(f)
-				if mat is BaseMaterial3D:
-					mat = mat.duplicate()
+		# Die Fotoscans sind hinten offen: beidseitig zeichnen, sonst sieht man schräg von der Seite durch sie hindurch
+		# und ihre Ränder wirken wie ausgeschnittene Pappe. Dazu die Tönung je Modell.
+		mesh = mesh.duplicate()
+		for f in mesh.get_surface_count():
+			var mat := mesh.surface_get_material(f)
+			if mat is BaseMaterial3D:
+				mat = mat.duplicate()
+				(mat as BaseMaterial3D).cull_mode = BaseMaterial3D.CULL_DISABLED
+				if m < farben.size() and farben[m] != Color.WHITE:
 					(mat as BaseMaterial3D).albedo_color = farben[m]
-					mesh.surface_set_material(f, mat)
+				mesh.surface_set_material(f, mat)
 		var lagen: Array[Transform3D] = []
 		var i := 0
 		while i + SCHRITT - 1 < stuecke.size():

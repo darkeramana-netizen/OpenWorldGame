@@ -23,7 +23,9 @@ FELSMODELLE += [(f"res://modelle/pflanzen/grass_medium_01/grass_medium_01.gltf#{
 MOOS = len(FELSMODELLE)
 FELSMODELLE += [(f"res://modelle/pflanzen/moss_01/moss_01.gltf#{k}", 0, 0) for k in range(12)]
 # Tönung: Die Scans aus Südafrika (namaqualand) und das Felsstück sind rötlich, sie passen sich dem grauen Fels an
-FARBEN = {MITTEL: "0.74, 0.78, 0.86, 1", STUECK: "0.82, 0.85, 0.9, 1"}
+# Alle Scans etwas heller, damit sie zum grauen Fels des Geländes und zum hellen Kalkstein der Mauern passen
+FARBEN = {GROSS: "1.3, 1.29, 1.27, 1", RIESIG: "1.3, 1.29, 1.27, 1", MITTEL: "1.07, 1.13, 1.25, 1",
+          STUECK: "1.15, 1.19, 1.26, 1", **{b_: "1.25, 1.24, 1.22, 1" for b_ in BROCKEN}}
 
 random.seed(4711)
 _frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(PD.STADT), WL(PD.HAFEN_BEZIRK)]
