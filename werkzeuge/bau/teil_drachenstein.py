@@ -348,8 +348,15 @@ def hofbauten(name, poly, boden, rand_mauer=0.6):
     return n_
 
 
+# Am Palas wie im Referenzbild: links neben dem Rundturm zwei Fachwerkhäuser über Stein, rechts neben dem eckigen
+# Turmbau ein kleineres; Giebel und Tür zum Hof (Plan-Süden = Welt +x, Gier 90). (Planpunkt, Form aus stadthaeuser.gd)
+PALAS_FACHWERK = [((935, 170), 3), ((921, 168), 18), ((1052, 172), 0)]
+for pp_, f_ in PALAS_FACHWERK:
+    _HOF_SPERREN.append(_rechteck_plan(pp_[0], pp_[1], _FORMEN[f_][0] * 2 + 2, _FORMEN[f_][1] * 2 + 2, 1, 0))
 _nh = [hofbauten("Vorburg", PD.VORBURG, PD.H_VORBURG), hofbauten("II", PD.BURGHOF2, PD.H_BURGHOF2),
        hofbauten("III", PD.BURGHOF3, PD.H_KERNHOF), hofbauten("Kernburg", PD.KERNBURG, PD.H_KERNBURG)]
+for pp_, f_ in PALAS_FACHWERK:
+    HOFHAEUSER.append((*W(pp_)[:1], PD.H_KERNBURG, W(pp_)[1], 90.0, f_))
 N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\n"
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _ in HOFHAEUSER) + ")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HOFHAEUSER) + ")")
