@@ -318,10 +318,15 @@ func _drachenstein(h: float, p: Vector2) -> float:
 		var klippe := smoothstep(6.0, 18.0, weg)
 		h = _schichten(lerpf(am_rand, unten, t), p, klippe * minf(1.0, t * (1.0 - t) * 8.0)) \
 				+ _zacke(p) * 2.0 * t * (1.0 - t) * 4.0 * klippe
-	# Burgringe als Terrassen, von außen nach innen (der Zwinger steigt mit seinem Weg)
+	# Burgringe als Terrassen, von außen nach innen (der Zwinger steigt mit seinem Weg). Der felsige Abhang einer
+	# Terrasse (rand) gilt nur außerhalb aller Höfe, sonst liefe er in den Nachbarhof hinein.
+	var in_hof := false
+	for zone: Array in _zonen:
+		if Geometry2D.is_point_in_polygon(p, zone[0]):
+			in_hof = true
 	for zone: Array in _zonen:
 		var d := _polygon_abstand(p, zone[0])
-		if d < zone[2]:
+		if d < zone[2] and (d <= 0.0 or not in_hof):
 			var zh: float = zone[1]
 			if not zone[3].is_empty():
 				zh = _weg_hoehe(p, zone[3], zone[4])[1]

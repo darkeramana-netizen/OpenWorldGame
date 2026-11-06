@@ -386,6 +386,9 @@ def zwickel(a_, b_, tor, reichweite=45.0):
     return pa + pb
 
 
+HOF_FELSHANG = 18.0       # Meter: so breit fällt der Fels außen an Vorburg, II. und III. Burghof ab
+
+
 def plan_json():
     # Die Burghöfe stehen auf Felsterrassen: Der Rand (Meter) ist schmal, darunter bricht der Fels steil ab.
     zonen = [
@@ -393,9 +396,10 @@ def plan_json():
          "hoehe": H_VORBURG, "rand": 5.0},
         {"name": "Zwickel II/III", "punkte": welt_liste(zwickel(BURGHOF2, BURGHOF3, TORE["Tor des III. Burghofs"])),
          "hoehe": H_BURGHOF2, "rand": 5.0},
-        {"name": "I. Vorburg", "punkte": welt_liste(VORBURG), "hoehe": H_VORBURG, "rand": 5.0},
-        {"name": "II. Burghof", "punkte": welt_liste(BURGHOF2), "hoehe": H_BURGHOF2, "rand": 5.0},
-        {"name": "III. Burghof", "punkte": welt_liste(BURGHOF3), "hoehe": H_KERNHOF, "rand": 5.0},
+        # Die Höfe stehen auf Felsen: außen fällt der Fels in Stufen bis zum Burgweg ab (wie im Referenzbild)
+        {"name": "I. Vorburg", "punkte": welt_liste(VORBURG), "hoehe": H_VORBURG, "rand": HOF_FELSHANG},
+        {"name": "II. Burghof", "punkte": welt_liste(BURGHOF2), "hoehe": H_BURGHOF2, "rand": HOF_FELSHANG},
+        {"name": "III. Burghof", "punkte": welt_liste(BURGHOF3), "hoehe": H_KERNHOF, "rand": HOF_FELSHANG},
         # Der Zwinger steigt mit dem Zwingerweg: Höhe des nächsten Wegpunkts
         {"name": "Zwinger der Kernburg", "punkte": welt_liste(ZWINGER_KERNBURG), "hoehe": H_KERNHOF, "rand": 10.0,
          "weg": welt_liste(WEG_ZWINGER), "weg_hoehen": WEG_ZWINGER_HOEHEN},
