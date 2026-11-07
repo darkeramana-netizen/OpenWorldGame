@@ -149,8 +149,46 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in [k for k in kandidaten i
         FELSSTUECKE.append((m, round(qx, 2), round(hq - 0.4 * g, 2), round(qz, 2), round(random.uniform(0, 360), 1),
                             round(random.uniform(0, 20), 1), round(g, 2)))
 
+# Felshänge zwischen den Terrassen im Burgbezirk (wie im Referenzbild zerklüftet): auf den mäßig steilen Hängen unter
+# den Höfen Felsplatten (hangabwärts, zum Hang gekippt, halb im Boden), Brocken und ab und zu eine niedrige Felsstufe.
+# Die steilen Wände haben schon ihre Fels-Haut; Wege, Mauern und Tore bleiben frei.
+_hang = 0
+_hang_orte = []
+for x in range(-150, 330, 3):
+    for z in range(-330, 330, 3):
+        px, pz = x + random.uniform(-1.2, 1.2), z + random.uniform(-1.2, 1.2)
+        if not im_vieleck((px, pz), _ring_flaeche):
+            continue
+        dx, dz, s = _gefaelle(px, pz)
+        if not 0.3 < s < 1.3 or random.random() > 0.55:
+            continue
+        if any(im_vieleck((px, pz), v) for v in _frei) or _abstand((px, pz), _wege) < 5.5 \
+                or _abstand((px, pz), _mauern) < 3.0 or min(math.dist((px, pz), t) for t in _tore) < 10.0:
+            continue
+        if any(math.dist((px, pz), q) < 2.6 for q in _hang_orte[-40:]):
+            continue
+        h0 = H(px, pz)
+        neig = round(min(40.0, math.degrees(math.atan(s))) * random.uniform(0.6, 1.0), 1)
+        gier = round(math.degrees(math.atan2(dx, dz)) + random.uniform(-25, 25), 1)
+        wurf = random.random()
+        if wurf < 0.12 and s > 0.6:
+            m, g = MITTEL, random.uniform(0.3, 0.5)              # niedrige Felsstufe (6 bis 10 m breit)
+            y = h0 - FELSMODELLE[MITTEL][2] * g * 0.45
+        elif wurf < 0.6:
+            m, g = STUECK, random.uniform(1.2, 2.8)             # Felsplatte
+            y = h0 - FELSMODELLE[STUECK][2] * g * 0.35
+        else:
+            m, g = random.choice(BROCKEN), random.uniform(1.3, 3.0)
+            y = h0 - 0.35 * g
+            neig = round(random.uniform(0, 25), 1)
+            gier = round(random.uniform(0, 360), 1)
+        FELSSTUECKE.append((m, round(px, 2), round(y, 2), round(pz, 2), gier, neig, round(g, 2)))
+        _hang_orte.append((px, pz))
+        _hang += 1
+print("Felsen auf den Hängen zwischen den Terrassen:", _hang)
+
 # Bewuchs: auf Absätzen und Kanten bei den Felsen (nicht zu steil), Farn und Gras in Gruppen, dazu Moos und Brocken
-_felsen = [(x, z) for m, x, y, z, *_ in FELSSTUECKE if m in (GROSS, MITTEL, RIESIG)]
+_felsen = [(x, z) for m, x, y, z, *_ in FELSSTUECKE if m in (GROSS, MITTEL, RIESIG)] + _hang_orte[::4]
 _bewuchs = 0
 for x in range(-150, 330, 2):
     for z in range(-330, 330, 2):
