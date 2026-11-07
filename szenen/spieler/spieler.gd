@@ -28,6 +28,11 @@ var _region: Region = null
 var _startposition := Vector3.ZERO
 
 var _schwerkraft: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+## Flugmodus (nur im Debug-Build, F11 oder Entwicklermenü): frei durch die Welt fliegen, ohne Schwerkraft und
+## Kollision, die Kamera im Kopf. WASD in Blickrichtung, Leertaste hoch, Strg runter, Umschalt schnell.
+var fliegt := false
+const FLUG_TEMPO := 16.0
+const FLUG_SCHNELL := 5.0
 
 @onready var _kamera_drehpunkt: Node3D = $KameraDrehpunkt
 @onready var _koerper: Node3D = $Koerper
@@ -59,13 +64,18 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if OS.is_debug_build() and event is InputEventKey and event.pressed and not event.echo \
+			and event.physical_keycode == KEY_F11:
+		get_viewport().set_input_as_handled()
+		schalte_flugmodus(not fliegt)
+		return
 	if Dialog.aktiv or Spielstand.eingabe_gesperrt:
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		_kamera_drehpunkt.rotation.y -= event.relative.x * maus_empfindlichkeit
 		_kamera_drehpunkt.rotation.x = clampf(
 			_kamera_drehpunkt.rotation.x - event.relative.y * maus_empfindlichkeit,
-			deg_to_rad(-60.0), deg_to_rad(30.0))
+			deg_to_rad(-89.0 if fliegt else -60.0), deg_to_rad(89.0 if fliegt else 30.0))
 	elif event is InputEventMouseButton and event.pressed:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	elif event.is_action_pressed("interagieren") and ziel != null:
@@ -75,7 +85,44 @@ func _unhandled_input(event: InputEvent) -> void:
 		Spielzeit.vorspulen(1.0)
 
 
+## Flugmodus ein- oder ausschalten (Entwicklerwerkzeug, siehe fliegt)
+func schalte_flugmodus(an: bool) -> void:
+	if not OS.is_debug_build():
+		return
+	fliegt = an
+	$Kollision.disabled = an
+	_koerper.visible = not an
+	var arm: SpringArm3D = $KameraDrehpunkt/Federarm
+	arm.spring_length = 0.0 if an else 4.5
+	arm.position.x = 0.0 if an else 0.6
+	velocity = Vector3.ZERO
+	if not an:
+		_kamera_drehpunkt.rotation.x = clampf(_kamera_drehpunkt.rotation.x, deg_to_rad(-60.0), deg_to_rad(30.0))
+		# Nicht im Boden landen: auf das Gelände setzen, wenn man darunter ist
+		var gelaende := get_tree().get_first_node_in_group("gelaende")
+		if gelaende != null:
+			var boden: float = gelaende.hoehe_bei(global_position.x, global_position.z)
+			global_position.y = maxf(global_position.y, boden + 0.3)
+	Spielstand.meldung.emit("Flugmodus an (F11): WASD, Leertaste hoch, Strg runter, Umschalt schnell" if an else "Flugmodus aus")
+
+
+func _fliege(delta: float) -> void:
+	var eingabe := Input.get_vector("links", "rechts", "vor", "zurueck")
+	var basis := _kamera_drehpunkt.global_basis
+	var richtung := basis.x * eingabe.x + basis.z * eingabe.y
+	if Input.is_action_pressed("springen"):
+		richtung += Vector3.UP
+	if Input.is_action_pressed("schleichen"):
+		richtung += Vector3.DOWN
+	var tempo := FLUG_TEMPO * (FLUG_SCHNELL if Input.is_action_pressed("rennen") else 1.0)
+	global_position += richtung.normalized() * tempo * delta if richtung != Vector3.ZERO else Vector3.ZERO
+	velocity = Vector3.ZERO
+
+
 func _physics_process(delta: float) -> void:
+	if fliegt:
+		_fliege(delta)
+		return
 	if not is_on_floor():
 		velocity.y -= _schwerkraft * delta
 

@@ -1,5 +1,5 @@
 extends CanvasLayer
-## Entwicklermenü (F10): Sprungpunkte, Tageszeit, Reisen, Alarmstufe, Tore öffnen, Akt I überspringen.
+## Entwicklermenü (F10): Sprungpunkte, Tageszeit, Reisen, Alarmstufe, Flugmodus (F11), Tore öffnen, Akt I überspringen.
 ## Nur verfügbar, wenn das Spiel aus dem Editor läuft (Debug-Build), nicht im fertigen Spiel.
 
 @onready var _fenster: Control = %Fenster
@@ -50,6 +50,7 @@ func _fuelle() -> void:
 	for stufe in 4:
 		alarm.add_child(_knopf("Alarm %d" % stufe, setze_alarm.bind(stufe), 100))
 	_liste.add_child(alarm)
+	_liste.add_child(_knopf("Flugmodus an/aus (F11)", schalte_flugmodus))
 	_liste.add_child(_knopf("Alle Tore öffnen", oeffne_tore))
 	_liste.add_child(_knopf("Akt I überspringen (Wächter)", ueberspringe_akt1))
 	_liste.add_child(_knopf("Schließen (F10)", _schliessen))
@@ -84,6 +85,13 @@ func reise(region: String) -> void:
 func setze_alarm(stufe: int) -> void:
 	_schliessen()
 	Spielstand.setze_alarmstufe(stufe)
+
+
+func schalte_flugmodus() -> void:
+	var spieler := get_tree().get_first_node_in_group("spieler")
+	_schliessen()
+	if spieler:
+		spieler.schalte_flugmodus(not spieler.fliegt)
 
 
 func oeffne_tore() -> void:
