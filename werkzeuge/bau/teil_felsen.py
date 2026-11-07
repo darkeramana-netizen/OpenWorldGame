@@ -257,13 +257,22 @@ for a_, b_ in zip(_ring_pkt + _ring_pkt[:1], _ring_pkt[1:] + _ring_pkt[:2]):
         _k_offen = False
         _KUESTE += [round(px, 2), round(pz, 2), round(nx, 4), round(nz, 4), round(oben_, 2), -23.0, 1000 + _k_abschnitt]
 # Die Inseln mit den Brücken zum Schwarzen Bergfried (werkzeuge/gelaende_erzeuger.gd, INSELN): rundum Felsrand
-for _ii, (_ix, _iz, _ir) in enumerate([(300, -15, 10.0), (382, 22, 9.0), (462.4, 60.4, 9.0)]):
+_inseln = [(300, -15, 10.0), (382, 22, 9.0), (462.4, 60.4, 9.0)]
+_bruecken_an = [W((755, 652))] + [(x_, z_) for x_, z_, _ in _inseln] + [(500.0, 100.0)]   # Mole, Inseln, Bergfried
+for _ii, (_ix, _iz, _ir) in enumerate(_inseln):
     _n = max(12, int(math.tau * _ir * 0.62 / 1.6))
+    _richtungen = [math.atan2(q_[1] - _iz, q_[0] - _ix) for q_ in (_bruecken_an[_ii], _bruecken_an[_ii + 2])]
+    _abschn = 0
     for k_ in range(_n + 1):                       # geschlossen: die erste Säule am Ende noch einmal
         w_ = math.tau * (k_ % _n) / _n
         nx, nz = math.cos(w_), math.sin(w_)
-        _KUESTE += [round(_ix + nx * _ir * 0.62, 2), round(_iz + nz * _ir * 0.62, 2), round(nx, 4), round(nz, 4),
-                    -17.95, -27.0, 2000 + _ii]
+        if any(abs((w_ - r_ + math.pi) % math.tau - math.pi) < 0.55 for r_ in _richtungen):
+            _abschn += 1                           # an der Brücke offen
+            continue
+        # der Rand steht außen am Inselrand (ABSTAND und Ausbuchtungen nach außen), die Oberkante knapp unter der Insel,
+        # damit die Brücken frei aufliegen
+        _KUESTE += [round(_ix + nx * (_ir * 0.62 + 1.0), 2), round(_iz + nz * (_ir * 0.62 + 1.0), 2), round(nx, 4), round(nz, 4),
+                    -18.3, -27.0, 2000 + _ii * 10 + _abschn]
 _zahl = _Zaehler(_KUESTE[k_ + 6] for k_ in range(0, len(_KUESTE), 7))
 _KUESTE = [v_ for k_ in range(0, len(_KUESTE), 7) if _zahl[_KUESTE[k_ + 6]] > 1 for v_ in _KUESTE[k_:k_ + 7]]
 N("Kuestenfels", "Node3D", DS, f"""script = ExtResource("31_felssockel")
