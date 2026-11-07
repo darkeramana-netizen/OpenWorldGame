@@ -24,8 +24,9 @@ MOOS = len(FELSMODELLE)
 FELSMODELLE += [(f"res://modelle/pflanzen/moss_01/moss_01.gltf#{k}", 0, 0) for k in range(12)]
 # Tönung: Die Scans aus Südafrika (namaqualand) und das Felsstück sind rötlich, sie passen sich dem grauen Fels an
 # Alle Scans etwas heller, damit sie zum grauen Fels des Geländes und zum hellen Kalkstein der Mauern passen
-FARBEN = {GROSS: "1.3, 1.29, 1.27, 1", RIESIG: "1.3, 1.29, 1.27, 1", MITTEL: "1.07, 1.13, 1.25, 1",
-          STUECK: "1.15, 1.19, 1.26, 1", **{b_: "1.25, 1.24, 1.22, 1" for b_ in BROCKEN}}
+# Küstenklippen hellgrau wie im Referenzbild (die Scans sind sonst fast schwarz)
+FARBEN = {GROSS: "1.6, 1.58, 1.55, 1", RIESIG: "1.6, 1.58, 1.55, 1", MITTEL: "1.32, 1.38, 1.5, 1",
+          STUECK: "1.4, 1.44, 1.5, 1", **{b_: "1.45, 1.44, 1.42, 1" for b_ in BROCKEN}}
 
 random.seed(4711)
 _frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(PD.STADT), WL(PD.HAFEN_BEZIRK)]
@@ -138,15 +139,16 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:
     nachbarn.append((px, pz, breite * groesse * 0.5))
 
 # Geröll und Brocken am Fuß der Klippen an der Wasserlinie
-for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in [k for k in kandidaten if k[1][0] == REIHE][::3]:
-    for k in range(3):
-        qx, qz = px + dx * random.uniform(4, 14) + random.uniform(-3, 3), pz + dz * random.uniform(4, 14) + random.uniform(-3, 3)
+# Nur große Blöcke, halb im Wasser (keine kleinen Brocken an der Wand, die wirken wie verstreuter Schutt)
+for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in [k for k in kandidaten if k[1][0] == REIHE][::5]:
+    for k in range(2):
+        qx, qz = px + dx * random.uniform(6, 14) + random.uniform(-3, 3), pz + dz * random.uniform(6, 14) + random.uniform(-3, 3)
         hq = H(qx, qz)
-        if not -22 < hq < -16.5 or not _frei_fuer([(qx, qz)]):
+        if not -24.5 < hq < -19.0 or not _frei_fuer([(qx, qz)]):
             continue
-        m = random.choice(BROCKEN + [STUECK, STUECK])
-        g = random.uniform(1.4, 3.0) if m == STUECK else random.uniform(1.5, 3.5)
-        FELSSTUECKE.append((m, round(qx, 2), round(hq - 0.4 * g, 2), round(qz, 2), round(random.uniform(0, 360), 1),
+        m = random.choice(BROCKEN)
+        g = random.uniform(3.0, 5.0)
+        FELSSTUECKE.append((m, round(qx, 2), round(max(hq, -21.5) - 0.3 * g, 2), round(qz, 2), round(random.uniform(0, 360), 1),
                             round(random.uniform(0, 20), 1), round(g, 2)))
 
 # Felssockel unter den Hofmauern (wie im Referenzbild): eine geschlossene, zerklüftete Felswand, gebaut von
@@ -259,7 +261,7 @@ for x in range(-150, 330, 2):
         if not 0.85 <= s < 3.0 or h0 < -17.5:
             continue
         feucht = 0.5 + 0.5 * math.sin(px * 0.11 + math.cos(pz * 0.07) * 3.0) * math.cos(pz * 0.09)
-        if random.random() > 0.05 + 0.25 * feucht:
+        if random.random() > 0.14 + 0.36 * feucht:     # dichter: Grün in Nischen und auf Absätzen wie im Referenzbild
             continue
         if any(im_vieleck((px, pz), v) for v in _frei) or _abstand((px, pz), _mauern) < 2.0 or _abstand((px, pz), _wege) < 4.5 \
                 or min(math.dist((px, pz), t) for t in _tore) < 8.0:
