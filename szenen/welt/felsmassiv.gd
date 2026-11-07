@@ -41,7 +41,7 @@ func _ready() -> void:
 	if _maske == null:
 		return
 	_band.seed = 77
-	_band.frequency = 0.025
+	_band.frequency = 0.012
 	_kluft.seed = 1234
 	_kluft.noise_type = FastNoiseLite.TYPE_CELLULAR
 	_kluft.frequency = 0.11
@@ -73,11 +73,11 @@ func _gewicht(x: float, z: float) -> float:
 func _fels(x: float, z: float, h: float) -> float:
 	# Felsbänke: etwa alle 3,4 m eine Stufe; die Stufen laufen schräg (Verwerfung) und unregelmäßig
 	var stufe := 3.4 + _band.get_noise_2d(x * 2.0, z * 2.0) * 1.0
-	var schief := _band.get_noise_2d(x, z) * stufe * 1.6 + x * 0.04 - z * 0.025
+	var schief := _band.get_noise_2d(x, z) * stufe * 0.9 + x * 0.03 - z * 0.02
 	var b := (h + schief) / stufe
 	var f := b - floorf(b)
 	# unten in jeder Bank die steile Stufe, darüber der fast flache Absatz (leicht nach außen geneigt)
-	var y := (floorf(b) + smoothstep(0.0, 0.16, f) - (1.0 - f) * 0.06) * stufe - schief
+	var y := (floorf(b) + smoothstep(0.0, 0.1, f) - (1.0 - f) * 0.04) * stufe - schief
 	# Klüfte zwischen den Blöcken
 	var k := _kluft.get_noise_2d(x, z)
 	y -= (1.0 - smoothstep(-0.95, -0.75, k)) * 0.9
