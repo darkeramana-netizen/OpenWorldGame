@@ -58,11 +58,11 @@ const WEG_GRAVEMARCH := [Vector2(-27.2, 220.5), Vector2(-45, 225), Vector2(-120,
 const WEG_GRAVECREST := [Vector2(-460, -150), Vector2(-470, -240), Vector2(-500, -310),
 	Vector2(-560, -345), Vector2(-612, -363)]
 const GRAVECREST_HOEHE := 70.0
-## Landstraßen: Die Nordstraße zweigt vor dem Torhaus Nord vom Weg nach Gravemarch ab, läuft am Fuß des Burgbergs
-## entlang (auf der Landseite, die Burg steht an der Klippe zum Meer) und steigt über einen Pass im Norden (nach
-## Riverlock); der Küstenweg beginnt am Torhaus West in der Ringmauer und führt über einen Pass im Süden.
-const WEG_NORD := [Vector2(-45, 225), Vector2(-110, 200), Vector2(-150, 120), Vector2(-160, 0), Vector2(-155, -150),
-		Vector2(-130, -300), Vector2(-60, -380), Vector2(40, -410), Vector2(150, -430), Vector2(230, -500)]
+## Landstraßen: Die Nordstraße zweigt im Tal vom Weg nach Gravemarch ab und läuft in weitem Bogen um die Nordsee
+## (die Burg steht wie im Referenzbild auf einem Vorgebirge, auf drei Seiten Meer) zum Pass im Norden (nach Riverlock);
+## der Küstenweg beginnt am Torhaus West in der Ringmauer und führt über einen Pass im Süden.
+const WEG_NORD := [Vector2(-380, -20), Vector2(-390, -130), Vector2(-360, -260), Vector2(-280, -380), Vector2(-150, -460),
+		Vector2(20, -480), Vector2(150, -440), Vector2(230, -500)]
 const WEG_KUESTE := [Vector2(91, 297), Vector2(98, 312), Vector2(116, 340), Vector2(122, 390), Vector2(132, 470), Vector2(140, 540)]
 ## Passstrecken mit fester Steigung: [Linienzug, Höhe am Anfang, Höhe am Ende].
 const PASS_NORD := [[Vector2(230, -500), Vector2(150, -560), Vector2(110, -610), Vector2(85, -660)], -4.0, 30.0]
@@ -80,7 +80,7 @@ const BECKEN_KAIKANTEN := [[0, 1, 2, 3, 5, 6, 7, 8, 9], [], [0, 2]]
 var _markt := PackedVector2Array()
 var _ring := PackedVector2Array()     # Burgbezirk innerhalb der Ringmauer (Grat und Zwinger)
 var _hafen := PackedVector2Array()    # Hafenbezirk: Kais
-var _bucht := PackedVector2Array()    # Bucht vor dem Hafen
+var _bucht := PackedVector2Array()    # Meer um die Burg: Bucht vor dem Hafen, im Osten und Norden um das Vorgebirge
 var _firstlinie: Array = []           # Firstlinie des Felsgrats
 var _burgwege: Array = []             # [Linienzug, Höhen je Punkt]
 var _ringwege: Array = []             # Burgwege, deren Höhe der Grund im Burgbezirk folgt
@@ -226,7 +226,7 @@ func hoehe(p: Vector2) -> float:
 		for linie: Array in stadt_strassen:
 			h = _weg_einebnen(h, p, linie)
 	# Bucht vor dem Hafen: offenes Wasser, außerhalb der Mauern
-	if not _bucht.is_empty() and p.x > 60.0:
+	if not _bucht.is_empty() and p.x > -320.0:
 		var db := _polygon_abstand(p, _bucht)
 		if db < 14.0 and not Geometry2D.is_point_in_polygon(p, _hafen) and not Geometry2D.is_point_in_polygon(p, _stadt) \
 				and not Geometry2D.is_point_in_polygon(p, _ring):

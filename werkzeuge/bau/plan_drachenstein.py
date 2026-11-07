@@ -95,9 +95,17 @@ HAFEN_BEZIRK = [(615, 425), (785, 412), (828, 440), (842, 540), (812, 549), (808
 FAHRRINNE = [(806, 606), (808, 548), (960, 830), (880, 860)]
 # Meer (blau markiert im Grundriss): Es reicht bis an die Klippe unter der Ringmauer zwischen Hafen und Rondell, bis an
 # die Hafeneinfahrt und südlich der Stadt bis an die Küste. Neben der Hafenmauer bleibt ein Felsstreifen.
-BUCHT = [(813, 553), (845, 548), (870, 505), (950, 468), (1100, 436), (1250, 425), (1450, 440), (1650, 620),
+# Meer im Osten und Norden um das Vorgebirge (wie im Referenzbild: die Burg auf drei Seiten vom Meer umgeben), in Welt-
+# koordinaten: innen 20 bis 35 m vor der Ringmauer (dort fällt die Klippe ins Meer), außen mit Abstand zum Weg nach
+# Gravemarch und zur Nordstraße. Wird zwischen (1250, 425) und (1650, 620) in die Bucht eingesetzt.
+MEER_NORD_WELT = [(40, -290), (-30, -300), (-80, -280), (-110, -245), (-125, -190), (-125, -130), (-115, -60),
+                  (-110, 20), (-85, 90), (-60, 165),
+                  (-130, 150), (-200, 100), (-240, 10), (-290, -150), (-250, -320), (-120, -400), (60, -410), (160, -360)]
+BUCHT = [(813, 553), (845, 548), (870, 505), (950, 468), (1100, 436), (1250, 425), (1650, 620),
          (1720, 760), (1720, 950), (280, 950), (280, 760), (450, 748), (600, 735), (670, 712), (720, 682),
          (790, 660), (806, 642), (810, 610)]
+_i_ = BUCHT.index((1250, 425)) + 1
+BUCHT[_i_:_i_] = [tuple(round(v, 1) for v in plan(w)) for w in MEER_NORD_WELT]
 # Wassertor (Hafentor): ein Kanal vom Becken bis an die Ringmauer; hinter dem Fallgitter geht es dunkel in den Berg zum
 # Untergrundhafen (der kommt mit Höhlen im Gelände, Terrain3D)
 KANAL = [(744, 455), (744, 410), (764, 410), (764, 455)]

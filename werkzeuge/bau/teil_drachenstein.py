@@ -357,7 +357,7 @@ _nh = [hofbauten("Vorburg", PD.VORBURG, PD.H_VORBURG), hofbauten("II", PD.BURGHO
        hofbauten("III", PD.BURGHOF3, PD.H_KERNHOF), hofbauten("Kernburg", PD.KERNBURG, PD.H_KERNBURG)]
 for pp_, f_ in PALAS_FACHWERK:
     HOFHAEUSER.append((*W(pp_)[:1], PD.H_KERNBURG, W(pp_)[1], 90.0, f_))
-N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\n"
+N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\n"
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _ in HOFHAEUSER) + ")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HOFHAEUSER) + ")")
 print("Hofhäuser an den Mauern (Vorburg, II., III., Kernburg):", _nh)
