@@ -15,7 +15,8 @@ extends Node3D
 	set(w):
 		mauern = w
 		_neu_bauen()
-## Je Rundturm 7 Werte: x, z, unten, oben (Mauerkrone), Radius, Dach (0 Zinnen, 1 Kegeldach), Dachhöhe
+## Je Rundturm 7 Werte: x, z, unten, oben (Mauerkrone), Radius, Dach (0 Zinnen, 1 Kegeldach, 2 Schalenturm), Dachhöhe
+## (beim Schalenturm statt der Dachhöhe die Richtung der offenen Seite in Grad)
 @export var tuerme := PackedFloat32Array():
 	set(w):
 		tuerme = w
@@ -38,7 +39,7 @@ extends Node3D
 	set(w):
 		gebaeude = w
 		_neu_bauen()
-## Je Treppe 7 Werte: Anfang x, z, y, Ende x, z, y, Breite. Stufen mit Wangen; begehbar ist das Gelände darunter.
+## Je Treppe 7 Werte: Anfang x, z, y, Ende x, z, y, Breite. Stufen mit Wangen; begehbar über eine unsichtbare Rampe auf den Stufenkanten.
 @export var treppen := PackedFloat32Array():
 	set(w):
 		treppen = w
@@ -492,14 +493,18 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 		var d0 := Vector3(cos(w0), 0, sin(w0))
 		var d1 := Vector3(cos(w1), 0, sin(w1))
 		# außen mit Anlauf unten, innen senkrecht
-		for lage: Array in [[unten, unten + anlauf, r + 0.6, r], [unten + anlauf, oben, r, r]]:
+		var g0 := (d0 + Vector3(0, 0.6 / anlauf, 0)).normalized()
+		var g1 := (d1 + Vector3(0, 0.6 / anlauf, 0)).normalized()
+		for lage: Array in [[unten, unten + anlauf, r + 0.6, r, g0, g1], [unten + anlauf, oben, r, r, d0, d1]]:
 			var y0: float = lage[0]
 			var y1: float = lage[1]
 			var a := Vector3(c.x, y0, c.y) + d0 * float(lage[2])
 			var b := Vector3(c.x, y0, c.y) + d1 * float(lage[2])
 			var e := Vector3(c.x, y1, c.y) + d1 * float(lage[3])
 			var f := Vector3(c.x, y1, c.y) + d0 * float(lage[3])
-			for v: Array in [[a, d0], [b, d1], [e, d1], [a, d0], [e, d1], [f, d0]]:
+			var na: Vector3 = lage[4]
+			var nb: Vector3 = lage[5]
+			for v: Array in [[a, na], [b, nb], [e, nb], [a, na], [e, nb], [f, na]]:
 				st_aussen.set_normal(v[1])
 				st_aussen.add_vertex(v[0])
 		var ia := Vector3(c.x, unten, c.y) + d0 * ri
@@ -525,8 +530,13 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 		var f: Vector3 = punkte.call(ri, oben, k)
 		var aussen := Vector3(cos(innen_winkel), 0, sin(innen_winkel))
 		_viereck(stein, a, b, e, f, aussen)
-	# Bretterboden auf Höhe des Wehrgangs (halbe Scheibe)
-	var yb := oben - 3.0
+		# Keil des Anlaufs (r bis r + 0,6) an der Stirnseite
+		var ka: Vector3 = punkte.call(r, unten, k)
+		var kb: Vector3 = punkte.call(r + 0.6, unten, k)
+		var kc: Vector3 = punkte.call(r, unten + anlauf, k)
+		_dreieck(stein, ka, kb, kc, aussen)
+	# Bretterboden auf Höhe des Wehrgangs (halbe Scheibe; die Schale reicht 2,5 m über den Wehrgang)
+	var yb := oben - 2.5
 	for k in schritte:
 		var w0 := w_start + PI * k / schritte
 		var w1 := w_start + PI * (k + 1) / schritte
@@ -536,7 +546,7 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 	for k: int in [2, 6, 10]:
 		var w: float = w_start + PI * (k + 0.5) / schritte
 		var d := Vector2(cos(w), sin(w))
-		_klotz("dunkel", c + d * (r - 0.05), Vector2(-d.y, d.x), d, -0.08, 0.08, 0.0, 0.08, oben - 4.5, oben - 3.3)
+		_klotz("dunkel", c + d * (r - 0.05), Vector2(-d.y, d.x), d, -0.08, 0.08, 0.0, 0.08, yb + 0.4, yb + 1.6)
 
 
 ## Erkertürmchen: rund, unten auf einem kegelförmigen Kragstein, Schießscharten, Gesims und spitzes Kegeldach.
@@ -1282,10 +1292,14 @@ func _treppe(a: Vector3, b: Vector3, breite: float) -> void:
 		# Stufenkante etwas heller und vorstehend
 		_klotz("hell", c0 + u * laenge * t0, u, n, -0.12, 0.12, -hb, hb, y - 0.25, y - 0.02)
 	# Unsichtbare Rampe über den Stufenkanten: Darauf läuft die Figur hinauf, ohne an jeder Stufe hängen zu bleiben
-	var r0 := c0 - n * hb
-	var r1 := c0 + n * hb
-	var e0 := c0 + u * laenge - n * hb
-	var e1 := c0 + u * laenge + n * hb
+	# über die Vorderkanten der Stufen: eine Trittlänge vor der ersten Stufe bis zur Vorderkante der obersten
+	var vor := laenge / stufen if steig > 0.0 else 0.0
+	var s0 := c0 - u * vor
+	var s1 := c0 + u * (laenge - vor)
+	var r0 := s0 - n * hb
+	var r1 := s0 + n * hb
+	var e0 := s1 - n * hb
+	var e1 := s1 + n * hb
 	_viereck("rampe", Vector3(r0.x, a.y + 0.02, r0.y), Vector3(e0.x, b.y + 0.02, e0.y), Vector3(e1.x, b.y + 0.02, e1.y),
 		Vector3(r1.x, a.y + 0.02, r1.y), Vector3.UP)
 	# Wangen: niedrige Mauern zu beiden Seiten, oben schräg mit der Treppe
