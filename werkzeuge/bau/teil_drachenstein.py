@@ -65,7 +65,8 @@ MITTE_BURG = W(PD.MITTE)
 FAHNEN = []
 # --- Ringmauer um den Grat ---
 RING = PD.RINGMAUER + [PD.RINGMAUER[0]]
-mauerring("Ringmauer", BG, WL(RING), 9.0, dicke=3.0, mitte=MITTE_BURG,
+# Die Ringmauer ist niedriger als die Burgmauern (wie im Referenzbild), mit halbrunden, innen offenen Schalentürmen
+mauerring("Ringmauer", BG, WL(RING), 6.5, dicke=3.0, mitte=MITTE_BURG,
          tore=tore_an(RING, (PD.TORE["Torhaus Nord"], 6.0, "Torhaus Nord"), (PD.TORE["Hafentor"], 10.0, "Hafentor", -19.6),
                       (PD.TORE["Burgstraßentor"], 6.0, "Burgstraßentor"), (PD.TORE["Torhaus West"], 6.0, "Torhaus West")))
 # Mauerwachen auf dem Wehrgang der Ringmauer: auf jedem fünften langen Mauerstück eine Wache, mit Blick nach außen
@@ -88,10 +89,22 @@ for pp, r, dach in [(PD.WEHRTURM, 6.0, 0), ((1190, 55), 6.0, 1), ((1230, 140), 6
                     ((1245, 250), 5.5, 1), ((1100, 375), 5.0, 1), ((900, 405), 5.0, 1)]:
     x, z = W(pp)
     unten = min(H(x + dx, z + dz) for dx in (-r, 0, r) for dz in (-r, 0, r)) - 2.5
-    oben = max(H(x + dx, z + dz) for dx in (-r, 0, r) for dz in (-r, 0, r)) + 14
-    _tuerme += [x, z, unten, oben, r, dach, r * 1.8]
-    if dach == 0:
+    if pp in (PD.WEHRTURM, PD.RONDELL):
+        # Wehrturm und Rondell bleiben geschlossene, hohe Türme mit Zinnen und Fahne
+        oben = max(H(x + dx, z + dz) for dx in (-r, 0, r) for dz in (-r, 0, r)) + 14
+        _tuerme += [x, z, unten, oben, r, 0, 0]
         FAHNEN.extend([x, oben + 0.05, z, 30, 2.4, 3.8, 0])
+        continue
+    # Schalenturm: offen zur Innenseite der Ringmauer (Richtung von der nächsten Mauerkante nach innen)
+    _ring_w = WL(RING)
+    _best = min(range(len(_ring_w) - 1), key=lambda i_: abstand_linie([_ring_w[i_], _ring_w[i_ + 1]], x, z))
+    (ax_, az_), (bx_, bz_) = _ring_w[_best], _ring_w[_best + 1]
+    l_ = math.hypot(bx_ - ax_, bz_ - az_)
+    nx_, nz_ = -(bz_ - az_) / l_, (bx_ - ax_) / l_
+    if nx_ * (MITTE_BURG[0] - x) + nz_ * (MITTE_BURG[1] - z) < 0:
+        nx_, nz_ = -nx_, -nz_
+    oben = max(H(x + nx_ * d_, z + nz_ * d_) for d_ in (2.0, 4.0, 6.0)) + 6.5 + 2.5
+    _tuerme += [x, z, unten, oben, r, 2, round(math.degrees(math.atan2(nz_, nx_)), 1)]
 hx, hz = W(PD.HALBTURM)
 _hb = H(hx, hz)
 N("RingmauerTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
@@ -117,6 +130,12 @@ tuerme = PackedFloat32Array({_zahlen(_vt)})""")
 for k, bau in enumerate(PD.VORBURG_BAUTEN):
     gebaeude(f"Vorburgbau{k}", BG, bau, 7, PD.H_VORBURG, dach="Material_dach", zweck=(5, 4)[k])   # Gesindehaus, Stall
 schild("SchildVorburg", BG, *(lambda p: (p[0], PD.H_VORBURG + 9, p[1]))(W((390, 300))), "I. Vorburg", 40)
+
+# Treppe im Vorburghof hinauf zum Tor des II. Burghofs (das Tor liegt 6 m über dem Hof), gut sichtbar mit Wangen
+_tr_a = W((410.5, 278.0))
+_tr_b = W((445.0, 259.5))
+N("TreppeVorburg", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+treppen = PackedFloat32Array({_zahlen([_tr_a[0], _tr_a[1], round(H(*_tr_a), 2), _tr_b[0], _tr_b[1], PD.H_BURGHOF2, 4.0])})""")
 
 # Sperrmauer im Zwinger westlich der Vorburg: Von Westen kommt man nicht unter die Vorburg, nur vom Rampentor her
 mauerring("Sperrmauer", BG, WL(PD.SPERRMAUER), 7.0, dicke=2.5, mitte=W((300, 380)))
@@ -166,10 +185,14 @@ for i_ in range(len(_rp) - 1):
 N("TorrampeIII", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 mauern = PackedFloat32Array({_zahlen([round(v_, 3) for v_ in _rm])})""")
 
-# Rundtürme mit Kegeldach an den Ecken des II. und III. Burghofs
+# Rundtürme an den Ecken des II. und III. Burghofs: wie im Referenzbild mit Zinnenkranz; nur der hohe Turm hinten
+# zwischen II. und III. Burghof trägt ein Kegeldach
 _bt = []
 for pp in [(530, 192), (600, 182), (650, 136), (838, 134), (842, 310), (668, 318)]:
-    _bt += turmmasse(PD.ecke(pp), 4.5, 13) + [4.5, 1, 7.5]
+    if pp == (600, 182):
+        _bt += turmmasse(PD.ecke(pp), 5.0, 22) + [5.0, 1, 10]
+    else:
+        _bt += turmmasse(PD.ecke(pp), 4.5, 11) + [4.5, 0, 0]
 N("BurghofTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_bt)})""")
 for k, bau in enumerate(PD.BURGHOF2_BAUTEN):
@@ -188,16 +211,16 @@ schild("SchildBurghof3", BG, 0, PD.H_KERNHOF + 13, -36, "III. Burghof", 40)
 ZW = PD.ZWINGER_KERNBURG[PD.ZWINGER_BOGEN - 1:] + PD.ZWINGER_KERNBURG[:1]   # bis an den III. Burghof, dessen Ostbogen dazwischen liegt
 mauerring("Zwingermauer", BG, WL(ZW), 8.0, dicke=3.0, mitte=W((990, 220)), turm_r=0.0)
 # Quermauer im südlichen Zwinger: Dort endet der Zwingerweg oben, westlich davon liegt der Zwinger unten
-mauerring("Quermauer", BG, WL([(945, 296), (945, 340)]), 6.0, dicke=2.5, mitte=W((990, 220)))
+# (die frühere Quermauer im südlichen Zwinger entfällt: dort steigt jetzt der Zwingerweg)
 _zt = []
 for pp in [(965, 88), (1152, 130), (1112, 322), (895, 332)]:
-    _zt += turmmasse(pp, 4.5, 12) + [4.5, 1, 8]
+    _zt += turmmasse(pp, 4.5, 12) + [4.5, 0, 0]          # Zwingertürme mit Zinnen
 KB = PD.KERNBURG + [PD.KERNBURG[0]]
 mauerring("Kernburg", BG, WL(KB), 8.0, dicke=3.5, mitte=W(PD.OVAL_KERNBURG[0]),
          tore=tor_an(KB, PD.TORE["Kernburgtor"], 5.0, "Kernburgtor"))
 for pp in [(912, 138), (1100, 150), (1102, 280), (896, 288)]:
     m = turmmasse(PD.ecke(pp), 4.5, 0)
-    _zt += m[:3] + [PD.H_KERNBURG + 17, 4.5, 1, 9]
+    _zt += m[:3] + [PD.H_KERNBURG + 17, 4.5, 1 if pp[0] > 1000 else 0, 9]   # Kegeldächer nur am Ostende beim Palas
 N("KernburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_zt)})""")
 
@@ -276,8 +299,7 @@ _HOF_WEGE = [w_ for w_ in PD.BURGWEGE]
 # III. Burghof: frei in der Mitte, quer hindurch vom Tor des III. Burghofs zum Burgtor
 _HOF_WEGE.append([PD.TORE["Tor des III. Burghofs"], PD.TORE["Burgtor"]])   # quer über den III. Burghof
 # Kernburg: vom Kernburgtor über den Hof zum Übungsplatz und vor die Kapelle
-_HOF_WEGE.append([PD.TORE["Kernburgtor"], (1040, 240), (990, 225), (940, 225)])
-_HOF_WEGE.append([(1040, 240), (1060, 200)])
+_HOF_WEGE.append([PD.TORE["Kernburgtor"], (940, 215), (990, 225), (1040, 240), (1060, 200)])
 random.seed(4711)
 _hofbauten = []
 

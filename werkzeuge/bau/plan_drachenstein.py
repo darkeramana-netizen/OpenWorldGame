@@ -15,7 +15,8 @@ Aufbau nach dem Plan und den Schnitten A-A und B-B:
   Zugang zur Burg (blaue Linie): vom Hafen oder vom Torhaus West durch die Stadt, durch das Burgstraßentor in der
   Ringmauer, am Halbturm vorbei hinauf (dort kommt der Weg vom Torhaus Nord dazu) und dann außen um die ganze Burg
   bis unter den II. Burghof, wo eine Rampe durch das Rampentor hinaufführt. Unten zweigt ein Weg zum Südtor der
-  Vorburg ab. In die Kernburg steigt der Weg im Zwinger einmal um sie herum zum Kernburgtor.
+  Vorburg ab. In die Kernburg steigt der Weg im Zwinger über die Vorderseite und das Ostende hinauf und oben an der
+  Nordseite zurück zum Kernburgtor auf der Westseite.
 
 Höhen (Welt-y, Meer bei -20), gestaffelt wie im Schnitt B-B: Hafen -17,8 · Stadt -16,5 bis -14 ·
 I. Vorburg 0 · II. Burghof +6 · III. Burghof +14 (Hof aus Akt I) · Kernburg +38 (Bergfried bis +76).
@@ -124,7 +125,7 @@ TORE = {
     "Tor des II. Burghofs": (455.4, 258.4),  # zwischen I. Vorburg und II. Burghof
     "Tor des III. Burghofs": (636, 228), # II. ↔ III. Burghof (Westende des Ovals)
     "Burgtor": (840, 228),               # III. Burghof ↔ Zwinger der Kernburg (Ostende des Ovals)
-    "Kernburgtor": (1067.8, 276.9),      # Zwinger ↔ Kernburg (auf dem Oval), am Ende des Zwingerwegs
+    "Kernburgtor": (878.0, 210.0),       # Zwinger ↔ Kernburg: wie im Grundriss auf der Westseite, gegenüber dem Burgtor
     # Die ovalen Höfe berühren sich an den Toren; jede Hofmauer hat dort ihr eigenes Tor (Rücken an Rücken)
     "Tor des II. Burghofs, Ostseite": (461.4, 258.4),
     "Tor des III. Burghofs, Westseite": (630.0, 228.0),
@@ -257,8 +258,8 @@ BERGFRIEDFELS = [(1057, 132), (1093, 132), (1093, 168), (1057, 168)]
 PALAS = ((990, 175), 72, 32, 0)          # vor dem Bergfried, die Hofseite nach Süden (wie im Referenzbild)
 # Kapelle, Küche und Zeughaus innen an der Ovalmauer der Kernburg (Länge an der Mauer, Tür zum Hof)
 DRACHENKAPELLE = an_wand(*OVAL_KERNBURG, 0, 80, 22)
-BURGKUECHE = an_wand(*OVAL_KERNBURG, 180, 52, 30)
-ZEUGHAUS = an_wand(*OVAL_KERNBURG, 100, 56, 26)
+BURGKUECHE = an_wand(*OVAL_KERNBURG, 128, 52, 30)    # wie im Grundriss: Küche im Südwesten, Zeughaus im Südosten
+ZEUGHAUS = an_wand(*OVAL_KERNBURG, 62, 56, 26)
 # Bauten mit Abstand zu den Mauern (sonst ragen sie durch die Wand)
 VORBURG_BAUTEN = [an_wand(*OVAL_VORBURG, -100, 48, 16), an_wand(*OVAL_VORBURG, 180, 44, 18)]   # Gesindehaus, Stall
 BURGHOF2_BAUTEN = [an_wand(*OVAL_BURGHOF2, -95, 60, 18), an_wand(*OVAL_BURGHOF2, 100, 50, 18)]
@@ -314,9 +315,11 @@ SPERRMAUER = [(347, 362), (347, 400)]
 WEG_TORHAUS_WEST = [(140, 412), (154, 410), (190, 398), (237, 380)]
 # Vom Torhaus Nord hinab auf den Burgweg
 WEG_TORHAUS_NORD = [(294, 160), (294, 180), (300, 205)]
-# Zwingerweg: vom Burgtor einmal um die Kernburg herum hinauf zum Kernburgtor
-WEG_ZWINGER = [(840, 228), (856, 228), (859, 160), (880, 128), (930, 110), (1000, 104), (1080, 104), (1118, 138),
-               (1130, 200), (1128, 260), (1108, 302), (1087, 300), (1078, 289), (1067.8, 276.9), (1058, 266)]
+# Zwingerweg: vom Burgtor sichtbar über die Vorderseite der Kernburg und ihr Ostende hinauf, oben an der Nordseite
+# zurück zum Kernburgtor auf der Westseite (wie im Grundriss)
+WEG_ZWINGER = [(840, 228), (856, 228), (870, 298), (950, 324), (1050, 324), (1108, 302), (1128, 260), (1130, 200),
+               (1118, 138), (1080, 104), (1000, 104), (930, 110), (880, 128), (862, 160), (862, 196), (872, 210),
+               (878.0, 210.0), (900, 210)]
 
 
 def _laengen(linie):
@@ -368,7 +371,7 @@ WEG_VORBURG_HOEHEN = _steigend(WEG_VORBURG, {0: hoehe_auf(WEG_BURG, WEG_BURG_HOE
                                              6: H_VORBURG, 8: H_VORBURG, 11: H_BURGHOF2, 12: H_BURGHOF2, 14: H_BURGHOF2})
 WEG_TORHAUS_NORD_HOEHEN = [-12.5, -11.0, -9.0]
 WEG_TORHAUS_WEST_HOEHEN = [-14.0, -13.6, -13.4, round(hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (237, 380)), 2)]
-WEG_ZWINGER_HOEHEN = _steigend(WEG_ZWINGER, {1: H_KERNHOF, 13: H_KERNBURG})
+WEG_ZWINGER_HOEHEN = _steigend(WEG_ZWINGER, {1: H_KERNHOF, WEG_ZWINGER.index((1080, 104)): H_KERNBURG, len(WEG_ZWINGER) - 1: H_KERNBURG})
 WEG_ZWINGER_HOEHEN[0] = H_KERNHOF
 # Die Wege im Burgbezirk sind keine Stadtgassen, gehören aber ins Wegenetz
 BURGWEGE = [WEG_BURG, WEG_VORBURG, WEG_TORHAUS_NORD, WEG_TORHAUS_WEST, WEG_ZWINGER]

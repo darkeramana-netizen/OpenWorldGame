@@ -120,12 +120,13 @@ func _initialize() -> void:
 		if p is CollisionObject3D:
 			p.collision_layer = 0
 	# Wege der Burgfeste nach dem Grundriss (docs/bilder/grundriss-drachenstein-2.webp)
-	# Hinauf: quer über den III. Burghof → Burgtor → Zwingerweg einmal um die Kernburg → Kernburgtor
+	# Hinauf: quer über den III. Burghof → Burgtor → Zwingerweg → Kernburgtor (Westseite)
 	await setze(Vector3(0, 14.3, 46))
+	# Zwingerweg über die Vorderseite und das Ostende hinauf, oben an der Nordseite zurück zum Kernburgtor im Westen
 	var hinauf := await gehe_ueber([Vector2(0, 20), Vector2(0, -20), Vector2(0, -44), Vector2(0, -52.5), Vector2(0, -60.5),
-			Vector2(-34, -62), Vector2(-50, -72.5), Vector2(-59, -97.5), Vector2(-62, -132.5), Vector2(-62, -172.5), Vector2(-45, -191.5),
-			Vector2(-14, -197.5), Vector2(16, -196.5), Vector2(37, -186.5), Vector2(36, -176), Vector2(30.5, -171.5), Vector2(24.45, -166.4),
-			Vector2(18, -158), Vector2(6, -152.5)], 40.0)
+			Vector2(35, -67.5), Vector2(48, -107.5), Vector2(48, -157.5), Vector2(37, -186.5), Vector2(16, -196.5),
+			Vector2(-14, -197.5), Vector2(-45, -191.5), Vector2(-62, -172.5), Vector2(-62, -132.5), Vector2(-59, -97.5),
+			Vector2(-50, -72.5), Vector2(-34, -63.5), Vector2(-16, -63.5), Vector2(-9, -68.5), Vector2(-9, -74), Vector2(-9, -86)], 40.0)
 	pruefe(hinauf and spieler().global_position.y > 37.5, "Durch Burgtor und Zwingerweg hinauf in die Kernburg (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("Kernburg · Drachenhorst"), "Ortsname: Kernburg")
 	# Hinab: Tor des III. Burghofs → II. Burghof → Tor in die I. Vorburg → Südtor der Vorburg → unter dem II. Burghof

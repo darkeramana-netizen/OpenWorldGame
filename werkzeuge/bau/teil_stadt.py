@@ -77,7 +77,9 @@ _ht = []
 # Zwei Rundtürme an der Hafeneinfahrt: am Ende der Hafenmauer und am Ende des Speicherkais
 for pp, r in [((792, 628), 6.0), ((834, 540), 6.0)]:
     x, z = W(pp)
-    _ht += [x, z, -28.0, KAI_OBEN + 12, r, 0, 0]
+    # Schalentürme wie im Referenzbild: halbrund, zum Hafenbecken hin offen
+    mx_, mz_ = W((720, 530))
+    _ht += [x, z, -28.0, KAI_OBEN + 10, r, 2, round(math.degrees(math.atan2(mz_ - z, mx_ - x)), 1)]
 N("HafenTuerme", "Node3D", HF, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_ht)})""")
 sx, sz = W(PD.SPEICHER[0])

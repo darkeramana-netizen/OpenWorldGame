@@ -108,7 +108,10 @@ func _baue() -> void:
 		i += 10
 	i = 0
 	while i + 6 < tuerme.size():
-		_rundturm(Vector2(tuerme[i], tuerme[i + 1]), tuerme[i + 2], tuerme[i + 3], tuerme[i + 4], int(tuerme[i + 5]), tuerme[i + 6])
+		if int(tuerme[i + 5]) == 2:
+			_schalenturm(Vector2(tuerme[i], tuerme[i + 1]), tuerme[i + 2], tuerme[i + 3], tuerme[i + 4], deg_to_rad(tuerme[i + 6]))
+		else:
+			_rundturm(Vector2(tuerme[i], tuerme[i + 1]), tuerme[i + 2], tuerme[i + 3], tuerme[i + 4], int(tuerme[i + 5]), tuerme[i + 6])
 		i += 7
 	i = 0
 	while i + 7 < tore.size():
@@ -257,7 +260,9 @@ func _st(mat: String, rund := false) -> SurfaceTool:
 ## Viereck, die Vorderseite zeigt nach "aussen" (beliebige Richtung, die Reihenfolge wird passend gedreht).
 func _viereck(mat: String, a: Vector3, b: Vector3, c: Vector3, d: Vector3, aussen: Vector3) -> void:
 	var st := _st(mat)
-	var n := (b - a).cross(c - a)
+	# Normale über die Diagonalen: bleibt richtig, wenn zwei Ecken zusammenfallen (Kreisscheiben aus _ring mit r0 = 0,
+	# z. B. die Turmböden; sonst zeigten sie nach unten und waren von oben unsichtbar)
+	var n := (c - a).cross(d - b)
 	if n.dot(aussen) > 0.0:
 		for p in [a, c, b, a, d, c]:
 			st.add_vertex(p)
@@ -465,6 +470,73 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 			var w := TAU * k / zinnen
 			var d := Vector2(cos(w), sin(w))
 			_klotz(stein, c + d * (ri + ra) / 2.0, Vector2(-d.y, d.x), d, -0.65, 0.65, -0.3, 0.3, oben + BRUSTWEHR, oben + BRUSTWEHR + ZINNE_HOEHE)
+
+
+## Schalenturm (dach 2): halbrund vor die Mauer gestellt und zur Innenseite offen (Richtung innen_winkel), wie an der
+## Ringmauer im Referenzbild. Die Schale ist 1,4 m dick, oben ein Zinnenkranz; innen auf Höhe des Wehrgangs (3 m unter
+## der Krone) ein Bretterboden, damit der Wehrgang durch den Turm weiterläuft.
+func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel: float) -> void:
+	var teile := 24
+	var dicke := 1.4
+	var ri := r - dicke
+	var st_aussen := _st(stein, true)
+	var w_start := innen_winkel + PI * 0.5          # die offene Hälfte zeigt nach innen
+	var schritte := teile / 2
+	var punkte := func(rad: float, y: float, k: int) -> Vector3:
+		var w := w_start + PI * k / schritte
+		return Vector3(c.x + cos(w) * rad, y, c.y + sin(w) * rad)
+	var anlauf := clampf((oben - unten) * 0.25, 2.0, 6.0)
+	for k in schritte:
+		var w0 := w_start + PI * k / schritte
+		var w1 := w_start + PI * (k + 1) / schritte
+		var d0 := Vector3(cos(w0), 0, sin(w0))
+		var d1 := Vector3(cos(w1), 0, sin(w1))
+		# außen mit Anlauf unten, innen senkrecht
+		for lage: Array in [[unten, unten + anlauf, r + 0.6, r], [unten + anlauf, oben, r, r]]:
+			var y0: float = lage[0]
+			var y1: float = lage[1]
+			var a := Vector3(c.x, y0, c.y) + d0 * float(lage[2])
+			var b := Vector3(c.x, y0, c.y) + d1 * float(lage[2])
+			var e := Vector3(c.x, y1, c.y) + d1 * float(lage[3])
+			var f := Vector3(c.x, y1, c.y) + d0 * float(lage[3])
+			for v: Array in [[a, d0], [b, d1], [e, d1], [a, d0], [e, d1], [f, d0]]:
+				st_aussen.set_normal(v[1])
+				st_aussen.add_vertex(v[0])
+		var ia := Vector3(c.x, unten, c.y) + d0 * ri
+		var ib := Vector3(c.x, unten, c.y) + d1 * ri
+		var ie := Vector3(c.x, oben, c.y) + d1 * ri
+		var iff := Vector3(c.x, oben, c.y) + d0 * ri
+		for v: Array in [[ia, -d0], [ie, -d1], [ib, -d1], [ia, -d0], [iff, -d0], [ie, -d1]]:
+			st_aussen.set_normal(v[1])
+			st_aussen.add_vertex(v[0])
+		# Mauerkrone der Schale
+		_viereck(stein, Vector3(c.x, oben, c.y) + d0 * ri, Vector3(c.x, oben, c.y) + d1 * ri,
+			Vector3(c.x, oben, c.y) + d1 * r, Vector3(c.x, oben, c.y) + d0 * r, Vector3.UP)
+		# Zinnen auf jeder zweiten Teilung
+		if k % 2 == 0:
+			var dm := (d0 + d1).normalized()
+			var mp := c + Vector2(dm.x, dm.z) * (r - dicke * 0.5)
+			_klotz(stein, mp, Vector2(-dm.z, dm.x), Vector2(dm.x, dm.z), -0.7, 0.7, -dicke * 0.5, dicke * 0.5, oben, oben + ZINNE_HOEHE)
+	# Stirnflächen der offenen Schale
+	for k: int in [0, schritte]:
+		var a: Vector3 = punkte.call(ri, unten, k)
+		var b: Vector3 = punkte.call(r, unten, k)
+		var e: Vector3 = punkte.call(r, oben, k)
+		var f: Vector3 = punkte.call(ri, oben, k)
+		var aussen := Vector3(cos(innen_winkel), 0, sin(innen_winkel))
+		_viereck(stein, a, b, e, f, aussen)
+	# Bretterboden auf Höhe des Wehrgangs (halbe Scheibe)
+	var yb := oben - 3.0
+	for k in schritte:
+		var w0 := w_start + PI * k / schritte
+		var w1 := w_start + PI * (k + 1) / schritte
+		var m := Vector3(c.x, yb, c.y)
+		_dreieck("holz", m, m + Vector3(cos(w0), 0, sin(w0)) * ri, m + Vector3(cos(w1), 0, sin(w1)) * ri, Vector3.UP)
+	# Schießscharten
+	for k in [2, 6, 10]:
+		var w := w_start + PI * (k + 0.5) / schritte
+		var d := Vector2(cos(w), sin(w))
+		_klotz("dunkel", c + d * (r - 0.05), Vector2(-d.y, d.x), d, -0.08, 0.08, 0.0, 0.08, oben - 4.5, oben - 3.3)
 
 
 ## Erkertürmchen: rund, unten auf einem kegelförmigen Kragstein, Schießscharten, Gesims und spitzes Kegeldach.
@@ -1112,6 +1184,8 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 	if dach < 0.0:
 		_bergfried_krone(c, u, n, b, t, unten, oben)
 	elif dach >= 1.0:
+		# Mauerband rundum bis unter das Dach, sonst schwebt es über dem Turm
+		_klotz(stein, c, u, n, -b, b, -t, t, oben, oben + 1.3)
 		var ue := 0.9
 		var spitze := Vector3(c.x, oben + 1.3 + maxf(breite, tiefe) * 0.9 * dach, c.y)
 		var p := func(su: float, sn: float) -> Vector3:
@@ -1207,6 +1281,13 @@ func _treppe(a: Vector3, b: Vector3, breite: float) -> void:
 		_klotz("boden", m, u, n, -laenge / stufen / 2.0 - 0.02, laenge / stufen / 2.0 + 0.02, -hb, hb, y - 0.6, y)
 		# Stufenkante etwas heller und vorstehend
 		_klotz("hell", c0 + u * laenge * t0, u, n, -0.12, 0.12, -hb, hb, y - 0.25, y - 0.02)
+	# Unsichtbare Rampe über den Stufenkanten: Darauf läuft die Figur hinauf, ohne an jeder Stufe hängen zu bleiben
+	var r0 := c0 - n * hb
+	var r1 := c0 + n * hb
+	var e0 := c0 + u * laenge - n * hb
+	var e1 := c0 + u * laenge + n * hb
+	_viereck("rampe", Vector3(r0.x, a.y + 0.02, r0.y), Vector3(e0.x, b.y + 0.02, e0.y), Vector3(e1.x, b.y + 0.02, e1.y),
+		Vector3(r1.x, a.y + 0.02, r1.y), Vector3.UP)
 	# Wangen: niedrige Mauern zu beiden Seiten, oben schräg mit der Treppe
 	for seite: float in [-1.0, 1.0]:
 		var teile := maxi(1, int(laenge / 8.0))

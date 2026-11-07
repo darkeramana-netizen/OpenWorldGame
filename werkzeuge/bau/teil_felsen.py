@@ -256,6 +256,14 @@ for a_, b_ in zip(_ring_pkt + _ring_pkt[:1], _ring_pkt[1:] + _ring_pkt[:2]):
             continue
         _k_offen = False
         _KUESTE += [round(px, 2), round(pz, 2), round(nx, 4), round(nz, 4), round(oben_, 2), -23.0, 1000 + _k_abschnitt]
+# Die Inseln mit den Brücken zum Schwarzen Bergfried (werkzeuge/gelaende_erzeuger.gd, INSELN): rundum Felsrand
+for _ii, (_ix, _iz, _ir) in enumerate([(300, -15, 10.0), (382, 22, 9.0), (462.4, 60.4, 9.0)]):
+    _n = max(12, int(math.tau * _ir * 0.62 / 1.6))
+    for k_ in range(_n + 1):                       # geschlossen: die erste Säule am Ende noch einmal
+        w_ = math.tau * (k_ % _n) / _n
+        nx, nz = math.cos(w_), math.sin(w_)
+        _KUESTE += [round(_ix + nx * _ir * 0.62, 2), round(_iz + nz * _ir * 0.62, 2), round(nx, 4), round(nz, 4),
+                    -17.95, -27.0, 2000 + _ii]
 _zahl = _Zaehler(_KUESTE[k_ + 6] for k_ in range(0, len(_KUESTE), 7))
 _KUESTE = [v_ for k_ in range(0, len(_KUESTE), 7) if _zahl[_KUESTE[k_ + 6]] > 1 for v_ in _KUESTE[k_:k_ + 7]]
 N("Kuestenfels", "Node3D", DS, f"""script = ExtResource("31_felssockel")
