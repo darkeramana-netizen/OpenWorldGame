@@ -159,8 +159,10 @@ _abschnitt = 0
 _hang = 0
 _hang_orte = []
 _alle_hoefe = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG)]
-for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BURGHOF2), (WL(PD.BURGHOF3), PD.H_KERNHOF),
-                       (WL(PD.KERNBURG), PD.H_KERNBURG)]:
+# Türme an den Hofmauern (aus teil_drachenstein.py): vor ihnen kein Sockel, sie stehen selbst auf dem Fels
+_sockel_tuerme = [W(q) for q in _HOF_TUERME] if "_HOF_TUERME" in globals() else []
+# Die Kernburg steht auf ihrem hohen Felsen (Felsmassiv); vor ihrer Mauer bliebe der Sockel eine dünne Platte
+for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BURGHOF2), (WL(PD.BURGHOF3), PD.H_KERNHOF)]:
     mx_ = sum(q[0] for q in umriss_) / len(umriss_)
     mz_ = sum(q[1] for q in umriss_) / len(umriss_)
     ring_ = umriss_ + umriss_[:1]
@@ -183,7 +185,8 @@ for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BU
             unten_ = min(H(px + nx * d_, pz + nz * d_) for d_ in (2.0, 4.0, 6.0, 9.0)) - 2.5
             frei_ = (oben_ - unten_ > 3.0 and _abstand((vx, vz), _wege) > 4.0
                      and min(math.dist((vx, vz), t) for t in _tore) > 9.0
-                     and not any(im_vieleck((vx, vz), v) for v in _alle_hoefe))
+                     and not any(im_vieleck((vx, vz), v) for v in _alle_hoefe)
+                     and all(math.dist((px, pz), t) > 9.0 for t in _sockel_tuerme))
             if not frei_:
                 if not offen_:
                     _abschnitt += 1

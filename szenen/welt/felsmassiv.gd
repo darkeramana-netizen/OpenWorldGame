@@ -120,12 +120,13 @@ func _baue_kachel(start: Vector2) -> void:
 			# nur Punkte in der Nähe von Fels brauchen die genaue Höhe
 			var nah := gew[k] > 0.001
 			if not nah:
-				for d in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
+				for d in [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, -1], [-1, 1], [1, 1]]:
 					var jx: int = ix + d[0]
 					var jz: int = iz + d[1]
 					if jx >= 0 and jx < n and jz >= 0 and jz < n and gew[jz * n + jx] > 0.001:
 						nah = true
-			punkte.append(_punkt(x, z) if nah else Vector3(x, 0.0, z))
+			# auch Punkte ohne Fels liegen auf ihrer echten Höhe (knapp unter dem Gelände), sonst entstehen Spitzen
+			punkte.append(_punkt(x, z) if nah else Vector3(x, _g.hoehe_bei(x, z) - 0.8, z))
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var dreiecke := 0
