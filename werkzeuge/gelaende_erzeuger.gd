@@ -312,7 +312,7 @@ func _drachenstein(h: float, p: Vector2) -> float:
 		if not _bucht.is_empty():
 			var see := smoothstep(45.0, 0.0, _polygon_abstand(p, _bucht))
 			unten = lerpf(unten, -24.0, see)
-			abfall = lerpf(abfall, 18.0, see)
+			abfall = lerpf(abfall, 3.0, see)   # zum Meer hin steil: die Felswand bildet der Küstenfels (teil_felsen.py)
 		var t := smoothstep(0.0, abfall, aussen)
 		# Felswand in Schichten (wie im Grundriss-Referenzbild), zerklüftet; nicht an den Landstraßen vor den Toren
 		var klippe := smoothstep(6.0, 18.0, weg)
