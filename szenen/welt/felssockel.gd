@@ -57,6 +57,12 @@ func _baue() -> void:
 			var t0 := float(z) / zeilen
 			var t1 := float(z + 1) / zeilen
 			_viereck(st, _punkt(i, t0), _punkt(j, t0), _punkt(j, t1), _punkt(i, t1), aussen)
+		# Kappen an den Enden eines Abschnitts: vom Fels zurück an die Mauerlinie, damit man nicht dahinter schaut
+		var lang := Vector3(saeulen[j] - saeulen[i], 0.0, saeulen[j + 1] - saeulen[i + 1]).normalized()
+		if k == 0 or saeulen[i - SCHRITT + 6] != saeulen[i + 6]:
+			_kappe(st, i, zeilen, -lang)
+		if k + 1 == n - 1 or saeulen[j + SCHRITT + 6] != saeulen[j + 6]:
+			_kappe(st, j, zeilen, lang)
 	st.generate_normals()
 	var mesh := st.commit()
 	if mesh.get_surface_count() == 0:
@@ -76,6 +82,20 @@ func _baue() -> void:
 		add_child(koerper)
 
 
+## Seitliche Kappe einer Säule: Fläche zwischen der Felsfront und der Mauerlinie über die ganze Höhe
+func _kappe(st: SurfaceTool, i: int, zeilen: int, aussen: Vector3) -> void:
+	for z in zeilen:
+		var t0 := float(z) / zeilen
+		var t1 := float(z + 1) / zeilen
+		_viereck(st, _innen(i, t0), _punkt(i, t0), _punkt(i, t1), _innen(i, t1), aussen)
+
+
+## Punkt auf der Mauerlinie (innen, hinter der Felsfront) bei t
+func _innen(i: int, t: float) -> Vector3:
+	var y := lerpf(saeulen[i + 4], saeulen[i + 5], t)
+	return Vector3(saeulen[i] + saeulen[i + 2] * 0.9, y, saeulen[i + 1] + saeulen[i + 3] * 0.9)
+
+
 ## Punkt an der Mauer (oben, auf der Mauerlinie), dort beginnt die Deckfläche
 func _mauer(i: int) -> Vector3:
 	return Vector3(saeulen[i] + saeulen[i + 2] * 0.9, saeulen[i + 4], saeulen[i + 1] + saeulen[i + 3] * 0.9)
@@ -91,8 +111,8 @@ func _punkt(i: int, t: float) -> Vector3:
 	var y := lerpf(oben, saeulen[i + 5], t)
 	var tiefe := oben - y
 	# Böschung nach unten, grobe Ausbuchtungen, feine Zerklüftung und Felsbänder mit vorstehenden Absätzen
-	var vor := ABSTAND + tiefe * 0.16
-	vor += (_grob.get_noise_3d(x, y * 0.6, z) + 0.4) * 2.4          # große Ausbuchtungen
+	var vor := ABSTAND + tiefe * 0.1
+	vor += (_grob.get_noise_3d(x, y * 0.6, z) + 0.4) * 1.3          # große Ausbuchtungen
 	vor += _rauschen.get_noise_3d(x, y * 1.3, z) * 0.7              # Zerklüftung
 	vor -= absf(_rauschen.get_noise_3d(x * 3.0, y * 0.25, z * 3.0)) * 0.9   # senkrechte Risse
 	vor += _band(x, y, z)

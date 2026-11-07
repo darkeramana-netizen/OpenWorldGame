@@ -161,8 +161,8 @@ _hang_orte = []
 _alle_hoefe = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG)]
 # Türme an den Hofmauern (aus teil_drachenstein.py): vor ihnen kein Sockel, sie stehen selbst auf dem Fels
 _sockel_tuerme = [W(q) for q in _HOF_TUERME] if "_HOF_TUERME" in globals() else []
-# Die Kernburg steht auf ihrem hohen Felsen (Felsmassiv); vor ihrer Mauer bliebe der Sockel eine dünne Platte
-for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BURGHOF2), (WL(PD.BURGHOF3), PD.H_KERNHOF)]:
+for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BURGHOF2), (WL(PD.BURGHOF3), PD.H_KERNHOF),
+                       (WL(PD.KERNBURG), PD.H_KERNBURG)]:
     mx_ = sum(q[0] for q in umriss_) / len(umriss_)
     mz_ = sum(q[1] for q in umriss_) / len(umriss_)
     ring_ = umriss_ + umriss_[:1]
