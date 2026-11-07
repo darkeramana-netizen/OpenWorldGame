@@ -222,6 +222,46 @@ saeulen = PackedFloat32Array({", ".join(f"{v:.6g}" for v in _SOCKEL)})
 material = ExtResource("32_felssockel_mat")""")
 print("Felssockel unter den Hofmauern:", len(_SOCKEL) // 7, "Säulen in", _abschnitt, "Abschnitten")
 
+# Küstenfels (wie im Referenzbild): Wo vor der Ringmauer das Meer liegt, steht dieselbe zerklüftete, hellgraue
+# Felswand vom Mauerfuß bis unter die Wasserlinie, statt der glatten, dunklen Geländewand.
+_KUESTE = []
+_k_abschnitt = 0
+_ring_pkt = WL(PD.RINGMAUER)
+_rmx = sum(q[0] for q in _ring_pkt) / len(_ring_pkt)
+_rmz = sum(q[1] for q in _ring_pkt) / len(_ring_pkt)
+_k_offen = True
+for a_, b_ in zip(_ring_pkt + _ring_pkt[:1], _ring_pkt[1:] + _ring_pkt[:2]):
+    l_ = math.dist(a_, b_)
+    if l_ < 0.3:
+        continue
+    ux, uz = (b_[0] - a_[0]) / l_, (b_[1] - a_[1]) / l_
+    nx, nz = -uz, ux
+    if nx * ((a_[0] + b_[0]) / 2 - _rmx) + nz * ((a_[1] + b_[1]) / 2 - _rmz) < 0:
+        nx, nz = -nx, -nz
+    n_ = max(1, int(l_ / 1.6))
+    for k_ in range(n_):
+        t_ = k_ / n_
+        px, pz = a_[0] + (b_[0] - a_[0]) * t_, a_[1] + (b_[1] - a_[1]) * t_
+        meer_ = min(H(px + nx * d_, pz + nz * d_) for d_ in (20.0, 30.0, 40.0)) < -21.0
+        oben_ = H(px + nx * 2.0, pz + nz * 2.0) - 0.3
+        frei_ = (meer_ and oben_ > -14.0 and min(math.dist((px, pz), t) for t in _tore) > 12.0
+                 and not im_vieleck((px + nx * 4, pz + nz * 4), WL(PD.HAFEN_BEZIRK))
+                 and not im_vieleck((px + nx * 4, pz + nz * 4), WL(PD.STADT)))
+        if not frei_:
+            if not _k_offen:
+                _k_abschnitt += 1
+                _k_offen = True
+            continue
+        _k_offen = False
+        _KUESTE += [round(px, 2), round(pz, 2), round(nx, 4), round(nz, 4), round(oben_, 2), -23.0, 1000 + _k_abschnitt]
+_zahl = _Zaehler(_KUESTE[k_ + 6] for k_ in range(0, len(_KUESTE), 7))
+_KUESTE = [v_ for k_ in range(0, len(_KUESTE), 7) if _zahl[_KUESTE[k_ + 6]] > 1 for v_ in _KUESTE[k_:k_ + 7]]
+N("Kuestenfels", "Node3D", DS, f"""script = ExtResource("31_felssockel")
+saeulen = PackedFloat32Array({", ".join(f"{v:.6g}" for v in _KUESTE)})
+material = ExtResource("32_felssockel_mat")""")
+_kpkt = [(_KUESTE[k_], _KUESTE[k_ + 1]) for k_ in range(0, len(_KUESTE), 7)]
+print("Küstenfels vor der Ringmauer:", len(_KUESTE) // 7, "Säulen")
+
 
 # Bewuchs: auf Absätzen und Kanten bei den Felsen (nicht zu steil), Farn und Gras in Gruppen, dazu Moos und Brocken
 _felsen = [(x, z) for m, x, y, z, *_ in FELSSTUECKE if m in (GROSS, MITTEL, RIESIG)] + _hang_orte[::4]
@@ -294,6 +334,14 @@ bereich = Rect2({min(_rx) - 2:.1f}, {min(_rz) - 2:.1f}, {max(_rx) - min(_rx) + 4
 material = ExtResource("34_felsmassiv_mat")""")   # gelaende ist ein NodePath (kein Node-Export)
 _vorher = len(FELSSTUECKE)
 FELSSTUECKE = [f_ for f_ in FELSSTUECKE if not im_vieleck((f_[1], f_[3]), _ring_flaeche)]
+# Vor dem Küstenfels keine Klippenscans und kein Geröll (Pflanzen bleiben)
+_knetz = {}
+for q_ in _kpkt:
+    _knetz.setdefault((int(q_[0] // 20), int(q_[1] // 20)), []).append(q_)
+def _nah_kueste(x_, z_, r_=24.0):
+    gx_, gz_ = int(x_ // 20), int(z_ // 20)
+    return any(math.dist((x_, z_), q_) < r_ for i_ in (-1, 0, 1) for j_ in (-1, 0, 1) for q_ in _knetz.get((gx_ + i_, gz_ + j_), ()))
+FELSSTUECKE = [f_ for f_ in FELSSTUECKE if f_[0] >= FARN or not _nah_kueste(f_[1], f_[3])]
 print("Felsmassiv im Burgbezirk; dort entfernt:", _vorher - len(FELSSTUECKE), "Brocken, Platten und Pflanzen")
 N("Felsen", "Node3D", DS, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray({", ".join(f'"{p}"' for p, _, _ in FELSMODELLE)})
