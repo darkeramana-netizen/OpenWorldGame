@@ -86,7 +86,15 @@ func _fels(x: float, z: float, h: float) -> float:
 	y -= (1.0 - smoothstep(-0.95, -0.75, k)) * 0.9
 	# Kanten und Flächen nicht glatt
 	y += _fein.get_noise_2d(x, z) * 0.18
-	return maxf(y, h + 0.05)
+	# Auf steilem Grund (an den Mauern in schmalen Zwingern) würden die Stufen zu schmalen, hohen Zähnen:
+	# dort nur flache Stufen und raue Oberfläche
+	var gx: float = _g.hoehe_bei(x + 1.0, z) - _g.hoehe_bei(x - 1.0, z)
+	var gz: float = _g.hoehe_bei(x, z + 1.0) - _g.hoehe_bei(x, z - 1.0)
+	var steil := sqrt(gx * gx + gz * gz) * 0.5
+	var staerke := 1.0 - smoothstep(0.35, 0.9, steil)
+	y = h + (y - h) * staerke + absf(_fein.get_noise_2d(x * 0.5, z * 0.5)) * 0.6 * (1.0 - staerke)
+	# nie mehr als 3 m über dem Gelände
+	return clampf(y, h + 0.05, h + 3.0)
 
 
 func _punkt(x: float, z: float) -> Vector3:
