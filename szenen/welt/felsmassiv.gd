@@ -71,18 +71,18 @@ func _gewicht(x: float, z: float) -> float:
 
 ## Höhe der Felsoberfläche (ohne Rand-Überblendung)
 func _fels(x: float, z: float, h: float) -> float:
-	# Felsbänke: etwa alle 2,5 m eine Stufe; die Stufen laufen schräg (Verwerfung) und unregelmäßig
-	var stufe := 2.5 + _band.get_noise_2d(x * 2.0, z * 2.0) * 0.8
+	# Felsbänke: etwa alle 3,4 m eine Stufe; die Stufen laufen schräg (Verwerfung) und unregelmäßig
+	var stufe := 3.4 + _band.get_noise_2d(x * 2.0, z * 2.0) * 1.0
 	var schief := _band.get_noise_2d(x, z) * stufe * 1.6 + x * 0.04 - z * 0.025
 	var b := (h + schief) / stufe
 	var f := b - floorf(b)
 	# unten in jeder Bank die steile Stufe, darüber der fast flache Absatz (leicht nach außen geneigt)
-	var y := (floorf(b) + smoothstep(0.0, 0.28, f) - (1.0 - f) * 0.08) * stufe - schief
+	var y := (floorf(b) + smoothstep(0.0, 0.16, f) - (1.0 - f) * 0.06) * stufe - schief
 	# Klüfte zwischen den Blöcken
 	var k := _kluft.get_noise_2d(x, z)
 	y -= (1.0 - smoothstep(-0.95, -0.75, k)) * 0.9
 	# Kanten und Flächen nicht glatt
-	y += _fein.get_noise_2d(x, z) * 0.25
+	y += _fein.get_noise_2d(x, z) * 0.18
 	return maxf(y, h + 0.05)
 
 
