@@ -196,24 +196,6 @@ saeulen = PackedFloat32Array({", ".join(f"{v:.6g}" for v in _SOCKEL)})
 material = ExtResource("32_felssockel_mat")""")
 print("Felssockel unter den Hofmauern:", len(_SOCKEL) // 7, "Säulen in", _abschnitt, "Abschnitten")
 
-# Große Felsblöcke auf dem Grund zwischen den Terrassen, halb im Boden (keine kleinen Platten)
-_bloecke = 0
-for x in range(-150, 330, 5):
-    for z in range(-330, 330, 5):
-        px, pz = x + random.uniform(-2, 2), z + random.uniform(-2, 2)
-        if not im_vieleck((px, pz), _ring_flaeche) or random.random() > 0.12:
-            continue
-        if any(im_vieleck((px, pz), v) for v in _frei) or _abstand((px, pz), _wege) < 6.0 \
-                or _abstand((px, pz), _mauern) < 4.0 or min(math.dist((px, pz), t) for t in _tore) < 10.0:
-            continue
-        if _gefaelle(px, pz)[2] > 0.6:
-            continue
-        g = random.uniform(2.5, 4.5)
-        FELSSTUECKE.append((random.choice(BROCKEN), round(px, 2), round(H(px, pz) - 0.5 * g, 2), round(pz, 2),
-                            round(random.uniform(0, 360), 1), round(random.uniform(0, 15), 1), round(g, 2)))
-        _hang_orte.append((px, pz))
-        _bloecke += 1
-print("Felsblöcke zwischen den Terrassen:", _bloecke)
 
 # Bewuchs: auf Absätzen und Kanten bei den Felsen (nicht zu steil), Farn und Gras in Gruppen, dazu Moos und Brocken
 _felsen = [(x, z) for m, x, y, z, *_ in FELSSTUECKE if m in (GROSS, MITTEL, RIESIG)] + _hang_orte[::4]
@@ -274,6 +256,19 @@ print("Grün an den Felswänden:", _wand)
 # Vor den Meereshöhlen (teil_stadt.py) bleibt der Fels frei, sonst verdecken Brocken die Öffnungen
 _hoehlen_orte = [(_hl[k], _hl[k + 1]) for k in range(0, len(_hl), 7)] if "_hl" in globals() else []
 FELSSTUECKE = [f_ for f_ in FELSSTUECKE if all(math.dist((f_[1], f_[3]), h_) > (11.0 + 3.0 * f_[6] if f_[0] < 4 else 11.0) for h_ in _hoehlen_orte)]   # große Klippenmodelle reichen weit über ihren Ursprung
+# Felsmassiv im Burgbezirk (szenen/welt/felsmassiv.gd): Der Grund zwischen den Höfen ist nackter, gestufter Fels.
+# Darum liegen dort keine einzelnen Brocken, Platten und Pflanzen mehr; die Klippen außen vor der Ringmauer bleiben.
+E("Script", "res://szenen/welt/felsmassiv.gd", "33_felsmassiv")
+E("Material", "res://material/felsmassiv.tres", "34_felsmassiv_mat")
+_rx = [q[0] for q in _ring_flaeche]
+_rz = [q[1] for q in _ring_flaeche]
+N("Felsmassiv", "Node3D", DS, f"""script = ExtResource("33_felsmassiv")
+gelaende = NodePath("../../Gelaende")
+bereich = Rect2({min(_rx) - 2:.1f}, {min(_rz) - 2:.1f}, {max(_rx) - min(_rx) + 4:.1f}, {max(_rz) - min(_rz) + 4:.1f})
+material = ExtResource("34_felsmassiv_mat")""", extra='node_paths=PackedStringArray("gelaende")')
+_vorher = len(FELSSTUECKE)
+FELSSTUECKE = [f_ for f_ in FELSSTUECKE if not im_vieleck((f_[1], f_[3]), _ring_flaeche)]
+print("Felsmassiv im Burgbezirk; dort entfernt:", _vorher - len(FELSSTUECKE), "Brocken, Platten und Pflanzen")
 N("Felsen", "Node3D", DS, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray({", ".join(f'"{p}"' for p, _, _ in FELSMODELLE)})
 farben = PackedColorArray({", ".join(FARBEN.get(m, "1, 1, 1, 1") for m in range(len(FELSMODELLE)))})
