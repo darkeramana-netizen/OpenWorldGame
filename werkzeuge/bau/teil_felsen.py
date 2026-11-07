@@ -265,7 +265,7 @@ _rz = [q[1] for q in _ring_flaeche]
 N("Felsmassiv", "Node3D", DS, f"""script = ExtResource("33_felsmassiv")
 gelaende = NodePath("../../Gelaende")
 bereich = Rect2({min(_rx) - 2:.1f}, {min(_rz) - 2:.1f}, {max(_rx) - min(_rx) + 4:.1f}, {max(_rz) - min(_rz) + 4:.1f})
-material = ExtResource("34_felsmassiv_mat")""", extra='node_paths=PackedStringArray("gelaende")')
+material = ExtResource("34_felsmassiv_mat")""")   # gelaende ist ein NodePath (kein Node-Export)
 _vorher = len(FELSSTUECKE)
 FELSSTUECKE = [f_ for f_ in FELSSTUECKE if not im_vieleck((f_[1], f_[3]), _ring_flaeche)]
 print("Felsmassiv im Burgbezirk; dort entfernt:", _vorher - len(FELSSTUECKE), "Brocken, Platten und Pflanzen")
