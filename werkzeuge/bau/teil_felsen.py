@@ -243,7 +243,7 @@ for a_, b_ in zip(_ring_pkt + _ring_pkt[:1], _ring_pkt[1:] + _ring_pkt[:2]):
         t_ = k_ / n_
         px, pz = a_[0] + (b_[0] - a_[0]) * t_, a_[1] + (b_[1] - a_[1]) * t_
         meer_ = min(H(px + nx * d_, pz + nz * d_) for d_ in (20.0, 30.0, 40.0)) < -21.0
-        oben_ = H(px + nx * 2.0, pz + nz * 2.0) - 0.3
+        oben_ = H(px - nx * 1.5, pz - nz * 1.5) - 0.3     # am Mauerfuß (innen), davor fällt das Gelände steil ab
         frei_ = (meer_ and oben_ > -14.0 and min(math.dist((px, pz), t) for t in _tore) > 12.0
                  and not im_vieleck((px + nx * 4, pz + nz * 4), WL(PD.HAFEN_BEZIRK))
                  and not im_vieleck((px + nx * 4, pz + nz * 4), WL(PD.STADT)))
