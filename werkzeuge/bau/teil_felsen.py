@@ -168,6 +168,9 @@ for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BU
     ring_ = umriss_ + umriss_[:1]
     _abschnitt += 1
     offen_ = True
+    _hof_anfang = len(_SOCKEL)
+    _erster_abschnitt = _abschnitt
+    _anfang_frei = None                              # war der allererste Punkt des Rings frei?
     for a_, b_ in zip(ring_, ring_[1:]):
         l_ = math.dist(a_, b_)
         if l_ < 0.3:
@@ -187,6 +190,8 @@ for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BU
                      and min(math.dist((vx, vz), t) for t in _tore) > 9.0
                      and not any(im_vieleck((vx, vz), v) for v in _alle_hoefe)
                      and all(math.dist((px, pz), t) > 9.0 for t in _sockel_tuerme))
+            if _anfang_frei is None:
+                _anfang_frei = frei_
             if not frei_:
                 if not offen_:
                     _abschnitt += 1
@@ -194,6 +199,22 @@ for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BU
                 continue
             offen_ = False
             _SOCKEL += [round(px, 2), round(pz, 2), round(nx, 4), round(nz, 4), round(oben_, 2), round(unten_, 2), _abschnitt]
+    # Ringschluss: Endet der Ring frei und war auch sein Anfang frei, gehören letzter und erster Lauf zusammen. Dann
+    # bekommt der erste Lauf die Nummer des letzten und wird hinten angehängt, damit dort keine Kerbe bleibt.
+    if _anfang_frei and not offen_ and len(_SOCKEL) > _hof_anfang:
+        erster_ = []
+        k_ = _hof_anfang
+        while k_ < len(_SOCKEL) and _SOCKEL[k_ + 6] == _erster_abschnitt:
+            erster_ += _SOCKEL[k_:k_ + 6] + [_abschnitt]
+            k_ += 7
+        if k_ < len(_SOCKEL):                       # sonst ist der ganze Ring ein einziger Lauf
+            del _SOCKEL[_hof_anfang:k_]
+            _SOCKEL += erster_
+        else:
+            _SOCKEL += _SOCKEL[_hof_anfang:_hof_anfang + 7]   # geschlossen: erste Säule hinten noch einmal
+from collections import Counter as _Zaehler
+_zahl = _Zaehler(_SOCKEL[k_ + 6] for k_ in range(0, len(_SOCKEL), 7))
+_SOCKEL = [v_ for k_ in range(0, len(_SOCKEL), 7) if _zahl[_SOCKEL[k_ + 6]] > 1 for v_ in _SOCKEL[k_:k_ + 7]]   # einzelne Säulen bilden keine Wand
 N("Felssockel", "Node3D", DS, f"""script = ExtResource("31_felssockel")
 saeulen = PackedFloat32Array({", ".join(f"{v:.6g}" for v in _SOCKEL)})
 material = ExtResource("32_felssockel_mat")""")

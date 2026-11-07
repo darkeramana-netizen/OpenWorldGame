@@ -43,6 +43,7 @@ func _baue() -> void:
 	_grob.frequency = 0.06
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	@warning_ignore("integer_division")
 	var n := saeulen.size() / SCHRITT
 	for k in n - 1:
 		var i := k * SCHRITT
@@ -58,11 +59,12 @@ func _baue() -> void:
 			var t1 := float(z + 1) / zeilen
 			_viereck(st, _punkt(i, t0), _punkt(j, t0), _punkt(j, t1), _punkt(i, t1), aussen)
 		# Kappen an den Enden eines Abschnitts: vom Fels zurück an die Mauerlinie, damit man nicht dahinter schaut
-		var lang := Vector3(saeulen[j] - saeulen[i], 0.0, saeulen[j + 1] - saeulen[i + 1]).normalized()
+		# Richtung weg vom Streifen aus der Geometrie (an Ecken wäre die Kantenrichtung unbestimmt)
+		var weg := (_innen(j, 0.5) + _punkt(j, 0.5)) - (_innen(i, 0.5) + _punkt(i, 0.5))
 		if k == 0 or saeulen[i - SCHRITT + 6] != saeulen[i + 6]:
-			_kappe(st, i, zeilen, -lang)
+			_kappe(st, i, zeilen, -weg)
 		if k + 1 == n - 1 or saeulen[j + SCHRITT + 6] != saeulen[j + 6]:
-			_kappe(st, j, zeilen, lang)
+			_kappe(st, j, zeilen, weg)
 	st.generate_normals()
 	var mesh := st.commit()
 	if mesh.get_surface_count() == 0:
