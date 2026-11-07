@@ -226,6 +226,7 @@ print("Felssockel unter den Hofmauern:", len(_SOCKEL) // 7, "Säulen in", _absch
 # Felswand vom Mauerfuß bis unter die Wasserlinie, statt der glatten, dunklen Geländewand.
 _KUESTE = []
 _k_abschnitt = 0
+_k_hoehlen = [(_hl[k], _hl[k + 1]) for k in range(0, len(_hl), 7)] if "_hl" in globals() else []
 _ring_pkt = WL(PD.RINGMAUER)
 _rmx = sum(q[0] for q in _ring_pkt) / len(_ring_pkt)
 _rmz = sum(q[1] for q in _ring_pkt) / len(_ring_pkt)
@@ -245,6 +246,7 @@ for a_, b_ in zip(_ring_pkt + _ring_pkt[:1], _ring_pkt[1:] + _ring_pkt[:2]):
         meer_ = min(H(px + nx * d_, pz + nz * d_) for d_ in (20.0, 30.0, 40.0)) < -21.0
         oben_ = H(px - nx * 1.5, pz - nz * 1.5) - 0.3     # am Mauerfuß (innen), davor fällt das Gelände steil ab
         frei_ = (meer_ and oben_ > -14.0 and min(math.dist((px, pz), t) for t in _tore) > 12.0
+                 and all(math.dist((px, pz), h_) > 13.0 for h_ in _k_hoehlen)      # die Meereshöhlen bleiben offen
                  and not im_vieleck((px + nx * 4, pz + nz * 4), WL(PD.HAFEN_BEZIRK))
                  and not im_vieleck((px + nx * 4, pz + nz * 4), WL(PD.STADT)))
         if not frei_:
@@ -258,7 +260,8 @@ _zahl = _Zaehler(_KUESTE[k_ + 6] for k_ in range(0, len(_KUESTE), 7))
 _KUESTE = [v_ for k_ in range(0, len(_KUESTE), 7) if _zahl[_KUESTE[k_ + 6]] > 1 for v_ in _KUESTE[k_:k_ + 7]]
 N("Kuestenfels", "Node3D", DS, f"""script = ExtResource("31_felssockel")
 saeulen = PackedFloat32Array({", ".join(f"{v:.6g}" for v in _KUESTE)})
-material = ExtResource("32_felssockel_mat")""")
+material = ExtResource("32_felssockel_mat")
+massstab = 2.5""")
 _kpkt = [(_KUESTE[k_], _KUESTE[k_ + 1]) for k_ in range(0, len(_KUESTE), 7)]
 print("Küstenfels vor der Ringmauer:", len(_KUESTE) // 7, "Säulen")
 

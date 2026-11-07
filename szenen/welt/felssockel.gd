@@ -18,6 +18,12 @@ extends Node3D
 		if is_inside_tree():
 			_baue()
 @export var kollision := true
+## Größe der Felsformen: 1 unter den Hofmauern, größer an der hohen Küste (Bänder, Ausbuchtungen und Risse wachsen mit)
+@export var massstab := 1.0:
+	set(w):
+		massstab = w
+		if is_inside_tree():
+			_baue()
 
 const SCHRITT := 7
 const ZEILE := 0.7          # Höhe einer Zeile im Gitter (Meter)
@@ -112,16 +118,22 @@ func _punkt(i: int, t: float) -> Vector3:
 	var oben := saeulen[i + 4]
 	var y := lerpf(oben, saeulen[i + 5], t)
 	var tiefe := oben - y
+	# Rauschen im Maßstab der Felsformen
+	var m := massstab
+	var rx := x / m
+	var ry := y / m
+	var rz := z / m
 	# Böschung nach unten, grobe Ausbuchtungen, feine Zerklüftung und Felsbänder mit vorstehenden Absätzen
 	var vor := ABSTAND + tiefe * 0.1
-	vor += (_grob.get_noise_3d(x, y * 0.6, z) + 0.4) * 1.3          # große Ausbuchtungen
-	vor += _rauschen.get_noise_3d(x, y * 1.3, z) * 0.7              # Zerklüftung
-	vor -= absf(_rauschen.get_noise_3d(x * 3.0, y * 0.25, z * 3.0)) * 0.9   # senkrechte Risse
-	vor += _band(x, y, z)
+	vor += (_grob.get_noise_3d(rx, ry * 0.6, rz) + 0.4) * 1.3 * m          # große Ausbuchtungen
+	vor += _rauschen.get_noise_3d(rx, ry * 1.3, rz) * 0.7 * m              # Zerklüftung
+	vor += _rauschen.get_noise_3d(x * 1.1, y * 1.4, z * 1.1) * 0.35        # feine Oberfläche (immer klein)
+	vor -= absf(_rauschen.get_noise_3d(rx * 3.0, ry * 0.25, rz * 3.0)) * 0.9 * m   # senkrechte Risse
+	vor += _band(rx, ry, rz) * m
 	if t == 0.0:
-		vor = ABSTAND + maxf(0.0, (_grob.get_noise_3d(x, y * 0.6, z) + 0.4) * 1.0)   # oben dicht an der Mauer
+		vor = ABSTAND + maxf(0.0, (_grob.get_noise_3d(rx, ry * 0.6, rz) + 0.4) * 1.0)   # oben dicht an der Mauer
 	vor = maxf(vor, 1.55)
-	var dy := 0.0 if t == 0.0 else _rauschen.get_noise_3d(x + 50.0, y, z) * 0.25
+	var dy := 0.0 if t == 0.0 else _rauschen.get_noise_3d(rx + 50.0, ry, rz) * 0.25 * m
 	return Vector3(x + nx * vor, y + dy, z + nz * vor)
 
 
