@@ -66,6 +66,9 @@ func _gewicht(x: float, z: float) -> float:
 	var c := _maske.get_pixel(ix, iz).lerp(_maske.get_pixel(ix + 1, iz), fx).lerp(
 		_maske.get_pixel(ix, iz + 1).lerp(_maske.get_pixel(ix + 1, iz + 1), fx), fz)
 	var fels := smoothstep(0.3, 0.45, c.b) * (1.0 - smoothstep(0.6, 0.8, c.b))
+	# An Löchern im Gelände (Gang zum Untergrundhafen) bleibt der Fels weg, sonst spannt er sich über die Öffnung
+	if _g.am_loch(x, z, 4.0):
+		return 0.0
 	return fels * (1.0 - smoothstep(0.08, 0.35, c.r))
 
 
