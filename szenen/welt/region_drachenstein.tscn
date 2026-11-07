@@ -4858,7 +4858,7 @@ script = ExtResource("11_auf_gelaende")
 gelaende = NodePath("../Gelaende")
 
 [node name="Signalturm1" type="Node3D" parent="Signaltuerme"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 40, 0, -335)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 115, 0, -418)
 
 [node name="Turm" type="CSGBox3D" parent="Signaltuerme/Signalturm1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 5, 0)
