@@ -1,0 +1,16 @@
+[gd_resource type="ShaderMaterial" load_steps=5 format=3]
+
+[ext_resource type="Shader" path="res://szenen/welt/stein.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://texturen/klippe_farbe.jpg" id="2_farbe"]
+[ext_resource type="Texture2D" path="res://texturen/klippe_normal.jpg" id="3_normal"]
+[ext_resource type="Texture2D" path="res://texturen/klippe_rau.jpg" id="4_rau"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/farbe = ExtResource("2_farbe")
+shader_parameter/normalen = ExtResource("3_normal")
+shader_parameter/rauheit = ExtResource("4_rau")
+shader_parameter/meter = 7.0
+shader_parameter/ton = Color(1.12, 1.1, 1.07, 1)
+shader_parameter/schwankung = 0.22
+shader_parameter/moos = 0.45

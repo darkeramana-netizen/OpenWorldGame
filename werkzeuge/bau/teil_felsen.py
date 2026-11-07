@@ -149,50 +149,52 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in [k for k in kandidaten i
         FELSSTUECKE.append((m, round(qx, 2), round(hq - 0.4 * g, 2), round(qz, 2), round(random.uniform(0, 360), 1),
                             round(random.uniform(0, 20), 1), round(g, 2)))
 
-# Felssockel unter den Hofmauern (wie im Referenzbild): große Klippenscans senkrecht in Reihen übereinander, von der
-# Mauer bis hinab auf den Grund, dicht an dicht entlang der ganzen Hofmauer. So sieht man den weichen Geländehang
-# darunter nicht. Wege, Tore und die Nachbarhöfe bleiben frei.
+# Felssockel unter den Hofmauern (wie im Referenzbild): eine geschlossene, zerklüftete Felswand, gebaut von
+# szenen/welt/felssockel.gd aus Säulen am Hofrand (alle 1,6 m). Sie reicht vom Mauerfuß bis unter das Gelände. An Toren,
+# Wegen und Nachbarhöfen beginnt ein neuer Abschnitt; dort bleibt sie offen.
+E("Script", "res://szenen/welt/felssockel.gd", "31_felssockel")
+E("Material", "res://material/felssockel.tres", "32_felssockel_mat")
+_SOCKEL = []
+_abschnitt = 0
 _hang = 0
 _hang_orte = []
-for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BURGHOF2), (WL(PD.BURGHOF3), PD.H_KERNHOF)]:
+_alle_hoefe = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG)]
+for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BURGHOF2), (WL(PD.BURGHOF3), PD.H_KERNHOF),
+                       (WL(PD.KERNBURG), PD.H_KERNBURG)]:
     mx_ = sum(q[0] for q in umriss_) / len(umriss_)
     mz_ = sum(q[1] for q in umriss_) / len(umriss_)
     ring_ = umriss_ + umriss_[:1]
+    _abschnitt += 1
+    offen_ = True
     for a_, b_ in zip(ring_, ring_[1:]):
         l_ = math.dist(a_, b_)
-        n_ = max(1, int(l_ / 8.0))
+        if l_ < 0.3:
+            continue
+        ux, uz = (b_[0] - a_[0]) / l_, (b_[1] - a_[1]) / l_
+        nx, nz = -uz, ux
+        if nx * ((a_[0] + b_[0]) / 2 - mx_) + nz * ((a_[1] + b_[1]) / 2 - mz_) < 0:
+            nx, nz = -nx, -nz                         # nach außen
+        n_ = max(1, int(l_ / 1.6))
         for k_ in range(n_):
-            t_ = (k_ + 0.5) / n_
+            t_ = k_ / n_
             px, pz = a_[0] + (b_[0] - a_[0]) * t_, a_[1] + (b_[1] - a_[1]) * t_
-            ux, uz = (b_[0] - a_[0]) / l_, (b_[1] - a_[1]) / l_
-            nx, nz = -uz, ux
-            if nx * (px - mx_) + nz * (pz - mz_) < 0:
-                nx, nz = -nx, -nz                     # nach außen
-            reihe_ = 0
-            oben_ = hof_h - 0.4                       # Oberkante der obersten Reihe knapp unter dem Mauerfuß
-            while reihe_ < 4:
-                vorne = 2.2 + reihe_ * 1.3                # so weit steht die Front vor der Mauerlinie
-                fx, fz = px + nx * vorne, pz + nz * vorne
-                grund = H(px + nx * (vorne + 3.0), pz + nz * (vorne + 3.0))
-                if oben_ - grund < 1.5:
-                    break
-                if any(im_vieleck((fx, fz), v) for v in _frei) or _abstand((fx, fz), _wege) < 5.0 \
-                        or min(math.dist((fx, fz), t) for t in _tore) < 9.0:
-                    break
-                m = MITTEL if reihe_ % 2 == 0 else random.choice([MITTEL, GROSS])
-                _, breite, mh = FELSMODELLE[m]
-                g = min(5.5, oben_ - grund + 1.0) / mh * random.uniform(0.95, 1.1)
-                g = min(g, 13.0 / breite)                 # nicht breiter als 13 m, sonst passt er nicht an das Oval
-                oy = oben_ - mh * g
-                ox, oz = fx - nx * FRONT[m] * g, fz - nz * FRONT[m] * g
-                gier = math.degrees(math.atan2(nx, nz)) + random.uniform(-6, 6)
-                FELSSTUECKE.append((m, round(ox, 2), round(oy, 2), round(oz, 2), round(gier, 1),
-                                    round(random.uniform(2, 9), 1), round(g, 2)))
-                _hang_orte.append((fx, fz))
-                _hang += 1
-                oben_ = oy + mh * g * 0.25            # die nächste Reihe überlappt die untere Kante
-                reihe_ += 1
-print("Felssockel unter den Hofmauern:", _hang)
+            vx, vz = px + nx * 3.5, pz + nz * 3.5     # vor der Wand
+            oben_ = hof_h - 0.15
+            unten_ = min(H(px + nx * d_, pz + nz * d_) for d_ in (2.0, 4.0, 6.0, 9.0)) - 2.5
+            frei_ = (oben_ - unten_ > 3.0 and _abstand((vx, vz), _wege) > 4.0
+                     and min(math.dist((vx, vz), t) for t in _tore) > 9.0
+                     and not any(im_vieleck((vx, vz), v) for v in _alle_hoefe))
+            if not frei_:
+                if not offen_:
+                    _abschnitt += 1
+                    offen_ = True
+                continue
+            offen_ = False
+            _SOCKEL += [round(px, 2), round(pz, 2), round(nx, 4), round(nz, 4), round(oben_, 2), round(unten_, 2), _abschnitt]
+N("Felssockel", "Node3D", DS, f"""script = ExtResource("31_felssockel")
+saeulen = PackedFloat32Array({", ".join(f"{v:.6g}" for v in _SOCKEL)})
+material = ExtResource("32_felssockel_mat")""")
+print("Felssockel unter den Hofmauern:", len(_SOCKEL) // 7, "Säulen in", _abschnitt, "Abschnitten")
 
 # Große Felsblöcke auf dem Grund zwischen den Terrassen, halb im Boden (keine kleinen Platten)
 _bloecke = 0
