@@ -441,7 +441,7 @@ outline_size = 14
 
 [node name="TreppeVorburg" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-treppen = PackedFloat32Array(25, 162.25, 1.95, 15.35, 141.5, 6, 4)
+treppen = PackedFloat32Array(25, 162.25, 1.95, 15.35, 141.5, 5.72, 4)
 
 [node name="SperrmauerBau" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")

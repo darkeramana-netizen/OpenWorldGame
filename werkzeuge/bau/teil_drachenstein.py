@@ -135,7 +135,7 @@ schild("SchildVorburg", BG, *(lambda p: (p[0], PD.H_VORBURG + 9, p[1]))(W((390, 
 _tr_a = W((410.5, 278.0))
 _tr_b = W((452.0, 258.7))   # oben bis vor das Tor, wo der Boden auf Höhe des II. Burghofs liegt
 N("TreppeVorburg", "Node3D", BG, f"""script = ExtResource("28_burgbau")
-treppen = PackedFloat32Array({_zahlen([_tr_a[0], _tr_a[1], round(H(*_tr_a), 2), _tr_b[0], _tr_b[1], PD.H_BURGHOF2, 4.0])})""")
+treppen = PackedFloat32Array({_zahlen([_tr_a[0], _tr_a[1], round(H(*_tr_a), 2), _tr_b[0], _tr_b[1], round(H(*_tr_b), 2), 4.0])})""")
 
 # Sperrmauer im Zwinger westlich der Vorburg: Von Westen kommt man nicht unter die Vorburg, nur vom Rampentor her
 mauerring("Sperrmauer", BG, WL(PD.SPERRMAUER), 7.0, dicke=2.5, mitte=W((300, 380)))
