@@ -92,8 +92,9 @@ func _punkt(i: int, t: float) -> Vector3:
 	var tiefe := oben - y
 	# Böschung nach unten, grobe Ausbuchtungen, feine Zerklüftung und Felsbänder mit vorstehenden Absätzen
 	var vor := ABSTAND + tiefe * 0.16
-	vor += (_grob.get_noise_3d(x, y * 0.6, z) + 0.4) * 2.2
-	vor += _rauschen.get_noise_3d(x, y * 1.3, z) * 0.9
+	vor += (_grob.get_noise_3d(x, y * 0.6, z) + 0.4) * 2.4          # große Ausbuchtungen
+	vor += _rauschen.get_noise_3d(x, y * 1.3, z) * 0.7              # Zerklüftung
+	vor -= absf(_rauschen.get_noise_3d(x * 3.0, y * 0.25, z * 3.0)) * 0.9   # senkrechte Risse
 	vor += _band(x, y, z)
 	if t == 0.0:
 		vor = ABSTAND + maxf(0.0, (_grob.get_noise_3d(x, y * 0.6, z) + 0.4) * 1.0)   # oben dicht an der Mauer
@@ -102,11 +103,12 @@ func _punkt(i: int, t: float) -> Vector3:
 	return Vector3(x + nx * vor, y + dy, z + nz * vor)
 
 
-## Felsbänder: etwa alle 2,6 m ein Absatz, der bis 0,8 m vorsteht; die Bänder laufen leicht schräg und unregelmäßig
+## Felsbänder: etwa alle 3 m ein Absatz, der bis 0,7 m vorsteht, nicht überall; die Bänder laufen schräg und unregelmäßig
 func _band(x: float, y: float, z: float) -> float:
-	var hoehe := 2.6 + _grob.get_noise_2d(x * 0.7, z * 0.7) * 0.8
-	var f := fposmod(y + _grob.get_noise_2d(x * 1.3 + 100.0, z * 1.3) * 2.0, hoehe) / hoehe
-	return smoothstep(0.7, 0.95, f) * 0.8 - smoothstep(0.0, 0.25, f) * 0.2
+	var hoehe := 3.2 + _grob.get_noise_2d(x * 0.7, z * 0.7) * 1.2
+	var f := fposmod(y + _grob.get_noise_2d(x * 1.3 + 100.0, z * 1.3) * 3.5, hoehe) / hoehe
+	var staerke := clampf(0.5 + _grob.get_noise_2d(x * 2.1 + 40.0, z * 2.1) * 1.2, 0.0, 1.0)   # nicht überall ein Absatz
+	return (smoothstep(0.75, 0.95, f) * 0.7 - smoothstep(0.0, 0.2, f) * 0.15) * staerke
 
 
 func _viereck(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, aussen: Vector3) -> void:
