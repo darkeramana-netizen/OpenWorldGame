@@ -75,9 +75,9 @@ func _fels(x: float, z: float, h: float) -> float:
 	var stufe := 2.5 + _band.get_noise_2d(x * 2.0, z * 2.0) * 0.8
 	var schief := _band.get_noise_2d(x, z) * stufe * 1.6 + x * 0.04 - z * 0.025
 	var b := (h + schief) / stufe
-	var f := b - floor(b)
+	var f := b - floorf(b)
 	# unten in jeder Bank die steile Stufe, darüber der fast flache Absatz (leicht nach außen geneigt)
-	var y := (floor(b) + smoothstep(0.0, 0.28, f) - (1.0 - f) * 0.08) * stufe - schief
+	var y := (floorf(b) + smoothstep(0.0, 0.28, f) - (1.0 - f) * 0.08) * stufe - schief
 	# Klüfte zwischen den Blöcken
 	var k := _kluft.get_noise_2d(x, z)
 	y -= (1.0 - smoothstep(-0.95, -0.75, k)) * 0.9
