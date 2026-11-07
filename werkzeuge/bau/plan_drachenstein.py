@@ -386,7 +386,7 @@ def zwickel(a_, b_, tor, reichweite=45.0):
     return pa + pb
 
 
-HOF_FELSHANG = 18.0       # Meter: so breit fällt der Fels außen an Vorburg, II. und III. Burghof ab
+HOF_FELSHANG = 7.0        # Meter: so breit fällt der Fels außen an Vorburg, II. und III. Burghof steil ab (Felssockel in teil_felsen.py)
 
 
 def plan_json():

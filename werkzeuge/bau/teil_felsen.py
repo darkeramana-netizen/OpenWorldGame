@@ -149,43 +149,69 @@ for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in [k for k in kandidaten i
         FELSSTUECKE.append((m, round(qx, 2), round(hq - 0.4 * g, 2), round(qz, 2), round(random.uniform(0, 360), 1),
                             round(random.uniform(0, 20), 1), round(g, 2)))
 
-# Felshänge zwischen den Terrassen im Burgbezirk (wie im Referenzbild zerklüftet): auf den mäßig steilen Hängen unter
-# den Höfen Felsplatten (hangabwärts, zum Hang gekippt, halb im Boden), Brocken und ab und zu eine niedrige Felsstufe.
-# Die steilen Wände haben schon ihre Fels-Haut; Wege, Mauern und Tore bleiben frei.
+# Felssockel unter den Hofmauern (wie im Referenzbild): große Klippenscans senkrecht in Reihen übereinander, von der
+# Mauer bis hinab auf den Grund, dicht an dicht entlang der ganzen Hofmauer. So sieht man den weichen Geländehang
+# darunter nicht. Wege, Tore und die Nachbarhöfe bleiben frei.
 _hang = 0
 _hang_orte = []
-for x in range(-150, 330, 3):
-    for z in range(-330, 330, 3):
-        px, pz = x + random.uniform(-1.2, 1.2), z + random.uniform(-1.2, 1.2)
-        if not im_vieleck((px, pz), _ring_flaeche):
+for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BURGHOF2), (WL(PD.BURGHOF3), PD.H_KERNHOF)]:
+    mx_ = sum(q[0] for q in umriss_) / len(umriss_)
+    mz_ = sum(q[1] for q in umriss_) / len(umriss_)
+    ring_ = umriss_ + umriss_[:1]
+    for a_, b_ in zip(ring_, ring_[1:]):
+        l_ = math.dist(a_, b_)
+        n_ = max(1, int(l_ / 8.0))
+        for k_ in range(n_):
+            t_ = (k_ + 0.5) / n_
+            px, pz = a_[0] + (b_[0] - a_[0]) * t_, a_[1] + (b_[1] - a_[1]) * t_
+            ux, uz = (b_[0] - a_[0]) / l_, (b_[1] - a_[1]) / l_
+            nx, nz = -uz, ux
+            if nx * (px - mx_) + nz * (pz - mz_) < 0:
+                nx, nz = -nx, -nz                     # nach außen
+            reihe_ = 0
+            oben_ = hof_h - 0.4                       # Oberkante der obersten Reihe knapp unter dem Mauerfuß
+            while reihe_ < 4:
+                vorne = 2.2 + reihe_ * 1.3                # so weit steht die Front vor der Mauerlinie
+                fx, fz = px + nx * vorne, pz + nz * vorne
+                grund = H(px + nx * (vorne + 3.0), pz + nz * (vorne + 3.0))
+                if oben_ - grund < 1.5:
+                    break
+                if any(im_vieleck((fx, fz), v) for v in _frei) or _abstand((fx, fz), _wege) < 5.0 \
+                        or min(math.dist((fx, fz), t) for t in _tore) < 9.0:
+                    break
+                m = MITTEL if reihe_ % 2 == 0 else random.choice([MITTEL, GROSS])
+                _, breite, mh = FELSMODELLE[m]
+                g = min(5.5, oben_ - grund + 1.0) / mh * random.uniform(0.95, 1.1)
+                g = min(g, 13.0 / breite)                 # nicht breiter als 13 m, sonst passt er nicht an das Oval
+                oy = oben_ - mh * g
+                ox, oz = fx - nx * FRONT[m] * g, fz - nz * FRONT[m] * g
+                gier = math.degrees(math.atan2(nx, nz)) + random.uniform(-6, 6)
+                FELSSTUECKE.append((m, round(ox, 2), round(oy, 2), round(oz, 2), round(gier, 1),
+                                    round(random.uniform(2, 9), 1), round(g, 2)))
+                _hang_orte.append((fx, fz))
+                _hang += 1
+                oben_ = oy + mh * g * 0.25            # die nächste Reihe überlappt die untere Kante
+                reihe_ += 1
+print("Felssockel unter den Hofmauern:", _hang)
+
+# Große Felsblöcke auf dem Grund zwischen den Terrassen, halb im Boden (keine kleinen Platten)
+_bloecke = 0
+for x in range(-150, 330, 5):
+    for z in range(-330, 330, 5):
+        px, pz = x + random.uniform(-2, 2), z + random.uniform(-2, 2)
+        if not im_vieleck((px, pz), _ring_flaeche) or random.random() > 0.12:
             continue
-        dx, dz, s = _gefaelle(px, pz)
-        if not 0.3 < s < 1.3 or random.random() > 0.55:
+        if any(im_vieleck((px, pz), v) for v in _frei) or _abstand((px, pz), _wege) < 6.0 \
+                or _abstand((px, pz), _mauern) < 4.0 or min(math.dist((px, pz), t) for t in _tore) < 10.0:
             continue
-        if any(im_vieleck((px, pz), v) for v in _frei) or _abstand((px, pz), _wege) < 5.5 \
-                or _abstand((px, pz), _mauern) < 3.0 or min(math.dist((px, pz), t) for t in _tore) < 10.0:
+        if _gefaelle(px, pz)[2] > 0.6:
             continue
-        if any(math.dist((px, pz), q) < 2.6 for q in _hang_orte[-40:]):
-            continue
-        h0 = H(px, pz)
-        neig = round(min(40.0, math.degrees(math.atan(s))) * random.uniform(0.6, 1.0), 1)
-        gier = round(math.degrees(math.atan2(dx, dz)) + random.uniform(-25, 25), 1)
-        wurf = random.random()
-        if wurf < 0.12 and s > 0.6:
-            m, g = MITTEL, random.uniform(0.3, 0.5)              # niedrige Felsstufe (6 bis 10 m breit)
-            y = h0 - FELSMODELLE[MITTEL][2] * g * 0.45
-        elif wurf < 0.6:
-            m, g = STUECK, random.uniform(1.2, 2.8)             # Felsplatte
-            y = h0 - FELSMODELLE[STUECK][2] * g * 0.35
-        else:
-            m, g = random.choice(BROCKEN), random.uniform(1.3, 3.0)
-            y = h0 - 0.35 * g
-            neig = round(random.uniform(0, 25), 1)
-            gier = round(random.uniform(0, 360), 1)
-        FELSSTUECKE.append((m, round(px, 2), round(y, 2), round(pz, 2), gier, neig, round(g, 2)))
+        g = random.uniform(2.5, 4.5)
+        FELSSTUECKE.append((random.choice(BROCKEN), round(px, 2), round(H(px, pz) - 0.5 * g, 2), round(pz, 2),
+                            round(random.uniform(0, 360), 1), round(random.uniform(0, 15), 1), round(g, 2)))
         _hang_orte.append((px, pz))
-        _hang += 1
-print("Felsen auf den Hängen zwischen den Terrassen:", _hang)
+        _bloecke += 1
+print("Felsblöcke zwischen den Terrassen:", _bloecke)
 
 # Bewuchs: auf Absätzen und Kanten bei den Felsen (nicht zu steil), Farn und Gras in Gruppen, dazu Moos und Brocken
 _felsen = [(x, z) for m, x, y, z, *_ in FELSSTUECKE if m in (GROSS, MITTEL, RIESIG)] + _hang_orte[::4]
