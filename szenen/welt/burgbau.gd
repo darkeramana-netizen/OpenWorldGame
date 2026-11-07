@@ -533,8 +533,8 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 		var m := Vector3(c.x, yb, c.y)
 		_dreieck("holz", m, m + Vector3(cos(w0), 0, sin(w0)) * ri, m + Vector3(cos(w1), 0, sin(w1)) * ri, Vector3.UP)
 	# Schießscharten
-	for k in [2, 6, 10]:
-		var w := w_start + PI * (k + 0.5) / schritte
+	for k: int in [2, 6, 10]:
+		var w: float = w_start + PI * (k + 0.5) / schritte
 		var d := Vector2(cos(w), sin(w))
 		_klotz("dunkel", c + d * (r - 0.05), Vector2(-d.y, d.x), d, -0.08, 0.08, 0.0, 0.08, oben - 4.5, oben - 3.3)
 
