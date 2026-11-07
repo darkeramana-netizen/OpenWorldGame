@@ -19,6 +19,12 @@ extends Node3D
 		nur_ziegel = wert
 		if is_inside_tree():
 			_baue()
+## Fachwerk statt Stein und Putz (Stil 2 wird Fachwerk über Stein, Stil 3 Fachwerk über Putz), wie im Referenzbild
+@export var nur_fachwerk := false:
+	set(wert):
+		nur_fachwerk = wert
+		if is_inside_tree():
+			_baue()
 ## Je Haus die Nummer der Form (0 bis 23)
 @export var formen: PackedInt32Array = PackedInt32Array():
 	set(wert):
@@ -101,7 +107,7 @@ func _baue() -> void:
 				continue
 			var h: Vector4 = haeuser[je_form[fv][k]]
 			var t := Transform3D(Basis(Vector3.UP, deg_to_rad(h.w)), Vector3(h.x, h.y, h.z))
-			add_child(_rauch(t * (_schornsteine[fv] as Vector3)))
+			add_child(_rauch(t * (_schornsteine[_schluessel(f, fv % VARIANTEN)] as Vector3)))
 
 
 ## Dünner, langsam aufsteigender Rauch über einem Schornstein (wenige weiche Teilchen).
@@ -168,8 +174,15 @@ static func tuer(h: Vector4, form: int) -> Vector3:
 
 # ---------- Ein Haus bauen ----------
 
+## Schlüssel für die gemeinsamen Modelle: Form, Ausstattung und die Einstellungen dieses Knotens (sonst teilen sich
+## Knoten mit verschiedenen Einstellungen dieselben Modelle)
+func _schluessel(f: int, variante: int) -> int:
+	return (f * VARIANTEN + variante) * 4 + (1 if nur_ziegel else 0) + (2 if nur_fachwerk else 0)
+
+
 func _form_mesh(f: int, variante := 0) -> ArrayMesh:
-	var schluessel := f * VARIANTEN + variante
+	# Die Einstellungen gehören in den Schlüssel, sonst teilen sich Knoten mit verschiedenen Einstellungen die Modelle
+	var schluessel := _schluessel(f, variante)
 	if _mesh_cache.has(schluessel):
 		return _mesh_cache[schluessel]
 	var form: Array = FORMEN[f]
@@ -177,6 +190,8 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 	var t: float = form[1]
 	var og: int = form[2]
 	var stil: int = form[3]
+	if nur_fachwerk and stil >= 2:
+		stil -= 2
 	var giebelstaendig: bool = form[4]
 	var zufall := RandomNumberGenerator.new()
 	zufall.seed = 1750 + f + 977 * variante
