@@ -133,7 +133,7 @@ schild("SchildVorburg", BG, *(lambda p: (p[0], PD.H_VORBURG + 9, p[1]))(W((390, 
 
 # Treppe im Vorburghof hinauf zum Tor des II. Burghofs (das Tor liegt 6 m über dem Hof), gut sichtbar mit Wangen
 _tr_a = W((410.5, 278.0))
-_tr_b = W((445.0, 259.5))
+_tr_b = W((452.0, 258.7))   # oben bis vor das Tor, wo der Boden auf Höhe des II. Burghofs liegt
 N("TreppeVorburg", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 treppen = PackedFloat32Array({_zahlen([_tr_a[0], _tr_a[1], round(H(*_tr_a), 2), _tr_b[0], _tr_b[1], PD.H_BURGHOF2, 4.0])})""")
 

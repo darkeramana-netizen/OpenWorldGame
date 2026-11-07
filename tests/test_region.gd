@@ -132,7 +132,7 @@ func _initialize() -> void:
 	# Hinab: Tor des III. Burghofs → II. Burghof → Tor in die I. Vorburg → Südtor der Vorburg → unter dem II. Burghof
 	# nach Osten bis an den Fuß der Rampe zum Rampentor (von Westen ist der Weg durch die Sperrmauer versperrt)
 	await setze(Vector3(0, 14.3, 46))
-	var hinab := await gehe_ueber([Vector2(0, 49.5), Vector2(1, 55), Vector2(8.5, 67.5), Vector2(17, 97.5), Vector2(14, 132.5), Vector2(15.2, 139.8), Vector2(15.75, 145), Vector2(25, 162.25), Vector2(30, 168), Vector2(36, 167.5), Vector2(48.5, 152.5), Vector2(55.85, 149.1), Vector2(64, 147), Vector2(62, 137.5), Vector2(64, 117.5), Vector2(67, 77.5), Vector2(62, 37.5), Vector2(53, 7.5)], 40.0)
+	var hinab := await gehe_ueber([Vector2(0, 49.5), Vector2(1, 55), Vector2(8.5, 67.5), Vector2(17, 97.5), Vector2(14, 132.5), Vector2(15.2, 139.8), Vector2(15.35, 141.5), Vector2(25, 162.25), Vector2(30, 168), Vector2(36, 167.5), Vector2(48.5, 152.5), Vector2(55.85, 149.1), Vector2(64, 147), Vector2(62, 137.5), Vector2(64, 117.5), Vector2(67, 77.5), Vector2(62, 37.5), Vector2(53, 7.5)], 40.0)
 	pruefe(hinab and absf(spieler().global_position.y) < 1.5, "Durch die Vorburg und unter dem II. Burghof zur Rampe (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("I. Vorburg") and orte.has("II. Burghof"), "Ortsnamen: II. Burghof, I. Vorburg")
 	# Der ganze Burgweg: vom II. Burghof durch das Rampentor hinab, im Süden über dem Wassertor und an der Klippe am
