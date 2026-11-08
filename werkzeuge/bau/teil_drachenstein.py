@@ -265,7 +265,7 @@ gebaeude("Vorburgbau1", BG, PD.VORBURG_BAUTEN[6], 7, PD.H_VORBURG, dach="Materia
 gebaeude("Burghof2Bau0", BG, PD.BURGHOF2_BAUTEN[2], 8, PD.H_BURGHOF2, zweck=5)
 gebaeude("Burghof2Bau1", BG, PD.BURGHOF2_BAUTEN[6], 8, PD.H_BURGHOF2, zweck=5)
 gebaeude("Burghof3Bau0", BG, PD.BURGHOF3_BAUTEN[0], 9, PD.H_KERNHOF, zweck=5)    # Heilstube und Ordenshaus
-gebaeude("Burghof3Bau1", BG, PD.BURGHOF3_BAUTEN[2], 8, PD.H_KERNHOF, zweck=1)    # Küche (kurz: 4 m je Geschoss, sonst passt die Treppe nicht)
+gebaeude("Burghof3Bau1", BG, PD.BURGHOF3_BAUTEN[2], 8, PD.H_KERNHOF, zweck=5)    # Gesindehaus (kurz: 4 m je Geschoss; der Rauchfang einer Küche stünde oben an der Treppe)
 _BEGEHBAR = [PD.VORBURG_BAUTEN[0], PD.VORBURG_BAUTEN[6], PD.BURGHOF2_BAUTEN[2], PD.BURGHOF2_BAUTEN[6],
              PD.BURGHOF3_BAUTEN[0], PD.BURGHOF3_BAUTEN[2], PD.BURGKUECHE, PD.DRACHENKAPELLE, PD.ZEUGHAUS]
 

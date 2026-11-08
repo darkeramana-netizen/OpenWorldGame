@@ -555,7 +555,7 @@ gebaeude = PackedFloat32Array(-11.31, 29.26, -297.3, 10.72, 31.605, 14, 12.5, 9,
 
 [node name="Burghof3Bau1" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(-21.76, -11.87, -7.2, 12.06, 19.515, 14, 12.5, 8, 7.236, 2, 0, 110)
+gebaeude = PackedFloat32Array(-21.76, -11.87, -7.2, 12.06, 19.515, 14, 12.5, 8, 7.236, 2, 0, 510)
 
 [node name="Hofhaeuser" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("27_stadthaeuser")
