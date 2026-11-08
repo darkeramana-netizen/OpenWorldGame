@@ -114,7 +114,7 @@ ZWINGER_KERNBURG = g3l(G3.PALAS_ZWINGER)            # enger Zwinger um den Palas
 # Zwinger der Oberburg (West- und Südseite) mit dem Durchgang zum Palas, für das Gelände: außen die Ostmauer der
 # Mittelburg, die Zwingermauer im Süden und der Zwinger des Palas, innen die Mauern der Oberburg
 ZWINGER_III = g3l([(932, 268), (938, 330), (946, 400), (948, 440), (1055, 490), (1160, 480), (1172, 505), (1230, 515),
-                   (1268, 505), (1272, 470), (1273, 360), (1276, 300), (1262, 262), (1250, 298), (1247, 430),
+                   (1268, 505), (1308, 477), (1298, 468), (1270, 415), (1273, 360), (1276, 300), (1262, 262), (1250, 298), (1247, 430),
                    (1180, 437), (1105, 435), (1050, 420), (1020, 400), (980, 375), (967, 330), (1025, 235), (985, 243)])
 ZWINGERMAUER_SUED = g3l([(948, 440)] + G3.ZWINGER_SUED[1:])
 DURCHGANG_NORD, DURCHGANG_SUED = g3l(G3.DURCHGANG_NORD), g3l(G3.DURCHGANG_SUED)
