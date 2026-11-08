@@ -235,9 +235,11 @@ VORBURG = oval(*OVAL_VORBURG, tore=[TORE["Tor zur Vorburg"], TORE["Tor des II. B
 BURGHOF2 = oval(*OVAL_BURGHOF2, tore=[TORE["Rampentor"], TORE["Tor des II. Burghofs, Ostseite"], TORE["Tor des III. Burghofs, Westseite"]])
 OVAL_BURGHOF3 = ((738, 228), 102, 88)   # vom Tor des III. Burghofs (Westende) bis zum Burgtor (Ostende)
 BURGHOF3 = oval(*OVAL_BURGHOF3, tore=[TORE["Tor des III. Burghofs"], TORE["Burgtor"], TORE["Südtor des III. Burghofs"]])
-# Innere Ringmauer des III. Burghofs (doppelte Mauer wie im Referenzbild): hinter dem Häuserring, mit Durchgängen
-OVAL_BURGHOF3_INNEN = (OVAL_BURGHOF3[0], OVAL_BURGHOF3[1] - 34, OVAL_BURGHOF3[2] - 34)
-BURGHOF3_INNEN_LUECKEN = [0, 45, 90, 135, 180, 225, 270, 315]    # Winkel der Durchgänge (Grad, Plan)
+# Doppelte Mauer des III. Burghofs (wie im Grundriss): auf der Südseite eine zweite, durchgehende Mauer dicht hinter
+# der Hofmauer, dazwischen ein schmaler Zwinger ohne Häuser; ein Durchgang nur am Südtor. Die Häuser stehen im Norden.
+OVAL_BURGHOF3_INNEN = (OVAL_BURGHOF3[0], OVAL_BURGHOF3[1] - 16, OVAL_BURGHOF3[2] - 16)
+BURGHOF3_INNEN_BOGEN = (25, 155)          # Winkel (Grad, Plan; 90 = Süden)
+BURGHOF3_INNEN_LUECKEN = [100]            # Durchgang hinter dem Südtor
 # Der Zwinger der Kernburg schließt mit seiner Westseite an den Ostbogen des III. Burghofs an
 ZWINGER_KERNBURG = [(round(OVAL_BURGHOF3[0][0] + OVAL_BURGHOF3[1] * math.cos(math.radians(w)), 2),
                      round(OVAL_BURGHOF3[0][1] + OVAL_BURGHOF3[2] * math.sin(math.radians(w)), 2))
@@ -267,7 +269,7 @@ ZEUGHAUS = an_wand(*OVAL_KERNBURG, 62, 56, 26)
 # Bauten mit Abstand zu den Mauern (sonst ragen sie durch die Wand)
 VORBURG_BAUTEN = [an_wand(*OVAL_VORBURG, -100, 48, 16), an_wand(*OVAL_VORBURG, 180, 44, 18)]   # Gesindehaus, Stall
 BURGHOF2_BAUTEN = [an_wand(*OVAL_BURGHOF2, -95, 60, 18), an_wand(*OVAL_BURGHOF2, 100, 50, 18)]
-BURGHOF3_BAUTEN = [an_wand(*OVAL_BURGHOF3, -90, 64, 20), an_wand(*OVAL_BURGHOF3, 90, 56, 20)]
+BURGHOF3_BAUTEN = [an_wand(*OVAL_BURGHOF3, -90, 64, 20), an_wand(*OVAL_BURGHOF3, -145, 50, 20)]   # beide im Norden
 ST_MARIEN = ((410, 500), 76, 34, 0)      # Langhaus von West nach Ost, Turm im Osten
 ST_MARIEN_TURM = (444, 494)
 MARKTPLATZ = [(455, 480), (566, 478), (568, 556), (456, 558)]

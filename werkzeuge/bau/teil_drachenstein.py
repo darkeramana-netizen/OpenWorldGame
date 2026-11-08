@@ -204,12 +204,12 @@ B3 = PD.BURGHOF3 + [PD.BURGHOF3[0]]          # oval; berührt den II. Burghof am
 mauerring("BurghofDrei", BG, WL(B3), 7.0, dicke=3.0, mitte=MITTE_BURG,
          tore=tore_an(B3, (PD.TORE["Burgtor"], 6.0, "Burgtor"), (PD.TORE["Tor des III. Burghofs"], 6.0, ""),
                       (PD.TORE["Südtor des III. Burghofs"], 4.0, "Südtor")))
-# Innere Ringmauer (doppelte Mauer wie im Referenzbild), niedriger, mit Durchgängen zu Häusern und Toren
+# Zweite Mauer auf der Südseite (doppelte Mauer wie im Grundriss), durchgehend bis auf den Durchgang am Südtor
 _mi, _ai, _bi = PD.OVAL_BURGHOF3_INNEN
-_luecke = 9.0                                       # halbe Breite eines Durchgangs in Grad
-_grad = [w_ for w_ in range(0, 360, 4)]
+_luecke = 6.0                                       # halbe Breite des Durchgangs in Grad
+_grad = [w_ for w_ in range(PD.BURGHOF3_INNEN_BOGEN[0], PD.BURGHOF3_INNEN_BOGEN[1] + 1, 3)]
 _bogen = []
-for w_ in _grad + [360]:
+for w_ in _grad:
     frei_ = any(abs((w_ - l_ + 180) % 360 - 180) < _luecke for l_ in PD.BURGHOF3_INNEN_LUECKEN)
     if frei_:
         if len(_bogen) > 1:
@@ -336,6 +336,10 @@ _HOF_WEGE = [w_ for w_ in PD.BURGWEGE]
 # III. Burghof: frei in der Mitte, quer hindurch vom Tor des III. Burghofs zum Burgtor
 _HOF_WEGE.append([PD.TORE["Tor des III. Burghofs"], PD.TORE["Burgtor"]])   # quer über den III. Burghof
 _HOF_WEGE.append([PD.TORE["Südtor des III. Burghofs"], (730, 270)])        # vom Südtor in den Hof
+# Der schmale Zwinger zwischen den beiden Südmauern bleibt frei von Häusern
+_zm, _za, _zb = PD.OVAL_BURGHOF3
+_HOF_SPERREN.append([(_zm[0] + (_za - r_) * math.cos(math.radians(w_)), _zm[1] + (_zb - r_) * math.sin(math.radians(w_)))
+                     for r_, ws_ in ((-2, range(20, 161, 10)), (20, range(160, 19, -10))) for w_ in ws_])
 # Kernburg: vom Kernburgtor über den Hof zum Übungsplatz und vor die Kapelle
 _HOF_WEGE.append([PD.TORE["Kernburgtor"], (940, 215), (990, 225), (1040, 240), (1060, 200)])
 random.seed(4711)
