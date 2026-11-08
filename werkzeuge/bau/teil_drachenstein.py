@@ -301,7 +301,7 @@ def _ueberlappen_plan(r1, r2):
 
 
 # In die begehbaren Bauten (und die Türme an ihnen) ragt kein Fachwerkhaus hinein
-_FREI_HALTEN = [_ecken_plan(b_, 1.0) for b_ in _BEGEHBAR + [PD.PALAS]]
+_FREI_HALTEN = [_ecken_plan(b_, 4.0) for b_ in _BEGEHBAR + [PD.PALAS]]   # 2 m Abstand (Vorkragung und Dachüberstand)
 
 
 def hausreihe(bau, boden):

@@ -30,29 +30,29 @@ Weg vom Klötzchen-Look, Richtung Valheim:
 
 ### Drachenstein nach dem neuen Grundriss: Burgen auf dem Felsgrat, Stadt und Hafen darunter
 
-Drachenstein ist nach deinem zweiten, vereinfachten Grundriss neu gebaut ([`docs/bilder/grundriss-drachenstein-2.webp`](docs/bilder/grundriss-drachenstein-2.webp)), im Maßstab 0,5 m je Bildpunkt: Die ganze Anlage ist rund 650 m lang. Der Plan ist gedreht eingebaut: Plan-Süd (Stadt und Hafen) liegt im Osten am Wächtermeer, die Kernburg im Norden.
+Drachenstein ist nach deinem dritten Grundriss gebaut ([`docs/bilder/grundriss-drachenstein-3.webp`](docs/bilder/grundriss-drachenstein-3.webp)), die Wege so, wie du sie eingezeichnet hast; Hafen, Meer und Weltbezug stammen aus dem zweiten ([`docs/bilder/grundriss-drachenstein-2.webp`](docs/bilder/grundriss-drachenstein-2.webp), 0,5 m je Bildpunkt). Die Punkte des neuen Plans (`werkzeuge/bau/grundriss3.py`) werden mit Maßstab 0,67 und 4,7° Drehung auf den alten umgerechnet. Der Plan ist gedreht eingebaut: Plan-Süd (Stadt und Hafen) liegt im Osten am Wächtermeer, der Palas im Norden.
 
 | Teil | Höhe | Was dort steht |
 |---|---|---|
-| Kernburg (Drachenhorst) | +16 m | Bergfried (bis +76 m), Palas, Drachenkapelle, Burgküche, Zeughaus, Übungsplatz; Kernburgtor im Südwesten, zum Vorhof |
-| Zwinger der Kernburg | +15,5 m | enger zweiter Mauerring mit Türmen dicht um die Kernburg, sein Tor gegenüber dem Kernburgtor |
-| Vorhof und Zwinger des III. Burghofs | +6 bis +14 m | an der Südseite des III. Burghofs zwischen seiner Mauer und einer niedrigeren Außenmauer die Zwingerrampe vom Zwingertor des II. Burghofs hinauf; oben der Vorhof zwischen III. Burghof und Kernburg, im Norden eine Quermauer |
-| III. Burghof (Wolfsfeste) | +14 m | oval, ringsum geschlossene Häuserreihen an der Mauer, Heilstube/Ordenshaus und Küche, die Mitte frei; ein Tor im Südosten oben an der Zwingerrampe |
-| II. Burghof | +6 m | Bauten des 14. Jahrhunderts, Rampentor im Süden, gleich rechts dahinter das Zwingertor |
-| I. Vorburg | 0 m | zwei Rundtürme, Südtor, Tor zum II. Burghof |
-| Burgbezirk in der Ringmauer | −14 bis +24 m | Burgweg um die ganze Burg (im Westen unten, im Osten an der Klippe am höchsten), Torhaus Nord, Burgstraßentor, Halbturm, Wehrturm, Zwinger, Rondell |
-| Festungsstadt | −16 bis −14 m | Stadtmauer mit Torhaus West und Hafenpforte, St. Marien, Marktplatz mit Ständen, Fachwerkhäuser in engen Gassen |
+| Palas (Drachenhorst) | +16 m | Bergfried (bis +76 m) an der Nordostmauer hinter dem Palas, Drachenkapelle, Burgküche, Zeughaus, Übungsplatz; Palastor im Westen zum Durchgang |
+| Zwinger des Palas | +15,5 m | enger zweiter Mauerring mit Türmen dicht um den Palashof, Tor gegenüber dem Palastor, Pforte zum Durchgang |
+| Zwinger der Oberburg | +6 bis +14 m | an der West- und Südseite zwischen Oberburg und Mittelburg bzw. Zwingermauer; der Zwinger im Süden steigt vom Zwingertor bis an den Durchgang zum Palas |
+| Oberburg (Wolfsfeste) | +14 m | eckig, Winkelbau im Nordwesten, Nordflügel, kleine Bauten im Süden, offener Vierkantturm an der Nordostecke; Südtor vom Zwinger, Tor der Oberburg zum Durchgang |
+| Mittelburg | +6 m | langer gebogener Südflügel, Nordflügel an der Außenmauer, Rampentor an der Südostecke, gleich rechts das Zwingertor |
+| Vorburg | −8 m | zwei Rundtürme im Westen, Rundturm am Vorburgtor in der Südmauer, Osttor mit gemauertem Weg hinab in den Burgbezirk |
+| Burgbezirk | −9 bis +14 m | unter den Burgen: Weg an der Mauer zur Rampe, außen um Oberburg und Palas der Ringweg; Ringmauer mit Schalentürmen, Bastionen im Osten, Nordtor im Torhaus |
+| Festungsstadt | −16 bis −8 m | legt sich im Westen und Süden um die Vorburg und steigt zu ihr an; Stadtmauer mit Südtor und den Torhäusern im Nordwesten und Südwesten, St. Marien, Marktplatz mit Ständen, Fachwerkhäuser in Bogenreihen |
 | Drachenhafen | −17,8 m | Becken mit offener Einfahrt zum Meer, Kaimauern, Hafenmauer, Speicherkai mit Molenpforte, Koggen |
 | Untergrundhafen | −17,8 m | hinter dem Hafentor (Wassertor) unter dem Zwinger: gewölbte Halle 60 × 36 m, 12 m breites Becken, Kais rundum, Lagernischen zwischen den Wandpfeilern, Gurtbögen, Laternen, Prahme, Ruderboote, Tretradkran, Tür zur Burg (noch verschlossen) |
 
-Die Burg steht auf einem Berg direkt am Meer (blau markiert im Grundriss): Von Hafen und Stadt steigt er nach Osten an, am höchsten Punkt über der Klippe steht die Kernburg, über 50 m über der Stadt. Darunter reicht das Meer bis an die Klippe unter der Ringmauer zwischen Hafen und Rondell; hinter der Ringmauer fällt der Berg steil ins Tal. Die Höfe sind gestaffelt wie im Schnitt B-B, zwischen den Burgen bricht der Fels steil ab.
+Die Burg steht auf einem Vorgebirge, auf drei Seiten vom Meer umgeben. Die Höfe sind gestaffelt: Vorburg −8, Mittelburg +6, Oberburg +14, Palas +16; unter den Höfen bricht der Fels steil ab. Im Norden sind die Mauern von Vorburg und Mittelburg zugleich die Außenmauer über der Klippe.
 
-- **Der Weg in die Burg** (blaue Linie im Grundriss): vom Hafen oder vom Torhaus West durch die Stadt → Burgstraßentor → im Westen am Halbturm vorbei hinauf, wo der Landweg vom Torhaus Nord dazukommt → außen um die ganze Burg (im Norden am Wehrturm vorbei, um den Zwinger der Kernburg, am Rondell vorbei, im Süden über den Felsenhafen) → Rampe → Rampentor in den II. Burghof → gleich rechts durch das Zwingertor → Zwingerrampe an der Südseite des III. Burghofs hinauf → oben links durch das Tor des III. Burghofs oder geradeaus über den Vorhof, durch das Tor im engen Zwinger und das Kernburgtor in die Kernburg. Vom Burgweg selbst führt kein Tor in den III. Burghof. Unten im Westen zweigt der Weg unter der Vorburg zu ihrem Südtor ab. Die Nordstraße zweigt vor dem Torhaus Nord vom Weg nach Gravemarch ab und läuft am Fuß des Burgbergs entlang.
+- **Der Weg in die Burg** (blau im Plan): vom Hafen über den Marktplatz durch die Stadt im Bogen um die Vorburg hinauf zum Vorburgtor → durch den Hof der Vorburg und ihr Osttor auf dem gemauerten Weg hinab in den Burgbezirk → an der Mauer entlang zum Fuß der Rampe → die Rampe hinauf durch das Rampentor in die Mittelburg → gleich rechts durch das Zwingertor → im Zwinger an der Südseite der Oberburg hinauf → durch das Südtor in die Oberburg, quer durch den Hof und durch das Tor der Oberburg über den Durchgang in den Palas. Nebenwege (rot): vom Nordtor (Weg nach Gravemarch) in die Stadt, vom Südtor (Küstenweg) in die Stadt, der Zwingerweg um die Oberburg, der enge Zwinger um den Palas und der Ringweg außen um ihn bis hinab an den Fuß der Rampe.
 - **Begehbare Gebäude:** Palas, Drachenkapelle, Burgküche, Zeughaus, die Bauten der Vorburg und des II. Burghofs und der Speicher sind innen hohl (`gebaeude` in `burgbau.gd`, Art + 10; + 20 legt die Tür auf die andere Seite): offene Tür, ebenerdiger Boden, Geschossdecken auf Balken, Treppen abwechselnd an den Längswänden mit Geländer (eine unsichtbare Rampe darüber ist die Lauffläche), warmes Licht je Geschoss. Einrichtung je nach Art: Tische, Bänke, Kamin und Betten; im Lager Kistenstapel; in der Kapelle Altar mit Kerzen und Bankreihen. Dazu je nach Zweck (Art + 100 × Zweck): Burgküche mit Herd, Rauchfang, Kessel, Arbeitstischen und Regal; Zeughaus mit Spieß- und Rüstungsständern und Schilden; Palas mit Teppich, Wandteppichen, Kerzenleuchtern und Thron im obersten Geschoss; Stall (Vorburg) mit Boxen, Krippen, Stroh und Heu; Gesindehäuser mit Regalen und Truhen. Die Fenster sind auch von innen zu sehen (helle Scheibe, Kreuz, Fensterbank); Hängeleuchten etwa alle 9 m.
 - **Hafen:** Die Einfahrt zwischen dem Rundturm der Hafenmauer und dem Turm am Speicherkai ist offen zum Meer, eine Fahrrinne führt hinaus. Das Hafentor in der Ringmauer ist ein Wassertor: Ein Kanal führt die Schiffe in den Untergrundhafen, eine gewölbte Halle unter dem Zwinger; zu Fuß geht man über die Kronen der Kanalmauern durch das Tor hinein, um das Becken herum und auf der anderen Seite hinaus zum Ostkai mit den Tretradkränen. Das Gelände hat dafür am Fuß des Steilhangs ein Loch (`loecher` in `gelaende.gd`; Kacheln mit Loch bekommen eine Dreiecksform statt der Höhenkarte als Kollision). Kai und Kaimauern liegen einheitlich auf −17,8 m (Mauerkrone 4 cm darüber), am Becken bleibt ein 1 m breiter Rand auf Kaihöhe unter der Mauer. Von der Molenpforte am Speicherkai führen Mole und Brücken über drei Inseln zum Schwarzen Bergfried.
-- **Ordensvorwerk (Hof aus Akt I):** Akt I beginnt nicht mehr in der Burg. Der Hof mit Haus der Schwelle, Ordenswand, Bauhof und Wachturm liegt als Vorwerk des Ordens vor der Stadt auf der Hochfläche am Küstenweg (Welt 75, 490, Tor nach Osten zur Straße). Wer von Valdrenn kommt und dem Orden beitreten will, wird hier geprüft, bevor er die Burg betritt. Ältere Spielstände ziehen beim Laden um (Version 4): Wer im Hof stand, steht an derselben Stelle im Vorwerk. Version 5: Wer noch in der alten, hoch gelegenen Kernburg oder ihrem Zwingerweg stand, steht jetzt im Hof der Kernburg.
-- **Ovale Höfe:** Vorburg, II. und III. Burghof und Kernburg sind Ovale, die sich an ihren Toren berühren. Dort hat nur eine der beiden Mauern Tortürme, und der Keil zwischen den Mauern ist auf Hofhöhe aufgefüllt.
-- **Vorgebirge im Meer (wie im Referenzbild):** Die Burg steht auf drei Seiten vom Meer umgeben; Land gibt es nur im Westen mit Stadt, Torhaus West und Torhaus Nord. Die Nordstraße zweigt im Tal vom Weg nach Gravemarch ab und läuft in weitem Bogen um die Nordsee zum Pass.
+- **Ordensvorwerk (Hof aus Akt I):** Akt I beginnt nicht mehr in der Burg. Der Hof mit Haus der Schwelle, Ordenswand, Bauhof und Wachturm liegt als Vorwerk des Ordens vor der Stadt auf der Hochfläche am Küstenweg (Welt 75, 490, Tor nach Osten zur Straße). Wer von Valdrenn kommt und dem Orden beitreten will, wird hier geprüft, bevor er die Burg betritt. Ältere Spielstände ziehen beim Laden um (Version 4): Wer im Hof stand, steht an derselben Stelle im Vorwerk. Version 5: Wer noch in der alten, hoch gelegenen Kernburg stand, steht im Hof des Palas. Version 6 (dritter Grundriss): Wer in der Burg stand, steht in der Oberburg, wer in der Stadt stand, auf dem Marktplatz.
+- **Bauten wie im Plan:** Jeder Bau des Plans steht an seiner Stelle; die meisten als Reihen von Fachwerkhäusern (unten Stein, oben Fachwerk), die begehbaren als Steinbauten. Alle stehen mit 2,5 m Abstand zur Hofmauer, so dass man innen bis an die Treppen kommt.
+- **Vorgebirge im Meer (wie im Referenzbild):** Die Burg steht auf drei Seiten vom Meer umgeben; Land gibt es nur im Westen mit der Stadt. Vom Nordtor führt der Weg nach Gravemarch ins Tal, die Nordstraße zweigt dort ab; vom Südtor läuft der Küstenweg am Ufer unter der Stadtmauer entlang zum Pass.
 - **Felsberg:** Der Grund zwischen den Höfen ist nackter, gestufter Fels (`szenen/welt/felsmassiv.gd`: fein aufgelöstes Felsnetz über dem Gelände, Felsbänke, Klüfte; auf steilem Grund flach). Unter den Hofmauern steht ein Felssockel (`szenen/welt/felssockel.gd`), an Toren, Wegen und Türmen offen.
 - **Stadt und Höfe:** Fachwerkhäuser mit warmen Ziegeldächern (`stadthaeuser.gd`: `nur_fachwerk`, `nur_ziegel`), heller Kalkstein an Mauern und Türmen.
 - **So entsteht es:** `werkzeuge/bau/plan_drachenstein.py` enthält den digitalisierten Grundriss und schreibt `daten/drachenstein_plan.json`; daraus formt der Geländeerzeuger die Burgfelsen, den Burgbezirk auf der Höhe der Burgwege, Ebene, Hafen, Kanal und Felsenhafen. Die Bauskripte (`teil_drachenstein.py`, `teil_stadt.py`, `teil_stadtleben.py`) lesen denselben Plan.
@@ -108,7 +108,7 @@ Bevor die Geschichte weitergeht, wird die Welt ausgebaut. Den Anfang macht Drach
 - **Fischer** sitzen am Südkai, **Träger** schleppen am Nordkai.
 - Ein **Kaufmann aus Velmund** darf nur bis an den Kai, die **Hafenaufsicht** sieht ihm zu.
 - Außerdem: der **Küster** vor St. Georg, der **Ratsdiener** am Rathaus und eine **Geflüchtete** aus Valdrenn.
-- **Streifen des Ordens:** Zwei Wächter gehen tags ihre Runden, nachts zwei andere. Wachwechsel ist bei Morgengrauen im III. Burghof.
+- **Streifen des Ordens:** Zwei Wächter gehen tags ihre Runden, nachts zwei andere. Wachwechsel ist bei Morgengrauen in der Oberburg.
 
 **Wie sich der Tag auswirkt:**
 - Nachts sind alle im Haus, außer der Nachtstreife.
@@ -228,7 +228,7 @@ Die drei Straßen aus der Lore sind jetzt begehbare Strecken. Jede ist eine eige
 | **Küstenweg** | Drachenstein – Ashenveil, an der Westküste | 70 km | 0,7 km | 3 Tage |
 
 - **Anschlüsse:**
-  - Drachenstein hat zwei Tore für die Landwege: das **Torhaus Nord** (Nordstraße und Weg nach Gravemarch) und das **Torhaus West** der Stadt (Küstenweg). Hinter beiden führt die Straße über einen **Pass** durchs Gebirge.
+  - Drachenstein hat zwei Tore für die Landwege: das **Nordtor** in der Ringmauer (Nordstraße und Weg nach Gravemarch) und das **Südtor** der Stadt (Küstenweg). Hinter beiden führt die Straße über einen **Pass** durchs Gebirge.
   - In Riverlock geht die Nordstraße nach Westen ab, die Südstraße nach Süden.
   - In Ashenveil beginnt der Küstenweg am Ende des Damms, die Südstraße am Ostpfad.
   - Wer am Ende eines Weges weitergeht, ist in der nächsten Region.
@@ -255,7 +255,7 @@ Die drei Straßen aus der Lore sind jetzt begehbare Strecken. Jede ist eine eige
 Ashenveil, die Reiter- und Rüstburg im **Nebelmoor**, ist eine eigene Region mit dichtem Nebel. Gebaut ist sie nach deinem Grundriss, ohne Drehung.
 
 - **Hinkommen:**
-  - Am Torhaus West von Drachenstein wartet die **Reiterin Ilka Sand** aus Ashenveil. Sie nimmt Wächter über den Küstenweg mit: anderthalb Tage Spielzeit, dann eine Blende. Zurück geht es ebenso mit ihr. Anwärter nimmt sie nicht mit.
+  - Innen am Südtor von Drachenstein wartet die **Reiterin Ilka Sand** aus Ashenveil. Sie nimmt Wächter über den Küstenweg mit: anderthalb Tage Spielzeit, dann eine Blende. Zurück geht es ebenso mit ihr. Anwärter nimmt sie nicht mit.
   - Du kommst am Anfang des Damms an.
 - **Nur ein Weg:** Der Damm führt durch den Sumpf zur Zugbrücke am Haupttor. Wer ihn verlässt und in einen Tümpel gerät, wird zurückgesetzt: „Der Morast verschluckt jeden, der den Weg verlässt.“
 - **Die Burg nach Plan:**
@@ -377,7 +377,7 @@ Die erste begehbare Region, gebaut nach deiner Karte im Maßstab **1:50** (1 km 
 
 | Ort | Was dort steht |
 |---|---|
-| **Burgfeste Drachenstein** | nach Grundriss (siehe oben): Burgen auf dem Felsgrat (Vorburg, II. und III. Burghof, Kernburg), Festungsstadt mit St. Marien und Markt, Drachenhafen |
+| **Burgfeste Drachenstein** | nach Grundriss (siehe oben): Burgen auf dem Felsgrat (Vorburg, Mittelburg, Oberburg, Palas), Festungsstadt mit St. Marien und Markt, Drachenhafen |
 | **Drachenkai** | Hafenbecken im Osten, Molen mit Hafentor und Schiffstor, Zollhaus, Schiffe, Lotsin aus Riverlock |
 | **Brücken zum Bergfried** | drei Brücken von der Südmole über zwei Inseln |
 | **Schwarzer Bergfried** | 100 m hoher achteckiger Turm mit Krone und äußerer Mauer, Bergwächter am Tor |
@@ -460,7 +460,7 @@ Dazu kommen diese Systeme:
 
 Den Wehrgang erreichst du über die Holzrampe an der Südmauer, westlich vom Tor. Von dort führt die Westmauer zur zweiten Rampe hinauf auf den Wachturm in der Nordwestecke.
 
-Wege durch die Region: Vom Ordensvorwerk (Hof aus Akt I) führt der Küstenweg nach Norden zum Torhaus West. Vom III. Burghof geht es durch den II. Burghof und die I. Vorburg hinab, unter der Vorburg nach Westen und durch das Burgstraßentor in die Stadt; der lange Burgweg führt vom Rampentor außen um die ganze Burg. Vom Markt kommt man durch die Hafenpforte in den Drachenhafen, an der Molenpforte auf die Mole und über die Brücken zum Bergfried. Nach Gravemarch geht es durch das Torhaus Nord ins Tal bis zur Brückenpforte von Gravemarch; kurz davor zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
+Wege durch die Region: Vom Ordensvorwerk (Hof aus Akt I) führt der Küstenweg nach Norden und am Ufer unter der Stadtmauer zum Südtor. Aus der Oberburg geht es durch den Zwinger, die Mittelburg und die Rampe hinab, durch die Vorburg und im Bogen durch die Stadt zum Markt. Vom Markt kommt man auf den Westkai des Drachenhafens, an der Molenpforte auf die Mole und über die Brücken zum Bergfried. Nach Gravemarch geht es durch das Nordtor ins Tal bis zur Brückenpforte von Gravemarch; kurz davor zweigt der Weg nach Norden ab und steigt auf den Felssporn nach Gravecrest.
 
 ## Speichern und Laden
 
@@ -676,10 +676,10 @@ Elf automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstän
 | `tests/test_akt2.gd` | Akt II, Nachrichtenkette, 36 Punkte: Zeitsprung beim Komtur, Leofa und die Siegelhülse, der Beobachter, das Pult tagsüber bewacht und nachts durchsucht, Speichern und Laden, alle Ausgänge (Falk liefert aus, der Rat entscheidet, Falk verweigert, Gold genommen und nach fünf Tagen angezeigt, gestanden) |
 | `tests/test_spaehwesen.gd` | Sold, Spähwesen und Bürgschaft, 22 Punkte: Sold zum Monatsanfang und doppelt im Krieg, Bürgschaft für Kerrin, offen von vorn bemerkt werden, schleichend alles hören, Kerrin als Bürge melden, Gold vom Gesandten, Gespräch über die Kette belauschen und berichten, Gold melden, Speichern und Laden, Anzeige durch die Prüfer bei nicht gemeldetem Gold, Verweis für den schweigenden Bürgen |
 | `tests/test_stufe4.gd` | Stufe 4, 28 Punkte: Alarmstufe 1 zu Beginn, Ansehen durch Antworten, Auftrag und Kampf gegen die Gesetzlosen (Treffer, Block, Sieg, bleiben nach dem Laden liegen), Verwundung, Ring der Feuer und leere Märkte, keine Boote bei Alarm, Säbel, Schuss, Bajonett, Nachladen, Verweise und Verfahren bis zur Degradierung, Waffe gegen die Händlerin bis zur Ausstoßung |
-| `tests/test_landwege.gd` | die Landwege, 26 Punkte: Anwärter bleiben drin, vom Torhaus Nord am Burgberg entlang, einmal um das Meer (Nordstraße, Südstraße, Küstenweg) mit den richtigen Reisetagen, Umkehren kostet nichts, Karte, Wald, Personen an der Straße, Speichern und Laden unterwegs, über den Pass und durch das Torhaus West zurück in die Stadt |
+| `tests/test_landwege.gd` | die Landwege, 26 Punkte: Anwärter bleiben drin, vom Nordtor am Burgberg entlang, einmal um das Meer (Nordstraße, Südstraße, Küstenweg) mit den richtigen Reisetagen, Umkehren kostet nichts, Karte, Wald, Personen an der Straße, Speichern und Laden unterwegs, über den Pass und den Küstenweg durch das Südtor zurück in die Stadt |
 | `tests/test_ashenveil.gd` | Ashenveil, 24 Punkte: Reiterin lehnt Anwärter ab, Ritt hin und zurück mit Zeitverlust, Morast, über den Damm und durch das Fallgitter, Rampe hinunter in die Kapelle, Gedenkstein, durch den Fluchttunnel ins Moor, Personen, verriegelter Nebeneingang, Speichern und Laden |
 | `tests/test_riverlock.gd` | Riverlock und das Reisen, 21 Punkte: Lotsin lehnt Anwärter ab, Überfahrt hin und zurück mit Zeitverlust, Rampen durch alle drei Geschosse des Mittelbaus, Zollherr in der Akte, Personen, Wege durch beide Burgen bis vor die Tore, Wasser, Speichern und Laden in Riverlock, Reise über das Entwicklermenü |
-| `tests/test_region.gd` | die Region, 38 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, aus dem III. Burghof über den Vorhof in die Kernburg, die Zwingerrampe hinab und durch die Vorburg und das Burgstraßentor in die Stadt, der Burgweg vom Rampentor einmal um die Burg zum Torhaus Nord, über den Kai auf den Landungssteg, durch den Untergrundhafen auf den Ostkai zu den Kränen, in alle begehbaren Gebäude und ihre Treppen hinauf, durch die Molenpforte auf die Mole, der Landweg vom Torhaus Nord in die Stadt, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
+| `tests/test_region.gd` | die Region, 38 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, vom Markt durch Stadt, Vorburg, Mittelburg, Zwinger und Oberburg hinauf in den Palas, außen um den Palas hinab zur Rampe, der Zwingerweg um die Oberburg, über den Kai auf den Landungssteg, durch den Untergrundhafen auf den Ostkai zu den Kränen, in alle begehbaren Gebäude und ihre Treppen hinauf, durch die Molenpforte auf die Mole, die Landwege durch Nordtor und Südtor in die Stadt, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
 
 ```
 godot --headless --path . --script res://tests/test_akt1.gd

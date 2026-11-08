@@ -210,8 +210,8 @@ func _initialize() -> void:
 	# Landwege: durch das Nordtor herein und hinab in die Stadt; durch das Südtor in die Stadt
 	await setze(Vector3(-50.34, g.hoehe_bei(-50.34, 189.94) + 0.3, 189.94))
 	pruefe(await gehe_ueber([Vector2(-35.37, 188.04), Vector2(-26.41, 186.63), Vector2(-17, 186.53), Vector2(-8.3, 190.19), Vector2(-2.56, 198.79), Vector2(4.28, 208.32), Vector2(6.83, 214.84), Vector2(14.66, 224.28), Vector2(28.09, 232.25), Vector2(47.75, 238.38), Vector2(67.97, 239.07)], 30.0) and orte.has("Festungsstadt"), "Landweg: durch das Nordtor in die Stadt")
-	await setze(Vector3(245.67, g.hoehe_bei(245.67, 89.71) + 0.3, 89.71))
-	pruefe(await gehe_ueber([Vector2(230.88, 93.94), Vector2(222.35, 92.29), Vector2(214.01, 101.38), Vector2(198.29, 106.37), Vector2(178.2, 107.34), Vector2(168.69, 106.1)], 30.0), "Landweg: durch das Südtor in die Stadt")
+	await setze(Vector3(240.5, g.hoehe_bei(240.5, 118) + 0.3, 118))   # auf dem Küstenweg vor dem Südtor
+	pruefe(await gehe_ueber([Vector2(242, 98), Vector2(236, 95), Vector2(230.88, 93.94), Vector2(222.35, 92.29), Vector2(214.01, 101.38), Vector2(198.29, 106.37), Vector2(178.2, 107.34), Vector2(168.69, 106.1)], 30.0), "Landweg: durch das Südtor in die Stadt")
 	# Gravemarch nach dem Grundriss: von der Brückenpforte bis in den Burghof, durch Zwinger und geknicktes Tor
 	var esme: Node3D = current_scene.get_node("Personen/TorwacheGravemarch")
 	await setze(esme.global_position + Vector3(-2, 0.3, 0))
