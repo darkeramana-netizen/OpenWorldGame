@@ -124,7 +124,6 @@ TORE = {
     "Rampentor": (602.8, 274.0),         # Südtor des II. Burghofs (auf dem Oval), am Ende des Burgwegs um die Burg
     "Tor des II. Burghofs": (455.4, 258.4),  # zwischen I. Vorburg und II. Burghof
     "Tor des III. Burghofs": (636, 228), # II. ↔ III. Burghof (Westende des Ovals)
-    "Südtor des III. Burghofs": (720.3, 314.7),   # seitlich auf der Südseite, über eine Treppe vom Burgweg
     "Burgtor": (840, 228),               # III. Burghof ↔ Zwinger der Kernburg (Ostende des Ovals)
     "Kernburgtor": (878.0, 210.0),       # Zwinger ↔ Kernburg: wie im Grundriss auf der Westseite, gegenüber dem Burgtor
     # Die ovalen Höfe berühren sich an den Toren; jede Hofmauer hat dort ihr eigenes Tor (Rücken an Rücken)
@@ -234,12 +233,13 @@ OVAL_KERNBURG = ((990, 210), 112, 93)
 VORBURG = oval(*OVAL_VORBURG, tore=[TORE["Tor zur Vorburg"], TORE["Tor des II. Burghofs"]])
 BURGHOF2 = oval(*OVAL_BURGHOF2, tore=[TORE["Rampentor"], TORE["Tor des II. Burghofs, Ostseite"], TORE["Tor des III. Burghofs, Westseite"]])
 OVAL_BURGHOF3 = ((738, 228), 102, 88)   # vom Tor des III. Burghofs (Westende) bis zum Burgtor (Ostende)
-BURGHOF3 = oval(*OVAL_BURGHOF3, tore=[TORE["Tor des III. Burghofs"], TORE["Burgtor"], TORE["Südtor des III. Burghofs"]])
+BURGHOF3 = oval(*OVAL_BURGHOF3, tore=[TORE["Tor des III. Burghofs"], TORE["Burgtor"]])
 # Doppelte Mauer des III. Burghofs (wie im Grundriss): auf der Südseite eine zweite, durchgehende Mauer dicht hinter
-# der Hofmauer, dazwischen ein schmaler Zwinger ohne Häuser; ein Durchgang nur am Südtor. Die Häuser stehen im Norden.
+# der Hofmauer, dazwischen ein schmaler Zwinger ohne Häuser; ein Durchgang am Westende. Die Häuser stehen im Norden.
+# In den III. Burghof kommt man nur aus dem II. Burghof (Torrampe zum Tor am Westende), nicht vom Burgweg.
 OVAL_BURGHOF3_INNEN = (OVAL_BURGHOF3[0], OVAL_BURGHOF3[1] - 16, OVAL_BURGHOF3[2] - 16)
 BURGHOF3_INNEN_BOGEN = (25, 155)          # Winkel (Grad, Plan; 90 = Süden)
-BURGHOF3_INNEN_LUECKEN = [100]            # Durchgang hinter dem Südtor
+BURGHOF3_INNEN_LUECKEN = [148]            # Durchgang in den Zwinger am Westende
 # Der Zwinger der Kernburg schließt mit seiner Westseite an den Ostbogen des III. Burghofs an
 ZWINGER_KERNBURG = [(round(OVAL_BURGHOF3[0][0] + OVAL_BURGHOF3[1] * math.cos(math.radians(w)), 2),
                      round(OVAL_BURGHOF3[0][1] + OVAL_BURGHOF3[2] * math.sin(math.radians(w)), 2))
@@ -379,11 +379,8 @@ WEG_TORHAUS_NORD_HOEHEN = [-12.5, -11.0, -9.0]
 WEG_TORHAUS_WEST_HOEHEN = [-14.0, -13.6, -13.4, round(hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (237, 380)), 2)]
 WEG_ZWINGER_HOEHEN = _steigend(WEG_ZWINGER, {1: H_KERNHOF, WEG_ZWINGER.index((1080, 104)): H_KERNBURG, len(WEG_ZWINGER) - 1: H_KERNBURG})
 WEG_ZWINGER_HOEHEN[0] = H_KERNHOF
-WEG_SUEDTOR_III_HOEHEN = [round(hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (664, 324)), 2), H_KERNHOF, H_KERNHOF]
 # Die Wege im Burgbezirk sind keine Stadtgassen, gehören aber ins Wegenetz
-# Treppe vom Burgweg an der Südseite des III. Burghofs hinauf zum Südtor (das Gelände folgt ihr als Rampe)
-WEG_SUEDTOR_III = [(664, 320), (720.3, 321.0), (720.3, 314.7)]
-BURGWEGE = [WEG_BURG, WEG_VORBURG, WEG_TORHAUS_NORD, WEG_TORHAUS_WEST, WEG_ZWINGER, WEG_SUEDTOR_III]
+BURGWEGE = [WEG_BURG, WEG_VORBURG, WEG_TORHAUS_NORD, WEG_TORHAUS_WEST, WEG_ZWINGER]
 # Ab hier steigt der Burgweg als gemauerte Rampe im II. Burghof zum Tor des III. Burghofs (von H_BURGHOF2 auf H_KERNHOF)
 RAMPE_III = WEG_BURG.index((540, 262))
 RAMPE_FLANKE = [3.6, 4.8]      # eben bis 3,6 m neben der Mitte, dann fällt sie bis 4,8 m auf den Hof (die Futtermauer)
@@ -442,8 +439,7 @@ def plan_json():
                                                            (WEG_VORBURG, WEG_VORBURG_HOEHEN, True),
                                                            (WEG_TORHAUS_NORD, WEG_TORHAUS_NORD_HOEHEN, True),
                                                            (WEG_TORHAUS_WEST, WEG_TORHAUS_WEST_HOEHEN, True),
-                                                           (WEG_ZWINGER, WEG_ZWINGER_HOEHEN, False),
-                                                           (WEG_SUEDTOR_III, WEG_SUEDTOR_III_HOEHEN, False, [2.2, 3.2])]],
+                                                           (WEG_ZWINGER, WEG_ZWINGER_HOEHEN, False)]],
         "hafen_becken": welt_liste(HAFENBECKEN),
         "fahrrinne": welt_liste(FAHRRINNE),
         "kanal": welt_liste(KANAL),

@@ -202,9 +202,8 @@ schild("SchildBurghof2", BG, *(lambda p: (p[0], PD.H_BURGHOF2 + 9, p[1]))(W((560
 # --- III. Burghof (oval, der Hof aus Akt I ist ins Ordensvorwerk vor der Stadt gezogen) ---
 B3 = PD.BURGHOF3 + [PD.BURGHOF3[0]]          # oval; berührt den II. Burghof am Tor des III. Burghofs
 mauerring("BurghofDrei", BG, WL(B3), 7.0, dicke=3.0, mitte=MITTE_BURG,
-         tore=tore_an(B3, (PD.TORE["Burgtor"], 6.0, "Burgtor"), (PD.TORE["Tor des III. Burghofs"], 6.0, ""),
-                      (PD.TORE["Südtor des III. Burghofs"], 4.0, "Südtor")))
-# Zweite Mauer auf der Südseite (doppelte Mauer wie im Grundriss), durchgehend bis auf den Durchgang am Südtor
+         tore=tore_an(B3, (PD.TORE["Burgtor"], 6.0, "Burgtor"), (PD.TORE["Tor des III. Burghofs"], 6.0, "")))
+# Zweite Mauer auf der Südseite (doppelte Mauer wie im Grundriss), durchgehend bis auf den Durchgang am Westende
 _mi, _ai, _bi = PD.OVAL_BURGHOF3_INNEN
 _luecke = 6.0                                       # halbe Breite des Durchgangs in Grad
 _grad = [w_ for w_ in range(PD.BURGHOF3_INNEN_BOGEN[0], PD.BURGHOF3_INNEN_BOGEN[1] + 1, 3)]
@@ -219,27 +218,6 @@ for w_ in _grad:
     _bogen.append((_mi[0] + _ai * math.cos(math.radians(w_)), _mi[1] + _bi * math.sin(math.radians(w_))))
 if len(_bogen) > 1:
     mauerring("BurghofDreiInnenEnde", BG, WL(_bogen), 4.0, dicke=1.8, mitte=W(_mi))
-# Treppe vom Burgweg hinauf zum Südtor, an der Mauer entlang
-_st_a, _st_b = W(PD.WEG_SUEDTOR_III[0]), W(PD.WEG_SUEDTOR_III[1])
-# Futtermauern zu beiden Seiten der Treppe: Die Treppe steht auf einem gemauerten Damm
-_fm = []
-_sl = math.dist(_st_a, _st_b)
-_su = ((_st_b[0] - _st_a[0]) / _sl, (_st_b[1] - _st_a[1]) / _sl)
-_sn = (-_su[1], _su[0])
-_n_fm = max(1, math.ceil(_sl / 2.5))
-for k_ in range(_n_fm):
-    t0_, t1_ = k_ / _n_fm, (k_ + 1) / _n_fm
-    h1_ = PD.WEG_SUEDTOR_III_HOEHEN[0] + (PD.H_KERNHOF - PD.WEG_SUEDTOR_III_HOEHEN[0]) * t1_
-    for e_ in (-1, 1):
-        o_ = 2.6
-        p0_ = (_st_a[0] + _su[0] * _sl * t0_ + _sn[0] * o_ * e_, _st_a[1] + _su[1] * _sl * t0_ + _sn[1] * o_ * e_)
-        p1_ = (_st_a[0] + _su[0] * _sl * t1_ + _sn[0] * o_ * e_, _st_a[1] + _su[1] * _sl * t1_ + _sn[1] * o_ * e_)
-        boden_ = min(H(*p0_), H(*p1_), H(p0_[0] + _sn[0] * e_ * 3, p0_[1] + _sn[1] * e_ * 3)) - 1.5
-        _fm += [p0_[0] - _su[0] * 0.2, p0_[1] - _su[1] * 0.2, p1_[0] + _su[0] * 0.2, p1_[1] + _su[1] * 0.2,
-                round(boden_, 2), round(h1_ + 0.9, 2), 1.2, _sn[0] * e_, _sn[1] * e_, 0]
-N("TreppeSuedtorIII", "Node3D", BG, f"""script = ExtResource("28_burgbau")
-treppen = PackedFloat32Array({_zahlen([_st_a[0], _st_a[1], PD.WEG_SUEDTOR_III_HOEHEN[0], _st_b[0], _st_b[1], PD.H_KERNHOF, 4.0])})
-mauern = PackedFloat32Array({_zahlen([round(v_, 3) for v_ in _fm])})""")
 for k, bau in enumerate(PD.BURGHOF3_BAUTEN):
     gebaeude(f"Burghof3Bau{k}", BG, bau, 9, PD.H_KERNHOF, zweck=(5, 1)[k])   # Heilstube und Ordenshaus, Küche
 schild("SchildBurghof3", BG, 0, PD.H_KERNHOF + 13, -36, "III. Burghof", 40)
@@ -335,7 +313,6 @@ _HOF_TUERME = [PD.plan((_tuerme[i], _tuerme[i + 1])) for i in range(0, len(_tuer
 _HOF_WEGE = [w_ for w_ in PD.BURGWEGE]
 # III. Burghof: frei in der Mitte, quer hindurch vom Tor des III. Burghofs zum Burgtor
 _HOF_WEGE.append([PD.TORE["Tor des III. Burghofs"], PD.TORE["Burgtor"]])   # quer über den III. Burghof
-_HOF_WEGE.append([PD.TORE["Südtor des III. Burghofs"], (730, 270)])        # vom Südtor in den Hof
 # Der schmale Zwinger zwischen den beiden Südmauern bleibt frei von Häusern
 _zm, _za, _zb = PD.OVAL_BURGHOF3
 _HOF_SPERREN.append([(_zm[0] + (_za - r_) * math.cos(math.radians(w_)), _zm[1] + (_zb - r_) * math.sin(math.radians(w_)))
