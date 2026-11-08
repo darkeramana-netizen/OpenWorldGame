@@ -279,6 +279,31 @@ HOFHAEUSER = []          # (x, y, z, Gier, Form)
 random.seed(4711)
 
 
+def _ecken_plan(bau, rand=0.0):
+    """Ecken eines Baus aus dem Plan (Mitte, Länge, Breite, Drehung) im Plan."""
+    (pp, laenge, breite, dreh) = bau
+    a_ = math.radians(dreh)
+    ux, uy, vx, vy = math.cos(a_), math.sin(a_), -math.sin(a_), math.cos(a_)
+    return [(pp[0] + ux * sx * (laenge / 2 + rand) + vx * sy * (breite / 2 + rand),
+             pp[1] + uy * sx * (laenge / 2 + rand) + vy * sy * (breite / 2 + rand)) for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+
+
+def _ueberlappen_plan(r1, r2):
+    for poly in (r1, r2):
+        for i in range(len(poly)):
+            (x1, y1), (x2, y2) = poly[i], poly[(i + 1) % len(poly)]
+            nx_, ny_ = y2 - y1, x1 - x2
+            p1 = [nx_ * x + ny_ * y for x, y in r1]
+            p2 = [nx_ * x + ny_ * y for x, y in r2]
+            if max(p1) <= min(p2) or max(p2) <= min(p1):
+                return False
+    return True
+
+
+# In die begehbaren Bauten (und die Türme an ihnen) ragt kein Fachwerkhaus hinein
+_FREI_HALTEN = [_ecken_plan(b_, 1.0) for b_ in _BEGEHBAR + [PD.PALAS]]
+
+
 def hausreihe(bau, boden):
     """Füllt den Bau (Plan: Mitte, Länge, Breite, Drehung) mit Fachwerkhäusern; die Vorderseite zeigt wie die Tür
     des Baus (Plan (-sin dreh, cos dreh))."""
@@ -302,6 +327,10 @@ def hausreihe(bau, boden):
         tiefe_vor = -bm / 2 + (t + 0.7) / 2
         px = pp[0] + (ux * mitte + vx * tiefe_vor) / M
         py = pp[1] + (uy * mitte + vy * tiefe_vor) / M
+        haus_ = _ecken_plan(((px, py), b / M, (t + 0.7) / M, dreh))
+        if any(_ueberlappen_plan(haus_, f_) for f_ in _FREI_HALTEN):
+            s_ += b + 0.1
+            continue
         wx, wz = W((px, py))
         wn = (W((px + vx, py + vy))[0] - wx, W((px + vx, py + vy))[1] - wz)
         gier = math.degrees(math.atan2(wn[0], wn[1]))            # Vorderseite (lokal +z) zum Hof

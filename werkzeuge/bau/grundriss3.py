@@ -49,7 +49,7 @@ PALAS_HOF = [(1300, 355), (1305, 305), (1318, 275), (1360, 240), (1400, 225), (1
 PALAS_TOR = (1302, 345)                                         # Westtor, vom Durchgang
 PALAS_ZWINGERTOR = (1272, 350)                                  # gegenüber im engen Zwinger
 PALAS_ZWINGERPFORTE = (1284, 440)                               # vom Südende des Durchgangs in den engen Zwinger
-BERGFRIED = ((1575, 222), 60, 30)                               # Mitte, Seite, Drehung (Grad)
+BERGFRIED = ((1584, 217), 60, 29.5)                               # Mitte, Seite, Drehung (Grad)
 PALAS_BAU = [(1450, 205), (1640, 300)]                          # langer Palas an der Nordostmauer (von, bis)
 PALAS_TUERME = [((1450, 225), 12), ((1652, 280), 12), ((1617, 420), 10)]
 PALAS_ECKBAU = ((1608, 298), 40, 30)                            # Vierkantturm am Südostende des Palas
@@ -112,7 +112,7 @@ PALAS_BAUTEN = [_bau((1365, 255), (1430, 235), 40),                             
                 _bau((1410, 450), (1465, 445), 22), _bau((1470, 440), (1535, 430), 26),          # Südflügel
                 _bau((1590, 335), (1600, 410), 34),                                          # Zeughaus im Osten
                 _bau((1311, 302), (1313, 330), 30)]                                          # Westflügel nördlich des Tors
-PALAS_LANG = _bau((1462, 205), (1622, 295), 42)                                              # der Palas
+PALAS_LANG = _bau((1470, 210), (1585, 275), 42)                                              # der Palas
 
 # ---------- Wege (aus der Zeichnung des Spielers, geglättet) ----------
 # blau: vom Kai am Hafen über den Marktplatz (seine Wege stehen in teil_stadtleben.py) und durch die Stadt, im Bogen
@@ -147,7 +147,7 @@ WEG_AUSSEN = [(962, 423), (960, 400), (958, 370), (952, 330), (958, 295), (968, 
 # rot: im engen Zwinger einmal um den Palas
 WEG_PALASZWINGER = [(1252, 462), (1273, 446), PALAS_ZWINGERPFORTE, (1295, 434), (1327, 450), (1388, 486), (1451, 477),
                     (1524, 466), (1587, 456), (1640, 440), (1658, 398), (1675, 347), (1684, 284), (1660, 235),
-                    (1630, 200), (1600, 182), (1575, 170), (1545, 160), (1483, 164), (1428, 187), (1379, 208),
+                    (1635, 195), (1600, 172), (1575, 163), (1545, 158), (1483, 164), (1428, 187), (1379, 208),
                     (1338, 233), (1304, 268), (1288, 315), (1287, 347)]
 # rot: vom Nordtor in die Stadt, vom Südtor in die Stadt
 WEG_NORDTOR = [(548, 140), (550, 185), NORDTOR, (550, 240), (537, 265), (510, 280), (480, 298), (460, 304)]
