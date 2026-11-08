@@ -1,28 +1,22 @@
-"""Grundriss der Burgfeste Drachenstein (docs/bilder/grundriss-drachenstein-2.webp), digitalisiert.
+"""Grundriss der Burgfeste Drachenstein, digitalisiert.
 
-Alle Punkte stehen in Bildpunkten des Plans (x nach rechts, y nach unten). Maßstab: 0,5 m je Bildpunkt (die ganze
-Anlage ist rund 650 m lang). Der Plan ist gedreht eingebaut: Plan-Süd (Stadt und Hafen) zeigt in der Welt nach Osten
-(+x, zum Wächtermeer), Plan-Ost (Kernburg) nach Norden (-z). Die Mitte des III. Burghofs ist der Weltursprung (0, 0):
-Dort liegt der Hof aus Akt I (burg_hof.tscn, Mauern bei ±31 m), angehoben auf HOF_Y.
+Burg, Mauern, Stadt und Wege nach der dritten Fassung (docs/bilder/grundriss-drachenstein-3.webp, Punkte in
+grundriss3.py), Hafen, Meer und Weltbezug nach der zweiten (docs/bilder/grundriss-drachenstein-2.webp). Alle Punkte
+hier stehen in Bildpunkten der zweiten Fassung (x nach rechts, y nach unten), Maßstab 0,5 m je Bildpunkt; die der
+dritten werden umgerechnet (g3). Der Plan ist gedreht eingebaut: Plan-Süd (Stadt und Hafen) zeigt in der Welt nach
+Osten (+x, zum Wächtermeer), Plan-Ost (Palas) nach Norden (-z).
 
-Aufbau nach dem Plan und den Schnitten A-A und B-B:
-  Auf einem Felsgrat liegen hintereinander die I. Vorburg, der II. Burghof, der III. Burghof (Hof aus Akt I) und
-  die Kernburg mit Bergfried, Palas, Drachenkapelle, Burgküche und Zeughaus, umgeben von der Zwingermauer.
-  Eine Ringmauer (Stadtmauer) mit Torhäusern, Halbturm, Wehrturm, Zwinger und Rondell umschließt den Grat.
-  Unten in der Ebene liegen die Stadt mit St. Marien und dem Marktplatz und der Drachenhafen mit Speicher; die
-  Hafeneinfahrt zwischen dem Rundturm der Hafenmauer und dem Turm am Speicherkai ist offen zum Meer. Das Hafentor
-  in der Ringmauer ist ein Wassertor: Ein Kanal führt bis an den Fels, ein Felsentor geht in den Untergrundhafen.
-  Zugang zur Burg (blaue Linie): vom Hafen oder vom Torhaus West durch die Stadt, durch das Burgstraßentor in der
-  Ringmauer, am Halbturm vorbei hinauf (dort kommt der Weg vom Torhaus Nord dazu) und dann außen um die ganze Burg
-  bis unter den II. Burghof, wo eine Rampe durch das Rampentor hinaufführt. Unten zweigt ein Weg zum Südtor der
-  Vorburg ab. Gleich hinter dem Rampentor geht es rechts durch das Zwingertor in den Zwinger an der Südseite des
-  III. Burghofs: Zwischen dessen Mauer und einer niedrigeren Außenmauer steigt eine Rampe nach Osten. Oben teilt sich
-  der Weg: links durch das Tor des III. Burghofs, geradeaus über den Vorhof durch den engen Zwinger in die Kernburg.
+Aufbau: Auf dem Felsgrat liegen hintereinander die Vorburg, die Mittelburg, die Oberburg und der Palas mit dem
+Bergfried in einem engen Zwinger; die Stadt legt sich im Westen und Süden um die Vorburg, davor der Drachenhafen. Im
+Norden sind die Mauern der Mittelburg zugleich die Außenmauer, hinter Oberburg und Palas läuft die Ringmauer.
+Wege (vom Spieler eingezeichnet): vom Hafen durch die Stadt im Bogen um die Vorburg hinauf zum Vorburgtor, durch den
+Hof der Vorburg und ihr Osttor hinab in den Burgbezirk, an der Mauer entlang zur Rampe, durch das Rampentor in die
+Mittelburg, gleich rechts durch das Zwingertor in den Zwinger an der Südseite der Oberburg, an dessen Ende in die
+Oberburg und über den Durchgang in den Palas. Nebenwege: Nordtor und Südtor der Stadt, der Zwingerweg um die Oberburg,
+der enge Zwinger um den Palas und der äußere Weg um ihn bis hinab zum Fuß der Rampe.
 
-Höhen (Welt-y, Meer bei -20), gestaffelt wie im Schnitt B-B: Hafen -17,8 · Stadt -16,5 bis -14 ·
-I. Vorburg 0 · II. Burghof +6 · III. Burghof +14 · Kernburg +16, fast auf einer Ebene mit dem III. Burghof
-(Bergfried bis +76).
-Zwischen den Burgen und zur Ebene bricht der Fels steil ab.
+Höhen (Welt-y, Meer bei -20): Hafen -17,8 · Stadt -16,5 bis -14, zur Vorburg hin ansteigend · Vorburg -8 · Burgbezirk
+unten -9 bis 0 · Mittelburg +6 · Oberburg +14 · Palas +16 (Bergfried bis +76).
 
 Ausführen schreibt daten/drachenstein_plan.json für den Geländeerzeuger (werkzeuge/gelaende_erzeuger.gd).
 """
@@ -53,11 +47,14 @@ H_HAFEN = -17.8
 H_STADT_WEST = -14.0      # am Torhaus West
 H_STADT_OST = -16.5       # am Hafen
 H_MARKT = -15.2
-HOF_Y = 14.0              # III. Burghof (hier lag früher der Hof aus Akt I, jetzt das Ordensvorwerk, siehe VORWERK)
-H_VORBURG = 0.0
-H_BURGHOF2 = 6.0
-H_KERNHOF = HOF_Y         # III. Burghof
-H_KERNBURG = 16.0         # fast auf einer Ebene mit dem III. Burghof (wie im Referenzbild), etwas höher
+HOF_Y = 14.0              # Oberburg (hier lag früher der Hof aus Akt I, jetzt das Ordensvorwerk, siehe VORWERK)
+H_VORBURG = -8.0          # über der Stadt, das Vorburgtor auf Höhe der obersten Gasse
+H_UNTEN = -9.0            # Burgbezirk am Osttor der Vorburg; von dort steigt der Weg an der Mauer zur Rampe
+H_RAMPENFUSS = 0.0
+H_BURGHOF2 = 6.0          # Mittelburg
+H_KERNHOF = HOF_Y         # Oberburg
+H_KERNBURG = 16.0         # Palas, fast auf einer Ebene mit der Oberburg
+H_ZWINGER_KERNBURG = H_KERNBURG - 0.5
 H_EBENE = -14.0           # Land vor der Ringmauer
 
 # ---------- Ordensvorwerk (Akt I) ----------
@@ -68,23 +65,140 @@ VORWERK = (75.0, 490.0)
 VORWERK_DREH = 90.0
 H_VORWERK = 1.0
 
-# ---------- Burgen auf dem Grat ----------
-VORBURG = [(318, 250), (360, 232), (445, 212), (458, 270), (450, 330), (420, 352), (350, 358), (312, 300)]
-BURGHOF2 = [(458, 270), (445, 212), (472, 215), (530, 192), (600, 182), (636, 160), (636, 290),
-            (625, 322), (580, 336), (513, 326), (487, 294)]
-BURGHOF3 = [(636, 160), (650, 136), (838, 134), (842, 310), (668, 318), (645, 300), (636, 290)]
-KERNBURG = [(878, 255), (878, 185), (912, 138), (965, 126), (1065, 116), (1100, 150), (1102, 280), (1062, 302),
-            (950, 302), (896, 288)]
-# Ringmauer (Stadtmauer um den Grat): von Torhaus West über Halbturm, Torhaus Nord, Wehrturm, Zwinger und Rondell
-# bis zum Hafentor; der südliche Teil ist zugleich die Mauer zwischen Burgbezirk und Stadt.
-RINGMAUER = [(150, 430), (172, 330), (190, 225), (240, 195), (285, 172), (330, 180), (450, 145), (560, 100),
-             (640, 72), (720, 76), (800, 95), (880, 60), (960, 36), (1100, 30), (1190, 55), (1230, 140), (1245, 250),
-             (1215, 345), (1100, 375), (1000, 393), (900, 405), (785, 412), (700, 403), (600, 390), (470, 373),
-             (360, 394), (250, 406)]
-# Stadt: von Torhaus West nach Süden, an der Hafenmauer hinauf zur Mauer unter dem Grat
-STADTMAUER = [(150, 430), (180, 500), (240, 600), (330, 665), (420, 674), (560, 674), (600, 664), (590, 560),
-              (600, 470), (615, 425)]
-STADT = STADTMAUER + [(470, 373), (360, 394), (250, 406)]
+
+# ---------- Grundriss, dritte Fassung (grundriss3.py) ----------
+# Die Punkte des neuen Plans werden mit einer Ähnlichkeitsabbildung in diese Planpunkte umgerechnet: Maßstab 0,67,
+# 4,7° gedreht, so verschoben, dass das Torhaus über dem Wassertor auf dem bisherigen Hafentor liegt. So bleiben Hafen,
+# Untergrundhafen, Meer und die Landstraßen an ihrem Platz.
+import grundriss3 as G3
+_S = complex(0.6700687141452312 * math.cos(math.radians(-4.684566799980108)),
+             0.6700687141452312 * math.sin(math.radians(-4.684566799980108)))
+_T = complex(754.0, 408.6) - _S * complex(1107, 607)
+G3_MASSSTAB = abs(_S)
+G3_DREHUNG = -4.684566799980108
+
+
+def g3(p):
+    """Bildpunkt des neuen Plans → Planpunkt."""
+    z = _S * complex(*p) + _T
+    return (round(z.real, 2), round(z.imag, 2))
+
+
+def g3l(punkte):
+    return [g3(p) for p in punkte]
+
+
+def g3_bau(bau, h=None):
+    """Bau aus grundriss3 ((Mitte), Länge, Breite, Richtung der Länge im Bild) → (Mitte, Länge, Breite, Drehung) im Plan.
+    h: Mitte des Hofs (Plan); dann zeigt die Tür (lokal +x, Plan (-sin dreh, cos dreh)) zum Hof."""
+    (m, laenge, breite, richtung) = bau
+    pm = g3(m)
+    dreh = richtung + G3_DREHUNG
+    if h is not None:
+        a = math.radians(dreh)
+        if -math.sin(a) * (h[0] - pm[0]) + math.cos(a) * (h[1] - pm[1]) < 0:
+            dreh += 180.0
+    return (pm, round(laenge * G3_MASSSTAB, 2), round(breite * G3_MASSSTAB, 2), round(dreh % 360.0, 1))
+
+
+def schwerpunkt(punkte):
+    return (sum(p[0] for p in punkte) / len(punkte), sum(p[1] for p in punkte) / len(punkte))
+
+
+# ---------- Burghöfe ----------
+VORBURG = g3l(G3.VORBURG)
+BURGHOF2 = MITTELBURG = g3l(G3.MITTELBURG)
+BURGHOF3 = OBERBURG = g3l(G3.OBERBURG)
+KERNBURG = PALAS_HOF = g3l(G3.PALAS_HOF)
+ZWINGER_KERNBURG = g3l(G3.PALAS_ZWINGER)            # enger Zwinger um den Palas
+# Zwinger der Oberburg (West- und Südseite) mit dem Durchgang zum Palas, für das Gelände: außen die Ostmauer der
+# Mittelburg, die Zwingermauer im Süden und der Zwinger des Palas, innen die Mauern der Oberburg
+ZWINGER_III = g3l([(932, 268), (938, 330), (946, 400), (948, 440), (1055, 490), (1160, 480), (1172, 505), (1230, 515),
+                   (1268, 505), (1272, 470), (1273, 360), (1276, 300), (1262, 262), (1250, 298), (1247, 430),
+                   (1180, 437), (1105, 435), (1050, 420), (1020, 400), (980, 375), (967, 330), (1025, 235), (985, 243)])
+ZWINGERMAUER_SUED = g3l([(948, 440)] + G3.ZWINGER_SUED[1:])
+MITTE_VORBURG, MITTE_MITTELBURG = schwerpunkt(VORBURG), schwerpunkt(MITTELBURG)
+MITTE_OBERBURG, MITTE_PALAS = schwerpunkt(OBERBURG), schwerpunkt(PALAS_HOF)
+
+# ---------- Mauern ----------
+RING_NORD = g3l(G3.RING_NORD)                        # vom Torhaus im Nordwesten über das Nordtor an die Vorburg
+# Ringmauer im Süden und Osten: vom Rundturm am Vorburgtor an der Stadt entlang zum Hafentor (Wassertor), um Oberburg
+# und Palas bis an die Nordostecke der Mittelburg
+RING_SUED_OST = g3l(G3.STADT_BURG_MAUER + [G3.HAFENTOR[1]] + G3.RING_OST[::-1][2:])
+STADTMAUER = g3l(G3.STADTMAUER[:-3]) + [(600, 664)]  # endet an der Ecke zum Hafen (Bastion)
+# Umriss der ganzen Festung (Küstenfels, Bewuchs): Stadt, Burgbezirk und Hafen
+RINGMAUER = (g3l(G3.RING_NORD[:-1] + [(700, 272), (722, 274), (743, 283)] + G3.MITTELBURG[1:4] + G3.RING_OST[1:-1])
+             + [(785, 412), (828, 440), (842, 540), (812, 549), (808, 606), (800, 622), (800, 640), (770, 648), (640, 650)]
+             + STADTMAUER[::-1][:-1])
+# Burgbezirk: zwischen Stadtmauer, Ringmauer und den Burgen (Mittelburg, Oberburg und Palas liegen darin)
+BURGBEZIRK = g3l([G3.VORBURG_TOR[0]] + G3.STADT_BURG_MAUER[1:] + [G3.HAFENTOR[1]] + G3.RING_OST[::-1][2:]
+                 + [(887, 232), (763, 272), (743, 283), (738, 330), (737, 362), (700, 362), (700, 395), (697, 401),
+                    (706, 455), (690, 470)])
+# Stadt mit der Vorburg und dem Streifen nördlich davon (bis an die Ringmauer mit dem Nordtor)
+STADT = (g3l(G3.RING_NORD + [(722, 274), (743, 283), (738, 330), (737, 362), (700, 362), (700, 395), (697, 401),
+                              (706, 455), G3.VORBURG_TOR[0]] + G3.STADT_BURG_MAUER[1:])
+         + [(700, 410), (615, 425), (600, 470), (590, 560), (600, 664)] + STADTMAUER[::-1][1:-1])
+
+# ---------- Tore (Planpunkte) ----------
+TORE = {
+    "Nordtor": g3(G3.NORDTOR),                       # Ringmauer: Stadt ↔ Weg nach Gravemarch
+    "Südtor": g3(G3.SUEDTOR),                        # Stadtmauer: Stadt ↔ Küstenweg
+    "Vorburgtor": g3(G3.VORBURGTOR),                 # Stadt ↔ Vorburg
+    "Osttor der Vorburg": g3(G3.VORBURG_OSTTOR),     # Vorburg ↔ Burgbezirk
+    "Rampentor": g3(G3.RAMPENTOR),                   # oben an der Rampe in die Mittelburg
+    "Zwingertor": g3(G3.ZWINGERTOR),                 # Mittelburg ↔ Zwinger der Oberburg
+    "Südtor der Oberburg": g3(G3.OBERBURG_SUEDTOR),  # Ostende des Zwingers ↔ Oberburg
+    "Tor der Oberburg": g3(G3.OBERBURG_TOR),         # Oberburg ↔ Durchgang
+    "Zwingertor des Palas": g3(G3.PALAS_ZWINGERTOR),
+    "Palastor": g3(G3.PALAS_TOR),
+    "Zwingerpforte des Palas": g3(G3.PALAS_ZWINGERPFORTE),
+    "Hafentor": (754, 408.6),                        # Wassertor: niedriger Bogen direkt auf dem Wasser
+}
+
+# ---------- Bauten ----------
+VORBURG_BAUTEN = [g3_bau(b, MITTE_VORBURG) for b in G3.VORBURG_BAUTEN]
+BURGHOF2_BAUTEN = [g3_bau(b, MITTE_MITTELBURG) for b in G3.MITTELBURG_BAUTEN]
+BURGHOF3_BAUTEN = [g3_bau(b, MITTE_OBERBURG) for b in G3.OBERBURG_BAUTEN]
+PALAS_BAUTEN = [g3_bau(b, MITTE_PALAS) for b in G3.PALAS_BAUTEN]
+PALAS = g3_bau(G3.PALAS_LANG, MITTE_PALAS)
+BURGKUECHE = PALAS_BAUTEN[2]
+DRACHENKAPELLE = PALAS_BAUTEN[3]
+ZEUGHAUS = PALAS_BAUTEN[6]
+BERGFRIED_KERNBURG = g3(G3.BERGFRIED[0])
+BERGFRIED_DREH = G3.BERGFRIED[2] + G3_DREHUNG
+BERGFRIED_SEITE = 18.5            # Meter: so wuchtig wie im Referenzbild
+BERGFRIED_HOEHE = 56.0            # über H_BERGFRIEDFELS bis zur Plattform
+H_BERGFRIEDFELS = H_KERNBURG + 4.0
+PALAS_ECKBAU = g3_bau(G3.PALAS_ECKBAU[:1] + (G3.PALAS_ECKBAU[1], G3.PALAS_ECKBAU[1], G3.PALAS_ECKBAU[2]))
+ST_MARIEN = g3_bau(G3.ST_MARIEN)
+ST_MARIEN_TURM = g3(G3.ST_MARIEN_TURM)
+MARKTPLATZ = [(455, 480), (566, 478), (568, 556), (456, 558)]
+MARKT_MITTE = (512, 518)
+SPEICHER = ((690, 628), 100, 20, 1)
+HEILSTUBE = g3((1110, 340))                          # Ankunft nach einer Verwundung: Mitte der Oberburg
+
+# ---------- Wege ----------
+# vom Marktplatz zum Westkai des Hafens (der Kai liegt nach der zweiten Fassung)
+WEG_HAFEN = g3l(G3.WEG_HAFEN[:-1]) + [(608, 512)]
+STRASSEN = [WEG_HAFEN] + [g3l(s) for s in [G3.WEG_STADT[:-2], G3.WEG_NORDTOR[2:], G3.WEG_SUEDTOR[2:]] + G3.GASSEN]
+# Anschlüsse der Gassen an den Marktplatz: von der Mitte jeder Seite zum nächsten Punkt einer Gasse
+_MARKT_SEITEN = [(458, 518), (563, 500), (512, 483), (512, 552), (563, 555)]
+_alle_gassenpunkte = [q for l_ in STRASSEN for q in l_]
+STRASSEN += [[m_, min(_alle_gassenpunkte, key=lambda q, m_=m_: math.dist(q, m_))] for m_ in _MARKT_SEITEN]
+# Kaiweg im Hafen: vom Ende der Hauptgasse am Becken entlang zum Kai am Kanal
+KAIWEG = [(608, 512), (612, 470), (630, 440), (680, 428), (736, 428)]
+WEG_STADT = g3l(G3.WEG_STADT)
+WEG_VORBURG = g3l(G3.WEG_VORBURG)
+WEG_BURG = g3l(G3.WEG_UNTEN + G3.WEG_RAMPE[1:])      # unten an der Mauer zur Rampe, die Rampe hinauf in die Mittelburg
+WEG_ZWINGER = g3l(G3.WEG_ZWINGER)
+WEG_OBERBURG = g3l(G3.WEG_OBERBURG)
+WEG_DURCHGANG = g3l(G3.WEG_DURCHGANG)
+WEG_AUSSEN = g3l(G3.WEG_AUSSEN)
+WEG_PALASZWINGER = g3l(G3.WEG_PALASZWINGER)
+WEG_NORDTOR = g3l(G3.WEG_NORDTOR)
+WEG_SUEDTOR = g3l(G3.WEG_SUEDTOR)
+
+
 # Hafen: Becken mit Kaimauern, östliche Hafenmauer mit Rundturm, Speicherkai im Süden mit Turm
 HAFENBECKEN = [(632, 452), (700, 444), (790, 452), (800, 470), (808, 548), (806, 604), (760, 600), (652, 600),
                (634, 560), (622, 486)]
@@ -112,239 +226,6 @@ BUCHT[_i_:_i_] = [tuple(round(v, 1) for v in plan(w)) for w in MEER_NORD_WELT]
 KANAL = [(744, 455), (744, 410), (764, 410), (764, 455)]
 # Mole vom Speicherkai (Molenpforte) zur ersten Insel, von dort Brücken zum Schwarzen Bergfried
 MOLENPFORTE = (755, 645.5)
-
-# ---------- Tore ----------
-# Tore als (Kantenindex im jeweiligen Linienzug, Anteil, Breite, Name); die Punkte im Plan stehen dahinter
-TORE = {
-    "Torhaus West": (154, 410),          # in der Ringmauer: Küstenweg ↔ Burgweg (in die Stadt geht es weiter durchs Burgstraßentor)
-    "Torhaus Nord": (294, 173.6),        # in der Ringmauer: Burgbezirk ↔ Weg nach Gravemarch
-    "Hafentor": (754, 408.6),            # Wassertor: niedriger Bogen direkt auf dem Wasser, dahinter der Gang in den Berg
-    "Burgstraßentor": (233, 410.1),      # Stadt ↔ Burgweg (in der Ringmauer westlich des Grats)
-    "Tor zur Vorburg": (436.8, 339.7),   # Südtor der Vorburg, vom Weg unter der Vorburg
-    "Rampentor": (602.8, 274.0),         # Südtor des II. Burghofs (auf dem Oval), am Ende des Burgwegs um die Burg
-    "Tor des II. Burghofs": (455.4, 258.4),  # zwischen I. Vorburg und II. Burghof
-    # Zugang zum III. Burghof und zur Kernburg (wie im Referenzbild): gleich rechts hinter dem Rampentor das Zwingertor
-    # (II. Burghof, Winkel 25° auf dem Oval), oben am Ende der Zwingerrampe das Tor des III. Burghofs (Winkel 40°) und
-    # über den Vorhof das Tor im engen Zwinger und das Kernburgtor (beide Winkel 140°, Südwesten der Kernburg)
-    "Zwingertor": (621.6, 255.5),
-    "Tor des III. Burghofs": (816.1, 284.6),
-    "Zwingertor der Kernburg": (891.9, 280.1),
-    "Kernburgtor": (904.2, 269.8),
-    # Die ovalen Höfe berühren sich an den Toren; jede Hofmauer hat dort ihr eigenes Tor (Rücken an Rücken)
-    "Tor des II. Burghofs, Ostseite": (461.4, 258.4),
-    "Hafenpforte": (596, 500),           # Stadt ↔ Hafenkai
-}
-
-# ---------- Runde Burghöfe (wie im Referenzbild) ----------
-# Die Ecken der Burghöfe werden zu weiten Bögen; gerade bleiben die Mauern, die zwei Höfe teilen (fest), und die
-# Mauerstücke mit Toren. ECKEN ordnet jeder alten Ecke die Mitte ihres Bogens zu (für Türme an den Ecken).
-VORBURG_ECKIG, BURGHOF2_ECKIG, BURGHOF3_ECKIG, KERNBURG_ECKIG = VORBURG, BURGHOF2, BURGHOF3, KERNBURG
-ECKEN = {}
-
-
-def runden(punkte, fest=(), stufen=3):
-    """Glättet einen Umriss zu weichen Bögen (Chaikin). Feste Punkte bleiben; Kanten mit einem Tor bleiben gerade."""
-    import math as _m
-    fest = set(fest)
-    n = len(punkte)
-    for i in range(n):                         # Torkanten: beide Enden fest
-        a, b = punkte[i], punkte[(i + 1) % n]
-        l = _m.dist(a, b)
-        for tor in TORE.values():
-            ux, uy = (b[0] - a[0]) / l, (b[1] - a[1]) / l
-            t = (tor[0] - a[0]) * ux + (tor[1] - a[1]) * uy
-            if 0 < t < l and abs((tor[0] - a[0]) * uy - (tor[1] - a[1]) * ux) < 4.0:
-                fest |= {a, b}
-    alt = list(punkte)
-    for _ in range(stufen):
-        neu = []
-        m = len(alt)
-        for i in range(m):
-            a, b = alt[i], alt[(i + 1) % m]
-            if a in fest:
-                neu.append(a)
-            if a in fest and b in fest:
-                continue                       # gerade Kante zwischen zwei festen Punkten
-            q = (0.75 * a[0] + 0.25 * b[0], 0.75 * a[1] + 0.25 * b[1])
-            r = (0.25 * a[0] + 0.75 * b[0], 0.25 * a[1] + 0.75 * b[1])
-            if a not in fest:
-                neu.append(q)
-            if b not in fest:
-                neu.append(r)
-        alt = neu
-    ergebnis = [(round(x, 2), round(y, 2)) for x, y in alt]
-    for v in punkte:
-        if v not in fest:
-            ECKEN[v] = min(ergebnis, key=lambda q: _m.dist(q, v))
-    return ergebnis
-
-
-def ecke(p):
-    """Lage einer alten Ecke auf dem gerundeten Umriss (nächster Punkt), sonst die Ecke selbst."""
-    return ECKEN.get(p, p)
-
-
-def oval(mitte, a, b, teile=32, tore=(), sehne=22.0):
-    """Ovaler Hof (Ellipse im Plan) als Vieleck. An jedem Tor liegt ein gerades Stück (Sehne von etwa 'sehne'
-    Planeinheiten), dessen Mitte das Tor ist; mauerring braucht dort eine Kante, die länger ist als Tor und Mauer."""
-    import math as _m
-    winkel = [2 * _m.pi * k / teile for k in range(teile)]
-    for tor in tore:
-        tg = _m.atan2((tor[1] - mitte[1]) / b, (tor[0] - mitte[0]) / a)
-        r = _m.hypot(a * _m.sin(tg), b * _m.cos(tg))          # Bogenlänge je Winkel an dieser Stelle
-        d = sehne / 2 / r
-        winkel = [w for w in winkel if abs((w - tg + _m.pi) % (2 * _m.pi) - _m.pi) > d * 1.6]
-        winkel += [(tg - d) % (2 * _m.pi), (tg + d) % (2 * _m.pi)]
-    winkel.sort()
-    return [(round(mitte[0] + a * _m.cos(w), 2), round(mitte[1] + b * _m.sin(w), 2)) for w in winkel]
-
-
-def an_wand(mitte, a, b, winkel, laenge, breite, mauer=7.0, abstand=2.0):
-    """Bau innen an der Ovalmauer: Mitte, Länge, Breite, Drehung im Plan wie die Bauten im Grundriss. Die Länge liegt
-    an der Mauer, die Tür (lokal +x) zeigt zum Hof; auf der Krümmung rückt der Bau so weit hinein, dass seine Ecken
-    frei bleiben."""
-    import math as _m
-    t = _m.radians(winkel)
-    px, py = mitte[0] + a * _m.cos(t), mitte[1] + b * _m.sin(t)
-    tx, ty = -a * _m.sin(t), b * _m.cos(t)
-    l = _m.hypot(tx, ty); tx, ty = tx / l, ty / l
-    nx, ny = -ty, tx
-    if (mitte[0] - px) * nx + (mitte[1] - py) * ny < 0:
-        nx, ny = -nx, -ny                       # nach innen
-    # Pfeilhöhe der Krümmung über der halben Länge
-    pfeil = 0.0
-    for e in (-1, 1):
-        qx, qy = px + tx * e * laenge / 2, py + ty * e * laenge / 2
-        # Abstand dieses Punkts nach innen bis zur Ellipse (grob über die Ellipsengleichung)
-        f = ((qx - mitte[0]) / a) ** 2 + ((qy - mitte[1]) / b) ** 2
-        if f > 1.0:
-            pfeil = max(pfeil, (_m.sqrt(f) - 1.0) * min(a, b) * 1.1)
-    d = mauer / 2 + abstand + breite / 2 + pfeil
-    cx, cy = px + nx * d, py + ny * d
-    dreh = _m.degrees(_m.atan2(ty, tx))
-    # Tür (lokal +x im Bau = Plan (-sin dreh, cos dreh)) zum Hof
-    if -_m.sin(_m.radians(dreh)) * nx + _m.cos(_m.radians(dreh)) * ny < 0:
-        dreh += 180.0
-    return ((round(cx, 2), round(cy, 2)), laenge, breite, round(dreh, 1))
-
-
-# Ovale wie im Referenzbild: Die Vorburg läuft durch ihre beiden Tore, der II. Burghof berührt die Vorburg am Tor des
-# II. Burghofs und mit seinem Ostende den III. Burghof am Tor des III. Burghofs; die Kernburg liegt oval im Zwinger.
-OVAL_VORBURG = ((383, 286), 78, 74)
-OVAL_BURGHOF2 = ((540.5, 228), 89.5, 65)
-OVAL_KERNBURG = ((990, 210), 112, 93)
-VORBURG = oval(*OVAL_VORBURG, tore=[TORE["Tor zur Vorburg"], TORE["Tor des II. Burghofs"]])
-BURGHOF2 = oval(*OVAL_BURGHOF2, tore=[TORE["Rampentor"], TORE["Tor des II. Burghofs, Ostseite"], TORE["Zwingertor"]])
-OVAL_BURGHOF3 = ((738, 228), 102, 88)
-BURGHOF3 = oval(*OVAL_BURGHOF3, tore=[TORE["Tor des III. Burghofs"]])
-KERNBURG = oval(*OVAL_KERNBURG, teile=36, tore=[TORE["Kernburgtor"]])
-
-
-def ellipse(mitte, a, b, w):
-    """Punkt auf einer Ellipse im Plan bei Winkel w (Grad; 0 = Osten, 90 = Süden)."""
-    return (round(mitte[0] + a * math.cos(math.radians(w)), 1), round(mitte[1] + b * math.sin(math.radians(w)), 1))
-
-
-# Zwinger der Kernburg: ein enger zweiter Mauerring dicht um die Kernburg (8 m Abstand), Tor gegenüber dem Kernburgtor
-OVAL_ZWINGER_KERNBURG = (OVAL_KERNBURG[0], OVAL_KERNBURG[1] + 16, OVAL_KERNBURG[2] + 16)
-ZWINGER_KERNBURG = oval(*OVAL_ZWINGER_KERNBURG, teile=40, tore=[TORE["Zwingertor der Kernburg"]])
-# Zwinger des III. Burghofs (wie im Referenzbild): An der Südseite des III. Burghofs läuft zwischen seiner Mauer und
-# einer niedrigeren Außenmauer (10,5 m weiter außen) eine Rampe vom Zwingertor des II. Burghofs nach Osten hinauf.
-# Die Außenmauer beginnt am Rampentor auf dem II. Burghof und endet am engen Zwinger der Kernburg; zwischen dem
-# III. Burghof und der Kernburg liegt der Vorhof, im Norden schließt ihn eine Quermauer.
-_O3 = OVAL_BURGHOF3
-ZWINGER_III_AUSSEN = ([ellipse(*OVAL_BURGHOF2, 36)] + [ellipse(_O3[0], _O3[1] + 21, _O3[2] + 21, w) for w in range(150, 44, -15)]
-                      + [(870, 324), ellipse(*OVAL_ZWINGER_KERNBURG, 115)])
-ZWINGER_III_QUER = [ellipse(*OVAL_BURGHOF3, -25), ellipse(*OVAL_ZWINGER_KERNBURG, 200)]
-# Umriss des Zwingers (für das Gelände): II. Burghof vom Berührpunkt bis zur Außenmauer, die Außenmauer bis zum Tor des
-# III. Burghofs, dann an dessen Mauer entlang zurück (das Innere des III. Burghofs liegt nicht darin)
-ZWINGER_III = ([ellipse(*OVAL_BURGHOF2, w) for w in range(0, 36, 6)] + ZWINGER_III_AUSSEN[:9]
-               + [ellipse(*OVAL_BURGHOF3, w) for w in range(45, 181, 8)])
-# Vorhof zwischen dem III. Burghof und dem Zwinger der Kernburg: eben auf Höhe des III. Burghofs
-VORHOF = ([ellipse(*OVAL_BURGHOF3, w) for w in range(-25, 46, 10)] + ZWINGER_III_AUSSEN[8:]
-          + [ellipse(*OVAL_ZWINGER_KERNBURG, w) for w in range(120, 200, 8)] + ZWINGER_III_QUER[::-1][:1])
-for _alt in VORBURG_ECKIG + BURGHOF2_ECKIG + BURGHOF3_ECKIG + KERNBURG_ECKIG:   # alte Ecken (für Türme): nächster Punkt auf dem Oval
-    if _alt not in ECKEN:
-        _ov = VORBURG if _alt in VORBURG_ECKIG else (BURGHOF2 if _alt in BURGHOF2_ECKIG else
-                                                     (BURGHOF3 if _alt in BURGHOF3_ECKIG else KERNBURG))
-        ECKEN[_alt] = min(_ov, key=lambda q, _a=_alt: math.dist(q, _a))
-
-
-# ---------- Bauten ----------
-# (Mitte, Länge, Breite, Drehung in Grad) in Bildpunkten; Länge entlang Plan-x bei Drehung 0
-# Bergfried wie im Referenzbild hinten am Palas, wie im Schnitt A-A auf dem höchsten Punkt: auf einem eigenen Felssockel
-BERGFRIED_KERNBURG = (990, 139)   # mittig hinter dem Palas, mit dem Rücken an der Nordmauer der Kernburg
-BERGFRIED_SEITE = 18.5            # Meter: so wuchtig wie im Referenzbild (gut die halbe Länge des Palas)
-BERGFRIED_HOEHE = 56.0            # über H_BERGFRIEDFELS bis zur Plattform
-H_BERGFRIEDFELS = H_KERNBURG + 4.0
-BERGFRIEDFELS = [(1057, 132), (1093, 132), (1093, 168), (1057, 168)]
-PALAS = ((990, 175), 72, 32, 0)          # vor dem Bergfried, die Hofseite nach Süden (wie im Referenzbild)
-# Kapelle, Küche und Zeughaus innen an der Ovalmauer der Kernburg (Länge an der Mauer, Tür zum Hof)
-DRACHENKAPELLE = an_wand(*OVAL_KERNBURG, 0, 80, 22)
-BURGKUECHE = an_wand(*OVAL_KERNBURG, 100, 52, 30)    # Küche im Süden (neben dem Kernburgtor im Südwesten), Zeughaus im Südosten
-ZEUGHAUS = an_wand(*OVAL_KERNBURG, 55, 56, 26)
-# Bauten mit Abstand zu den Mauern (sonst ragen sie durch die Wand)
-VORBURG_BAUTEN = [an_wand(*OVAL_VORBURG, -100, 48, 16), an_wand(*OVAL_VORBURG, 180, 44, 18)]   # Gesindehaus, Stall
-BURGHOF2_BAUTEN = [an_wand(*OVAL_BURGHOF2, -95, 60, 18), an_wand(*OVAL_BURGHOF2, 100, 50, 18)]
-BURGHOF3_BAUTEN = [an_wand(*OVAL_BURGHOF3, -90, 64, 20), an_wand(*OVAL_BURGHOF3, -145, 50, 20)]   # beide im Norden
-ST_MARIEN = ((410, 500), 76, 34, 0)      # Langhaus von West nach Ost, Turm im Osten
-ST_MARIEN_TURM = (444, 494)
-MARKTPLATZ = [(455, 480), (566, 478), (568, 556), (456, 558)]
-MARKT_MITTE = (512, 518)
-SPEICHER = ((690, 628), 100, 20, 1)
-WEHRTURM = (800, 95)
-HALBTURM = (190, 225)
-RONDELL = (1215, 345)
-
-# ---------- Straßen und Gassen der Stadt (Planpunkte) ----------
-STRASSEN = [
-    # Hauptstraße vom Torhaus West zum Markt, Fachwerkhäuser zu beiden Seiten
-    [(162, 432), (230, 440), (300, 447), (370, 455), (455, 480)],
-    # Gasse innen an der Mauer unter dem Grat
-    [(230, 440), (262, 418), (350, 410), (470, 404), (560, 414), (600, 440)],
-    [(370, 455), (350, 410)],
-    [(566, 478), (600, 440)],
-    # Westviertel: Bogen an der Stadtmauer entlang und Gasse um St. Marien zum Markt
-    [(230, 440), (215, 495), (250, 555), (300, 610), (350, 640)],
-    [(300, 447), (295, 525), (330, 585), (400, 590), (456, 558)],
-    [(250, 555), (295, 525)],
-    # Südviertel zwischen Markt und Stadtmauer
-    [(456, 558), (440, 610), (430, 645)],
-    [(512, 556), (510, 645)],
-    [(568, 556), (575, 645)],
-    [(400, 590), (440, 610), (510, 612), (575, 612)],
-    # Vom Markt zum Hafen, zum Portal von St. Marien
-    [(566, 500), (606, 500)],
-    [(370, 455), (366, 500)],
-]
-# Kaiweg im Hafen: von der Hafenpforte am Becken entlang zum Kai am Kanal
-KAIWEG = [(606, 500), (612, 470), (630, 440), (680, 428), (736, 428)]
-# Burgweg (blaue Linie im Grundriss): von der Gasse an der Mauer durch das Burgstraßentor, im Westen am Halbturm
-# vorbei hinauf, wo der Weg vom Torhaus Nord dazukommt; dann außen um die ganze Burg: im Norden zwischen den Burgen und
-# der Ringmauer am Wehrturm vorbei, um den Zwinger der Kernburg, am Rondell vorbei und im Süden unter den Burgen zurück
-# über dem Wassertor (außen an der Zwingermauer des III. Burghofs); zuletzt die Rampe hinauf durch das Rampentor.
-WEG_BURG = [(230, 440), (233, 410.1), (237, 380), (240, 300), (262, 240), (300, 205), (360, 198), (450, 178),
-            (530, 150), (600, 140), (650, 112), (700, 106), (760, 108), (800, 116), (850, 95), (900, 78), (965, 62),
-            (1030, 58), (1100, 56), (1160, 85), (1197, 140), (1195, 205), (1180, 290), (1150, 335), (1050, 357),
-            (950, 368), (870, 375), (800, 362), (785, 358), (720, 356), (668, 350), (642, 334), (622, 305), (602.8, 274.0),
-            (594, 264)]
-# Am Fuß der Rampe zum Rampentor geht es geradeaus weiter zur Vorburg: unter dem II. Burghof nach Westen zu ihrem
-# Südtor, durch die Vorburg und das Tor des II. Burghofs auf den Burgweg im II. Burghof. Von Westen (Torhaus West,
-# Burgstraßentor) ist dieser Weg durch eine Sperrmauer versperrt.
-WEG_VORBURG = [(720, 356), (660, 359), (580, 362), (500, 356), (460, 352), (441, 356), (436.8, 339.7), (430, 325),
-               (400, 300), (412, 280), (432, 264), (455.4, 258.4), (461.4, 258.4), (470, 256), (540, 262)]
-SPERRMAUER = [(347, 362), (347, 400)]
-# Vom Torhaus West auf den Burgweg (rote Linie im Grundriss)
-WEG_TORHAUS_WEST = [(140, 412), (154, 410), (190, 398), (237, 380)]
-# Vom Torhaus Nord hinab auf den Burgweg
-WEG_TORHAUS_NORD = [(294, 160), (294, 180), (300, 205)]
-# Zwingerrampe: im II. Burghof gleich rechts hinter dem Rampentor durch das Zwingertor, dann im Zwinger an der Südseite
-# des III. Burghofs nach Osten hinauf (6,5 m von der Hofmauer, 4 m von der Außenmauer: an der Hofmauer steht der Felssockel)
-_ZW_BAND = [ellipse(_O3[0], _O3[1] + 13, _O3[2] + 13, w) for w in (150, 135, 120, 105, 90, 75, 60, 45, 40)]
-WEG_ZWINGER = [(604, 247), TORE["Zwingertor"], (632, 263)] + _ZW_BAND
-GABELUNG = _ZW_BAND[-1]       # oben: links ins Tor des III. Burghofs, geradeaus über den Vorhof zur Kernburg
-WEG_TOR_III = [GABELUNG, TORE["Tor des III. Burghofs"], (804, 274)]
-WEG_KERNBURG = [GABELUNG, (848, 302), (872, 300), TORE["Zwingertor der Kernburg"], TORE["Kernburgtor"], (918, 258)]
 
 
 def _laengen(linie):
@@ -382,85 +263,61 @@ def hoehe_auf(linie, hoehen, p):
     return bester[1]
 
 
-# Der Burgweg ist ein Zwinger: Er läuft rings um das Felsplateau der Burgen, deutlich unter ihnen, so dass man von den
-# Mauern oben herab beschossen werden kann; nur die Rampe am Ende steigt hinauf zum Rampentor des II. Burghofs.
-_i = WEG_BURG.index
-# Im Norden und Osten liegt der Burgweg (und mit ihm der Grund innen an der Ringmauer) hoch auf dem Felsvorgebirge:
-# Die Ringmauer steht dort auf hohen Klippen über der Ebene wie im Referenzbild.
-WEG_BURG_HOEHEN = _steigend(WEG_BURG, {0: -14.3, 1: -14.0, _i((300, 205)): -9.0, _i((650, 112)): 4.0,
-                                       _i((1100, 56)): 8.0, _i((1197, 140)): 8.0, _i((1180, 290)): 8.0,
-                                       _i((950, 368)): 4.0, _i((785, 358)): -4.0,
-                                       _i(TORE["Rampentor"]): H_BURGHOF2, len(WEG_BURG) - 1: H_BURGHOF2})
-WEG_VORBURG_HOEHEN = _steigend(WEG_VORBURG, {0: hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (720, 356)),
-                                             6: H_VORBURG, 8: H_VORBURG, 11: H_BURGHOF2, 12: H_BURGHOF2, 14: H_BURGHOF2})
-WEG_TORHAUS_NORD_HOEHEN = [-12.5, -11.0, -9.0]
-WEG_TORHAUS_WEST_HOEHEN = [-14.0, -13.6, -13.4, round(hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (237, 380)), 2)]
-WEG_ZWINGER_HOEHEN = _steigend(WEG_ZWINGER, {1: H_BURGHOF2, len(WEG_ZWINGER) - 1: H_KERNHOF})
-WEG_TOR_III_HOEHEN = [H_KERNHOF] * len(WEG_TOR_III)
-H_ZWINGER_KERNBURG = H_KERNBURG - 0.5
-WEG_KERNBURG_HOEHEN = _steigend(WEG_KERNBURG, {0: H_KERNHOF, 1: H_KERNHOF, 3: H_ZWINGER_KERNBURG, 4: H_KERNBURG, 5: H_KERNBURG})
-# Die Wege im Burgbezirk sind keine Stadtgassen, gehören aber ins Wegenetz
-BURGWEGE = [WEG_BURG, WEG_VORBURG, WEG_TORHAUS_NORD, WEG_TORHAUS_WEST, WEG_ZWINGER, WEG_TOR_III, WEG_KERNBURG]
-ZWINGER_FLANKE = [3.0, 4.5]    # die Wege im Zwinger: 6 m breit eben, zwischen den Mauern
+
+# ---------- Höhen der Wege ----------
+_i = lambda linie, p: linie.index(g3(p))
+WEG_VORBURG_HOEHEN = [H_VORBURG] * (len(WEG_VORBURG) - 2) + [H_VORBURG - 0.5, H_UNTEN]
+WEG_BURG_HOEHEN = _steigend(WEG_BURG, {0: H_UNTEN, len(G3.WEG_UNTEN) - 1: H_RAMPENFUSS,
+                                       _i(WEG_BURG, G3.RAMPENTOR): H_BURGHOF2, len(WEG_BURG) - 1: H_BURGHOF2})
+WEG_ZWINGER_HOEHEN = _steigend(WEG_ZWINGER, {0: H_BURGHOF2, 1: H_BURGHOF2, len(WEG_ZWINGER) - 1: H_KERNHOF})
+WEG_OBERBURG_HOEHEN = _steigend(WEG_OBERBURG, {0: H_KERNHOF, _i(WEG_OBERBURG, G3.OBERBURG_TOR): H_KERNHOF,
+                                               _i(WEG_OBERBURG, G3.PALAS_ZWINGERTOR): H_ZWINGER_KERNBURG,
+                                               _i(WEG_OBERBURG, G3.PALAS_TOR): H_KERNBURG, len(WEG_OBERBURG) - 1: H_KERNBURG})
+WEG_DURCHGANG_HOEHEN = [H_KERNHOF] * len(WEG_DURCHGANG)
+WEG_AUSSEN_HOEHEN = _steigend(WEG_AUSSEN, {0: H_BURGHOF2, _i(WEG_AUSSEN, (1036, 225)): H_KERNHOF,
+                                           _i(WEG_AUSSEN, (1612, 565)): H_KERNHOF, len(WEG_AUSSEN) - 1: H_RAMPENFUSS})
+WEG_PALASZWINGER_HOEHEN = [H_KERNHOF] + [H_ZWINGER_KERNBURG] * (len(WEG_PALASZWINGER) - 1)
+# Die Wege im Burgbezirk und in den Höfen (die Gassen der Stadt stehen in STRASSEN)
+BURGWEGE = [WEG_VORBURG, WEG_BURG, WEG_ZWINGER, WEG_OBERBURG, WEG_DURCHGANG, WEG_AUSSEN, WEG_PALASZWINGER]
+ZWINGER_FLANKE = [3.0, 4.5]    # Wege zwischen Mauern: 6 m breit eben
 
 
-def zwickel(a_, b_, tor, reichweite=45.0):
-    """Keil zwischen zwei Höfen, die sich an einem Tor berühren: die Bögen beider Ovale nahe am Tor als ein Vieleck.
-    Eingeebnet vor den Höfen (die gewinnen), so bleibt nur der Keil zwischen den Mauern; er liegt auf der Höhe des
-    tieferen Hofs, damit dort keine Rinne zwischen den Mauern klafft."""
-    def bogen(punkte):
-        i = min(range(len(punkte)), key=lambda k: math.dist(punkte[k], tor))
-        n = len(punkte)
-        vor = [punkte[(i + k) % n] for k in range(n // 2) if math.dist(punkte[(i + k) % n], tor) < reichweite]
-        zur = [punkte[(i - k) % n] for k in range(1, n // 2) if math.dist(punkte[(i - k) % n], tor) < reichweite]
-        return list(reversed(zur)) + vor
-    pa, pb = bogen(a_), bogen(b_)
-    # Richtung angleichen: pb beginnt nahe am Ende von pa
-    if math.dist(pa[-1], pb[-1]) < math.dist(pa[-1], pb[0]):
-        pb = list(reversed(pb))
-    return pa + pb
-
-
-HOF_FELSHANG = 2.5        # Meter: das Gelände fällt außen an Vorburg, II. und III. Burghof gleich ab; den Abhang bildet der Felssockel (teil_felsen.py)
+HOF_FELSHANG = 2.5        # Meter: das Gelände fällt außen an den Höfen steil ab; den Abhang bildet der Felssockel (teil_felsen.py)
 
 
 def plan_json():
     # Die Burghöfe stehen auf Felsterrassen: Der Rand (Meter) ist schmal, darunter bricht der Fels steil ab.
     zonen = [
-        {"name": "Zwickel Vorburg/II", "punkte": welt_liste(zwickel(VORBURG, BURGHOF2, TORE["Tor des II. Burghofs"])),
-         "hoehe": H_VORBURG, "rand": 5.0},
-        {"name": "Zwickel II/III", "punkte": welt_liste(zwickel(BURGHOF2, BURGHOF3, (633, 228))),
-         "hoehe": H_BURGHOF2, "rand": 5.0},
-        # Die Höfe stehen auf Felsen: außen fällt der Fels in Stufen bis zum Burgweg ab (wie im Referenzbild)
-        {"name": "I. Vorburg", "punkte": welt_liste(VORBURG), "hoehe": H_VORBURG, "rand": HOF_FELSHANG},
-        {"name": "II. Burghof", "punkte": welt_liste(BURGHOF2), "hoehe": H_BURGHOF2, "rand": HOF_FELSHANG},
-        {"name": "III. Burghof", "punkte": welt_liste(BURGHOF3), "hoehe": H_KERNHOF, "rand": HOF_FELSHANG},
-        # Der Zwinger des III. Burghofs steigt mit der Zwingerrampe: Höhe des nächsten Wegpunkts (Rampe, dann Vorhof)
-        {"name": "Zwinger des III. Burghofs", "punkte": welt_liste(ZWINGER_III), "hoehe": H_KERNHOF, "rand": 4.0,
-         "weg": welt_liste(WEG_ZWINGER), "weg_hoehen": WEG_ZWINGER_HOEHEN},
-        {"name": "Vorhof", "punkte": welt_liste(VORHOF), "hoehe": H_KERNHOF, "rand": 4.0},
-        {"name": "Zwinger der Kernburg", "punkte": welt_liste(ZWINGER_KERNBURG), "hoehe": H_ZWINGER_KERNBURG, "rand": 4.0},
-        {"name": "Kernburg", "punkte": welt_liste(KERNBURG), "hoehe": H_KERNBURG, "rand": 5.5},
+        {"name": "Vorburg", "punkte": welt_liste(VORBURG), "hoehe": H_VORBURG, "rand": HOF_FELSHANG},
+        {"name": "Mittelburg", "punkte": welt_liste(MITTELBURG), "hoehe": H_BURGHOF2, "rand": HOF_FELSHANG},
+        # Der Zwinger der Oberburg steigt mit seinen Wegen: Höhe des nächsten Wegpunkts
+        {"name": "Zwinger der Oberburg", "punkte": welt_liste(ZWINGER_III), "hoehe": H_KERNHOF, "rand": 3.0,
+         "weg": welt_liste(WEG_ZWINGER + WEG_DURCHGANG + WEG_AUSSEN[:_i(WEG_AUSSEN, (1036, 225)) + 1]),
+         "weg_hoehen": WEG_ZWINGER_HOEHEN + WEG_DURCHGANG_HOEHEN + WEG_AUSSEN_HOEHEN[:_i(WEG_AUSSEN, (1036, 225)) + 1]},
+        {"name": "Oberburg", "punkte": welt_liste(OBERBURG), "hoehe": H_KERNHOF, "rand": HOF_FELSHANG},
+        {"name": "Zwinger des Palas", "punkte": welt_liste(ZWINGER_KERNBURG), "hoehe": H_ZWINGER_KERNBURG, "rand": 3.0},
+        {"name": "Palas", "punkte": welt_liste(PALAS_HOF), "hoehe": H_KERNBURG, "rand": HOF_FELSHANG},
     ]
     return {
         "_hinweis": "Erzeugt von werkzeuge/bau/plan_drachenstein.py aus dem Grundriss. Nicht von Hand ändern.",
         "zonen": zonen,                                  # in dieser Reihenfolge eingeebnet; spätere gewinnen
-        "ring": welt_liste(RINGMAUER),                   # Burgbezirk: Grat mit Zwingern
-        "stadt": welt_liste(STADT + []),                 # Stadt in der Ebene
+        "ring": welt_liste(BURGBEZIRK),                  # Burgbezirk: Grund auf der Höhe des nächsten Burgwegs
+        "stadt": welt_liste(STADT),
         "hafen": welt_liste(HAFEN_BEZIRK),
-        "grat": welt_liste([VORBURG[0], (445, 212), (636, 160), (842, 222), (1100, 200)]),
+        "grat": welt_liste([VORBURG[0], MITTE_MITTELBURG, MITTE_OBERBURG, MITTE_PALAS]),
         "stadt_hoehe": [welt((150, 430))[1], H_STADT_WEST, welt((600, 470))[1], H_STADT_OST],
+        # Die Stadt steigt zur Vorburg hin an (dort führen die Gassen im Bogen hinauf zum Vorburgtor)
+        "stadt_anstieg": {"punkte": welt_liste(VORBURG), "hoehe": H_VORBURG - 0.5, "weite": 45.0},
         "hafen_hoehe": H_HAFEN,
-        # [Linienzug, Höhen, folgt der Burgbezirk diesem Weg?] – der Grund zwischen Burgen und Ringmauer liegt auf
-        # der Höhe des nächsten Burgwegs; die Burgen stehen darüber auf ihren Felsen
-        # Die Wege im Zwinger liegen zwischen Mauern: schmale Flanken
-        "burgwege": [[welt_liste(l), h, r] + rest for l, h, r, *rest in [(WEG_BURG, WEG_BURG_HOEHEN, True),
-                                                           (WEG_ZWINGER, WEG_ZWINGER_HOEHEN, False, ZWINGER_FLANKE),
-                                                           (WEG_TOR_III, WEG_TOR_III_HOEHEN, False, ZWINGER_FLANKE),
-                                                           (WEG_KERNBURG, WEG_KERNBURG_HOEHEN, False, ZWINGER_FLANKE),
-                                                           (WEG_VORBURG, WEG_VORBURG_HOEHEN, True),
-                                                           (WEG_TORHAUS_NORD, WEG_TORHAUS_NORD_HOEHEN, True),
-                                                           (WEG_TORHAUS_WEST, WEG_TORHAUS_WEST_HOEHEN, True)]],
+        # [Linienzug, Höhen, folgt der Burgbezirk diesem Weg?, Flanke]
+        "burgwege": [[welt_liste(l), h, r] + rest for l, h, r, *rest in [
+            (WEG_VORBURG, WEG_VORBURG_HOEHEN, False, ZWINGER_FLANKE),
+            (WEG_BURG, WEG_BURG_HOEHEN, True),
+            (WEG_ZWINGER, WEG_ZWINGER_HOEHEN, False, ZWINGER_FLANKE),
+            (WEG_OBERBURG, WEG_OBERBURG_HOEHEN, False, ZWINGER_FLANKE),
+            (WEG_DURCHGANG, WEG_DURCHGANG_HOEHEN, False, ZWINGER_FLANKE),
+            (WEG_AUSSEN, WEG_AUSSEN_HOEHEN, True, ZWINGER_FLANKE),
+            (WEG_PALASZWINGER, WEG_PALASZWINGER_HOEHEN, False, ZWINGER_FLANKE)]],
         "hafen_becken": welt_liste(HAFENBECKEN),
         "fahrrinne": welt_liste(FAHRRINNE),
         "kanal": welt_liste(KANAL),
@@ -475,6 +332,9 @@ def plan_json():
         # eben: der Hof (±halb) und der Weg vom Tor bis zur Straße (lokal z 0 … weg); rand: Übergang ins Gelände
         "vorwerk": {"mitte": list(VORWERK), "dreh": VORWERK_DREH, "hoehe": H_VORWERK, "halb": 38.0, "weg": 66.0,
                     "rand": 24.0},
+        # Landstraßen vor den Toren (Weltpunkte, an die Straßen im Geländeerzeuger angeschlossen)
+        "nordtor": welt_liste(WEG_NORDTOR[:3]),
+        "suedtor": welt_liste(WEG_SUEDTOR[:3]),
     }
 
 
@@ -482,8 +342,7 @@ if __name__ == "__main__":
     ziel = Path(__file__).resolve().parents[2] / "daten" / "drachenstein_plan.json"
     ziel.write_text(json.dumps(plan_json(), ensure_ascii=False, indent=1), encoding="utf-8")
     print("geschrieben:", ziel)
-    for name, p in [("III. Burghof", MITTE), ("Kernburg", (990, 220)), ("I. Vorburg", (385, 290)),
-                    ("Markt", MARKT_MITTE), ("Hafenmitte", (720, 530)), ("Hafeneinfahrt", (814, 578)),
-                    ("Torhaus West", TORE["Torhaus West"]), ("Torhaus Nord", TORE["Torhaus Nord"]),
-                    ("Hafentor", TORE["Hafentor"])]:
+    for name, p in [("Oberburg", MITTE_OBERBURG), ("Palas", MITTE_PALAS), ("Vorburg", MITTE_VORBURG),
+                    ("Mittelburg", MITTE_MITTELBURG), ("Markt", MARKT_MITTE), ("Nordtor", TORE["Nordtor"]),
+                    ("Südtor", TORE["Südtor"]), ("Hafentor", TORE["Hafentor"])]:
         print(f"  {name:16s} {welt(p)}")

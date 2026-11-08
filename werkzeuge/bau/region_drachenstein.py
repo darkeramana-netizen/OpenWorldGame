@@ -78,12 +78,23 @@ for i,(x,z) in enumerate([(115,-418),(170,380)]):   # der erste auf der Landzung
 
 # ---------- Orte ----------
 N("Orte", "Node3D", ".")
+
+
+def ort_kasten(poly, h):
+    """Bereich eines Hofs: Mitte (x, y, z) und Größe (x, y, z) um seinen Umriss in der Welt."""
+    w_ = WL(poly)
+    xs_, zs_ = [q[0] for q in w_], [q[1] for q in w_]
+    return ((min(xs_) + max(xs_)) / 2, h + 3, (min(zs_) + max(zs_)) / 2, max(xs_) - min(xs_) - 4, 16, max(zs_) - min(zs_) - 4)
+
+
+WL = PD.welt_liste
 _orte = [
     ("Burgfeste Drachenstein", "Drei Burgen, ein Stein, eine Feste.", 60, 10, 20, 520, 140, 700),
-    ("Kernburg · Drachenhorst", "Bergfried, Palas und Drachenkapelle.", -4, 20, -131, 120, 30, 132),
-    ("III. Burghof · Wolfsfeste", "Die Schwelle des Ordens.", 0, 17, 0, 95, 20, 100),
-    ("II. Burghof", "Vierzehntes Jahrhundert.", 15, 8, 75, 80, 16, 90),
-    ("I. Vorburg", "Der älteste Teil am Fuß des Grats.", 31, 2, 175, 70, 16, 75),
+    *[(name_, text_, *ort_kasten(poly_, h_)) for name_, text_, poly_, h_ in [
+        ("Palas · Drachenhorst", "Bergfried, Palas und Drachenkapelle.", PD.PALAS_HOF, PD.H_KERNBURG),
+        ("Oberburg · Wolfsfeste", "Die Schwelle des Ordens.", PD.OBERBURG, PD.H_KERNHOF),
+        ("Mittelburg", "Vierzehntes Jahrhundert.", PD.MITTELBURG, PD.H_BURGHOF2),
+        ("Vorburg", "Der älteste Teil der Feste.", PD.VORBURG, PD.H_VORBURG)]],
     ("Festungsstadt", "St. Marien, Markt und Fachwerkhäuser.", 140, -15, 160, 150, 16, 230),
     ("Drachenhafen", "Hafen am Wächtermeer", 150, -17, -5, 110, 12, 110),
     ("Untergrundhafen", "Unter dem Zwinger, im Fels der Feste.", 75, -14, -9.5, 26, 8, 26),
@@ -101,7 +112,7 @@ untertitel = "{untertitel}"''')
 
 # ---------- Bewuchs: Wälder, Büsche, Gras; Stadt, Burgen und Hafen bleiben frei ----------
 bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG),
-                       WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG), WL(PD.ZWINGER_III), WL(PD.VORHOF), WL(PD.RINGMAUER)],   # im Burgbezirk Felsgrund
+                       WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG), WL(PD.ZWINGER_III), WL(PD.BURGBEZIRK), WL(PD.RINGMAUER)],   # im Burgbezirk Felsgrund
         frei_rechtecke=[(BF_X_NEU, BF_Z_NEU, 90, 90), (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24,
         feste_baeume=STADTBAEUME)   # Hausbäume in den Höfen der Stadt (teil_stadt.py)
 
@@ -136,8 +147,8 @@ gespraech("KerrinUndTilo", "KerrinImHof", "TiloBrenn", [
 ], "kerrin_anwaerter,!kerrin_gefasst", "beobachtung_kerrin",
    "Belauscht im Hof: Kerrin Fahl, für den du bürgst, fragt den Knappen Tilo Brenn nach den Fluchtgängen. Ein Warnzeichen.",
    (lambda q: (q[0], H_VW + 1, q[1]))(VW(22, 1.1)))
-# Reiterin aus Ashenveil innen am Torhaus West (auf dem Burgweg): nimmt Wächter über den Küstenweg mit
-REITERIN = W((190, 385))   # neben dem Weg, das Pferd weiter vom Weg weg
+# Reiterin aus Ashenveil innen am Südtor (neben der Gasse): nimmt Wächter über den Küstenweg mit
+REITERIN = W(PD.g3((757, 950)))   # neben dem Weg, das Pferd weiter vom Weg weg
 person("Reiterin", "Personen/PersonenAmBoden", REITERIN[0], 0, REITERIN[1], "Reiterin Ilka Sand", "reiterin_ashenveil", 2, "0.25, 0.22, 0.18, 1", gier=-54)
 pferd("PferdReiterin", "Personen", round(REITERIN[0] - 3.5, 2), round(H(REITERIN[0] - 3.5, REITERIN[1] + 2), 2), round(REITERIN[1] + 2, 2), 36)
 # Bei Alarm leeren sich die Märkte (Konzept: Eine Welt, die kippen kann).
@@ -151,9 +162,10 @@ N("Sprungpunkte", "Node3D", ".")
 _bf = lambda r, w, y: (round(BF_X + r*math.cos(math.radians(BF_WINKEL + w)), 1), y, round(BF_Z + r*math.sin(math.radians(BF_WINKEL + w)), 1))
 _sp = lambda pp, dy=0.5: (lambda p: (round(p[0], 1), round(H(*p) + dy, 1), round(p[1], 1)))(W(pp))
 for name, x, y, z in [("Ordensvorwerk, Hof", *(lambda q: (q[0], H_VW + 0.5, q[1]))(VW(0, 20))), ("Ordensvorwerk, vor dem Tor", *(lambda q: (q[0], H_VW + 0.5, q[1]))(VW(0, 46))),
-                      ("III. Burghof", 0, HOF_Y + 0.5, 20), ("Kernburg", *_sp((975, 225))), ("Übungsplatz", round(UEB[0] + 4, 1), PD.H_KERNBURG + 0.5, round(UEB[1], 1)),
-                      ("II. Burghof", *_sp((560, 262))), ("I. Vorburg", *_sp((390, 300))), ("Burgweg am Halbturm", *_sp((210, 330))),
-                      ("Wassertor", *(lambda p: (round(p[0], 1), -17.3, round(p[1], 1)))(W((736, 428)))), ("Marktplatz", *_sp((512, 530))), ("St. Marien", *_sp((410, 530))),
+                      ("Oberburg", *_sp(PD.HEILSTUBE)), ("Palas", *_sp(PD.g3((1420, 345)))), ("Übungsplatz", round(UEB[0] + 4, 1), PD.H_KERNBURG + 0.5, round(UEB[1], 1)),
+                      ("Mittelburg", *_sp(PD.g3((850, 360)))), ("Vorburg", *_sp(PD.g3((620, 400)))), ("Fuß der Rampe", *_sp(PD.g3((1036, 568)))),
+                      ("Nordtor", *_sp(PD.g3((545, 250)))), ("Südtor", *_sp(PD.g3((745, 960)))),
+                      ("Wassertor", *(lambda p: (round(p[0], 1), -17.3, round(p[1], 1)))(W((736, 428)))), ("Marktplatz", *_sp((512, 530))), ("St. Marien", *_sp(PD.g3((560, 700)))),
                       ("Drachenkai", _lotsin[0] + 2, -17.3, _lotsin[1]), ("Untergrundhafen", 72.0, -17.2, -2.0), ("Bergfried, Tor", *_bf(24, 0, -17.4)),
                       ("Bergfried, Schwelle (Ebene 0)", *_bf(8.5, 4, -17.4)), ("Bergfried, Archive (Ebene 4)", *_bf(8.6, -53, 11.4)),
                       ("Bergfried, Dach", *_bf(8.9, 189, 50.6)), ("Gravemarch, Brückenpforte", round(ESME[0] - ux * 3, 1), round(ESME[1] + 0.5, 1), round(ESME[2] - uz * 3, 1)), ("Gravemarch, Burghof", -614, -3.5, -180),
@@ -164,11 +176,11 @@ for name, x, y, z in [("Ordensvorwerk, Hof", *(lambda q: (q[0], H_VW + 0.5, q[1]
 # ---------- Ankunft per Schiff, Spieler und Oberfläche ----------
 N("Ankuenfte", "Node3D", ".")
 N("von_riverlock", "Marker3D", "Ankuenfte", T(round(_lotsin[0] + 3, 2), -17.5, round(_lotsin[1], 2), 90), extra='groups=["ankunft"]')
-_ank = W((198, 395))     # auf dem Weg vom Torhaus West, neben der Reiterin
+_ank = W(PD.g3((743, 935)))     # auf der Gasse vom Südtor, neben der Reiterin
 N("von_ashenveil", "Marker3D", "Ankuenfte", T(round(_ank[0], 2), round(H(*_ank) + 0.2, 2), round(_ank[1], 2), -53.4), extra='groups=["ankunft"]')
 ankunft("von_nordstrasse", 112, -608, 145)
 ankunft("von_kuestenweg", 152, 640, 10)
-ankunft("heilstube", -10, 15)
+ankunft("heilstube", *W(PD.HEILSTUBE))
 schild("SchildNordstrasse", ".", 160, round(H(160, -555) + 3, 2), -555, "Nordstraße → Riverlock 225 km", 48)
 schild("SchildKuestenweg", ".", 158, round(H(158, 600) + 3, 2), 600, "Küstenweg → Ashenveil 70 km", 48)
 # Am Ende der Pässe beginnen die Landstraßen

@@ -30,16 +30,17 @@ FARBEN = {GROSS: "1.6, 1.58, 1.55, 1", RIESIG: "1.6, 1.58, 1.55, 1", MITTEL: "1.
 
 random.seed(4711)
 _frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(PD.STADT), WL(PD.HAFEN_BEZIRK),
-         WL(PD.ZWINGER_III), WL(PD.VORHOF), WL(PD.ZWINGER_KERNBURG)]
+         WL(PD.ZWINGER_III), WL(PD.ZWINGER_KERNBURG)]
 # Äußere Mauern bleiben frei; an den Burgmauern darf der Fels bis an den Mauerfuß reichen (die Burgen stehen auf ihm)
-_mauern = [WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.STADTMAUER), WL(PD.HAFENMAUER_OST)]
+_mauern = [WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.STADTMAUER), WL(PD.HAFENMAUER_OST), WL(PD.RING_NORD), WL(PD.RING_SUED_OST)]
 _ring_flaeche = WL(PD.RINGMAUER)
 _wege = [WL(w) for w in PD.BURGWEGE] + [WL(PD.KAIWEG)] + [
     # Landstraßen vor den Toren (werkzeuge/gelaende_erzeuger.gd: WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE)
-    [(-27.2, 220.5), (-45, 225), (-120, 215), (-220, 170)],
+    [(-27.85, 181.37), (-35.2, 189.7), (-52, 194), (-120, 215), (-220, 170)],
     [(-380, -20), (-390, -130), (-360, -260), (-280, -380), (-150, -460), (20, -480), (150, -440), (230, -500)],
     [(-220, 170), (-300, 80), (-380, -20)],
-    [(91, 297), (98, 312), (116, 340), (122, 390), (132, 470), (140, 540), (150, 615), (160, 690)],
+    [(230.9, 93.9), (242, 96), (240, 150), (238, 215), (228, 262), (196, 302), (150, 335), (122, 390), (132, 470),
+     (140, 540), (150, 615), (160, 690)],
     [(150, -430), (230, -500), (150, -560), (110, -610), (85, -660)]]
 # Tore und Durchgänge, vor denen nichts liegen darf (dazu der Kai am Wassertor und das Felsentor)
 _tore = [W(p) for p in PD.TORE.values()] + [W(PD.MOLENPFORTE), W((740, 420))]
@@ -164,17 +165,16 @@ _hang_orte = []
 _alle_hoefe = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG)]
 # Türme an den Hofmauern (aus teil_drachenstein.py): vor ihnen kein Sockel, sie stehen selbst auf dem Fels
 _sockel_tuerme = [W(q) for q in _HOF_TUERME] if "_HOF_TUERME" in globals() else []
-# Die Wege im Zwinger laufen dicht an der Mauer des III. Burghofs entlang: Dort steht der Sockel trotzdem (er steht
+# Die Wege im Zwinger laufen dicht an der Mauer der Oberburg entlang: Dort steht der Sockel trotzdem (er steht
 # meist 2 bis 4 m vor der Mauer, der Weg ist 6 m breit und 6,5 m von ihr entfernt)
-_wege_sockel = [WL(w) for w in PD.BURGWEGE if w not in (PD.WEG_ZWINGER, PD.WEG_TOR_III, PD.WEG_KERNBURG)] + _wege[len(PD.BURGWEGE):]
-# (Umriss, Hofhöhe oder None = Gelände innen, geschlossen?, Mitte oder None): die Höfe, der enge Zwinger der Kernburg,
-# die Außenmauer des Zwingers am III. Burghof und die Quermauer des Vorhofs (beide offen, Höhe des Zwingers innen)
+_wege_sockel = [WL(w) for w in PD.BURGWEGE if w not in (PD.WEG_ZWINGER, PD.WEG_OBERBURG, PD.WEG_DURCHGANG)] + _wege[len(PD.BURGWEGE):]
+# (Umriss, Hofhöhe oder None = Gelände innen, geschlossen?, Mitte oder None): die Höfe, der enge Zwinger des Palas
+# und die Zwingermauer an der Südseite der Oberburg (offen, Höhe des Zwingers innen)
 for umriss_, hof_h, geschlossen_, mitte_ in [
         (WL(PD.VORBURG), PD.H_VORBURG, True, None), (WL(PD.BURGHOF2), PD.H_BURGHOF2, True, None),
         (WL(PD.BURGHOF3), PD.H_KERNHOF, True, None), (WL(PD.KERNBURG), PD.H_KERNBURG, True, None),
         (WL(PD.ZWINGER_KERNBURG), PD.H_ZWINGER_KERNBURG, True, None),
-        (WL(PD.ZWINGER_III_AUSSEN), None, False, W(PD.OVAL_BURGHOF3[0])),
-        (WL(PD.ZWINGER_III_QUER), None, False, W((855, 240)))]:
+        (WL(PD.ZWINGERMAUER_SUED), None, False, W(PD.MITTE_OBERBURG))]:
     mx_ = sum(q[0] for q in umriss_) / len(umriss_) if mitte_ is None else mitte_[0]
     mz_ = sum(q[1] for q in umriss_) / len(umriss_) if mitte_ is None else mitte_[1]
     ring_ = umriss_ + umriss_[:1] if geschlossen_ else umriss_

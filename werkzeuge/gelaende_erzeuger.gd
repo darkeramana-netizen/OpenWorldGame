@@ -52,7 +52,7 @@ const GRUND_VORGEBIRGE := -18.6   # Felsgrund direkt vor den Mauern (über dem M
 const BECKEN_TIEFE := -27.0
 
 ## Wege als Linienzüge.
-const WEG_GRAVEMARCH := [Vector2(-27.2, 220.5), Vector2(-45, 225), Vector2(-120, 215), Vector2(-220, 170), Vector2(-300, 80),
+const WEG_GRAVEMARCH := [Vector2(-27.85, 181.37), Vector2(-35.2, 189.7), Vector2(-52, 194), Vector2(-120, 215), Vector2(-220, 170), Vector2(-300, 80),
 	Vector2(-380, -20), Vector2(-460, -150), Vector2(-490, -215), Vector2(-528.8, -265.1)]
 ## Der Weg nach Gravecrest steigt vom Tal bis zur Zugbrücke auf Höhe 70.
 const WEG_GRAVECREST := [Vector2(-460, -150), Vector2(-470, -240), Vector2(-500, -310),
@@ -63,7 +63,8 @@ const GRAVECREST_HOEHE := 70.0
 ## der Küstenweg beginnt am Torhaus West in der Ringmauer und führt über einen Pass im Süden.
 const WEG_NORD := [Vector2(-380, -20), Vector2(-390, -130), Vector2(-360, -260), Vector2(-280, -380), Vector2(-150, -460),
 		Vector2(20, -480), Vector2(150, -440), Vector2(230, -500)]
-const WEG_KUESTE := [Vector2(91, 297), Vector2(98, 312), Vector2(116, 340), Vector2(122, 390), Vector2(132, 470), Vector2(140, 540)]
+const WEG_KUESTE := [Vector2(230.9, 93.9), Vector2(242, 96), Vector2(240, 150), Vector2(238, 215), Vector2(228, 262),
+	Vector2(196, 302), Vector2(150, 335), Vector2(122, 390), Vector2(132, 470), Vector2(140, 540)]
 ## Passstrecken mit fester Steigung: [Linienzug, Höhe am Anfang, Höhe am Ende].
 const PASS_NORD := [[Vector2(230, -500), Vector2(150, -560), Vector2(110, -610), Vector2(85, -660)], -4.0, 30.0]
 const PASS_SUED := [[Vector2(140, 540), Vector2(150, 615), Vector2(160, 690)], -13.0, 22.0]
@@ -78,6 +79,7 @@ var _becken: Array = []         # Hafenbecken, Fahrrinne, Kanal
 ## keine, Kanal die beiden Längsseiten
 const BECKEN_KAIKANTEN := [[0, 1, 2, 3, 5, 6, 7, 8, 9], [], [0, 2]]
 var _markt := PackedVector2Array()
+var _anstieg := PackedVector2Array()   # Umriss, zu dem die Stadt ansteigt (die Vorburg)
 var _ring := PackedVector2Array()     # Burgbezirk innerhalb der Ringmauer (Grat und Zwinger)
 var _hafen := PackedVector2Array()    # Hafenbezirk: Kais
 var _bucht := PackedVector2Array()    # Meer um die Burg: Bucht vor dem Hafen, im Osten und Norden um das Vorgebirge
@@ -108,6 +110,8 @@ func _init() -> void:
 				_hoefe.append(vec.call(z["punkte"]))
 		_stadt = vec.call(plan["stadt"])
 		_markt = vec.call(plan["markt"])
+		if plan.has("stadt_anstieg"):
+			_anstieg = vec.call(plan["stadt_anstieg"]["punkte"])
 		_ring = vec.call(plan["ring"])
 		_hafen = vec.call(plan["hafen"])
 		_bucht = vec.call(plan["bucht"])
@@ -386,11 +390,17 @@ func _innen_hoehe(p: Vector2) -> float:
 	return NAN
 
 
-## Höhe der Stadt: vom Torhaus West zum Hafen leicht fallend.
+## Höhe der Stadt: von Westen zum Hafen leicht fallend, zur Vorburg hin ansteigend (die Gassen führen im Bogen hinauf
+## zum Vorburgtor).
 func stadthoehe(p: Vector2) -> float:
 	var w: Array = plan["stadt_hoehe"]
 	var t := clampf((p.y - float(w[0])) / (float(w[2]) - float(w[0])), 0.0, 1.0)
-	return lerpf(float(w[1]), float(w[3]), t)
+	var h := lerpf(float(w[1]), float(w[3]), t)
+	if not _anstieg.is_empty():
+		var a: Dictionary = plan["stadt_anstieg"]
+		var d := maxf(0.0, _polygon_abstand(p, _anstieg))
+		h = lerpf(float(a["hoehe"]), h, smoothstep(0.0, float(a["weite"]), d))
+	return h
 
 
 ## Weg mit fester Höhe je Punkt (dazwischen linear), 7 m breit eben, bis 7 m ins Gelände übergehend.

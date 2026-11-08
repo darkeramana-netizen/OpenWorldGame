@@ -143,11 +143,11 @@ func _initialize() -> void:
 			"Anwärter wird am Pass zurückgeschickt")
 	current_scene.get_node("Entwickler").ueberspringe_akt1()
 
-	# --- Vor dem Torhaus Nord auf dem Weg nach Gravemarch ins Tal, dort die Nordstraße um die Nordsee herum ---
-	await setze(Vector3(-45, current_scene.get_node("Gelaende").hoehe_bei(-45, 225) + 0.3, 225))
+	# --- Vor dem Nordtor auf dem Weg nach Gravemarch ins Tal, dort die Nordstraße um die Nordsee herum ---
+	await setze(Vector3(-52, current_scene.get_node("Gelaende").hoehe_bei(-52, 194) + 0.3, 194))
 	pruefe(await gehe_ueber([Vector2(-120, 215), Vector2(-220, 170), Vector2(-300, 80), Vector2(-380, -20), Vector2(-390, -130),
 			Vector2(-360, -260), Vector2(-280, -380), Vector2(-150, -460), Vector2(20, -480)], 70.0),
-			"Vom Torhaus Nord ins Tal und auf der Nordstraße um die Nordsee")
+			"Vom Nordtor ins Tal und auf der Nordstraße um die Nordsee")
 
 	# --- Drachenstein → Nordstraße ---
 	var start: float = Z.absolute_minuten()
@@ -219,9 +219,10 @@ func _initialize() -> void:
 	pruefe(await durch_uebergang(marke("von_drachenstein"), "NachDrachenstein") and region_id() == "drachenstein", "Gleich wieder umgekehrt")
 	pruefe(Z.absolute_minuten() - start < 60, "Wer umkehrt, verliert keine Tage")
 	await setze(marke("von_kuestenweg") + Vector3(0, 0.3, 0))
-	pruefe(await gehe_ueber([Vector2(150, 615), Vector2(140, 540), Vector2(132, 470), Vector2(122, 390), Vector2(116, 340),
-			Vector2(98, 312), Vector2(91, 297), Vector2(91, 290.5), Vector2(85, 272.5), Vector2(76, 249), Vector2(91.05, 251),
-			Vector2(106, 252.5)], 30.0), "Über den Pass, durch das Torhaus West und das Burgstraßentor in die Stadt")
+	pruefe(await gehe_ueber([Vector2(150, 615), Vector2(140, 540), Vector2(132, 470), Vector2(122, 390), Vector2(150, 335),
+			Vector2(196, 302), Vector2(228, 262), Vector2(238, 215), Vector2(240, 150), Vector2(242, 96), Vector2(230.88, 93.94),
+			Vector2(222.35, 92.29), Vector2(214.01, 101.38), Vector2(198.29, 106.37)], 30.0),
+			"Über den Pass und den Küstenweg unter der Stadtmauer durch das Südtor in die Stadt")
 
 	print("\nFehler: ", fehler)
 	quit(fehler)

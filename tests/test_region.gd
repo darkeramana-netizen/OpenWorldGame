@@ -119,36 +119,26 @@ func _initialize() -> void:
 	for p in current_scene.get_node("Personen/Stadtleben").get_children():
 		if p is CollisionObject3D:
 			p.collision_layer = 0
-	# Wege der Burgfeste nach dem Grundriss (docs/bilder/grundriss-drachenstein-2.webp)
-	# Hinauf: aus dem III. Burghof durch sein Tor an das obere Ende der Zwingerrampe, über den Vorhof durch das Tor im
-	# engen Zwinger und das Kernburgtor in die Kernburg
-	await setze(Vector3(8, 14.3, -10))
-	var hinauf := await gehe_ueber([Vector2(23, -34.5), Vector2(28.3, -40.55), Vector2(32.45, -45.55), Vector2(37, -56.5),
-			Vector2(36, -68.5), Vector2(26.05, -78.45), Vector2(20.9, -84.6), Vector2(15, -91.5), Vector2(6, -102.5)], 40.0)
-	pruefe(hinauf and spieler().global_position.y > 15.5, "Durch den Vorhof und den Zwinger hinauf in die Kernburg (y=%.1f)" % spieler().global_position.y)
-	pruefe(orte.has("Kernburg · Drachenhorst"), "Ortsname: Kernburg")
-	# Hinab: Tor des III. Burghofs → Zwingerrampe hinab nach Westen → Zwingertor in den II. Burghof → Tor in die I. Vorburg →
-	# Südtor der Vorburg → unter dem II. Burghof nach Osten bis an den Fuß der Rampe zum Rampentor (von Westen ist der Weg
-	# durch die Sperrmauer versperrt)
-	await setze(Vector3(8, 14.3, -10))
-	var hinab := await gehe_ueber([Vector2(23, -34.5), Vector2(28.3, -40.55), Vector2(32.45, -45.55), Vector2(35.7, -42.15),
-			Vector2(43.75, -30.25), Vector2(48.8, -16.4), Vector2(50.5, -1.5), Vector2(48.8, 13.4), Vector2(43.75, 27.25),
-			Vector2(35.7, 39.15), Vector2(25.25, 48.3), Vector2(17.5, 51.5), Vector2(13.75, 56.7), Vector2(9.5, 65.5), Vector2(17, 73.5), Vector2(17, 97.5), Vector2(14, 132.5), Vector2(15.2, 139.8), Vector2(15.35, 141.5), Vector2(25, 162.25), Vector2(30, 168), Vector2(36, 167.5), Vector2(48.5, 152.5), Vector2(55.85, 149.1), Vector2(64, 147), Vector2(62, 137.5), Vector2(64, 117.5), Vector2(67, 77.5), Vector2(65.5, 37.5), Vector2(64, 7.5)], 40.0)
-	pruefe(hinab and absf(spieler().global_position.y) < 1.5, "Durch die Vorburg und unter dem II. Burghof zur Rampe (y=%.1f)" % spieler().global_position.y)
-	pruefe(orte.has("I. Vorburg") and orte.has("II. Burghof"), "Ortsnamen: II. Burghof, I. Vorburg")
-	# Der ganze Burgweg: vom II. Burghof durch das Rampentor hinab, im Süden über dem Wassertor und an der Klippe am
-	# Rondell vorbei hinauf, um den Zwinger, im Norden wieder hinab und durch das Torhaus Nord hinaus
-	await setze(Vector3(17, 6.3, 72.5))
-	pruefe(await gehe_ueber([Vector2(23, 66.1), Vector2(38.5, 56.5), Vector2(53, 46.5), Vector2(61, 33.5), Vector2(64, 7.5), Vector2(65, -25),
-			Vector2(67, -32.5), Vector2(73.5, -67.5), Vector2(70, -107.5), Vector2(64.5, -157.5), Vector2(53.5, -207.5), Vector2(31, -222.5),
-			Vector2(-11.5, -230), Vector2(-44, -231), Vector2(-71.5, -212.5), Vector2(-86, -182.5), Vector2(-85, -147.5), Vector2(-83, -115),
-			Vector2(-75, -82.5), Vector2(-66.5, -57.5), Vector2(-56, -32.5), Vector2(-60, -12.5), Vector2(-61, 17.5), Vector2(-58, 42.5),
-			Vector2(-44, 67.5), Vector2(-39, 102.5), Vector2(-25, 142.5), Vector2(-15, 187.5), Vector2(-11.5, 217.5), Vector2(-24, 220.5),
-			Vector2(-34, 220.5), Vector2(-44, 220.5)], 30.0) and spieler().global_position.y < -10.0,
-			"Burgweg: vom Rampentor einmal um die Burg und durch das Torhaus Nord hinaus")
-	# Durch die Hafenpforte über den Kai bis an den Kanal vor dem Wassertor
-	await setze(Vector3(136, g.hoehe_bei(136, 84.5) + 0.3, 84.5))
-	var fels := await gehe_ueber([Vector2(136, 64.5), Vector2(121, 61.5), Vector2(106, 52.5), Vector2(100, 27.5), Vector2(100, -0.5)], 30.0)
+	# Wege der Burgfeste nach dem Grundriss (docs/bilder/grundriss-drachenstein-3.webp, die Wege hat der Spieler
+	# eingezeichnet): vom Marktplatz durch die Stadt im Bogen um die Vorburg hinauf zum Vorburgtor, durch den Hof und das
+	# Osttor hinab in den Burgbezirk, an der Mauer zur Rampe, durch das Rampentor in die Mittelburg, gleich rechts durch
+	# das Zwingertor, im Zwinger an der Oberburg hinauf, durch ihr Südtor und ihr Tor zum Durchgang in den Palas
+	await setze(Vector3(145.82, g.hoehe_bei(145.82, 142.94) + 0.3, 142.94))
+	var hinauf := await gehe_ueber([Vector2(143.81, 147.13), Vector2(141.34, 166.16), Vector2(135.55, 185.79), Vector2(128.88, 202.81), Vector2(122.51, 215.44), Vector2(110.87, 225.13), Vector2(94.36, 232.88), Vector2(82.31, 237.56), Vector2(67.97, 239.07), Vector2(47.75, 238.38), Vector2(28.09, 232.25), Vector2(14.66, 224.28), Vector2(6.83, 214.84), Vector2(10.28, 207.82), Vector2(21.97, 210.91), Vector2(38.99, 213.54), Vector2(52.46, 213.78), Vector2(60.65, 207.06), Vector2(69.1, 191.24), Vector2(70.54, 176), Vector2(67, 161.5), Vector2(64.68, 149.59), Vector2(60.57, 140.51), Vector2(52.45, 139.83), Vector2(41.49, 141.4), Vector2(34.09, 137.3), Vector2(32.73, 133.04), Vector2(36.77, 129.01), Vector2(45.49, 124.6), Vector2(53.06, 118.6), Vector2(58.5, 111.1), Vector2(61.86, 94.69), Vector2(63.34, 75.74), Vector2(67.36, 59.27), Vector2(72.42, 43.06), Vector2(77.43, 26.18), Vector2(79.22, 15.27), Vector2(72.43, 14.49), Vector2(67.16, 24), Vector2(57.79, 40.9), Vector2(51.79, 49.8), Vector2(46.14, 54.62), Vector2(41.63, 57.01), Vector2(34.46, 55.58), Vector2(32.91, 48.99), Vector2(38.4, 42.15), Vector2(44.92, 31.53), Vector2(46.5, 9.89), Vector2(45.43, -11.54), Vector2(43.77, -23.5), Vector2(48.29, -33.96), Vector2(47.48, -48.01), Vector2(38.62, -45.27), Vector2(29.72, -39.16), Vector2(21.92, -35.83), Vector2(8.56, -34.74), Vector2(3.86, -38.72), Vector2(3.08, -48.4), Vector2(1.97, -53.69), Vector2(-0.03, -57.56), Vector2(-2.52, -67.44), Vector2(-2.62, -76.85), Vector2(-5.2, -100.17)], 40.0)
+	pruefe(hinauf and spieler().global_position.y > 15.5, "Durch Stadt, Vorburg, Mittelburg und Oberburg hinauf in den Palas (y=%.1f)" % spieler().global_position.y)
+	pruefe(orte.has("Vorburg") and orte.has("Mittelburg") and orte.has("Oberburg · Wolfsfeste") and orte.has("Palas · Drachenhorst"),
+			"Ortsnamen: Vorburg, Mittelburg, Oberburg, Palas")
+	# Rundweg: aus dem Palas zurück in den Durchgang, nach Norden und außen um den Palas, im Süden an der Ringmauer
+	# hinab bis an den Fuß der Rampe
+	var rund := await gehe_ueber([Vector2(-2.52, -67.44), Vector2(-0.03, -57.56), Vector2(1.97, -53.69), Vector2(-16.45, -52.86), Vector2(-29.14, -51.81), Vector2(-42.99, -56.74), Vector2(-52.22, -62.7), Vector2(-61.66, -75.37), Vector2(-71.05, -91.41), Vector2(-78.28, -105.94), Vector2(-81.4, -127.54), Vector2(-78.15, -149.32), Vector2(-80.53, -170.3), Vector2(-72.52, -195.5), Vector2(-63.87, -213.01), Vector2(-51.8, -225.77), Vector2(-36.62, -233.4), Vector2(-20.19, -229.71), Vector2(4.31, -221.97), Vector2(21.5, -217.32), Vector2(37.82, -206.89), Vector2(50.43, -192.47), Vector2(62.46, -176.98), Vector2(73.79, -161.77), Vector2(81.88, -140.92), Vector2(84.96, -111.59), Vector2(84.91, -79.31), Vector2(84.87, -47.04), Vector2(83.45, -27.43), Vector2(78.5, -5.85), Vector2(79.22, 15.27)], 40.0)
+	pruefe(rund and absf(spieler().global_position.y) < 1.5, "Außen um den Palas hinab zum Fuß der Rampe (y=%.1f)" % spieler().global_position.y)
+	# Zwingerweg: die Rampe hinauf, durch die Mittelburg und das Zwingertor, im Zwinger an der Westseite der Oberburg
+	# nach Norden, hinter ihr entlang und durch den Durchgang zurück an das Ende des Zwingers
+	var zwinger := await gehe_ueber([Vector2(72.43, 14.49), Vector2(67.16, 24), Vector2(57.79, 40.9), Vector2(51.79, 49.8), Vector2(46.14, 54.62), Vector2(41.63, 57.01), Vector2(34.46, 55.58), Vector2(32.91, 48.99), Vector2(34.69, 46.15), Vector2(18.58, 46.46), Vector2(1.83, 47.17), Vector2(-11.08, 45.54), Vector2(-22.36, 39.06), Vector2(-28.06, 31.12), Vector2(-35.31, 24.66), Vector2(-39.64, 16.94), Vector2(-40.85, 6.29), Vector2(-38.75, -4.98), Vector2(-34.36, -17.1), Vector2(-34.46, -30.54), Vector2(-35.55, -43.89), Vector2(-29.14, -51.81), Vector2(-16.45, -52.86), Vector2(1.97, -53.69), Vector2(20.38, -54.53), Vector2(37.91, -53.95), Vector2(47.48, -48.01)], 40.0)
+	pruefe(zwinger and absf(spieler().global_position.y - 14.0) < 1.5, "Zwingerweg um die Oberburg (y=%.1f)" % spieler().global_position.y)
+	# Vom Marktplatz auf den Westkai und über den Kai bis an den Kanal vor dem Wassertor
+	await setze(Vector3(136, g.hoehe_bei(136, 86) + 0.3, 86))
+	var fels := await gehe_ueber([Vector2(145.69, 79.75), Vector2(149.85, 68.99), Vector2(142, 63.5), Vector2(121, 61.5), Vector2(106, 52.5), Vector2(100, 27.5), Vector2(100, -0.5)], 30.0)
 	pruefe(fels and absf(spieler().global_position.y + 17.4) < 0.6, "Über den Kai an den Kanal vor dem Wassertor (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("Drachenhafen"), "Ortsname: Drachenhafen")
 	# Vom Nordkai auf den Landungssteg bis an sein Ende (über dem Wasser, nicht hineingefallen)
@@ -217,11 +207,11 @@ func _initialize() -> void:
 			Vector2(212, -10), Vector2(292, -15.5), Vector2(300, -15), Vector2(382, 22), Vector2(450, 55)], 30.0)
 	pruefe(mole and spieler().global_position.y > -18.5, "Durch die Molenpforte über Mole und Brücken zu den Inseln")
 	pruefe(orte.has("Schwarzer Bergfried"), "Ortsname beim Betreten: Schwarzer Bergfried")
-	# Landweg: durch das Torhaus Nord herein, am Halbturm vorbei hinab und durch das Burgstraßentor in die Stadt
-	await setze(Vector3(-44, g.hoehe_bei(-44, 220.5) + 0.3, 220.5))
-	pruefe(await gehe_ueber([Vector2(-34, 220.5), Vector2(-24, 220.5), Vector2(-11.5, 217.5), Vector2(6, 236.5), Vector2(36, 247.5),
-			Vector2(76, 249), Vector2(91.05, 251), Vector2(106, 252.5)], 30.0) and orte.has("Festungsstadt"),
-			"Landweg: durch das Torhaus Nord und das Burgstraßentor in die Stadt")
+	# Landwege: durch das Nordtor herein und hinab in die Stadt; durch das Südtor in die Stadt
+	await setze(Vector3(-50.07, g.hoehe_bei(-50.07, 193.28) + 0.3, 193.28))
+	pruefe(await gehe_ueber([Vector2(-35.23, 189.71), Vector2(-27.85, 181.37), Vector2(-16.06, 185.78), Vector2(-8.3, 190.19), Vector2(-2.56, 198.79), Vector2(4.28, 208.32), Vector2(6.83, 214.84), Vector2(14.66, 224.28), Vector2(28.09, 232.25), Vector2(47.75, 238.38), Vector2(67.97, 239.07)], 30.0) and orte.has("Festungsstadt"), "Landweg: durch das Nordtor in die Stadt")
+	await setze(Vector3(245.67, g.hoehe_bei(245.67, 89.71) + 0.3, 89.71))
+	pruefe(await gehe_ueber([Vector2(230.88, 93.94), Vector2(222.35, 92.29), Vector2(214.01, 101.38), Vector2(198.29, 106.37), Vector2(178.2, 107.34), Vector2(168.69, 106.1)], 30.0), "Landweg: durch das Südtor in die Stadt")
 	# Gravemarch nach dem Grundriss: von der Brückenpforte bis in den Burghof, durch Zwinger und geknicktes Tor
 	var esme: Node3D = current_scene.get_node("Personen/TorwacheGravemarch")
 	await setze(esme.global_position + Vector3(-2, 0.3, 0))

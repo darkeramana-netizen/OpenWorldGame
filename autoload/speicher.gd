@@ -17,7 +17,9 @@ const HAUPTMENUE := "res://szenen/oberflaeche/hauptmenue.tscn"
 ## Manuelle Plätze im Pausemenü. "auto" und "schnell" kommen dazu.
 const PLAETZE: Array[String] = ["1", "2", "3"]
 ## 1: Hof als eigene Szene (Akt I). 2: Hof liegt in der Region Drachenstein.
-const VERSION := 5
+const VERSION := 6
+const OBERBURG_MITTE := Vector3(1.06, 14.5, -3.19)   # Umzug alter Spielstände (Version 6)
+const MARKT_MITTE := Vector3(145.0, -14.6, 111.5)
 ## Höhe des Hofs aus Akt I in der Region Drachenstein (werkzeuge/bau/plan_drachenstein.py, HOF_Y)
 const HOF_Y := 14.0
 ## Seit Version 4 liegt der Hof aus Akt I als Ordensvorwerk vor der Stadt am Küstenweg (plan_drachenstein.py, VORWERK)
@@ -228,6 +230,19 @@ func _ziehe_um(daten: Dictionary) -> void:
 		var pos: Array = spieler.get("position", [])
 		if pos.size() == 3 and float(pos[1]) > 20.0 and absf(float(pos[0])) < 90.0 and float(pos[2]) < -50.0 and float(pos[2]) > -240.0:
 			spieler["position"] = [-1.5, 16.5, -120.0]
+	if int(daten.get("version", 1)) < 6 and String(daten.get("region", START_REGION)) == START_REGION:
+		# Burg und Stadt sind nach dem dritten Grundriss neu gebaut: Wer in der Burg stand, steht in der Oberburg, wer in
+		# der Stadt stand, auf dem Marktplatz (Hafen, Untergrundhafen und das Land draußen sind geblieben).
+		var spieler: Dictionary = daten.get("spieler", {})
+		var pos: Array = spieler.get("position", [])
+		if pos.size() == 3 and absf(float(pos[0]) - 60.0) < 200.0 and absf(float(pos[2])) < 320.0:
+			var x := float(pos[0])
+			var z := float(pos[2])
+			var y := float(pos[1])
+			if y > -6.0 and x < 75.0:
+				spieler["position"] = [OBERBURG_MITTE.x, OBERBURG_MITTE.y, OBERBURG_MITTE.z]
+			elif y > -16.8 and x > 60.0 and z > 50.0:
+				spieler["position"] = [MARKT_MITTE.x, MARKT_MITTE.y, MARKT_MITTE.z]
 
 
 func _spieler_daten() -> Dictionary:

@@ -22,11 +22,10 @@ NETZ = STRASSEN + [P(*l) for l in [
     [(456, 558), (458, 555)], [(512, 556), (512, 552)], [(568, 556), (563, 555)],
     # Hafen: Kaiweg von der Hafenpforte zum Kai am Kanal
     PD.KAIWEG,
-    # Burgweg um die Burg in den II. Burghof, Abzweig zur Vorburg, Weg vom Torhaus Nord
-    PD.WEG_BURG, PD.WEG_VORBURG, PD.WEG_TORHAUS_NORD, PD.WEG_TORHAUS_WEST,
-    # vom Rampentor zum Zwingertor, die Zwingerrampe hinauf, ins Tor des III. Burghofs und zur Kernburg
-    [PD.WEG_BURG[-1], PD.WEG_ZWINGER[0]], PD.WEG_ZWINGER, PD.WEG_TOR_III, PD.WEG_KERNBURG,
-    [PD.WEG_TOR_III[-1], (760, 252)],
+    # der Weg hinauf: durch die Stadt zum Vorburgtor, durch die Vorburg, an der Mauer zur Rampe, in die Mittelburg,
+    # durch den Zwinger in die Oberburg und den Durchgang
+    PD.WEG_STADT, PD.WEG_VORBURG, PD.WEG_BURG, PD.WEG_ZWINGER, PD.WEG_OBERBURG, PD.WEG_DURCHGANG,
+    [PD.g3((1202, 370)), PD.g3((1170, 360))],
 ]]
 
 # Hindernisse: (Mitte x, Mitte z, Breite, Tiefe, Gier) als Rechtecke, Kreise als (x, z, Radius)
@@ -38,7 +37,7 @@ RECHTECKE = [(h[0], h[2], HAUSFORMEN[h[5]][0], HAUSFORMEN[h[5]][1] + 2 * VORKRAG
     (x, z, 0.9 if art != 2 else 1.3, 0.9, gier) for art, x, y, z, gier in AUSSTATTUNG if art in (0, 1, 2)] + [
     (x, z, 1.8, 3.2, gier) for art, x, y, z, gier in AUSSTATTUNG if art == 4] + [
     (x, z, 3.4, 2.4, 0) for x, z in STAENDE_MEHR] + [
-    _bau(PD.ST_MARIEN[0], PD.ST_MARIEN[1] * PD.MASSSTAB, PD.ST_MARIEN[2] * PD.MASSSTAB, 0), _bau(PD.ST_MARIEN_TURM, 8, 8)] + [
+    _bau(PD.ST_MARIEN[0], PD.ST_MARIEN[1] * PD.MASSSTAB, PD.ST_MARIEN[2] * PD.MASSSTAB, -PD.ST_MARIEN[3]), _bau(PD.ST_MARIEN_TURM, 8, 8)] + [
     _bau(PD.SPEICHER[0], PD.SPEICHER[1] * PD.MASSSTAB, PD.SPEICHER[2] * PD.MASSSTAB, 0)]
 KREISE = [(MARKT_MITTE[0], MARKT_MITTE[1], 2.4)]
 
@@ -203,7 +202,7 @@ def _richtung(p, ziel, abstand):
     d = math.dist(p, ziel)
     return (round(p[0] + (ziel[0] - p[0]) * abstand / d, 2), round(p[1] + (ziel[1] - p[1]) * abstand / d, 2))
 
-WACHWECHSEL = W((760, 252))   # im III. Burghof, neben dem Weg vom Tor in die Mitte
+WACHWECHSEL = W(PD.g3((1170, 360)))   # in der Oberburg, neben dem Weg vom Südtor zum Tor der Oberburg
 BRUNNEN = MARKT_MITTE
 def _freier_platz(stand, abstand):
     """Ein Platz neben dem Stand, zu dem möglichst viele Wege vom Brunnen und von den Markträndern frei sind."""
@@ -225,7 +224,7 @@ def _freier_platz(stand, abstand):
 
 MARKTPLAETZE = [_freier_platz(STAENDE[k], 3.2) for k in (4, 5, 0, 1, 2, 3)] + P((470, 518), (552, 518))   # die ersten nah am Brunnen
 AM_BRUNNEN = [(round(MARKT_MITTE[0] + dx, 2), round(MARKT_MITTE[1] + dz, 2)) for dx, dz in ((-3.4, 0), (3.4, 0), (0, 3.4), (0, -3.4))]
-VOR_DER_KIRCHE = P((366, 490), (367, 484), (365, 478), (366, 472))   # auf dem Weg zum Portal an der Westseite
+VOR_DER_KIRCHE = [W(PD.g3(q)) for q in ((503, 612), (496, 607.5), (489, 603), (482, 598))]   # vor dem Portal an der Westseite
 FARBEN = ["0.42, 0.33, 0.24, 1", "0.3, 0.35, 0.42, 1", "0.45, 0.4, 0.3, 1", "0.35, 0.28, 0.32, 1",
           "0.28, 0.36, 0.28, 1", "0.5, 0.42, 0.34, 1", "0.38, 0.3, 0.2, 1", "0.32, 0.32, 0.36, 1"]
 ORDEN = "0.12, 0.12, 0.14, 1"
@@ -278,8 +277,8 @@ for i, (name, anzeige) in enumerate([("Pim", "Pim, ein Junge aus dem Marktvierte
     }, sichtbar_wenn="alarm<2", tempo=2.2, groesse=0.68)
 
 # --- Streifen des Ordens: tags zwei, nachts zwei, aus der Burg und zurück ---
-STADT_NORD = runde(WACHWECHSEL, *P((300, 447), (250, 555), (400, 590)))          # Westviertel um St. Marien
-MARKT_HAFEN = runde(WACHWECHSEL, *P((563, 500), (505, 610), (606, 500), (680, 428)))
+STADT_NORD = runde(WACHWECHSEL, *[W(PD.g3(q)) for q in ((312, 390), (305, 520), (404, 611))])   # Westviertel um St. Marien
+MARKT_HAFEN = runde(WACHWECHSEL, *P((563, 500)), W(PD.g3((620, 840))), *P((608, 512), (680, 428)))
 for name, anzeige, kordel, strecke, schicht in [
         ("StreifeHahn", "Wächter Bertolt Hahn", 1, STADT_NORD, "tag"),
         ("StreifeKiel", "Wächterin Sanne Kiel", 1, MARKT_HAFEN, "tag"),
@@ -312,7 +311,7 @@ person("Hafenaufsicht", SL, AUFSICHT[0], hoehe(*AUFSICHT), AUFSICHT[1], "Hafenw�
        ORDEN, gier=_blick(AUFSICHT, KAUFMANN))
 
 # --- Kirche, Rathaus, ein Flüchtling ---
-KUESTER = W((366, 496))
+KUESTER = W(PD.g3((506, 621)))
 stadtmensch("Kuester", "Küster Anselm Rohr", "kuester", 0, "0.2, 0.2, 0.22, 1", wohnung(), {
     "morgengrauen": (KUESTER, [f"blick={_blick(KUESTER, W(PD.ST_MARIEN[0]))}"]),
     "nacht": ("heim", ["weg"]),

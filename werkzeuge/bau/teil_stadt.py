@@ -1,8 +1,8 @@
 # ---------- Festungsstadt und Hafendorf Drachenstein nach dem Grundriss ----------
 # Wird aus teil_drachenstein.py ausgeführt (PD = plan_drachenstein, W = Planpunkt → Welt, Mauer-Bausteine).
-# Unten in der Ebene: die Stadt mit Fachwerkhäusern, St. Marien und dem Marktplatz hinter der Stadtmauer mit dem
-# Torhaus West; daneben der Drachenhafen mit Kaimauern, Hafenmauer, Speicher und Koggen. Die Hafenpforte verbindet
-# Stadt und Hafen. Die Hafeneinfahrt ist offen zum Meer; das Hafentor in der Ringmauer ist ein Wassertor, durch das
+# Die Stadt legt sich im Westen und Süden um die Vorburg: Fachwerkhäuser in Bogenreihen, St. Marien und der Marktplatz,
+# die Stadtmauer mit dem Südtor und den Torhäusern im Nordwesten und Südwesten; daneben, offen zur Stadt, der
+# Drachenhafen mit Kaimauern, Hafenmauer, Speicher und Koggen. Die Hafeneinfahrt ist offen zum Meer; das Hafentor in der Ringmauer ist ein Wassertor, durch das
 # ein Kanal bis an die Mauer führt; hinter dem Fallgitter geht es in den Untergrundhafen. Von der Molenpforte am Speicherkai geht die Mole ab.
 # Die Häuser zeichnet szenen/welt/stadthaeuser.gd; die Hausformen (Breite, Tiefe) stehen dort.
 import re
@@ -28,11 +28,11 @@ MARKT = WL(PD.MARKTPLATZ)
 STADT_UMRISS = WL(PD.STADT)
 MITTE_STADT = W((400, 540))
 
-# --- Stadtmauer mit der Hafenpforte (in die Stadt kommt man vom Burgweg durch das Burgstraßentor) ---
+# --- Stadtmauer mit dem Südtor (zum Küstenweg); im Nordwesten und Südwesten Torhäuser als Türme über der Mauer ---
 SM = PD.STADTMAUER
-mauerring("Stadtmauer", ST, WL(SM), 8.0, dicke=3.0, mitte=MITTE_STADT, strassen=STRASSEN, torname="Hafenpforte")
+mauerring("Stadtmauer", ST, WL(SM), 8.0, dicke=3.0, mitte=MITTE_STADT, strassen=[WL(PD.WEG_SUEDTOR)], torname="Südtor")
 # Türme der Stadtmauer: an den Ecken und auf langen Strecken Rundtürme mit Kegeldach, an der Süd- und der Hafenecke
-# zwei breite Bastionen mit Zinnen (wie im Referenzbild). An der Hafenpforte bleibt die Mauer frei.
+# zwei breite Bastionen mit Zinnen (wie im Referenzbild). Am Südtor und an den Torhäusern bleibt die Mauer frei.
 _st = []
 _turmorte = []
 for i_, (a_, b_) in enumerate(zip(SM, SM[1:])):
@@ -43,11 +43,11 @@ for i_, (a_, b_) in enumerate(zip(SM, SM[1:])):
         t_ = k_ / (int(laenge_ // 70) + 1)
         _turmorte.append((a_[0] + (b_[0] - a_[0]) * t_, a_[1] + (b_[1] - a_[1]) * t_))
 for pp in _turmorte:
-    if math.dist(pp, PD.TORE["Hafenpforte"]) < 18:
+    if math.dist(pp, PD.TORE["Südtor"]) < 18 or any(math.dist(pp, PD.g3(q[0])) < 25 for q in (PD.G3.TORHAUS_NW, PD.G3.TORHAUS_SW)):
         continue
     x, z = W(pp)
     werte_ = [H(x + dx, z + dz) for dx in (-5, 0, 5) for dz in (-5, 0, 5)]
-    if pp in [(330, 665), (600, 664)]:
+    if pp in [PD.g3((190, 505)), (600, 664)]:
         _st += [x, z, min(werte_) - 4, max(werte_) + 10, 7.0, 0, 0]
     else:
         _st += [x, z, min(werte_) - 4, max(werte_) + 12, 4.5, 1, 7.5]
@@ -111,7 +111,7 @@ schild("SchildUntergrundhafen", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh
 schild("SchildUHTuer", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(UH_LAENGE - 0.6, 0)), "Zur Burg (verschlossen)", 32)
 # Torhaus über dem Wassertor (wie im Referenzbild): zwei eckige Türme mit Zeltdach zu beiden Seiten des Bogens, darüber
 # ein Fachwerkhaus auf der Mauerkrone, das über die Mauer vorkragt
-_wa, _wb = W((785, 412)), W((700, 403))
+_wa, _wb = W(PD.g3(PD.G3.HAFENTOR[1])), W(PD.g3(PD.G3.HAFENTOR[0]))
 _wl = math.dist(_wa, _wb)
 _wu = ((_wb[0] - _wa[0]) / _wl, (_wb[1] - _wa[1]) / _wl)          # entlang der Ringmauer
 _wn = (-_wu[1], _wu[0])
@@ -235,7 +235,7 @@ STAENDE_MEHR = [W((px, py)) for py in (489, 547) for px in range(472, 550, 21)
 
 # --- St. Marien ---
 kx, kz = W(PD.ST_MARIEN[0])
-steinbau("StMarien", ST, kx, kz, PD.ST_MARIEN[1] * M, PD.ST_MARIEN[2] * M, 15, gier=0, mat="Material_hell",
+steinbau("StMarien", ST, kx, kz, PD.ST_MARIEN[1] * M, PD.ST_MARIEN[2] * M, 15, gier=-PD.ST_MARIEN[3], mat="Material_hell",
          dachhoehe=10, art=1)
 tx, tz = W(PD.ST_MARIEN_TURM)
 tb = H(tx, tz)
@@ -276,8 +276,8 @@ def pr(bau, rand=1.0):
 def abstand_vieleck(p, poly):
     return 0.0 if im_vieleck(p, poly) else min(abstand_linie([a, b], *p) for a, b in zip(poly, poly[1:] + poly[:1]))
 
-SPERR = [MARKT, pr(PD.ST_MARIEN, 2.0), pr((PD.ST_MARIEN_TURM, 18, 18, 0))]
-MAUERN = [WL(SM), WL(PD.RINGMAUER)]
+SPERR = [MARKT, pr(PD.ST_MARIEN, 2.0), pr((PD.ST_MARIEN_TURM, 18, 18, 0)), WL(PD.VORBURG)]   # in der Vorburg keine Bürgerhäuser
+MAUERN = [WL(SM), WL(PD.RING_NORD), WL(PD.RING_SUED_OST), WL(PD.VORBURG + PD.VORBURG[:1])]
 
 def bauplatz_frei(ecken4, haeuser_ecken, halb):
     if not all(im_vieleck(p, STADT_UMRISS) for p in ecken4):
@@ -443,8 +443,8 @@ if os.environ.get("BAU_KARTE"):
         zeichnung.line([P(p) for p in s], fill=(150, 130, 100), width=int(STRASSE_HALB * 2 * m))
     for e in _haus_ecken:
         zeichnung.polygon([P(p) for p in e], fill=(190, 90, 70), outline=(60, 30, 20))
-    for linie in [WL(SM), WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.VORBURG + PD.VORBURG[:1]), WL(PD.BURGHOF2 + PD.BURGHOF2[:1]),
-                  WL(PD.BURGHOF3 + PD.BURGHOF3[:1]), WL(PD.ZWINGER_III_AUSSEN), WL(PD.ZWINGER_KERNBURG + PD.ZWINGER_KERNBURG[:1]), WL(PD.KERNBURG + PD.KERNBURG[:1]), BECKEN + BECKEN[:1], WL(HM)]:
+    for linie in [WL(SM), WL(PD.RING_NORD), WL(PD.RING_SUED_OST), WL(PD.VORBURG + PD.VORBURG[:1]), WL(PD.BURGHOF2 + PD.BURGHOF2[:1]),
+                  WL(PD.BURGHOF3 + PD.BURGHOF3[:1]), WL(PD.ZWINGERMAUER_SUED), WL(PD.ZWINGER_KERNBURG + PD.ZWINGER_KERNBURG[:1]), WL(PD.KERNBURG + PD.KERNBURG[:1]), BECKEN + BECKEN[:1], WL(HM)]:
         zeichnung.line([P(p) for p in linie], fill=(230, 230, 230), width=3)
     zeichnung.rectangle([P((-31, -31)), P((31, 31))], outline=(255, 0, 0), width=2)
     bild.save(os.environ["BAU_KARTE"])
