@@ -17,12 +17,12 @@ Wege (vom Spieler eingezeichnet, blau Hauptweg, rot Nebenwege):
 
 # ---------- Burghöfe (Umriss der Hofmauer) ----------
 VORBURG = [(537, 457), (505, 400), (507, 377), (512, 330), (525, 318), (580, 311), (637, 295), (672, 279), (722, 274),
-           (743, 283), (738, 330), (737, 362), (700, 362), (700, 395), (684, 404), (706, 455), (690, 470), (683, 483),
+           (743, 283), (738, 330), (737, 362), (700, 362), (700, 412), (706, 455), (690, 470), (683, 483),
            (558, 467)]
 VORBURG_TUERME = [((502, 397), 15), ((537, 457), 23)]          # Rundtürme im Westen
 VORBURG_TOR = ((697, 480), 20)                                  # Rundturm am Tor der Vorburg
 VORBURGTOR = (668, 482)                                          # in der Südmauer, von der Stadt in die Vorburg
-VORBURG_OSTTOR = (697, 401)                                      # aus dem Hof hinab in den Burgbezirk
+VORBURG_OSTTOR = (700, 395)                                      # aus dem Hof hinab in den Burgbezirk
 TREPPE_VORBURG = [(684, 407), (645, 410)]                        # vom Weg am Tor hinauf in den Hof
 
 MITTELBURG = [(740, 287), (763, 272), (887, 232), (907, 220), (932, 268), (938, 330), (946, 400), (948, 440),
@@ -36,7 +36,7 @@ OBERBURG = [(967, 330), (1025, 235), (1045, 230), (1115, 237), (1175, 255), (121
             (1180, 437), (1105, 435), (1050, 420), (1020, 400), (980, 375)]
 OBERBURG_TORTURM = ((1238, 280), 27)                            # offener Vierkantturm an der Nordostecke
 OBERBURG_TOR = (1244, 357)                                      # Torbau an der Ostmauer, vom Durchgang
-OBERBURG_SUEDTOR = (1210, 434)                                  # vom Ostende des Zwingers (gebogene Stiege)
+OBERBURG_SUEDTOR = (1235, 433)                                  # vom Ostende des Zwingers (gebogene Stiege)
 OBERBURG_TUERME = [((1117, 422), 12), ((1184, 437), 9), ((1040, 217), 7)]
 # Zwingermauer der Oberburg: West- und Südseite, vom Nordturm der Mittelburg bis an den Durchgang zum Palas
 OBERBURG_ZWINGER = [(985, 243), (950, 290), (940, 355), (960, 410), (967, 422)]
@@ -48,13 +48,13 @@ PALAS_HOF = [(1300, 355), (1305, 305), (1318, 275), (1360, 240), (1400, 225), (1
              (1648, 272), (1642, 340), (1620, 425), (1560, 437), (1500, 445), (1385, 467), (1325, 415)]
 PALAS_TOR = (1302, 345)                                         # Westtor, vom Durchgang
 PALAS_ZWINGERTOR = (1272, 350)                                  # gegenüber im engen Zwinger
-PALAS_ZWINGERPFORTE = (1292, 466)                               # vom Südende des Durchgangs in den engen Zwinger
-BERGFRIED = ((1572, 190), 60, 30)                               # Mitte, Seite, Drehung (Grad)
+PALAS_ZWINGERPFORTE = (1284, 440)                               # vom Südende des Durchgangs in den engen Zwinger
+BERGFRIED = ((1575, 222), 60, 30)                               # Mitte, Seite, Drehung (Grad)
 PALAS_BAU = [(1450, 205), (1640, 300)]                          # langer Palas an der Nordostmauer (von, bis)
 PALAS_TUERME = [((1450, 225), 12), ((1652, 280), 12), ((1617, 420), 10)]
 PALAS_ECKBAU = ((1608, 298), 40, 30)                            # Vierkantturm am Südostende des Palas
 # Enger Zwinger: zweiter Mauerring dicht um den Palashof, mit Rundtürmen
-PALAS_ZWINGER = [(1270, 360), (1275, 290), (1300, 240), (1360, 190), (1460, 150), (1530, 130), (1620, 160),
+PALAS_ZWINGER = [(1268, 410), (1272, 300), (1300, 240), (1360, 190), (1460, 150), (1530, 130), (1620, 160),
                  (1690, 210), (1720, 290), (1700, 380), (1660, 450), (1610, 480), (1520, 490), (1390, 505),
                  (1300, 470)]
 PALAS_ZWINGER_TUERME = [((1707, 210), 15), ((1730, 340), 12), ((1615, 490), 12)]
@@ -62,13 +62,13 @@ PALAS_ZWINGER_TUERME = [((1707, 210), 15), ((1730, 340), 12), ((1615, 490), 12)]
 # ---------- Ringmauer, Stadtmauer, Burgbezirk ----------
 # Ringmauer im Norden und Osten: vom Torhaus im Nordwesten über das Nordtor, dann an die Burg (die Mauern der Vorburg
 # und der Mittelburg sind dort die Außenmauer), hinter Oberburg und Palas weiter bis zur Bastion im Südosten
-RING_NORD = [(385, 275), (420, 258), (530, 205), (545, 195), (735, 212), (715, 235), (700, 272)]
+RING_NORD = [(385, 275), (420, 258), (530, 212), (575, 212), (735, 212), (715, 235), (700, 272)]
 RING_OST = [(907, 217), (1000, 165), (1040, 135), (1207, 205), (1250, 160), (1385, 95), (1415, 102), (1705, 115),
-            (1725, 110), (1838, 168), (1830, 260), (1795, 500), (1765, 560), (1600, 580), (1400, 600), (1170, 625),
-            (1155, 620)]
-RING_TUERME = [((545, 195), 22), ((735, 212), 22), ((1040, 135), 12), ((1207, 205), 22), ((1385, 95), 18),
+            (1725, 110), (1838, 168), (1830, 260), (1795, 500), (1765, 560), (1705, 592), (1620, 615), (1500, 630),
+            (1400, 635), (1300, 632), (1170, 628), (1155, 620)]
+RING_TUERME = [((735, 212), 22), ((1040, 135), 12), ((1207, 205), 22), ((1385, 95), 18),
                ((1725, 110), 15), ((1838, 168), 25), ((1765, 560), 30)]
-NORDTOR = (568, 209)                                            # kleines Tor in der Ringmauer (rot: nach Gravemarch)
+NORDTOR = (552, 212)                                            # Torhaus in der Ringmauer (rot: nach Gravemarch)
 TORHAUS_NW = ((385, 275), 40)                                    # eckiges Torhaus über der Mauer
 # Mauer zwischen Stadt und Burgbezirk: vom Vorburgtor bis an das Hafentor
 STADT_BURG_MAUER = [(697, 480), (723, 487), (1060, 595)]
@@ -96,7 +96,7 @@ def _bau(a, b, breite):
 VORBURG_BAUTEN = [_bau((523, 322), (509, 392), 40), _bau((520, 396), (543, 440), 30),       # Westflügel zwischen den Türmen
                   _bau((550, 333), (578, 330), 30), _bau((578, 326), (645, 310), 42), _bau((645, 304), (673, 293), 28),
                   _bau((675, 290), (718, 285), 32),                                          # Nordflügel
-                  _bau((695, 344), (735, 344), 36),                                          # Ostbau
+                  _bau((715, 326), (715, 362), 44),                                          # Ostbau (Tür nach Westen)
                   _bau((562, 453), (596, 456), 26), _bau((610, 460), (650, 462), 26)]        # an der Südmauer
 MITTELBURG_BAUTEN = [_bau((750, 320), (775, 335), 30), _bau((770, 300), (830, 285), 34), _bau((830, 278), (905, 255), 44),
                      _bau((905, 250), (930, 245), 30),                                       # Nordflügel
@@ -107,10 +107,11 @@ OBERBURG_BAUTEN = [_bau((975, 325), (1025, 245), 32), _bau((1030, 248), (1112, 2
                    _bau((1012, 380), (1040, 392), 26),                                       # kleines Haus im Südwesten
                    _bau((1072, 418), (1108, 420), 24), _bau((1130, 420), (1175, 422), 22), _bau((1197, 417), (1222, 417), 24)]
 PALAS_BAUTEN = [_bau((1365, 255), (1430, 235), 40),                                          # Nordwestflügel
-                _bau((1318, 300), (1340, 275), 32), _bau((1312, 320), (1318, 395), 30),          # Westflügel (Burgküche)
+                _bau((1318, 300), (1340, 275), 32), _bau((1316, 364), (1320, 402), 30),          # Westflügel (Burgküche südlich des Tors)
                 _bau((1335, 395), (1395, 445), 44),                                          # Drachenkapelle im Südwesten
                 _bau((1410, 450), (1465, 445), 22), _bau((1470, 440), (1535, 430), 26),          # Südflügel
-                _bau((1590, 335), (1600, 410), 34)]                                          # Zeughaus im Osten
+                _bau((1590, 335), (1600, 410), 34),                                          # Zeughaus im Osten
+                _bau((1311, 302), (1313, 330), 30)]                                          # Westflügel nördlich des Tors
 PALAS_LANG = _bau((1462, 205), (1622, 295), 42)                                              # der Palas
 
 # ---------- Wege (aus der Zeichnung des Spielers, geglättet) ----------
@@ -119,36 +120,37 @@ PALAS_LANG = _bau((1462, 205), (1622, 295), 42)                                 
 WEG_HAFEN = [(828, 750), (859, 765), (905, 772)]
 WEG_STADT = [(640, 735), (628, 728), (572, 716), (515, 694), (466, 670),
              (430, 648), (404, 611), (385, 560), (374, 523), (373, 480), (380, 420), (403, 363), (430, 325), (460, 304),
-             (480, 316), (468, 350), (456, 400), (452, 440), (470, 466), (515, 495), (560, 503), (604, 496), (640, 492),
-             VORBURGTOR, (672, 458)]
+             (480, 316), (468, 350), (456, 400), (452, 440), (470, 466), (515, 495), (560, 503), (604, 496), (640, 494),
+             (665, 497), VORBURGTOR, (671, 468), (672, 458)]
 # blau: durch den Hof der Vorburg, zum Osttor hinaus und auf dem gemauerten Weg hinab an den Fuß der Burgmauern
-WEG_VORBURG = [(672, 458), (670, 425), (684, 404), VORBURG_OSTTOR, (708, 414), (719, 441), (735, 465), (756, 483)]
+WEG_VORBURG = [(672, 458), (675, 425), (687, 397), VORBURG_OSTTOR, (713, 398), (721, 428), (735, 465), (756, 483)]
 # blau: unten an der Stadtmauer entlang bis an den Fuß der Rampe, die Rampe hinauf durch das Rampentor in die Mittelburg
 WEG_UNTEN = [(756, 483), (804, 497), (860, 506), (908, 522), (955, 541), (1004, 560), (1036, 568)]
-WEG_RAMPE = [(1036, 568), (1040, 548), (1013, 530), (965, 498), (940, 478), (927, 460), RAMPENTOR, (927, 425)]
+WEG_RAMPE = [(1036, 568), (1040, 548), (1013, 530), (965, 498), (940, 478), (925, 461), RAMPENTOR, (918, 431), (930, 423)]
 # blau: gleich rechts durch das Zwingertor, im Zwinger an der Südseite der Oberburg hinauf bis an ihr Ostende
-WEG_ZWINGER = [(927, 425), ZWINGERTOR, (966, 440), (996, 462), (1060, 472), (1124, 474), (1160, 472), (1190, 488),
+WEG_ZWINGER = [(930, 423), ZWINGERTOR, (962, 423), (1000, 430), (1060, 455), (1124, 459), (1160, 460), (1195, 474),
                (1232, 489)]
 # blau: über die gebogene Stiege durch das Südtor in die Oberburg; quer durch den Hof, zum Osttor hinaus und über den
 # Durchgang durch beide Tore in den Palas
-WEG_OBERBURG = [(1232, 489), (1226, 462), OBERBURG_SUEDTOR, (1202, 410), (1202, 370), (1215, 357), OBERBURG_TOR,
-                (1260, 355), PALAS_ZWINGERTOR, PALAS_TOR, (1330, 347), (1400, 345)]
+WEG_OBERBURG = [(1232, 489), (1236, 455), OBERBURG_SUEDTOR, (1233, 415), (1222, 380), (1228, 358), OBERBURG_TOR,
+                (1260, 355), PALAS_ZWINGERTOR, (1287, 347), PALAS_TOR, (1330, 347), (1400, 345)]
 # der Durchgang zwischen Oberburg und Palas, vom Ostende des Zwingers nach Norden
 WEG_DURCHGANG = [(1232, 489), (1252, 462), (1258, 410), (1260, 355), (1262, 300), (1262, 262)]
 # rot: Zwingerweg um die Oberburg (West- und Nordseite) und außen um den Palas, im Süden an der Mauer hinab zum Fuß
 # der Rampe
-WEG_AUSSEN = [(955, 428), (958, 380), (960, 330), (968, 292), (990, 260), (1015, 245), (1036, 225), (1060, 214),
-              (1092, 213), (1125, 222), (1160, 238), (1200, 241), (1240, 241), (1262, 262), (1280, 222), (1300, 196),
-              (1340, 171), (1390, 147), (1435, 129), (1500, 125), (1564, 140), (1627, 138), (1700, 168), (1750, 198),
-              (1785, 237), (1804, 284), (1789, 332), (1760, 403), (1742, 453), (1707, 499), (1661, 533), (1612, 565),
-              (1564, 595), (1500, 614), (1412, 616), (1316, 608), (1220, 600), (1162, 591), (1099, 571), (1036, 568)]
+WEG_AUSSEN = [(962, 423), (960, 400), (958, 370), (952, 330), (958, 295), (968, 275), (990, 245), (1010, 210),
+              (1036, 196), (1050, 188), (1092, 196), (1125, 205), (1160, 219), (1200, 244), (1240, 245), (1262, 262),
+              (1285, 215), (1300, 188), (1340, 162), (1390, 137), (1435, 131), (1500, 121), (1564, 125), (1627, 138),
+              (1700, 168), (1750, 198), (1785, 237), (1804, 284), (1789, 332), (1760, 403), (1742, 453), (1707, 499),
+              (1661, 533), (1612, 565), (1564, 595), (1500, 610), (1412, 612), (1316, 606), (1220, 600), (1162, 591),
+              (1099, 571), (1036, 568)]
 # rot: im engen Zwinger einmal um den Palas
-WEG_PALASZWINGER = [(1252, 462), PALAS_ZWINGERPFORTE, (1327, 492), (1388, 498), (1451, 489), (1524, 470), (1587, 458),
-                    (1636, 436), (1667, 398), (1692, 347), (1703, 284), (1693, 235), (1652, 195), (1605, 177),
-                    (1548, 164), (1483, 164), (1428, 180), (1379, 193), (1338, 225), (1297, 267), (1284, 315),
-                    PALAS_ZWINGERTOR]
+WEG_PALASZWINGER = [(1252, 462), (1273, 446), PALAS_ZWINGERPFORTE, (1295, 434), (1327, 450), (1388, 486), (1451, 477),
+                    (1524, 466), (1587, 456), (1640, 440), (1658, 398), (1675, 347), (1684, 284), (1660, 235),
+                    (1630, 200), (1600, 182), (1575, 170), (1545, 160), (1483, 164), (1428, 187), (1379, 208),
+                    (1338, 233), (1304, 268), (1288, 315), (1287, 347)]
 # rot: vom Nordtor in die Stadt, vom Südtor in die Stadt
-WEG_NORDTOR = [(538, 140), (545, 185), NORDTOR, (552, 243), (537, 265), (510, 280), (480, 298), (460, 304)]
+WEG_NORDTOR = [(548, 140), (550, 185), NORDTOR, (550, 240), (537, 265), (510, 280), (480, 298), (460, 304)]
 WEG_SUEDTOR = [(774, 1045), SUEDTOR, (772, 975), (747, 948), (736, 900), (738, 840), (744, 812)]
 
 # ---------- Gassen der Stadt (dazu WEG_STADT und die Wege von Nord- und Südtor) ----------

@@ -111,7 +111,7 @@ schild("SchildUntergrundhafen", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh
 schild("SchildUHTuer", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(UH_LAENGE - 0.6, 0)), "Zur Burg (verschlossen)", 32)
 # Torhaus über dem Wassertor (wie im Referenzbild): zwei eckige Türme mit Zeltdach zu beiden Seiten des Bogens, darüber
 # ein Fachwerkhaus auf der Mauerkrone, das über die Mauer vorkragt
-_wa, _wb = W(PD.g3(PD.G3.HAFENTOR[1])), W(PD.g3(PD.G3.HAFENTOR[0]))
+_wa, _wb = W(PD._MAUER_HAFEN[1]), W(PD._MAUER_HAFEN[0])
 _wl = math.dist(_wa, _wb)
 _wu = ((_wb[0] - _wa[0]) / _wl, (_wb[1] - _wa[1]) / _wl)          # entlang der Ringmauer
 _wn = (-_wu[1], _wu[0])

@@ -36,7 +36,7 @@ _mauern = [WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.STADTMAUER), WL(PD.HAFENMA
 _ring_flaeche = WL(PD.RINGMAUER)
 _wege = [WL(w) for w in PD.BURGWEGE] + [WL(PD.KAIWEG)] + [
     # Landstraßen vor den Toren (werkzeuge/gelaende_erzeuger.gd: WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE)
-    [(-27.85, 181.37), (-35.2, 189.7), (-52, 194), (-120, 215), (-220, 170)],
+    [(-26.41, 186.63), (-35.4, 188.0), (-52, 190), (-120, 215), (-220, 170)],
     [(-380, -20), (-390, -130), (-360, -260), (-280, -380), (-150, -460), (20, -480), (150, -440), (230, -500)],
     [(-220, 170), (-300, 80), (-380, -20)],
     [(230.9, 93.9), (242, 96), (240, 150), (238, 215), (228, 262), (196, 302), (150, 335), (122, 390), (132, 470),

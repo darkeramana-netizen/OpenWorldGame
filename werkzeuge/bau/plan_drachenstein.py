@@ -124,20 +124,21 @@ MITTE_OBERBURG, MITTE_PALAS = schwerpunkt(OBERBURG), schwerpunkt(PALAS_HOF)
 RING_NORD = g3l(G3.RING_NORD)                        # vom Torhaus im Nordwesten über das Nordtor an die Vorburg
 # Ringmauer im Süden und Osten: vom Rundturm am Vorburgtor an der Stadt entlang zum Hafentor (Wassertor), um Oberburg
 # und Palas bis an die Nordostecke der Mittelburg
-RING_SUED_OST = g3l(G3.STADT_BURG_MAUER + [G3.HAFENTOR[1]] + G3.RING_OST[::-1][2:])
-STADTMAUER = g3l(G3.STADTMAUER[:-3]) + [(600, 664)]  # endet an der Ecke zum Hafen (Bastion)
+_MAUER_HAFEN = [(700, 403), (785, 412)]           # am Wassertor wie bisher (Kanal und Untergrundhafen)
+RING_SUED_OST = g3l(G3.STADT_BURG_MAUER[:2]) + _MAUER_HAFEN + g3l(G3.RING_OST[::-1][2:])
+STADTMAUER = g3l(G3.STADTMAUER[:-2]) + [(600, 664)]  # durch das Südtor bis an die Ecke zum Hafen (Bastion)
 # Umriss der ganzen Festung (Küstenfels, Bewuchs): Stadt, Burgbezirk und Hafen
 RINGMAUER = (g3l(G3.RING_NORD[:-1] + [(700, 272), (722, 274), (743, 283)] + G3.MITTELBURG[1:4] + G3.RING_OST[1:-1])
              + [(785, 412), (828, 440), (842, 540), (812, 549), (808, 606), (800, 622), (800, 640), (770, 648), (640, 650)]
              + STADTMAUER[::-1][:-1])
 # Burgbezirk: zwischen Stadtmauer, Ringmauer und den Burgen (Mittelburg, Oberburg und Palas liegen darin)
-BURGBEZIRK = g3l([G3.VORBURG_TOR[0]] + G3.STADT_BURG_MAUER[1:] + [G3.HAFENTOR[1]] + G3.RING_OST[::-1][2:]
-                 + [(887, 232), (763, 272), (743, 283), (738, 330), (737, 362), (700, 362), (700, 395), (697, 401),
-                    (706, 455), (690, 470)])
+BURGBEZIRK = (g3l([G3.VORBURG_TOR[0]] + G3.STADT_BURG_MAUER[1:2]) + _MAUER_HAFEN + g3l(G3.RING_OST[::-1][2:]
+                 + [(887, 232), (763, 272), (743, 283), (738, 330), (737, 362), (700, 362), (700, 412),
+                    (706, 455), (690, 470)]))
 # Stadt mit der Vorburg und dem Streifen nördlich davon (bis an die Ringmauer mit dem Nordtor)
-STADT = (g3l(G3.RING_NORD + [(722, 274), (743, 283), (738, 330), (737, 362), (700, 362), (700, 395), (697, 401),
-                              (706, 455), G3.VORBURG_TOR[0]] + G3.STADT_BURG_MAUER[1:])
-         + [(700, 410), (615, 425), (600, 470), (590, 560), (600, 664)] + STADTMAUER[::-1][1:-1])
+STADT = (g3l(G3.RING_NORD + [(722, 274), (743, 283), (738, 330), (737, 362), (700, 362), (700, 412),
+                              (706, 455), G3.VORBURG_TOR[0]] + G3.STADT_BURG_MAUER[1:2]) + _MAUER_HAFEN[:1]
+         + [(615, 425), (600, 470), (590, 560), (600, 664)] + STADTMAUER[::-1][1:-1])
 
 # ---------- Tore (Planpunkte) ----------
 TORE = {
@@ -274,7 +275,7 @@ WEG_OBERBURG_HOEHEN = _steigend(WEG_OBERBURG, {0: H_KERNHOF, _i(WEG_OBERBURG, G3
                                                _i(WEG_OBERBURG, G3.PALAS_ZWINGERTOR): H_ZWINGER_KERNBURG,
                                                _i(WEG_OBERBURG, G3.PALAS_TOR): H_KERNBURG, len(WEG_OBERBURG) - 1: H_KERNBURG})
 WEG_DURCHGANG_HOEHEN = [H_KERNHOF] * len(WEG_DURCHGANG)
-WEG_AUSSEN_HOEHEN = _steigend(WEG_AUSSEN, {0: H_BURGHOF2, _i(WEG_AUSSEN, (1036, 225)): H_KERNHOF,
+WEG_AUSSEN_HOEHEN = _steigend(WEG_AUSSEN, {0: H_BURGHOF2, _i(WEG_AUSSEN, (1036, 196)): H_KERNHOF,
                                            _i(WEG_AUSSEN, (1612, 565)): H_KERNHOF, len(WEG_AUSSEN) - 1: H_RAMPENFUSS})
 WEG_PALASZWINGER_HOEHEN = [H_KERNHOF] + [H_ZWINGER_KERNBURG] * (len(WEG_PALASZWINGER) - 1)
 # Die Wege im Burgbezirk und in den Höfen (die Gassen der Stadt stehen in STRASSEN)
@@ -292,8 +293,8 @@ def plan_json():
         {"name": "Mittelburg", "punkte": welt_liste(MITTELBURG), "hoehe": H_BURGHOF2, "rand": HOF_FELSHANG},
         # Der Zwinger der Oberburg steigt mit seinen Wegen: Höhe des nächsten Wegpunkts
         {"name": "Zwinger der Oberburg", "punkte": welt_liste(ZWINGER_III), "hoehe": H_KERNHOF, "rand": 3.0,
-         "weg": welt_liste(WEG_ZWINGER + WEG_DURCHGANG + WEG_AUSSEN[:_i(WEG_AUSSEN, (1036, 225)) + 1]),
-         "weg_hoehen": WEG_ZWINGER_HOEHEN + WEG_DURCHGANG_HOEHEN + WEG_AUSSEN_HOEHEN[:_i(WEG_AUSSEN, (1036, 225)) + 1]},
+         "weg": welt_liste(WEG_ZWINGER + WEG_DURCHGANG + WEG_AUSSEN[:_i(WEG_AUSSEN, (1036, 196)) + 1]),
+         "weg_hoehen": WEG_ZWINGER_HOEHEN + WEG_DURCHGANG_HOEHEN + WEG_AUSSEN_HOEHEN[:_i(WEG_AUSSEN, (1036, 196)) + 1]},
         {"name": "Oberburg", "punkte": welt_liste(OBERBURG), "hoehe": H_KERNHOF, "rand": HOF_FELSHANG},
         {"name": "Zwinger des Palas", "punkte": welt_liste(ZWINGER_KERNBURG), "hoehe": H_ZWINGER_KERNBURG, "rand": 3.0},
         {"name": "Palas", "punkte": welt_liste(PALAS_HOF), "hoehe": H_KERNBURG, "rand": HOF_FELSHANG},

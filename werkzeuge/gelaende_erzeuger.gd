@@ -52,7 +52,7 @@ const GRUND_VORGEBIRGE := -18.6   # Felsgrund direkt vor den Mauern (über dem M
 const BECKEN_TIEFE := -27.0
 
 ## Wege als Linienzüge.
-const WEG_GRAVEMARCH := [Vector2(-27.85, 181.37), Vector2(-35.2, 189.7), Vector2(-52, 194), Vector2(-120, 215), Vector2(-220, 170), Vector2(-300, 80),
+const WEG_GRAVEMARCH := [Vector2(-26.41, 186.63), Vector2(-35.4, 188.0), Vector2(-52, 190), Vector2(-120, 215), Vector2(-220, 170), Vector2(-300, 80),
 	Vector2(-380, -20), Vector2(-460, -150), Vector2(-490, -215), Vector2(-528.8, -265.1)]
 ## Der Weg nach Gravecrest steigt vom Tal bis zur Zugbrücke auf Höhe 70.
 const WEG_GRAVECREST := [Vector2(-460, -150), Vector2(-470, -240), Vector2(-500, -310),
@@ -233,7 +233,7 @@ func hoehe(p: Vector2) -> float:
 	if not _bucht.is_empty() and p.x > -320.0:
 		var db := _polygon_abstand(p, _bucht)
 		if db < 14.0 and not Geometry2D.is_point_in_polygon(p, _hafen) and not Geometry2D.is_point_in_polygon(p, _stadt) \
-				and not Geometry2D.is_point_in_polygon(p, _ring):
+				and not Geometry2D.is_point_in_polygon(p, _ring) and _abstand_zu(WEG_KUESTE, p) > 8.0:
 			h = minf(h, lerpf(-24.0, h, smoothstep(0.0, 14.0, db)))
 	# Inseln zum Bergfried, nach Burgberg und Bucht, damit beide sie nicht einebnen.
 	for insel: Array in INSELN:
@@ -314,7 +314,8 @@ func _drachenstein(h: float, p: Vector2) -> float:
 		var unten := lerpf(tiefgrund + _fein.get_noise_2dv(p * 0.3) * 1.5, h, smoothstep(60.0, 260.0, aussen))
 		# Zum Meer hin bricht die Klippe bis auf den Grund ab, ohne Strand davor
 		if not _bucht.is_empty():
-			var see := smoothstep(45.0, 0.0, _polygon_abstand(p, _bucht))
+			# an den Landstraßen vor den Toren (Küstenweg am Südtor) bleibt ein Uferstreifen über dem Wasser
+			var see := smoothstep(45.0, 0.0, _polygon_abstand(p, _bucht)) * smoothstep(6.0, 16.0, weg)
 			unten = lerpf(unten, -24.0, see)
 			abfall = lerpf(abfall, 3.0, see)   # zum Meer hin steil: die Felswand bildet der Küstenfels (teil_felsen.py)
 		var t := smoothstep(0.0, abfall, aussen)

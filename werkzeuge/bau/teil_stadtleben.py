@@ -25,7 +25,7 @@ NETZ = STRASSEN + [P(*l) for l in [
     # der Weg hinauf: durch die Stadt zum Vorburgtor, durch die Vorburg, an der Mauer zur Rampe, in die Mittelburg,
     # durch den Zwinger in die Oberburg und den Durchgang
     PD.WEG_STADT, PD.WEG_VORBURG, PD.WEG_BURG, PD.WEG_ZWINGER, PD.WEG_OBERBURG, PD.WEG_DURCHGANG,
-    [PD.g3((1202, 370)), PD.g3((1170, 360))],
+    [PD.g3((1222, 380)), PD.g3((1170, 360))],
 ]]
 
 # Hindernisse: (Mitte x, Mitte z, Breite, Tiefe, Gier) als Rechtecke, Kreise als (x, z, Radius)

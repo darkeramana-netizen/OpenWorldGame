@@ -219,7 +219,7 @@ for (gp, gr) in PD.G3.OBERBURG_TUERME:
 _gp, _gs = PD.G3.OBERBURG_TORTURM
 N("OberburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_ot)})
-torbauten = PackedFloat32Array({_zahlen(eckturm(PD.g3(_gp), round(_gs * G3M * 1.6, 1), 14, 0, 30))})""")
+torbauten = PackedFloat32Array({_zahlen(eckturm(PD.g3(_gp), round(_gs * G3M, 1), 14, 0, 30))})""")
 _HOF_TUERME.append(PD.g3(_gp))
 schild("SchildOberburg", BG, *(lambda p: (p[0], PD.H_KERNHOF + 13, p[1]))(W(PD.MITTE_OBERBURG)), "Oberburg", 40)
 
