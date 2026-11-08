@@ -221,8 +221,25 @@ if len(_bogen) > 1:
     mauerring("BurghofDreiInnenEnde", BG, WL(_bogen), 4.0, dicke=1.8, mitte=W(_mi))
 # Treppe vom Burgweg hinauf zum Südtor, an der Mauer entlang
 _st_a, _st_b = W(PD.WEG_SUEDTOR_III[0]), W(PD.WEG_SUEDTOR_III[1])
+# Futtermauern zu beiden Seiten der Treppe: Die Treppe steht auf einem gemauerten Damm
+_fm = []
+_sl = math.dist(_st_a, _st_b)
+_su = ((_st_b[0] - _st_a[0]) / _sl, (_st_b[1] - _st_a[1]) / _sl)
+_sn = (-_su[1], _su[0])
+_n_fm = max(1, math.ceil(_sl / 2.5))
+for k_ in range(_n_fm):
+    t0_, t1_ = k_ / _n_fm, (k_ + 1) / _n_fm
+    h1_ = PD.WEG_SUEDTOR_III_HOEHEN[0] + (PD.H_KERNHOF - PD.WEG_SUEDTOR_III_HOEHEN[0]) * t1_
+    for e_ in (-1, 1):
+        o_ = 2.6
+        p0_ = (_st_a[0] + _su[0] * _sl * t0_ + _sn[0] * o_ * e_, _st_a[1] + _su[1] * _sl * t0_ + _sn[1] * o_ * e_)
+        p1_ = (_st_a[0] + _su[0] * _sl * t1_ + _sn[0] * o_ * e_, _st_a[1] + _su[1] * _sl * t1_ + _sn[1] * o_ * e_)
+        boden_ = min(H(*p0_), H(*p1_), H(p0_[0] + _sn[0] * e_ * 3, p0_[1] + _sn[1] * e_ * 3)) - 1.5
+        _fm += [p0_[0] - _su[0] * 0.2, p0_[1] - _su[1] * 0.2, p1_[0] + _su[0] * 0.2, p1_[1] + _su[1] * 0.2,
+                round(boden_, 2), round(h1_ + 0.9, 2), 1.2, _sn[0] * e_, _sn[1] * e_, 0]
 N("TreppeSuedtorIII", "Node3D", BG, f"""script = ExtResource("28_burgbau")
-treppen = PackedFloat32Array({_zahlen([_st_a[0], _st_a[1], PD.WEG_SUEDTOR_III_HOEHEN[0], _st_b[0], _st_b[1], PD.H_KERNHOF, 4.0])})""")
+treppen = PackedFloat32Array({_zahlen([_st_a[0], _st_a[1], PD.WEG_SUEDTOR_III_HOEHEN[0], _st_b[0], _st_b[1], PD.H_KERNHOF, 4.0])})
+mauern = PackedFloat32Array({_zahlen([round(v_, 3) for v_ in _fm])})""")
 for k, bau in enumerate(PD.BURGHOF3_BAUTEN):
     gebaeude(f"Burghof3Bau{k}", BG, bau, 9, PD.H_KERNHOF, zweck=(5, 1)[k])   # Heilstube und Ordenshaus, Küche
 schild("SchildBurghof3", BG, 0, PD.H_KERNHOF + 13, -36, "III. Burghof", 40)

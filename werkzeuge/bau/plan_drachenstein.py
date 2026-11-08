@@ -441,7 +441,7 @@ def plan_json():
                                                            (WEG_TORHAUS_NORD, WEG_TORHAUS_NORD_HOEHEN, True),
                                                            (WEG_TORHAUS_WEST, WEG_TORHAUS_WEST_HOEHEN, True),
                                                            (WEG_ZWINGER, WEG_ZWINGER_HOEHEN, False),
-                                                           (WEG_SUEDTOR_III, WEG_SUEDTOR_III_HOEHEN, False)]],
+                                                           (WEG_SUEDTOR_III, WEG_SUEDTOR_III_HOEHEN, False, [2.2, 3.2])]],
         "hafen_becken": welt_liste(HAFENBECKEN),
         "fahrrinne": welt_liste(FAHRRINNE),
         "kanal": welt_liste(KANAL),
