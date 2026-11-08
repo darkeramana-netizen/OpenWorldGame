@@ -202,7 +202,27 @@ schild("SchildBurghof2", BG, *(lambda p: (p[0], PD.H_BURGHOF2 + 9, p[1]))(W((560
 # --- III. Burghof (oval, der Hof aus Akt I ist ins Ordensvorwerk vor der Stadt gezogen) ---
 B3 = PD.BURGHOF3 + [PD.BURGHOF3[0]]          # oval; berührt den II. Burghof am Tor des III. Burghofs
 mauerring("BurghofDrei", BG, WL(B3), 7.0, dicke=3.0, mitte=MITTE_BURG,
-         tore=tore_an(B3, (PD.TORE["Burgtor"], 6.0, "Burgtor"), (PD.TORE["Tor des III. Burghofs"], 6.0, "")))
+         tore=tore_an(B3, (PD.TORE["Burgtor"], 6.0, "Burgtor"), (PD.TORE["Tor des III. Burghofs"], 6.0, ""),
+                      (PD.TORE["Südtor des III. Burghofs"], 4.0, "Südtor")))
+# Innere Ringmauer (doppelte Mauer wie im Referenzbild), niedriger, mit Durchgängen zu Häusern und Toren
+_mi, _ai, _bi = PD.OVAL_BURGHOF3_INNEN
+_luecke = 9.0                                       # halbe Breite eines Durchgangs in Grad
+_grad = [w_ for w_ in range(0, 360, 4)]
+_bogen = []
+for w_ in _grad + [360]:
+    frei_ = any(abs((w_ - l_ + 180) % 360 - 180) < _luecke for l_ in PD.BURGHOF3_INNEN_LUECKEN)
+    if frei_:
+        if len(_bogen) > 1:
+            mauerring(f"BurghofDreiInnen{w_}", BG, WL(_bogen), 4.0, dicke=1.8, mitte=W(_mi))
+        _bogen = []
+        continue
+    _bogen.append((_mi[0] + _ai * math.cos(math.radians(w_)), _mi[1] + _bi * math.sin(math.radians(w_))))
+if len(_bogen) > 1:
+    mauerring("BurghofDreiInnenEnde", BG, WL(_bogen), 4.0, dicke=1.8, mitte=W(_mi))
+# Treppe vom Burgweg hinauf zum Südtor, an der Mauer entlang
+_st_a, _st_b = W(PD.WEG_SUEDTOR_III[0]), W(PD.WEG_SUEDTOR_III[1])
+N("TreppeSuedtorIII", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+treppen = PackedFloat32Array({_zahlen([_st_a[0], _st_a[1], PD.WEG_SUEDTOR_III_HOEHEN[0], _st_b[0], _st_b[1], PD.H_KERNHOF, 4.0])})""")
 for k, bau in enumerate(PD.BURGHOF3_BAUTEN):
     gebaeude(f"Burghof3Bau{k}", BG, bau, 9, PD.H_KERNHOF, zweck=(5, 1)[k])   # Heilstube und Ordenshaus, Küche
 schild("SchildBurghof3", BG, 0, PD.H_KERNHOF + 13, -36, "III. Burghof", 40)
@@ -298,6 +318,7 @@ _HOF_TUERME = [PD.plan((_tuerme[i], _tuerme[i + 1])) for i in range(0, len(_tuer
 _HOF_WEGE = [w_ for w_ in PD.BURGWEGE]
 # III. Burghof: frei in der Mitte, quer hindurch vom Tor des III. Burghofs zum Burgtor
 _HOF_WEGE.append([PD.TORE["Tor des III. Burghofs"], PD.TORE["Burgtor"]])   # quer über den III. Burghof
+_HOF_WEGE.append([PD.TORE["Südtor des III. Burghofs"], (730, 270)])        # vom Südtor in den Hof
 # Kernburg: vom Kernburgtor über den Hof zum Übungsplatz und vor die Kapelle
 _HOF_WEGE.append([PD.TORE["Kernburgtor"], (940, 215), (990, 225), (1040, 240), (1060, 200)])
 random.seed(4711)
