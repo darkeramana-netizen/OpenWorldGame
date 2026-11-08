@@ -111,7 +111,7 @@ for (gp, gr) in PD.G3.RING_TUERME:
     x, z = W(pp)
     r = round(max(3.5, gr * G3M), 1)
     unten = min(H(x + dx, z + dz) for dx in (-r, 0, r) for dz in (-r, 0, r)) - 2.5
-    if gr >= 25 or gp == (1207, 205):
+    if gr >= 25 or gp in ((1207, 205), (735, 212)):          # Ecktürme geschlossen, sonst klafft die Ecke
         # Bastionen an den Ecken und der Turm hinter der Oberburg: geschlossen und hoch, mit Fahne
         oben = max(H(x + dx, z + dz) for dx in (-r, 0, r) for dz in (-r, 0, r)) + (14 if gr >= 25 else 16)
         _tuerme += [x, z, unten, oben, r, 0 if gr >= 25 else 1, 0 if gr >= 25 else r * 1.8]
@@ -209,8 +209,21 @@ mauerring("ZwingermauerSued", BG, WL(PD.ZWINGERMAUER_SUED), 4.5, dicke=2.5, mitt
 # --- Oberburg: Südtor vom Ende des Zwingers, Tor der Oberburg zum Durchgang ---
 OB = PD.OBERBURG + [PD.OBERBURG[0]]
 mauerring("Oberburg", BG, WL(OB), 7.0, dicke=3.0, mitte=MITTE_BURG,
-         tore=tore_an(OB, (PD.TORE["Südtor der Oberburg"], 4.0, "", None, False),
+         tore=tore_an(OB, (PD.TORE["Südtor der Oberburg"], 4.5, ""),
                       (PD.TORE["Tor der Oberburg"], 5.0, "Tor der Oberburg", None, False)))   # ohne Tortürme: der Durchgang bleibt frei
+# Torhaus über dem Südtor (wie im Plan des Spielers: der Weg führt unter einem Gebäude hindurch in die Oberburg): ein
+# Fachwerkhaus auf dem Torbogen zwischen den beiden Tortürmen
+_st_ = [t_ for t_ in MAUERSTUECKE if t_[0] == "Oberburg"]
+_sx, _sz = W(PD.TORE["Südtor der Oberburg"])
+_s_oben = max(o_ for _, ax_, az_, bx_, bz_, o_, *_ in _st_ if min(math.dist((ax_, az_), (_sx, _sz)), math.dist((bx_, bz_), (_sx, _sz))) < 12.0)
+_s_kante = min(_st_, key=lambda t_: abstand_linie([t_[1:3], t_[3:5]], _sx, _sz))
+_s_u = (_s_kante[3] - _s_kante[1], _s_kante[4] - _s_kante[2])
+_s_g = math.degrees(math.atan2(_s_u[0], _s_u[1]))
+N("TorhausOberburg", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+gebaeude = PackedFloat32Array({_zahlen([round(_sx, 2), round(_sz, 2), round(_s_g, 2), 6.2, 9.0, round(_s_oben + 0.1, 2), round(_s_oben, 2), 4.2, 3.4, 3, 1, 0])})""")
+# Der Durchgang zwischen den Toren von Oberburg und Palas: im Norden zu, im Süden die Mauer zum Ende des Zwingers
+mauerring("DurchgangNord", BG, WL(PD.DURCHGANG_NORD), 6.0, dicke=2.5, mitte=W(PD.TORE["Tor der Oberburg"]))
+mauerring("DurchgangSued", BG, WL(PD.DURCHGANG_SUED), 6.0, dicke=2.5, mitte=W(PD.TORE["Tor der Oberburg"]))
 _ot = []
 for (gp, gr) in PD.G3.OBERBURG_TUERME:
     r = round(max(2.5, gr * G3M), 1)

@@ -117,6 +117,7 @@ ZWINGER_III = g3l([(932, 268), (938, 330), (946, 400), (948, 440), (1055, 490), 
                    (1268, 505), (1272, 470), (1273, 360), (1276, 300), (1262, 262), (1250, 298), (1247, 430),
                    (1180, 437), (1105, 435), (1050, 420), (1020, 400), (980, 375), (967, 330), (1025, 235), (985, 243)])
 ZWINGERMAUER_SUED = g3l([(948, 440)] + G3.ZWINGER_SUED[1:])
+DURCHGANG_NORD, DURCHGANG_SUED = g3l(G3.DURCHGANG_NORD), g3l(G3.DURCHGANG_SUED)
 MITTE_VORBURG, MITTE_MITTELBURG = schwerpunkt(VORBURG), schwerpunkt(MITTELBURG)
 MITTE_OBERBURG, MITTE_PALAS = schwerpunkt(OBERBURG), schwerpunkt(PALAS_HOF)
 
@@ -126,7 +127,7 @@ RING_NORD = g3l(G3.RING_NORD)                        # vom Torhaus im Nordwesten
 # und Palas bis an die Nordostecke der Mittelburg
 _MAUER_HAFEN = [(700, 403), (785, 412)]           # am Wassertor wie bisher (Kanal und Untergrundhafen)
 RING_SUED_OST = g3l(G3.STADT_BURG_MAUER[:2]) + _MAUER_HAFEN + g3l(G3.RING_OST[::-1][2:])
-STADTMAUER = g3l(G3.STADTMAUER[:-2]) + [(600, 664)]  # durch das Südtor bis an die Ecke zum Hafen (Bastion)
+STADTMAUER = g3l(G3.STADTMAUER[:-2]) + [(600, 664), (640, 645)]  # durch das Südtor bis an die Ecke und an die Speicherkaimauer
 # Umriss der ganzen Festung (Küstenfels, Bewuchs): Stadt, Burgbezirk und Hafen
 RINGMAUER = (g3l(G3.RING_NORD[:-1] + [(700, 272), (722, 274), (743, 283)] + G3.MITTELBURG[1:4] + G3.RING_OST[1:-1])
              + [(785, 412), (828, 440), (842, 540), (812, 549), (808, 606), (800, 622), (800, 640), (770, 648), (640, 650)]

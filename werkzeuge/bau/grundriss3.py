@@ -40,7 +40,11 @@ OBERBURG_SUEDTOR = (1235, 433)                                  # vom Ostende de
 OBERBURG_TUERME = [((1117, 422), 12), ((1184, 437), 9), ((1040, 217), 7)]
 # Zwingermauer der Oberburg: West- und Südseite, vom Nordturm der Mittelburg bis an den Durchgang zum Palas
 OBERBURG_ZWINGER = [(985, 243), (950, 290), (940, 355), (960, 410), (967, 422)]
-ZWINGER_SUED = [(935, 445), (1055, 490), (1160, 480), (1172, 505), (1230, 515), (1265, 505)]
+ZWINGER_SUED = [(935, 445), (1055, 490), (1160, 480), (1172, 505), (1230, 515), (1268, 505), (1308, 477)]   # bis an den Zwinger des Palas
+# Der Durchgang zwischen Oberburg und Palas ist ein kleiner Hof zwischen den Toren: im Norden geschlossen, im Süden trennt
+# ihn eine Mauer vom Ende des Zwingers (schwarz im Plan des Spielers)
+DURCHGANG_NORD = [(1229, 292), (1275, 296)]
+DURCHGANG_SUED = [(1243, 392), (1271, 392)]
 ZWINGER_TREPPE = (1203, 482)                                    # die gebogene Stiege am Ostende des Zwingers
 DURCHGANG = [(1250, 500), (1258, 430), (1262, 360), (1268, 300)]  # zwischen Oberburg und Palas nach Norden
 
@@ -105,7 +109,7 @@ MITTELBURG_BAUTEN = [_bau((750, 320), (775, 335), 30), _bau((770, 300), (830, 28
 OBERBURG_BAUTEN = [_bau((975, 325), (1025, 245), 32), _bau((1030, 248), (1112, 250), 30), _bau((1115, 258), (1172, 270), 36),
                    _bau((1175, 275), (1212, 285), 30),                                       # Winkelbau im Nordwesten, Nordflügel
                    _bau((1012, 380), (1040, 392), 26),                                       # kleines Haus im Südwesten
-                   _bau((1072, 418), (1108, 420), 24), _bau((1130, 420), (1175, 422), 22), _bau((1197, 417), (1222, 417), 24)]
+                   _bau((1072, 418), (1108, 420), 24), _bau((1130, 420), (1175, 422), 22)]   # an der Südostecke steht das Torhaus über dem Südtor
 PALAS_BAUTEN = [_bau((1365, 255), (1430, 235), 40),                                          # Nordwestflügel
                 _bau((1318, 300), (1340, 275), 32), _bau((1316, 364), (1320, 402), 30),          # Westflügel (Burgküche südlich des Tors)
                 _bau((1335, 395), (1395, 445), 44),                                          # Drachenkapelle im Südwesten
@@ -135,11 +139,11 @@ WEG_ZWINGER = [(930, 423), ZWINGERTOR, (962, 423), (1000, 430), (1060, 455), (11
 WEG_OBERBURG = [(1232, 489), (1236, 455), OBERBURG_SUEDTOR, (1233, 415), (1222, 380), (1228, 358), OBERBURG_TOR,
                 (1260, 355), PALAS_ZWINGERTOR, (1287, 347), PALAS_TOR, (1330, 347), (1400, 345)]
 # der Durchgang zwischen Oberburg und Palas, vom Ostende des Zwingers nach Norden
-WEG_DURCHGANG = [(1232, 489), (1252, 462), (1258, 410), (1260, 355), (1262, 300), (1262, 262)]
+WEG_DURCHGANG = [(1232, 489), (1252, 462)]          # vom Ende des Zwingers an die Pforte des Palaszwingers (gelb)
 # rot: Zwingerweg um die Oberburg (West- und Nordseite) und außen um den Palas, im Süden an der Mauer hinab zum Fuß
 # der Rampe
 WEG_AUSSEN = [(962, 423), (960, 400), (958, 370), (952, 330), (958, 295), (968, 275), (990, 245), (1010, 210),
-              (1036, 196), (1050, 188), (1092, 196), (1125, 205), (1160, 219), (1200, 244), (1240, 245), (1262, 262),
+              (1036, 196), (1050, 188), (1092, 196), (1125, 205), (1160, 219), (1200, 244), (1240, 245), (1262, 235),
               (1285, 215), (1300, 188), (1340, 162), (1390, 137), (1435, 131), (1500, 121), (1564, 125), (1627, 138),
               (1700, 168), (1750, 198), (1785, 237), (1804, 284), (1789, 332), (1760, 403), (1742, 453), (1707, 499),
               (1661, 533), (1612, 565), (1564, 595), (1500, 610), (1412, 612), (1316, 606), (1220, 600), (1162, 591),
