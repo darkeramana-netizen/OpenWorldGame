@@ -30,7 +30,7 @@ MITTE_STADT = W((400, 540))
 
 # --- Stadtmauer mit dem Südtor (zum Küstenweg); im Nordwesten und Südwesten Torhäuser als Türme über der Mauer ---
 SM = PD.STADTMAUER
-mauerring("Stadtmauer", ST, WL(SM), 8.0, dicke=3.0, mitte=MITTE_STADT, strassen=[WL(PD.WEG_SUEDTOR)], torname="Südtor")
+mauerring("Stadtmauer", ST, WL(SM), 8.0, dicke=3.0, mitte=MITTE_STADT, tore=tor_an(SM, PD.TORE["Südtor"], 5.0, "Südtor"))
 # Türme der Stadtmauer: an den Ecken und auf langen Strecken Rundtürme mit Kegeldach, an der Süd- und der Hafenecke
 # zwei breite Bastionen mit Zinnen (wie im Referenzbild). Am Südtor und an den Torhäusern bleibt die Mauer frei.
 _st = []

@@ -157,11 +157,44 @@ TORE = {
 }
 
 # ---------- Bauten ----------
-VORBURG_BAUTEN = [g3_bau(b, MITTE_VORBURG) for b in G3.VORBURG_BAUTEN]
-BURGHOF2_BAUTEN = [g3_bau(b, MITTE_MITTELBURG) for b in G3.MITTELBURG_BAUTEN]
-BURGHOF3_BAUTEN = [g3_bau(b, MITTE_OBERBURG) for b in G3.OBERBURG_BAUTEN]
-PALAS_BAUTEN = [g3_bau(b, MITTE_PALAS) for b in G3.PALAS_BAUTEN]
-PALAS = g3_bau(G3.PALAS_LANG, MITTE_PALAS)
+def _abstand_rand(q, poly):
+    """Abstand eines Punkts vom Rand des Vielecks (Plan)."""
+    best = 1e9
+    for (ax, ay), (bx, by) in zip(poly, poly[1:] + poly[:1]):
+        dx, dy = bx - ax, by - ay
+        t = max(0.0, min(1.0, ((q[0] - ax) * dx + (q[1] - ay) * dy) / (dx * dx + dy * dy)))
+        best = min(best, math.dist(q, (ax + dx * t, ay + dy * t)))
+    return best
+
+
+def _im_vieleck(q, poly):
+    x, y = q; innen = False
+    for (x1, y1), (x2, y2) in zip(poly, poly[1:] + poly[:1]):
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+            innen = not innen
+    return innen
+
+
+def nach_innen(bau, hof, abstand=5.0):
+    """Schiebt einen Bau in Richtung seiner Tür (zum Hof), bis alle Ecken im Hof liegen und mindestens 'abstand'
+    Planpunkte (2,5 m: halbe Mauerdicke und ein Rand) von der Hofmauer entfernt sind."""
+    (pp, laenge, breite, dreh) = bau
+    a = math.radians(dreh)
+    ux, uy, vx, vy = math.cos(a), math.sin(a), -math.sin(a), math.cos(a)
+    for k in range(60):
+        m = (pp[0] + vx * k * 0.5, pp[1] + vy * k * 0.5)
+        ecken = [(m[0] + ux * sx * laenge / 2 + vx * sy * breite / 2, m[1] + uy * sx * laenge / 2 + vy * sy * breite / 2)
+                 for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+        if all(_im_vieleck(e, hof) and _abstand_rand(e, hof) >= abstand for e in ecken):
+            return ((round(m[0], 2), round(m[1], 2)), laenge, breite, dreh)
+    return bau
+
+
+VORBURG_BAUTEN = [nach_innen(g3_bau(b, MITTE_VORBURG), VORBURG) for b in G3.VORBURG_BAUTEN]
+BURGHOF2_BAUTEN = [nach_innen(g3_bau(b, MITTE_MITTELBURG), MITTELBURG) for b in G3.MITTELBURG_BAUTEN]
+BURGHOF3_BAUTEN = [nach_innen(g3_bau(b, MITTE_OBERBURG), OBERBURG) for b in G3.OBERBURG_BAUTEN]
+PALAS_BAUTEN = [nach_innen(g3_bau(b, MITTE_PALAS), PALAS_HOF) for b in G3.PALAS_BAUTEN]
+PALAS = nach_innen(g3_bau(G3.PALAS_LANG, MITTE_PALAS), PALAS_HOF)
 BURGKUECHE = PALAS_BAUTEN[2]
 DRACHENKAPELLE = PALAS_BAUTEN[3]
 ZEUGHAUS = PALAS_BAUTEN[6]

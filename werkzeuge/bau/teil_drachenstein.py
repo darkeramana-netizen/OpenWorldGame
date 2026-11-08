@@ -210,7 +210,7 @@ mauerring("ZwingermauerSued", BG, WL(PD.ZWINGERMAUER_SUED), 4.5, dicke=2.5, mitt
 OB = PD.OBERBURG + [PD.OBERBURG[0]]
 mauerring("Oberburg", BG, WL(OB), 7.0, dicke=3.0, mitte=MITTE_BURG,
          tore=tore_an(OB, (PD.TORE["Südtor der Oberburg"], 4.0, "", None, False),
-                      (PD.TORE["Tor der Oberburg"], 5.0, "Tor der Oberburg")))
+                      (PD.TORE["Tor der Oberburg"], 5.0, "Tor der Oberburg", None, False)))   # ohne Tortürme: der Durchgang bleibt frei
 _ot = []
 for (gp, gr) in PD.G3.OBERBURG_TUERME:
     r = round(max(2.5, gr * G3M), 1)
@@ -226,7 +226,7 @@ schild("SchildOberburg", BG, *(lambda p: (p[0], PD.H_KERNHOF + 13, p[1]))(W(PD.M
 # --- Palas: zwei Mauerringe dicht hintereinander (wie im Referenzbild), die Tore gegenüber dem Tor der Oberburg ---
 ZW = PD.ZWINGER_KERNBURG + [PD.ZWINGER_KERNBURG[0]]
 mauerring("Zwingermauer", BG, WL(ZW), 6.0, dicke=3.0, mitte=W(PD.MITTE_PALAS),
-         tore=tore_an(ZW, (PD.TORE["Zwingertor des Palas"], 5.0, ""), (PD.TORE["Zwingerpforte des Palas"], 3.5, "", None, False)))
+         tore=tore_an(ZW, (PD.TORE["Zwingertor des Palas"], 5.0, "", None, False), (PD.TORE["Zwingerpforte des Palas"], 3.5, "", None, False)))
 KB = PD.PALAS_HOF + [PD.PALAS_HOF[0]]
 mauerring("Kernburg", BG, WL(KB), 8.0, dicke=3.5, mitte=W(PD.MITTE_PALAS),
          tore=tor_an(KB, PD.TORE["Palastor"], 5.0, "Palastor"))

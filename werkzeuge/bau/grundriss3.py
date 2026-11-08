@@ -34,7 +34,7 @@ ZWINGERTOR = (947, 422)                                         # gleich rechts:
 
 OBERBURG = [(967, 330), (1025, 235), (1045, 230), (1115, 237), (1175, 255), (1215, 265), (1240, 315), (1247, 430),
             (1180, 437), (1105, 435), (1050, 420), (1020, 400), (980, 375)]
-OBERBURG_TORTURM = ((1238, 280), 27)                            # offener Vierkantturm an der Nordostecke
+OBERBURG_TORTURM = ((1226, 276), 27)                            # offener Vierkantturm an der Nordostecke
 OBERBURG_TOR = (1244, 357)                                      # Torbau an der Ostmauer, vom Durchgang
 OBERBURG_SUEDTOR = (1235, 433)                                  # vom Ostende des Zwingers (gebogene Stiege)
 OBERBURG_TUERME = [((1117, 422), 12), ((1184, 437), 9), ((1040, 217), 7)]
