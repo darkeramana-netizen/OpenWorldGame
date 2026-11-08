@@ -44,7 +44,11 @@ ZWINGER_SUED = [(935, 445), (1055, 490), (1160, 480), (1172, 505), (1230, 515), 
 # Der Durchgang zwischen Oberburg und Palas ist ein kleiner Hof zwischen den Toren: im Norden geschlossen, im Süden trennt
 # ihn eine Mauer vom Ende des Zwingers (schwarz im Plan des Spielers)
 DURCHGANG_NORD = [(1229, 292), (1275, 296)]
-DURCHGANG_SUED = [(1243, 392), (1271, 392)]
+DURCHGANG_SUED = [(1247, 437), (1268, 412)]       # von der Südostecke der Oberburg an den Zwinger des Palas (blau 2)
+# Vortor vor dem Südtor der Oberburg: gebogene Mauer um den Torplatz, nach Osten offen (blau 1)
+VORTOR = [(1214, 437), (1208, 452), (1215, 468), (1232, 474), (1244, 468)]
+# im engen Zwinger des Palas: trennt den Weg vom Zwingertor zum Palastor vom Weg um den Palas (blau 3)
+PALASZWINGER_QUER = [(1271, 368), (1296, 425), (1325, 416)]
 ZWINGER_TREPPE = (1203, 482)                                    # die gebogene Stiege am Ostende des Zwingers
 DURCHGANG = [(1250, 500), (1258, 430), (1262, 360), (1268, 300)]  # zwischen Oberburg und Palas nach Norden
 
@@ -136,10 +140,10 @@ WEG_ZWINGER = [(930, 423), ZWINGERTOR, (962, 423), (1000, 430), (1060, 455), (11
                (1232, 489)]
 # blau: über die gebogene Stiege durch das Südtor in die Oberburg; quer durch den Hof, zum Osttor hinaus und über den
 # Durchgang durch beide Tore in den Palas
-WEG_OBERBURG = [(1232, 489), (1236, 455), OBERBURG_SUEDTOR, (1233, 415), (1222, 380), (1228, 358), OBERBURG_TOR,
+WEG_OBERBURG = [(1232, 489), (1252, 470), (1246, 455), (1237, 450), OBERBURG_SUEDTOR, (1233, 415), (1222, 380), (1228, 358), OBERBURG_TOR,
                 (1260, 355), PALAS_ZWINGERTOR, (1287, 347), PALAS_TOR, (1330, 347), (1400, 345)]
 # der Durchgang zwischen Oberburg und Palas, vom Ostende des Zwingers nach Norden
-WEG_DURCHGANG = [(1232, 489), (1252, 462)]          # vom Ende des Zwingers an die Pforte des Palaszwingers (gelb)
+WEG_DURCHGANG = [(1232, 489), (1256, 476), (1262, 458)]          # vom Ende des Zwingers an die Pforte des Palaszwingers (gelb)
 # rot: Zwingerweg um die Oberburg (West- und Nordseite) und außen um den Palas, im Süden an der Mauer hinab zum Fuß
 # der Rampe
 WEG_AUSSEN = [(962, 423), (960, 400), (958, 370), (952, 330), (958, 295), (968, 275), (990, 245), (1010, 210),
@@ -149,7 +153,7 @@ WEG_AUSSEN = [(962, 423), (960, 400), (958, 370), (952, 330), (958, 295), (968, 
               (1661, 533), (1612, 565), (1564, 595), (1500, 610), (1412, 612), (1316, 606), (1220, 600), (1162, 591),
               (1099, 571), (1036, 568)]
 # rot: im engen Zwinger einmal um den Palas
-WEG_PALASZWINGER = [(1252, 462), (1273, 446), PALAS_ZWINGERPFORTE, (1295, 434), (1327, 450), (1388, 486), (1451, 477),
+WEG_PALASZWINGER = [(1262, 458), (1273, 446), PALAS_ZWINGERPFORTE, (1295, 434), (1327, 450), (1388, 486), (1451, 477),
                     (1524, 466), (1587, 456), (1640, 440), (1658, 398), (1675, 347), (1684, 284), (1660, 235),
                     (1635, 195), (1600, 172), (1575, 163), (1545, 158), (1483, 164), (1428, 187), (1379, 208),
                     (1338, 233), (1304, 268), (1288, 315), (1287, 347)]
