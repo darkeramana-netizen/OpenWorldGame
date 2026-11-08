@@ -310,7 +310,8 @@ WEG_BURG = [(230, 440), (233, 410.1), (237, 380), (240, 300), (262, 240), (300, 
             (530, 150), (600, 140), (650, 112), (700, 106), (760, 108), (800, 116), (850, 95), (900, 78), (965, 62),
             (1030, 58), (1100, 56), (1160, 85), (1197, 140), (1195, 205), (1180, 290), (1150, 335), (1050, 357),
             (950, 368), (870, 375), (800, 352), (785, 336), (720, 334), (668, 330), (645, 322), (622, 296), (602.8, 274.0),
-            (570, 266), (540, 262), (600, 245), (625, 230), (630.0, 228.0), (636, 228), (650, 228)]
+            (588, 262), (586, 205), (593, 192), (604, 191), (614, 203), (625, 222), (630.0, 228.0), (636, 228), (650, 228)]
+# (nach dem Rampentor im II. Burghof an der Ostmauer hinauf, in der Kehre zurück und seitlich ins Tor des III. Burghofs)
 # Am Fuß der Rampe zum Rampentor geht es geradeaus weiter zur Vorburg: unter dem II. Burghof nach Westen zu ihrem
 # Südtor, durch die Vorburg und das Tor des II. Burghofs auf den Burgweg im II. Burghof. Von Westen (Torhaus West,
 # Burgstraßentor) ist dieser Weg durch eine Sperrmauer versperrt.
@@ -371,7 +372,7 @@ _i = WEG_BURG.index
 WEG_BURG_HOEHEN = _steigend(WEG_BURG, {0: -14.3, 1: -14.0, _i((300, 205)): -9.0, _i((650, 112)): 4.0,
                                        _i((1100, 56)): 8.0, _i((1197, 140)): 8.0, _i((1180, 290)): 8.0,
                                        _i((950, 368)): 4.0, _i((785, 336)): -4.0,
-                                       _i(TORE["Rampentor"]): H_BURGHOF2, _i((540, 262)): H_BURGHOF2,
+                                       _i(TORE["Rampentor"]): H_BURGHOF2, _i((588, 262)): H_BURGHOF2,
                                        _i(TORE["Tor des III. Burghofs"]): H_KERNHOF, len(WEG_BURG) - 1: H_KERNHOF})
 WEG_VORBURG_HOEHEN = _steigend(WEG_VORBURG, {0: hoehe_auf(WEG_BURG, WEG_BURG_HOEHEN, (720, 334)),
                                              6: H_VORBURG, 8: H_VORBURG, 11: H_BURGHOF2, 12: H_BURGHOF2, 14: H_BURGHOF2})
@@ -382,7 +383,7 @@ WEG_ZWINGER_HOEHEN[0] = H_KERNHOF
 # Die Wege im Burgbezirk sind keine Stadtgassen, gehören aber ins Wegenetz
 BURGWEGE = [WEG_BURG, WEG_VORBURG, WEG_TORHAUS_NORD, WEG_TORHAUS_WEST, WEG_ZWINGER]
 # Ab hier steigt der Burgweg als gemauerte Rampe im II. Burghof zum Tor des III. Burghofs (von H_BURGHOF2 auf H_KERNHOF)
-RAMPE_III = WEG_BURG.index((540, 262))
+RAMPE_III = WEG_BURG.index((588, 262))
 RAMPE_FLANKE = [3.6, 4.8]      # eben bis 3,6 m neben der Mitte, dann fällt sie bis 4,8 m auf den Hof (die Futtermauer)
 
 
