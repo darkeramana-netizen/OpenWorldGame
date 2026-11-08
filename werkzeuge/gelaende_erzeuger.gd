@@ -332,7 +332,7 @@ func _drachenstein(h: float, p: Vector2) -> float:
 				zh = _weg_hoehe(p, zone[3], zone[4])[1]
 			var t := smoothstep(0.0, zone[2], d)
 			h = zh if d <= 0.0 else _schichten(lerpf(zh, h, t), p, minf(1.0, t * (1.0 - t) * 6.0)) + _zacke(p) * 1.0 * t * (1.0 - t) * 4.0
-	# Wege im Burgbezirk mit fester Steigung: Burgweg außen herum, vom Torhaus Nord, Zwingerweg, vom Nordtor
+	# Wege im Burgbezirk mit fester Steigung: Burgweg außen herum, vom Torhaus Nord, Zwingerrampe, vom Nordtor
 	for weg: Array in _burgwege:
 		h = _burgweg(h, p, weg[0], weg[1], weg[2])
 	# Kais auf Höhe der Hafenmauern rings um die Becken

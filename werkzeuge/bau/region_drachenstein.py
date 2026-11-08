@@ -80,7 +80,7 @@ for i,(x,z) in enumerate([(115,-418),(170,380)]):   # der erste auf der Landzung
 N("Orte", "Node3D", ".")
 _orte = [
     ("Burgfeste Drachenstein", "Drei Burgen, ein Stein, eine Feste.", 60, 10, 20, 520, 140, 700),
-    ("Kernburg · Drachenhorst", "Bergfried, Palas und Drachenkapelle.", -4, 40, -127, 110, 30, 140),
+    ("Kernburg · Drachenhorst", "Bergfried, Palas und Drachenkapelle.", -4, 20, -131, 120, 30, 132),
     ("III. Burghof · Wolfsfeste", "Die Schwelle des Ordens.", 0, 17, 0, 95, 20, 100),
     ("II. Burghof", "Vierzehntes Jahrhundert.", 15, 8, 75, 80, 16, 90),
     ("I. Vorburg", "Der älteste Teil am Fuß des Grats.", 31, 2, 175, 70, 16, 75),
@@ -101,7 +101,7 @@ untertitel = "{untertitel}"''')
 
 # ---------- Bewuchs: Wälder, Büsche, Gras; Stadt, Burgen und Hafen bleiben frei ----------
 bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG),
-                       WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG), WL(PD.RINGMAUER)],   # im Burgbezirk Felsgrund
+                       WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG), WL(PD.ZWINGER_III), WL(PD.VORHOF), WL(PD.RINGMAUER)],   # im Burgbezirk Felsgrund
         frei_rechtecke=[(BF_X_NEU, BF_Z_NEU, 90, 90), (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24,
         feste_baeume=STADTBAEUME)   # Hausbäume in den Höfen der Stadt (teil_stadt.py)
 

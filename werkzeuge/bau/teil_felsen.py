@@ -29,7 +29,8 @@ FARBEN = {GROSS: "1.6, 1.58, 1.55, 1", RIESIG: "1.6, 1.58, 1.55, 1", MITTEL: "1.
           STUECK: "1.4, 1.44, 1.5, 1", **{b_: "1.45, 1.44, 1.42, 1" for b_ in BROCKEN}}
 
 random.seed(4711)
-_frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(PD.STADT), WL(PD.HAFEN_BEZIRK)]
+_frei = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG), WL(PD.STADT), WL(PD.HAFEN_BEZIRK),
+         WL(PD.ZWINGER_III), WL(PD.VORHOF), WL(PD.ZWINGER_KERNBURG)]
 # Äußere Mauern bleiben frei; an den Burgmauern darf der Fels bis an den Mauerfuß reichen (die Burgen stehen auf ihm)
 _mauern = [WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.STADTMAUER), WL(PD.HAFENMAUER_OST)]
 _ring_flaeche = WL(PD.RINGMAUER)
@@ -163,11 +164,20 @@ _hang_orte = []
 _alle_hoefe = [WL(PD.VORBURG), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG)]
 # Türme an den Hofmauern (aus teil_drachenstein.py): vor ihnen kein Sockel, sie stehen selbst auf dem Fels
 _sockel_tuerme = [W(q) for q in _HOF_TUERME] if "_HOF_TUERME" in globals() else []
-for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BURGHOF2), (WL(PD.BURGHOF3), PD.H_KERNHOF),
-                       (WL(PD.KERNBURG), PD.H_KERNBURG)]:
-    mx_ = sum(q[0] for q in umriss_) / len(umriss_)
-    mz_ = sum(q[1] for q in umriss_) / len(umriss_)
-    ring_ = umriss_ + umriss_[:1]
+# Die Wege im Zwinger laufen dicht an der Mauer des III. Burghofs entlang: Dort steht der Sockel trotzdem (er steht
+# meist 2 bis 4 m vor der Mauer, der Weg ist 6 m breit und 6,5 m von ihr entfernt)
+_wege_sockel = [WL(w) for w in PD.BURGWEGE if w not in (PD.WEG_ZWINGER, PD.WEG_TOR_III, PD.WEG_KERNBURG)] + _wege[len(PD.BURGWEGE):]
+# (Umriss, Hofhöhe oder None = Gelände innen, geschlossen?, Mitte oder None): die Höfe, der enge Zwinger der Kernburg,
+# die Außenmauer des Zwingers am III. Burghof und die Quermauer des Vorhofs (beide offen, Höhe des Zwingers innen)
+for umriss_, hof_h, geschlossen_, mitte_ in [
+        (WL(PD.VORBURG), PD.H_VORBURG, True, None), (WL(PD.BURGHOF2), PD.H_BURGHOF2, True, None),
+        (WL(PD.BURGHOF3), PD.H_KERNHOF, True, None), (WL(PD.KERNBURG), PD.H_KERNBURG, True, None),
+        (WL(PD.ZWINGER_KERNBURG), PD.H_ZWINGER_KERNBURG, True, None),
+        (WL(PD.ZWINGER_III_AUSSEN), None, False, W(PD.OVAL_BURGHOF3[0])),
+        (WL(PD.ZWINGER_III_QUER), None, False, W((855, 240)))]:
+    mx_ = sum(q[0] for q in umriss_) / len(umriss_) if mitte_ is None else mitte_[0]
+    mz_ = sum(q[1] for q in umriss_) / len(umriss_) if mitte_ is None else mitte_[1]
+    ring_ = umriss_ + umriss_[:1] if geschlossen_ else umriss_
     _abschnitt += 1
     offen_ = True
     _hof_anfang = len(_SOCKEL)
@@ -182,13 +192,14 @@ for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BU
         if nx * ((a_[0] + b_[0]) / 2 - mx_) + nz * ((a_[1] + b_[1]) / 2 - mz_) < 0:
             nx, nz = -nx, -nz                         # nach außen
         n_ = max(1, int(l_ / 1.6))
-        for k_ in range(n_):
+        letzte_ = not geschlossen_ and b_ is ring_[-1]        # offener Linienzug: auch sein Endpunkt bekommt eine Säule
+        for k_ in range(n_ + (1 if letzte_ else 0)):
             t_ = k_ / n_
             px, pz = a_[0] + (b_[0] - a_[0]) * t_, a_[1] + (b_[1] - a_[1]) * t_
             vx, vz = px + nx * 3.5, pz + nz * 3.5     # vor der Wand
-            oben_ = hof_h - 0.15
+            oben_ = (hof_h if hof_h is not None else H(px - nx * 2.5, pz - nz * 2.5)) - 0.15
             unten_ = min(H(px + nx * d_, pz + nz * d_) for d_ in (2.0, 4.0, 6.0, 9.0)) - 2.5
-            frei_ = (oben_ - unten_ > 3.0 and _abstand((vx, vz), _wege) > 4.0
+            frei_ = (oben_ - unten_ > 3.0 and _abstand((vx, vz), _wege_sockel) > 4.0
                      and min(math.dist((vx, vz), t) for t in _tore) > 9.0
                      and not any(im_vieleck((vx, vz), v) for v in _alle_hoefe)
                      and all(math.dist((px, pz), t) > 9.0 for t in _sockel_tuerme))
@@ -203,7 +214,7 @@ for umriss_, hof_h in [(WL(PD.VORBURG), PD.H_VORBURG), (WL(PD.BURGHOF2), PD.H_BU
             _SOCKEL += [round(px, 2), round(pz, 2), round(nx, 4), round(nz, 4), round(oben_, 2), round(unten_, 2), _abschnitt]
     # Ringschluss: Endet der Ring frei und war auch sein Anfang frei, gehören letzter und erster Lauf zusammen. Dann
     # bekommt der erste Lauf die Nummer des letzten und wird hinten angehängt, damit dort keine Kerbe bleibt.
-    if _anfang_frei and not offen_ and len(_SOCKEL) > _hof_anfang:
+    if geschlossen_ and _anfang_frei and not offen_ and len(_SOCKEL) > _hof_anfang:
         erster_ = []
         k_ = _hof_anfang
         while k_ < len(_SOCKEL) and _SOCKEL[k_ + 6] == _erster_abschnitt:

@@ -4,9 +4,10 @@
 #   Kernburg mit Bergfried, Palas, Drachenkapelle, Burgküche und Zeughaus, umgeben von der Zwingermauer.
 #   Die Ringmauer umschließt den Grat: Torhaus Nord, Halbturm, Wehrturm, Zwinger, Rondell, Hafentor (Wassertor).
 # Der Weg hinauf (blaue Linie im Grundriss): Stadt → Burgstraßentor → am Halbturm vorbei hinauf (dort kommt der Weg
-# vom Torhaus Nord dazu) → außen um die ganze Burg → Rampe → Rampentor (II. Burghof) → III. Burghof → Burgtor →
-# Zwingerweg um die Kernburg → Kernburgtor. Unten zweigt der Weg zum Südtor der Vorburg ab.
-# Die Höfe sind gestaffelt (Schnitt B-B): Vorburg 0, II. Burghof +6, III. Burghof +14, Kernburg +38.
+# vom Torhaus Nord dazu) → außen um die ganze Burg → Rampe → Rampentor (II. Burghof) → gleich rechts das Zwingertor →
+# Zwingerrampe an der Südseite des III. Burghofs hinauf → oben links ins Tor des III. Burghofs oder über den Vorhof
+# durch den engen Zwinger zum Kernburgtor. Unten zweigt der Weg zum Südtor der Vorburg ab.
+# Die Höfe sind gestaffelt (Schnitt B-B): Vorburg 0, II. Burghof +6, III. Burghof +14, Kernburg +16.
 import sys
 sys.path.insert(0, str(BAU))
 import plan_drachenstein as PD
@@ -141,58 +142,24 @@ treppen = PackedFloat32Array({_zahlen([_tr_a[0], _tr_a[1], round(H(*_tr_a), 2), 
 mauerring("Sperrmauer", BG, WL(PD.SPERRMAUER), 7.0, dicke=2.5, mitte=W((300, 380)))
 
 # --- II. Burghof (14. Jh.); die Wand zur Vorburg gehört zur Vorburg ---
-B2 = PD.BURGHOF2 + [PD.BURGHOF2[0]]          # oval, mit eigenen Toren zur Vorburg und zum III. Burghof
+B2 = PD.BURGHOF2 + [PD.BURGHOF2[0]]          # oval, mit eigenen Toren zur Vorburg und in den Zwinger des III. Burghofs
 mauerring("BurghofZwei", BG, WL(B2), 6.5, dicke=3.0, mitte=W(PD.OVAL_BURGHOF2[0]),
-         tore=tore_an(B2, (PD.TORE["Rampentor"], 5.0, "Rampentor"), (PD.TORE["Tor des III. Burghofs, Westseite"], 6.0, "", None, False),
+         tore=tore_an(B2, (PD.TORE["Rampentor"], 5.0, "Rampentor"), (PD.TORE["Zwingertor"], 4.5, "", None, False),
                       (PD.TORE["Tor des II. Burghofs, Ostseite"], 5.0, "", None, False)))   # die Tortürme stehen an der Nachbarmauer
-# Torrampe im II. Burghof: Futtermauern mit Brüstung zu beiden Seiten, vom Fuß bis an das Tor zum III. Burghof
-_rp = WL(PD.WEG_BURG[PD.RAMPE_III:])
-_rh = PD.WEG_BURG_HOEHEN[PD.RAMPE_III:]
-_rm = []
-_ende = PD.welt(PD.TORE["Tor des III. Burghofs, Westseite"])
-_rampe_zu = WL([PD.WEG_BURG[PD.RAMPE_III - 1], PD.WEG_BURG[PD.RAMPE_III]])
-
-
-def _abstand_strecke(p, a, b):
-    dx, dz = b[0] - a[0], b[1] - a[1]
-    t = max(0.0, min(1.0, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / (dx * dx + dz * dz)))
-    return math.dist(p, (a[0] + dx * t, a[1] + dz * t))
-for i_ in range(len(_rp) - 1):
-    (ax_, az_), (bx_, bz_) = _rp[i_], _rp[i_ + 1]
-    l_ = math.hypot(bx_ - ax_, bz_ - az_)
-    if l_ < 0.5:
-        continue
-    ux_, uz_ = (bx_ - ax_) / l_, (bz_ - az_) / l_
-    n_ = max(1, math.ceil(l_ / 2.5))
-    for k_ in range(n_):
-        t0_, t1_ = k_ / n_, (k_ + 1) / n_
-        h0_ = _rh[i_] + (_rh[i_ + 1] - _rh[i_]) * t0_
-        h1_ = _rh[i_] + (_rh[i_ + 1] - _rh[i_]) * t1_
-        p0_ = (ax_ + (bx_ - ax_) * t0_, az_ + (bz_ - az_) * t0_)
-        p1_ = (ax_ + (bx_ - ax_) * t1_, az_ + (bz_ - az_) * t1_)
-        if h1_ < PD.H_BURGHOF2 + 0.4 or math.dist(p0_, _ende) < 2.5:
-            continue
-        for e_ in (-1, 1):
-            nx_, nz_ = -uz_ * e_, ux_ * e_
-            o_ = 4.2
-            # nicht quer über den Weg, der unten am Fuß der Rampe ankommt
-            m_ = ((p0_[0] + p1_[0]) / 2 + nx_ * o_, (p0_[1] + p1_[1]) / 2 + nz_ * o_)
-            if _abstand_strecke(m_, *_rampe_zu) < 3.0:
-                continue
-            # die Stücke überlappen leicht, damit an den Knicken keine Fuge bleibt
-            _rm += [p0_[0] + nx_ * o_ - ux_ * 0.3, p0_[1] + nz_ * o_ - uz_ * 0.3, p1_[0] + nx_ * o_ + ux_ * 0.3, p1_[1] + nz_ * o_ + uz_ * 0.3,
-                    PD.H_BURGHOF2 - 1.5, round(max(h0_, h1_) + 1.0, 2), 1.2, nx_, nz_, 0]
-N("TorrampeIII", "Node3D", BG, f"""script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array({_zahlen([round(v_, 3) for v_ in _rm])})""")
 
 # Rundtürme an den Ecken des II. und III. Burghofs: wie im Referenzbild mit Zinnenkranz; nur der hohe Turm hinten
-# zwischen II. und III. Burghof trägt ein Kegeldach
+# zwischen II. und III. Burghof trägt ein Kegeldach. Auf der Südseite des III. Burghofs keine Türme (dort ist der Zwinger),
+# dafür zwei auf seiner Außenmauer.
 _bt = []
-for pp in [(530, 192), (600, 182), (650, 136), (838, 134), (842, 310), (668, 318)]:
+for pp in [(530, 192), (600, 182), (650, 136), (838, 134)]:
     if pp == (600, 182):
         _bt += turmmasse(PD.ecke(pp), 5.0, 22) + [5.0, 1, 10]
     else:
         _bt += turmmasse(PD.ecke(pp), 4.5, 11) + [4.5, 0, 0]
+# (die beiden auf dem Bogen stehen nach außen vor, damit sie die Zwingerrampe nicht einengen)
+_O3 = PD.OVAL_BURGHOF3
+for pp in [PD.ellipse(_O3[0], _O3[1] + 27, _O3[2] + 27, 105), PD.ellipse(_O3[0], _O3[1] + 27, _O3[2] + 27, 60), PD.ZWINGER_III_AUSSEN[9]]:
+    _bt += turmmasse(pp, 3.5, 9) + [3.5, 0, 0]
 N("BurghofTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_bt)})""")
 for k, bau in enumerate(PD.BURGHOF2_BAUTEN):
@@ -200,40 +167,28 @@ for k, bau in enumerate(PD.BURGHOF2_BAUTEN):
 schild("SchildBurghof2", BG, *(lambda p: (p[0], PD.H_BURGHOF2 + 9, p[1]))(W((560, 262))), "II. Burghof", 40)
 
 # --- III. Burghof (oval, der Hof aus Akt I ist ins Ordensvorwerk vor der Stadt gezogen) ---
-B3 = PD.BURGHOF3 + [PD.BURGHOF3[0]]          # oval; berührt den II. Burghof am Tor des III. Burghofs
+B3 = PD.BURGHOF3 + [PD.BURGHOF3[0]]          # oval; das einzige Tor liegt oben an der Zwingerrampe (Südosten)
 mauerring("BurghofDrei", BG, WL(B3), 7.0, dicke=3.0, mitte=MITTE_BURG,
-         tore=tore_an(B3, (PD.TORE["Burgtor"], 6.0, "Burgtor"), (PD.TORE["Tor des III. Burghofs"], 6.0, "")))
-# Zweite Mauer auf der Südseite (doppelte Mauer wie im Grundriss), durchgehend bis auf den Durchgang am Westende
-_mi, _ai, _bi = PD.OVAL_BURGHOF3_INNEN
-_luecke = 6.0                                       # halbe Breite des Durchgangs in Grad
-_grad = [w_ for w_ in range(PD.BURGHOF3_INNEN_BOGEN[0], PD.BURGHOF3_INNEN_BOGEN[1] + 1, 3)]
-_bogen = []
-for w_ in _grad:
-    frei_ = any(abs((w_ - l_ + 180) % 360 - 180) < _luecke for l_ in PD.BURGHOF3_INNEN_LUECKEN)
-    if frei_:
-        if len(_bogen) > 1:
-            mauerring(f"BurghofDreiInnen{w_}", BG, WL(_bogen), 4.0, dicke=1.8, mitte=W(_mi))
-        _bogen = []
-        continue
-    _bogen.append((_mi[0] + _ai * math.cos(math.radians(w_)), _mi[1] + _bi * math.sin(math.radians(w_))))
-if len(_bogen) > 1:
-    mauerring("BurghofDreiInnenEnde", BG, WL(_bogen), 4.0, dicke=1.8, mitte=W(_mi))
+         tore=tore_an(B3, (PD.TORE["Tor des III. Burghofs"], 5.0, "Tor des III. Burghofs")))
+# Zwinger an der Südseite (wie im Referenzbild): niedrigere Außenmauer vom Rampentor bis an den Zwinger der Kernburg,
+# im Norden schließt eine Quermauer den Vorhof zwischen dem III. Burghof und der Kernburg
+mauerring("ZwingermauerIII", BG, WL(PD.ZWINGER_III_AUSSEN), 4.5, dicke=2.5, mitte=MITTE_BURG)
+mauerring("QuermauerVorhof", BG, WL(PD.ZWINGER_III_QUER), 6.0, dicke=2.5, mitte=W((855, 240)))
 for k, bau in enumerate(PD.BURGHOF3_BAUTEN):
     gebaeude(f"Burghof3Bau{k}", BG, bau, 9, PD.H_KERNHOF, zweck=(5, 1)[k])   # Heilstube und Ordenshaus, Küche
 schild("SchildBurghof3", BG, 0, PD.H_KERNHOF + 13, -36, "III. Burghof", 40)
 
-# --- Zwinger und Kernburg ---
-ZW = PD.ZWINGER_KERNBURG[PD.ZWINGER_BOGEN - 1:] + PD.ZWINGER_KERNBURG[:1]   # bis an den III. Burghof, dessen Ostbogen dazwischen liegt
-mauerring("Zwingermauer", BG, WL(ZW), 8.0, dicke=3.0, mitte=W((990, 220)), turm_r=0.0)
-# Quermauer im südlichen Zwinger: Dort endet der Zwingerweg oben, westlich davon liegt der Zwinger unten
-# (die frühere Quermauer im südlichen Zwinger entfällt: dort steigt jetzt der Zwingerweg)
+# --- Zwinger und Kernburg: zwei Mauerringe dicht hintereinander (wie im Referenzbild), die Tore gegenüber ---
+ZW = PD.ZWINGER_KERNBURG + [PD.ZWINGER_KERNBURG[0]]
+mauerring("Zwingermauer", BG, WL(ZW), 6.0, dicke=3.0, mitte=W(PD.OVAL_KERNBURG[0]),
+         tore=tor_an(ZW, PD.TORE["Zwingertor der Kernburg"], 5.0, ""))
 _zt = []
-for pp in [(965, 88), (1152, 130), (1112, 322), (895, 332)]:
-    _zt += turmmasse(pp, 4.5, 12) + [4.5, 0, 0]          # Zwingertürme mit Zinnen
+for w_ in (-95, -5, 75):   # zwischen den Türmen der Kernburg
+    _zt += turmmasse(PD.ellipse(*PD.OVAL_ZWINGER_KERNBURG, w_), 4.5, 9) + [4.5, 0, 0]          # Zwingertürme mit Zinnen
 KB = PD.KERNBURG + [PD.KERNBURG[0]]
 mauerring("Kernburg", BG, WL(KB), 8.0, dicke=3.5, mitte=W(PD.OVAL_KERNBURG[0]),
          tore=tor_an(KB, PD.TORE["Kernburgtor"], 5.0, "Kernburgtor"))
-for pp in [(912, 138), (1100, 150), (1102, 280), (896, 288)]:
+for pp in [(912, 138), (1100, 150), (1102, 280)]:   # im Südwesten liegt das Kernburgtor
     m = turmmasse(PD.ecke(pp), 4.5, 0)
     _zt += m[:3] + [PD.H_KERNBURG + 17, 4.5, 1 if pp[0] > 1000 else 0, 9]   # Kegeldächer nur am Ostende beim Palas
 N("KernburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
@@ -311,14 +266,11 @@ _HOF_TUERME = [PD.plan((_tuerme[i], _tuerme[i + 1])) for i in range(0, len(_tuer
               [PD.plan((_bt[i], _bt[i + 1])) for i in range(0, len(_bt), 7)] + \
               [PD.plan((_zt[i], _zt[i + 1])) for i in range(0, len(_zt), 7)]
 _HOF_WEGE = [w_ for w_ in PD.BURGWEGE]
-# III. Burghof: frei in der Mitte, quer hindurch vom Tor des III. Burghofs zum Burgtor
-_HOF_WEGE.append([PD.TORE["Tor des III. Burghofs"], PD.TORE["Burgtor"]])   # quer über den III. Burghof
-# Der schmale Zwinger zwischen den beiden Südmauern bleibt frei von Häusern
-_zm, _za, _zb = PD.OVAL_BURGHOF3
-_HOF_SPERREN.append([(_zm[0] + (_za - r_) * math.cos(math.radians(w_)), _zm[1] + (_zb - r_) * math.sin(math.radians(w_)))
-                     for r_, ws_ in ((-2, range(20, 161, 10)), (20, range(160, 19, -10))) for w_ in ws_])
+# III. Burghof: vom Tor in die Mitte; II. Burghof: vom Rampentor zum Zwingertor
+_HOF_WEGE.append([PD.TORE["Tor des III. Burghofs"], PD.MITTE])
+_HOF_WEGE.append([PD.TORE["Rampentor"], (596, 252), PD.TORE["Zwingertor"]])
 # Kernburg: vom Kernburgtor über den Hof zum Übungsplatz und vor die Kapelle
-_HOF_WEGE.append([PD.TORE["Kernburgtor"], (940, 215), (990, 225), (1040, 240), (1060, 200)])
+_HOF_WEGE.append([PD.TORE["Kernburgtor"], (940, 240), (990, 225), (1040, 240), (1060, 200)])
 random.seed(4711)
 _hofbauten = []
 
@@ -405,7 +357,7 @@ print("Hofhäuser an den Mauern (Vorburg, II., III., Kernburg):", _nh)
 if os.environ.get("HOF_JSON"): import json as _j; open(os.environ["HOF_JSON"], "w").write(_j.dumps({"neu": _hofbauten, "sperren": _HOF_SPERREN, "tuerme": _HOF_TUERME}))
 
 for name, pp, text in [("SchildPalas", (995, 155), "Palas"), ("SchildKapelle", (1075, 215), "Drachenkapelle"),
-                       ("SchildKueche", (905, 252), "Burgküche"), ("SchildZeughaus", (1030, 260), "Zeughaus")]:
+                       ("SchildKueche", PD.BURGKUECHE[0], "Burgküche"), ("SchildZeughaus", PD.ZEUGHAUS[0], "Zeughaus")]:
     x, z = W(pp)
     schild(name, BG, x, PD.H_KERNBURG + 22, z, text, 40)
 schild("SchildKernburg", BG, *(lambda p: (p[0], PD.H_KERNBURG + 10, p[1]))(W((975, 225))), "Kernburg", 44)

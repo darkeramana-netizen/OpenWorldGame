@@ -17,7 +17,7 @@ const HAUPTMENUE := "res://szenen/oberflaeche/hauptmenue.tscn"
 ## Manuelle Plätze im Pausemenü. "auto" und "schnell" kommen dazu.
 const PLAETZE: Array[String] = ["1", "2", "3"]
 ## 1: Hof als eigene Szene (Akt I). 2: Hof liegt in der Region Drachenstein.
-const VERSION := 4
+const VERSION := 5
 ## Höhe des Hofs aus Akt I in der Region Drachenstein (werkzeuge/bau/plan_drachenstein.py, HOF_Y)
 const HOF_Y := 14.0
 ## Seit Version 4 liegt der Hof aus Akt I als Ordensvorwerk vor der Stadt am Küstenweg (plan_drachenstein.py, VORWERK)
@@ -221,6 +221,13 @@ func _ziehe_um(daten: Dictionary) -> void:
 					spieler["kamera"][1] = float(spieler["kamera"][1]) + deg_to_rad(VORWERK_DREH)
 				if spieler.has("koerper"):
 					spieler["koerper"] = float(spieler["koerper"]) + deg_to_rad(VORWERK_DREH)
+	if int(daten.get("version", 1)) < 5 and String(daten.get("region", START_REGION)) == START_REGION:
+		# Die Kernburg liegt jetzt fast auf der Höhe des III. Burghofs (+16 statt +38), der Zwingerweg um sie ist
+		# entfallen: Wer hoch oben in der Kernburg oder ihrem Zwinger stand, steht jetzt im Hof der Kernburg.
+		var spieler: Dictionary = daten.get("spieler", {})
+		var pos: Array = spieler.get("position", [])
+		if pos.size() == 3 and float(pos[1]) > 20.0 and absf(float(pos[0])) < 90.0 and float(pos[2]) < -50.0 and float(pos[2]) > -240.0:
+			spieler["position"] = [-1.5, 16.5, -120.0]
 
 
 func _spieler_daten() -> Dictionary:

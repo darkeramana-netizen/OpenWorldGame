@@ -22,10 +22,11 @@ NETZ = STRASSEN + [P(*l) for l in [
     [(456, 558), (458, 555)], [(512, 556), (512, 552)], [(568, 556), (563, 555)],
     # Hafen: Kaiweg von der Hafenpforte zum Kai am Kanal
     PD.KAIWEG,
-    # Burgweg um die Burg in den II. und III. Burghof, Abzweig zur Vorburg, Weg vom Torhaus Nord
+    # Burgweg um die Burg in den II. Burghof, Abzweig zur Vorburg, Weg vom Torhaus Nord
     PD.WEG_BURG, PD.WEG_VORBURG, PD.WEG_TORHAUS_NORD, PD.WEG_TORHAUS_WEST,
-    # weiter zum Tor des Hofs aus Akt I
-    [(650, 228), (655, 228), (673, 228), (690, 228)],
+    # vom Rampentor zum Zwingertor, die Zwingerrampe hinauf, ins Tor des III. Burghofs und zur Kernburg
+    [PD.WEG_BURG[-1], PD.WEG_ZWINGER[0]], PD.WEG_ZWINGER, PD.WEG_TOR_III, PD.WEG_KERNBURG,
+    [PD.WEG_TOR_III[-1], (760, 252)],
 ]]
 
 # Hindernisse: (Mitte x, Mitte z, Breite, Tiefe, Gier) als Rechtecke, Kreise als (x, z, Radius)
@@ -202,7 +203,7 @@ def _richtung(p, ziel, abstand):
     d = math.dist(p, ziel)
     return (round(p[0] + (ziel[0] - p[0]) * abstand / d, 2), round(p[1] + (ziel[1] - p[1]) * abstand / d, 2))
 
-WACHWECHSEL = W((655, 250))   # im III. Burghof vor dem Tor des Hofs, nicht im Durchgang
+WACHWECHSEL = W((760, 252))   # im III. Burghof, neben dem Weg vom Tor in die Mitte
 BRUNNEN = MARKT_MITTE
 def _freier_platz(stand, abstand):
     """Ein Platz neben dem Stand, zu dem möglichst viele Wege vom Brunnen und von den Markträndern frei sind."""

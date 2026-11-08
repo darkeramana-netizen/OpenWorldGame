@@ -444,7 +444,7 @@ if os.environ.get("BAU_KARTE"):
     for e in _haus_ecken:
         zeichnung.polygon([P(p) for p in e], fill=(190, 90, 70), outline=(60, 30, 20))
     for linie in [WL(SM), WL(PD.RINGMAUER + PD.RINGMAUER[:1]), WL(PD.VORBURG + PD.VORBURG[:1]), WL(PD.BURGHOF2 + PD.BURGHOF2[:1]),
-                  WL(PD.BURGHOF3), WL(PD.ZWINGER_KERNBURG), WL(PD.KERNBURG + PD.KERNBURG[:1]), BECKEN + BECKEN[:1], WL(HM)]:
+                  WL(PD.BURGHOF3 + PD.BURGHOF3[:1]), WL(PD.ZWINGER_III_AUSSEN), WL(PD.ZWINGER_KERNBURG + PD.ZWINGER_KERNBURG[:1]), WL(PD.KERNBURG + PD.KERNBURG[:1]), BECKEN + BECKEN[:1], WL(HM)]:
         zeichnung.line([P(p) for p in linie], fill=(230, 230, 230), width=3)
     zeichnung.rectangle([P((-31, -31)), P((31, 31))], outline=(255, 0, 0), width=2)
     bild.save(os.environ["BAU_KARTE"])

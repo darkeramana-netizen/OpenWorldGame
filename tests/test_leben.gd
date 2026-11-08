@@ -284,7 +284,7 @@ func _initialize() -> void:
 	await druecke(KEY_E)
 	pruefe(D.aktiv, "Streife angesprochen")
 	var andere := stadt("StreifeHahn")
-	if andere._spricht:   # beide Streifen kommen zusammen aus dem Burgtor
+	if andere._spricht:   # beide Streifen kommen zusammen aus dem III. Burghof
 		andere = sanne
 		sanne = stadt("StreifeHahn")
 	var steht := sanne.global_position

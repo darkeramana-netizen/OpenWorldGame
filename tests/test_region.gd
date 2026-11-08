@@ -120,27 +120,27 @@ func _initialize() -> void:
 		if p is CollisionObject3D:
 			p.collision_layer = 0
 	# Wege der Burgfeste nach dem Grundriss (docs/bilder/grundriss-drachenstein-2.webp)
-	# Hinauf: quer über den III. Burghof → Burgtor → Zwingerweg → Kernburgtor (Westseite)
-	await setze(Vector3(0, 14.3, 46))
-	# Zwingerweg über die Vorderseite und das Ostende hinauf, oben an der Nordseite zurück zum Kernburgtor im Westen
-	var hinauf := await gehe_ueber([Vector2(0, 20), Vector2(0, -20), Vector2(0, -44), Vector2(0, -52.5), Vector2(0, -60.5),
-			Vector2(35, -67.5), Vector2(48, -107.5), Vector2(48, -157.5), Vector2(37, -186.5), Vector2(16, -196.5),
-			Vector2(-14, -197.5), Vector2(-45, -191.5), Vector2(-62, -172.5), Vector2(-62, -132.5), Vector2(-59, -97.5),
-			Vector2(-50, -72.5), Vector2(-34, -63.5), Vector2(-16, -63.5), Vector2(-9, -68.5), Vector2(-9, -74), Vector2(-9, -86)], 40.0)
-	pruefe(hinauf and spieler().global_position.y > 37.5, "Durch Burgtor und Zwingerweg hinauf in die Kernburg (y=%.1f)" % spieler().global_position.y)
+	# Hinauf: aus dem III. Burghof durch sein Tor an das obere Ende der Zwingerrampe, über den Vorhof durch das Tor im
+	# engen Zwinger und das Kernburgtor in die Kernburg
+	await setze(Vector3(8, 14.3, -10))
+	var hinauf := await gehe_ueber([Vector2(23, -34.5), Vector2(28.3, -40.55), Vector2(32.45, -45.55), Vector2(37, -56.5),
+			Vector2(36, -68.5), Vector2(26.05, -78.45), Vector2(20.9, -84.6), Vector2(15, -91.5), Vector2(6, -102.5)], 40.0)
+	pruefe(hinauf and spieler().global_position.y > 15.5, "Durch den Vorhof und den Zwinger hinauf in die Kernburg (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("Kernburg · Drachenhorst"), "Ortsname: Kernburg")
-	# Hinab: Tor des III. Burghofs → Rampe mit Kehre in den II. Burghof → Tor in die I. Vorburg → Südtor der Vorburg → unter dem II. Burghof
-	# nach Osten bis an den Fuß der Rampe zum Rampentor (von Westen ist der Weg durch die Sperrmauer versperrt)
-	await setze(Vector3(0, 14.3, 46))
-	var hinab := await gehe_ueber([Vector2(0, 49.5), Vector2(0, 52.5), Vector2(-3, 55), Vector2(-12.5, 60.5), Vector2(-18.5, 65.5),
-			Vector2(-18, 71), Vector2(-11.5, 74.5), Vector2(17, 73.5), Vector2(17, 97.5), Vector2(14, 132.5), Vector2(15.2, 139.8), Vector2(15.35, 141.5), Vector2(25, 162.25), Vector2(30, 168), Vector2(36, 167.5), Vector2(48.5, 152.5), Vector2(55.85, 149.1), Vector2(64, 147), Vector2(62, 137.5), Vector2(64, 117.5), Vector2(67, 77.5), Vector2(62, 37.5), Vector2(53, 7.5)], 40.0)
+	# Hinab: Tor des III. Burghofs → Zwingerrampe hinab nach Westen → Zwingertor in den II. Burghof → Tor in die I. Vorburg →
+	# Südtor der Vorburg → unter dem II. Burghof nach Osten bis an den Fuß der Rampe zum Rampentor (von Westen ist der Weg
+	# durch die Sperrmauer versperrt)
+	await setze(Vector3(8, 14.3, -10))
+	var hinab := await gehe_ueber([Vector2(23, -34.5), Vector2(28.3, -40.55), Vector2(32.45, -45.55), Vector2(35.7, -42.15),
+			Vector2(43.75, -30.25), Vector2(48.8, -16.4), Vector2(50.5, -1.5), Vector2(48.8, 13.4), Vector2(43.75, 27.25),
+			Vector2(35.7, 39.15), Vector2(25.25, 48.3), Vector2(17.5, 51.5), Vector2(13.75, 56.7), Vector2(9.5, 65.5), Vector2(17, 73.5), Vector2(17, 97.5), Vector2(14, 132.5), Vector2(15.2, 139.8), Vector2(15.35, 141.5), Vector2(25, 162.25), Vector2(30, 168), Vector2(36, 167.5), Vector2(48.5, 152.5), Vector2(55.85, 149.1), Vector2(64, 147), Vector2(62, 137.5), Vector2(64, 117.5), Vector2(67, 77.5), Vector2(65.5, 37.5), Vector2(64, 7.5)], 40.0)
 	pruefe(hinab and absf(spieler().global_position.y) < 1.5, "Durch die Vorburg und unter dem II. Burghof zur Rampe (y=%.1f)" % spieler().global_position.y)
 	pruefe(orte.has("I. Vorburg") and orte.has("II. Burghof"), "Ortsnamen: II. Burghof, I. Vorburg")
 	# Der ganze Burgweg: vom II. Burghof durch das Rampentor hinab, im Süden über dem Wassertor und an der Klippe am
 	# Rondell vorbei hinauf, um den Zwinger, im Norden wieder hinab und durch das Torhaus Nord hinaus
 	await setze(Vector3(17, 6.3, 72.5))
-	pruefe(await gehe_ueber([Vector2(23, 66.1), Vector2(34, 56.5), Vector2(47, 45), Vector2(51, 33.5), Vector2(53, 7.5), Vector2(54, -25),
-			Vector2(62, -32.5), Vector2(73.5, -67.5), Vector2(70, -107.5), Vector2(64.5, -157.5), Vector2(53.5, -207.5), Vector2(31, -222.5),
+	pruefe(await gehe_ueber([Vector2(23, 66.1), Vector2(38.5, 56.5), Vector2(53, 46.5), Vector2(61, 33.5), Vector2(64, 7.5), Vector2(65, -25),
+			Vector2(67, -32.5), Vector2(73.5, -67.5), Vector2(70, -107.5), Vector2(64.5, -157.5), Vector2(53.5, -207.5), Vector2(31, -222.5),
 			Vector2(-11.5, -230), Vector2(-44, -231), Vector2(-71.5, -212.5), Vector2(-86, -182.5), Vector2(-85, -147.5), Vector2(-83, -115),
 			Vector2(-75, -82.5), Vector2(-66.5, -57.5), Vector2(-56, -32.5), Vector2(-60, -12.5), Vector2(-61, 17.5), Vector2(-58, 42.5),
 			Vector2(-44, 67.5), Vector2(-39, 102.5), Vector2(-25, 142.5), Vector2(-15, 187.5), Vector2(-11.5, 217.5), Vector2(-24, 220.5),
