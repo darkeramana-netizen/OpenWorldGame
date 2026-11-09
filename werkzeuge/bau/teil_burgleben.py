@@ -134,6 +134,14 @@ for hofname_ in ("Vorburg", "Mittelburg", "Oberburg", "Palas"):
         _ar += 1
 print("Burgleben: an den Lagerplätzen", _ar)
 
+# --- Der Schmied am Amboss ---
+if "Schmiede" in WERKPLAETZE:
+    px_, pz_, (ux_, uz_), (nx_, nz_), boden_ = WERKPLAETZE["Schmiede"]
+    ax_, az_ = px_ + nx_ * 2.6, pz_ + nz_ * 2.6                  # Amboss
+    sx_, sz_ = ax_ + ux_ * 1.0 + nx_ * 0.6, az_ + uz_ * 1.0 + nz_ * 0.6
+    person("Burgschmied", BL, round(sx_, 2), boden_, round(sz_, 2), "Burgschmied Wendel Hart", "schmied_burg", 0, "0.3, 0.22, 0.16, 1",
+           gier=round(math.degrees(math.atan2(ax_ - sx_, az_ - sz_)), 1), sichtbar_wenn="alarm<3")
+
 # --- Kaplan vor der Drachenkapelle, Haushofmeister vor dem Palas, Stallknecht an der Tränke ---
 for bau_, name_, anzeige_, dialog_, tracht_, boden_ in [
         (PD.DRACHENKAPELLE, "Kaplan", "Kaplan Benedikt Saar", "kaplan", "0.15, 0.13, 0.14, 1", PD.H_KERNBURG),

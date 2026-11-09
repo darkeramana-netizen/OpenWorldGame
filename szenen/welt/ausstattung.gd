@@ -7,7 +7,9 @@ extends Node3D
 ## Je Stück 5 Werte: Art, x, y (Boden), z, Gier in Grad. Arten: 0 Fass, 1 Kiste, 2 Säcke, 3 Marktstand, 4 Karren,
 ## 5 Kogge im Hafen (Segel gerefft), 6 Kogge unter vollem Segel, 7 Ruderboot (y ist bei Schiffen die Wasserlinie, der
 ## Bug zeigt nach lokal -z), 8 Tretradkran (der Ausleger zeigt nach lokal -z), 9 Prahm,
-## 10 Ziehbrunnen mit Dach, 11 Holzstapel, 12 Pferdetränke, 13 Waffenständer mit Spießen, 14 Feuerkorb auf einem Pfahl
+## 10 Ziehbrunnen mit Dach, 11 Holzstapel, 12 Pferdetränke, 13 Waffenständer mit Spießen, 14 Feuerkorb auf einem Pfahl,
+## 15 Amboss auf dem Klotz, 16 Esse mit Rauchfang, 17 Unterstand (offen nach lokal +z), 18 Heuhaufen, 19 Pferd (Kopf nach
+## lokal +z), 20 Wandlaterne (an einer Wand, die lokal bei z = 0 steht; ohne Kollision)
 @export var stuecke := PackedFloat32Array():
 	set(w):
 		stuecke = w
@@ -18,7 +20,8 @@ extends Node3D
 const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0.6, 0.6, 0.45), Vector3(1.6, 2.6, 1.1),
 	Vector3(0.8, 1.0, 1.5), Vector3(2.6, 3.4, 9.0), Vector3(2.6, 3.4, 9.0), Vector3(0.9, 1.4, 2.6), Vector3(1.6, 9.0, 1.6),
 	Vector3(2.1, 2.2, 6.2), Vector3(1.25, 3.4, 1.25), Vector3(1.1, 1.1, 0.7), Vector3(1.2, 0.8, 0.45), Vector3(0.9, 2.3, 0.3),
-	Vector3(0.3, 2.3, 0.3)]
+	Vector3(0.3, 2.3, 0.3), Vector3(0.4, 0.95, 0.35), Vector3(0.9, 1.2, 0.7), Vector3(2.2, 2.9, 1.6), Vector3(0.95, 1.1, 0.95),
+	Vector3(0.35, 1.7, 1.2), Vector3.ZERO]
 ## Wasserfahrzeuge: die Kollisionsbox reicht unter die Wasserlinie
 const TIEFGANG := {5: 1.6, 6: 1.6, 7: 0.5, 9: 0.8}
 ## Farben der Markisen
@@ -46,12 +49,15 @@ func _baue() -> void:
 	add_child(koerper)
 	for art: int in je_art:
 		var lagen: Array = je_art[art]
+		var e_: Vector3 = KASTEN[art]
 		var mm := MultiMesh.new()
 		mm.transform_format = MultiMesh.TRANSFORM_3D
 		mm.mesh = _mesh(art)
 		mm.instance_count = lagen.size()
 		for k in lagen.size():
 			mm.set_instance_transform(k, lagen[k])
+			if e_ == Vector3.ZERO:
+				continue          # ohne Kollision (Wandlaterne)
 			var form := CollisionShape3D.new()
 			var box := BoxShape3D.new()
 			var e: Vector3 = KASTEN[art]
@@ -228,6 +234,54 @@ func _mesh(art: int) -> ArrayMesh:
 				_zylinder("metall", Vector3(x, 2.2, -0.12), 0.0, 0.05, 0.2, 6)
 			for s: float in [-1.0, 1.0]:
 				_zylinder("wimpel", Vector3(s * 0.45, 0.62, 0.12), 0.32, 0.32, 0.05, 12, Basis(Vector3.RIGHT, PI / 2.0))
+		15:  # Amboss auf einem Holzklotz
+			_zylinder("holz_dunkel", Vector3.ZERO, 0.3, 0.33, 0.55, 10)
+			_klotz("metall", Vector3(-0.12, 0.55, -0.1), Vector3(0.12, 0.7, 0.1))
+			_klotz("metall", Vector3(-0.3, 0.7, -0.14), Vector3(0.22, 0.9, 0.14))
+			_zylinder("metall", Vector3(0.22, 0.8, 0), 0.0, 0.1, 0.32, 8, Basis(Vector3.FORWARD, PI / 2.0))
+		16:  # Esse: gemauerter Herd mit Glut, darüber ein Rauchfang und der Schlot
+			_klotz("stein", Vector3(-0.85, 0, -0.65), Vector3(0.85, 0.85, 0.65))
+			_klotz("glut", Vector3(-0.5, 0.85, -0.35), Vector3(0.5, 0.95, 0.35))
+			for s: float in [-1.0, 1.0]:
+				_klotz("stein", Vector3(s * 0.85 - 0.12, 0.85, -0.65), Vector3(s * 0.85 + 0.12, 1.9, -0.4))
+			_viereck("stein", Vector3(-0.95, 1.9, -0.7), Vector3(0.95, 1.9, -0.7), Vector3(0.35, 2.7, -0.4), Vector3(-0.35, 2.7, -0.4), Vector3(0, 0, -1))
+			_viereck("stein", Vector3(-0.95, 1.9, 0.6), Vector3(0.95, 1.9, 0.6), Vector3(0.35, 2.7, -0.1), Vector3(-0.35, 2.7, -0.1), Vector3(0, 0.6, 1))
+			for s: float in [-1.0, 1.0]:
+				_viereck("stein", Vector3(s * 0.95, 1.9, -0.7), Vector3(s * 0.95, 1.9, 0.6), Vector3(s * 0.35, 2.7, -0.1), Vector3(s * 0.35, 2.7, -0.4), Vector3(s, 0.4, 0))
+			_klotz("stein", Vector3(-0.35, 2.7, -0.4), Vector3(0.35, 3.8, -0.1))
+			_klotz("holz_dunkel", Vector3(0.9, 0.5, -0.3), Vector3(1.5, 0.75, 0.3))      # Blasebalg
+		17:  # Unterstand: vier Pfosten, Pultdach nach vorn geneigt, hinten eine Bretterwand
+			for x: float in [-2.1, 2.1]:
+				for z: float in [-1.5, 1.5]:
+					_klotz("holz_dunkel", Vector3(x - 0.1, 0, z - 0.1), Vector3(x + 0.1, 2.8 - (z + 1.5) * 0.2, z + 0.1))
+			_viereck("dach", Vector3(-2.4, 2.9, -1.8), Vector3(2.4, 2.9, -1.8), Vector3(2.4, 2.2, 1.8), Vector3(-2.4, 2.2, 1.8), Vector3(0, 1, 0.2))
+			_viereck("dach", Vector3(-2.4, 2.9, -1.8), Vector3(2.4, 2.9, -1.8), Vector3(2.4, 2.2, 1.8), Vector3(-2.4, 2.2, 1.8), Vector3(0, -1, -0.2))
+			_klotz("holz", Vector3(-2.1, 0.2, -1.6), Vector3(2.1, 2.6, -1.5))
+			_klotz("heu", Vector3(-1.9, 0, -1.4), Vector3(-0.4, 0.8, -0.3))
+			_klotz("holz", Vector3(0.2, 0, -1.3), Vector3(1.8, 0.3, 0.6))
+		18:  # Heuhaufen
+			_zylinder("heu", Vector3.ZERO, 0.95, 0.95, 0.45, 12)
+			_zylinder("heu", Vector3(0, 0.4, 0), 0.75, 0.8, 0.35, 12)
+			_zylinder("heu", Vector3(0, 0.72, 0), 0.4, 0.5, 0.3, 12)
+		19:  # Pferd: Rumpf, Hals, Kopf, Beine, Schweif, Mähne
+			_klotz("fell", Vector3(-0.32, 0.95, -0.95), Vector3(0.32, 1.55, 0.9))
+			_viereck("fell", Vector3(-0.2, 1.3, 0.75), Vector3(0.2, 1.3, 0.75), Vector3(0.18, 2.0, 1.25), Vector3(-0.18, 2.0, 1.25), Vector3(0, -0.6, 1))
+			_viereck("fell", Vector3(-0.2, 1.55, 0.6), Vector3(0.2, 1.55, 0.6), Vector3(0.18, 2.15, 1.05), Vector3(-0.18, 2.15, 1.05), Vector3(0, 0.6, -1))
+			for s: float in [-1.0, 1.0]:
+				_viereck("fell", Vector3(s * 0.2, 1.3, 0.75), Vector3(s * 0.2, 1.55, 0.6), Vector3(s * 0.18, 2.15, 1.05), Vector3(s * 0.18, 2.0, 1.25), Vector3(s, 0, 0))
+			_klotz("fell", Vector3(-0.15, 1.75, 1.05), Vector3(0.15, 2.1, 1.65), -0.5)
+			_klotz("haar", Vector3(-0.05, 1.6, 0.65), Vector3(0.05, 2.2, 1.1))
+			_klotz("haar", Vector3(-0.07, 0.7, -1.1), Vector3(0.07, 1.4, -0.95))
+			for x: float in [-0.2, 0.2]:
+				for z: float in [-0.75, 0.7]:
+					_klotz("fell", Vector3(x - 0.07, 0, z - 0.07), Vector3(x + 0.07, 1.0, z + 0.07))
+					_klotz("haar", Vector3(x - 0.08, 0, z - 0.08), Vector3(x + 0.08, 0.12, z + 0.08))
+		20:  # Wandlaterne: Ausleger aus der Wand, darunter die Laterne mit Glut
+			_klotz("metall", Vector3(-0.03, 2.55, 0.0), Vector3(0.03, 2.6, 0.5))
+			_klotz("metall", Vector3(-0.03, 2.2, 0.0), Vector3(0.03, 2.6, 0.05))
+			_klotz("metall", Vector3(-0.16, 2.48, 0.32), Vector3(0.16, 2.54, 0.64))
+			_klotz("glut", Vector3(-0.11, 2.12, 0.37), Vector3(0.11, 2.48, 0.59))
+			_klotz("metall", Vector3(-0.15, 2.07, 0.33), Vector3(0.15, 2.12, 0.63))
 		14:  # Feuerkorb auf einem Pfahl, darin Glut
 			_klotz("holz_dunkel", Vector3(-0.07, 0, -0.07), Vector3(0.07, 1.9, 0.07))
 			_zylinder("metall", Vector3(0, 1.9, 0), 0.18, 0.32, 0.35, 10)
@@ -403,6 +457,8 @@ func _material(name_: String) -> Material:
 				s.uv1_scale = Vector3(0.5, 0.5, 0.5)
 			elif name_ in ["glut", "wasser"]:
 				pass
+			elif name_ in ["fell", "haar"]:
+				pass
 			elif not name_ in ["holz_dunkel", "korb", "rumpf_teer", "deck"]:
 				s.albedo_texture = load("res://texturen/stoff_farbe.jpg")
 				s.uv1_triplanar = true
@@ -419,7 +475,8 @@ func _material(name_: String) -> Material:
 				s.roughness = 0.1
 				s.metallic = 0.3
 			s.albedo_color = {"holz_dunkel": Color(0.45, 0.36, 0.3), "glut": Color(1.0, 0.5, 0.15), "wasser": Color(0.18, 0.28, 0.3),
-				"stein": Color(0.62, 0.58, 0.52), "dach": Color(0.45, 0.25, 0.18), "korb": Color(0.85, 0.68, 0.42),
+				"stein": Color(0.62, 0.58, 0.52), "dach": Color(0.45, 0.25, 0.18), "heu": Color(0.82, 0.7, 0.36),
+				"fell": Color(0.36, 0.22, 0.13), "haar": Color(0.12, 0.09, 0.07), "korb": Color(0.85, 0.68, 0.42),
 				"rumpf_teer": Color(0.22, 0.17, 0.13), "deck": Color(0.8, 0.68, 0.52), "segel": Color(0.9, 0.85, 0.72),
 				"sack": Color(0.85, 0.76, 0.58), "markise_a": STOFFE[0], "markise_b": STOFFE[1],
 				"ware_rot": Color(0.75, 0.18, 0.1), "ware_gruen": Color(0.3, 0.5, 0.15),

@@ -455,7 +455,7 @@ BURG_LICHTER = []                # (x, y, z)
 LAGERPLAETZE = []                # (x, z, nach innen x, z, Boden, Hof): dort arbeitet jemand
 _GRUND = {}
 _A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2.6, 2.6), 11: (2.3, 1.5), 12: (2.5, 1.0),
-              13: (1.9, 0.7), 14: (0.7, 0.7)}
+              13: (1.9, 0.7), 14: (0.7, 0.7), 15: (0.8, 0.7), 16: (1.8, 1.4), 17: (4.6, 3.6), 18: (1.9, 1.9), 19: (0.7, 2.6)}
 _treppen_w = []
 for k_ in range(0, len(TREPPEN), 7):
     fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
@@ -482,7 +482,7 @@ def _abstand_rand(q, poly):
     return min(abstand_linie([a_, b_], *q) for a_, b_ in zip(poly, poly[1:] + poly[:1]))
 
 
-def stelle(art, x, z, gier, hof_w, boden, wegabstand=3.2, licht=False):
+def stelle(art, x, z, gier, hof_w, boden, wegabstand=3.2, licht=False, probe=False):
     """Stellt ein Stück auf, wenn der Platz frei ist; gibt zurück, ob es geklappt hat."""
     b_, t_ = _A_GROESSE[art]
     r_ = _rechteck_w(x, z, b_ + 0.3, t_ + 0.3, gier)
@@ -499,6 +499,8 @@ def stelle(art, x, z, gier, hof_w, boden, wegabstand=3.2, licht=False):
     if any(math.dist((x, z), t_) < 7.0 for t_ in _tore_w) or any(math.dist((x, z), (rx_, rz_)) < rr_ + 1.5 for rx_, rz_, rr_ in _runde_w):
         _GRUND["turm"] = _GRUND.get("turm", 0) + 1
         return False
+    if probe:
+        return True
     BURG_AUSSTATTUNG.append((art, round(x, 2), round(boden, 2), round(z, 2), round(gier, 1)))
     BURG_SPERREN.append(r_)
     if licht:
@@ -521,6 +523,40 @@ def _naechste_kante_innen(p, poly):
 
 
 BURG_BRUNNEN = {}
+WERKPLAETZE = {}                 # Name → (x, z, entlang, nach innen, Boden): dort steht jemand bei der Arbeit
+
+
+def werkplatz(name, teile, hof_w, boden, tiefe=1.0):
+    """Sucht an der Hofmauer einen Platz für eine Gruppe von Stücken. teile: (Art, entlang, nach innen, Drehung) im
+    Rahmen der Mauer (entlang der Kante, nach innen in den Hof); gestellt wird nur, wenn alle passen."""
+    kante_ = hof_w + hof_w[:1]
+    mx_, mz_ = sum(q[0] for q in hof_w) / len(hof_w), sum(q[1] for q in hof_w) / len(hof_w)
+    versuche_ = []
+    for a_, b_ in zip(kante_, kante_[1:]):
+        l_ = math.dist(a_, b_)
+        if l_ < 9.0:
+            continue
+        ux_, uz_ = (b_[0] - a_[0]) / l_, (b_[1] - a_[1]) / l_
+        nx_, nz_ = -uz_, ux_
+        if nx_ * (mx_ - a_[0]) + nz_ * (mz_ - a_[1]) < 0:
+            nx_, nz_ = -nx_, -nz_
+        t_ = 4.5
+        while t_ < l_ - 4.5:
+            versuche_.append((a_[0] + ux_ * t_ + nx_ * (3.2 + tiefe), a_[1] + uz_ * t_ + nz_ * (3.2 + tiefe), ux_, uz_, nx_, nz_))
+            t_ += 1.5
+    random.shuffle(versuche_)
+    for px_, pz_, ux_, uz_, nx_, nz_ in versuche_:
+        g0_ = math.degrees(math.atan2(nx_, nz_))            # lokal +z zeigt in den Hof
+        lagen_ = [(art_, px_ + ux_ * e_ + nx_ * i_, pz_ + uz_ * e_ + nz_ * i_, g0_ + d_) for art_, e_, i_, d_ in teile]
+        if all(stelle(art_, x_, z_, g_, hof_w, boden, wegabstand=2.6, probe=True) for art_, x_, z_, g_ in lagen_):
+            # einzeln setzen (die Stücke einer Gruppe dürfen sich nicht gegenseitig sperren)
+            for art_, x_, z_, g_ in lagen_:
+                stelle(art_, x_, z_, g_, hof_w, boden, wegabstand=2.6)
+            WERKPLAETZE[name] = (px_, pz_, (ux_, uz_), (nx_, nz_), boden)
+            return True
+    return False
+
+
 _hoefe = [("Vorburg", PD.VORBURG, PD.H_VORBURG), ("Mittelburg", PD.MITTELBURG, PD.H_BURGHOF2),
           ("Oberburg", PD.OBERBURG, PD.H_KERNHOF), ("Palas", PD.PALAS_HOF, PD.H_KERNBURG)]
 for name_, hof_, boden_ in _hoefe:
@@ -533,6 +569,13 @@ for name_, hof_, boden_ in _hoefe:
         if stelle(10, x_, z_, random.uniform(0, 90), hof_w_, boden_, wegabstand=4.0):
             BURG_BRUNNEN[name_] = (x_, z_)
             break
+    # Werkplätze: Schmiede, Holzplatz und ein Unterstand für Karren in der Vorburg, Holzplatz und Unterstand in der
+    # Mittelburg (die Stücke stehen mit dem Rücken zur Hofmauer)
+    if name_ in ("Vorburg", "Mittelburg"):
+        if name_ == "Vorburg":
+            werkplatz("Schmiede", [(16, 0.0, 0.0, 0), (15, 0.0, 2.6, 90), (1, -2.0, 0.0, 15), (0, 2.1, -0.1, 0), (13, 3.6, 0.0, 0)], hof_w_, boden_)
+        werkplatz(f"Holzplatz {name_}", [(11, -1.4, 0.0, 90), (11, 1.4, 0.2, 90), (1, 0.0, 2.6, 30)], hof_w_, boden_)
+        werkplatz(f"Unterstand {name_}", [(17, 0.0, 0.6, 0), (4, 3.6, 1.6, 10)], hof_w_, boden_, tiefe=1.6)
     # Feuerkörbe zu beiden Seiten jedes Tors, innen im Hof
     for tor_ in PD.TORE.values():
         tw_ = W(tor_)
@@ -617,6 +660,57 @@ for bau_, art_, boden_, hof_ in [(PD.VORBURG_BAUTEN[6], 12, PD.H_VORBURG, PD.VOR
         _tueren_w.extend(_tue)
         if ok_:
             break
+# Pferde und Heuhaufen vor dem Stall der Vorburg (beiderseits der Tür, Kopf zur Wand) und am Unterstand der Mittelburg
+(pp_, l_, br_, dr_) = PD.VORBURG_BAUTEN[6]
+a_ = math.radians(dr_)
+vx_, vy_ = -math.sin(a_), math.cos(a_)
+ux_, uy_ = math.cos(a_), math.sin(a_)
+_pferde = 0
+_tue = list(_tueren_w)
+_tueren_w.clear()
+for q_ in (-0.42, -0.3, 0.3, 0.42, -0.18, 0.18):
+    for vor_ in (8.0, 11.0, 14.0):   # Planpunkte (0,5 m)
+        x_, z_ = W((pp_[0] + vx_ * (br_ / 2 + vor_) + ux_ * l_ * q_, pp_[1] + vy_ * (br_ / 2 + vor_) + uy_ * l_ * q_))
+        if abs(q_) < 0.25 and vor_ < 12:
+            continue                                     # vor der Tür frei lassen
+        art_ = 19 if _pferde < 3 else 18
+        if stelle(art_, x_, z_, -dr_ + 180 + random.uniform(-15, 15), WL(PD.VORBURG), PD.H_VORBURG, wegabstand=2.6):
+            _pferde += 1
+            break
+_tueren_w.extend(_tue)
+if "Unterstand Mittelburg" in WERKPLAETZE:
+    px_, pz_, (ux_, uz_), (nx_, nz_), boden_ = WERKPLAETZE["Unterstand Mittelburg"]
+    for e_ in (-4.0, -5.5):
+        stelle(19, px_ + ux_ * e_ + nx_ * 1.2, pz_ + uz_ * e_ + nz_ * 1.2, math.degrees(math.atan2(-nx_, -nz_)), WL(PD.MITTELBURG), boden_, wegabstand=2.6)
+# Laternen neben den Türen: an jedem Haus und jedem begehbaren Bau eine, an jeder zweiten brennt nachts ein Licht
+_laternen = 0
+for k_, (x_, y_, z_, g_, f_) in enumerate(HOFHAEUSER):
+    b_, t_ = _FORMEN[f_]
+    a_ = math.radians(g_)
+    vx_, vz_ = math.sin(a_), math.cos(a_)
+    ux_, uz_ = math.cos(a_), -math.sin(a_)
+    s_ = 1.3 if k_ % 2 else -1.3
+    lx_, lz_ = x_ + vx_ * (t_ / 2 + 0.36) + ux_ * s_, z_ + vz_ * (t_ / 2 + 0.36) + uz_ * s_
+    BURG_AUSSTATTUNG.append((20, round(lx_, 2), round(y_, 2), round(lz_, 2), round(g_, 1)))
+    if k_ % 2 == 0:
+        BURG_LICHTER.append((round(lx_ + vx_ * 0.5, 2), round(y_ + 2.3, 2), round(lz_ + vz_ * 0.5, 2)))
+    _laternen += 1
+for bau_, boden_ in [(b_, PD.H_VORBURG) for b_ in (PD.VORBURG_BAUTEN[0], PD.VORBURG_BAUTEN[6])] + \
+                    [(b_, PD.H_BURGHOF2) for b_ in (PD.BURGHOF2_BAUTEN[2], PD.BURGHOF2_BAUTEN[6])] + \
+                    [(b_, PD.H_KERNHOF) for b_ in (PD.BURGHOF3_BAUTEN[0], PD.BURGHOF3_BAUTEN[2])] + \
+                    [(b_, PD.H_KERNBURG) for b_ in (PD.BURGKUECHE, PD.ZEUGHAUS, PD.PALAS)]:
+    (pp_, l_, br_, dr_) = bau_
+    a_ = math.radians(dr_)
+    for s_ in (-1, 1):
+        q_ = (pp_[0] - math.sin(a_) * (br_ / 2 + 0.25) + math.cos(a_) * s_ * 4.0, pp_[1] + math.cos(a_) * (br_ / 2 + 0.25) + math.sin(a_) * s_ * 4.0)
+        lx_, lz_ = W(q_)
+        g_ = math.degrees(math.atan2(*(lambda d_: (d_[0], d_[1]))((W((q_[0] - math.sin(a_), q_[1] + math.cos(a_)))[0] - lx_,
+                                                              W((q_[0] - math.sin(a_), q_[1] + math.cos(a_)))[1] - lz_))))
+        BURG_AUSSTATTUNG.append((20, round(lx_, 2), round(boden_, 2), round(lz_, 2), round(g_, 1)))
+        if s_ > 0:
+            BURG_LICHTER.append((round(lx_, 2), round(boden_ + 2.3, 2), round(lz_, 2)))
+        _laternen += 1
+print("Werkplätze:", sorted(WERKPLAETZE), "Pferde und Heu am Stall:", _pferde, "Laternen:", _laternen, "Lichter:", len(BURG_LICHTER))
 print("Ausstattung der Höfe:", len(BURG_AUSSTATTUNG), "Stücke, davon", sum(1 for a_ in BURG_AUSSTATTUNG if a_[0] == 14), "Feuerkörbe;",
       "Brunnen in", sorted(BURG_BRUNNEN), "abgelehnt:", _GRUND)
 N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\n"

@@ -1,0 +1,23 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Mach Platz, das Eisen ist heiß.",
+				"Hufeisen, Nägel, Ketten fürs Fallgitter. Die Burg frisst Eisen.",
+				"Klingen schleife ich für den Orden umsonst. Für alle anderen kostet es.",
+				{
+					"text": "Wächter {name}. Bring mir deine Klinge, wenn sie stumpf wird.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm? Dann brauchen sie Spießspitzen, und zwar gestern.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Und jetzt lass mich schlagen, bevor das Eisen kalt wird."
+		}
+	}
+}
