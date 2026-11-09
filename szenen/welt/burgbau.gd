@@ -1308,7 +1308,7 @@ func _treppe(a: Vector3, b: Vector3, breite: float) -> void:
 		Vector3(r1.x, a.y + 0.02, r1.y), Vector3.UP)
 	# Wangen: niedrige Mauern zu beiden Seiten, oben schräg mit der Treppe
 	for seite: float in [-1.0, 1.0]:
-		var teile := maxi(1, int(laenge / 8.0))
+		var teile := maxi(1, int(laenge / 1.0))   # kurze Stücke: die Wange folgt der Steigung
 		for k in teile:
 			var t0 := float(k) / teile
 			var t1 := float(k + 1) / teile
