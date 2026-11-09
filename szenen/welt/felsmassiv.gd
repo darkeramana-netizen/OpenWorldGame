@@ -21,6 +21,8 @@ var _m_groesse := Vector2.ONE
 var _band := FastNoiseLite.new()
 var _kluft := FastNoiseLite.new()
 var _fein := FastNoiseLite.new()
+var _block := FastNoiseLite.new()     # Felsblöcke: je Zelle eine Höhe (Zellen entlang des Hangs gestreckt: Rippen)
+var _naht := FastNoiseLite.new()      # Zellgrenzen: dort reißt eine Kluft ein
 
 
 func _ready() -> void:
@@ -49,6 +51,14 @@ func _ready() -> void:
 	_fein.seed = 99
 	_fein.frequency = 0.5
 	_fein.fractal_octaves = 2
+	for z: FastNoiseLite in [_block, _naht]:
+		z.seed = 2025
+		z.noise_type = FastNoiseLite.TYPE_CELLULAR
+		z.frequency = 0.16
+		z.cellular_jitter = 1.0
+		z.fractal_type = FastNoiseLite.FRACTAL_NONE
+	_block.cellular_return_type = FastNoiseLite.RETURN_CELL_VALUE
+	_naht.cellular_return_type = FastNoiseLite.RETURN_DISTANCE2_SUB
 	var nx := ceili(bereich.size.x / (kachel * raster))
 	var nz := ceili(bereich.size.y / (kachel * raster))
 	for kx in nx:
@@ -92,9 +102,16 @@ func _fels(x: float, z: float, h: float) -> float:
 	var gz: float = _g.hoehe_bei(x, z + 1.0) - _g.hoehe_bei(x, z - 1.0)
 	var steil := sqrt(gx * gx + gz * gz) * 0.5
 	var staerke := 1.0 - smoothstep(0.35, 0.9, steil)
-	y = h + (y - h) * staerke + absf(_fein.get_noise_2d(x * 0.5, z * 0.5)) * 0.6 * (1.0 - staerke)
-	# nie mehr als 3 m über dem Gelände
-	return clampf(y, h + 0.05, h + 3.0)
+	y = h + (y - h) * staerke
+	# Felsblöcke (wie im Modell des Spielers): Jede Zelle steht verschieden hoch, an den Grenzen reißt der Fels ein. Auf
+	# steilem Grund (an den Felswänden unter den Höfen) werden daraus höhere Felszacken.
+	var q := Vector2(x, z)
+	var blockhoehe := (_block.get_noise_2d(q.x, q.y) + 1.0) * 0.5            # 0 bis 1
+	var kluft := 1.0 - smoothstep(-0.97, -0.8, _naht.get_noise_2d(q.x, q.y))  # 1 in der Kluft
+	var relief := lerpf(1.3, 2.6, 1.0 - staerke)
+	y += blockhoehe * relief - kluft * 0.9 + _fein.get_noise_2d(x * 2.0, z * 2.0) * 0.15
+	# nie mehr als 4,5 m über dem Gelände
+	return clampf(y, h + 0.05, h + 4.5)
 
 
 func _punkt(x: float, z: float) -> Vector3:
@@ -137,6 +154,7 @@ func _baue_kachel(start: Vector2) -> void:
 			punkte.append(_punkt(x, z) if nah else Vector3(x, _g.hoehe_bei(x, z) - 0.8, z))
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(0xFFFFFFFF)   # kantige Bruchflächen statt weicher Hügel
 	var dreiecke := 0
 	for iz in kachel:
 		for ix in kachel:

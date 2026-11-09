@@ -136,6 +136,19 @@ func _initialize() -> void:
 	# Norden, hinter Oberburg und Palas entlang und im Süden an der Ringmauer hinab an den Fuß der Rampe
 	var gruen := await gehe_ueber([Vector2(43.48, -35.25), Vector2(39.76, -23.18), Vector2(40.41, -11.12), Vector2(40.83, 10.36), Vector2(34.12, 31.07), Vector2(32.82, 43.95), Vector2(32.91, 48.99), Vector2(33.71, 54.64), Vector2(32.82, 43.95), Vector2(25.2, 45.25), Vector2(15.24, 46.74), Vector2(2.05, 49.83), Vector2(-9.81, 48.79), Vector2(-16.75, 46), Vector2(-27.38, 39.48), Vector2(-39.61, 33.75), Vector2(-45, 25.45), Vector2(-48.05, 21), Vector2(-46.53, 6.75), Vector2(-44.42, -4.51), Vector2(-40.71, -16.58), Vector2(-33.45, -30.62), Vector2(-34.22, -44), Vector2(-38.16, -51.08), Vector2(-45.47, -58.21), Vector2(-54.89, -62.48), Vector2(-64.67, -75.12), Vector2(-74.38, -91.14), Vector2(-77.62, -106), Vector2(-82.73, -127.43), Vector2(-83.15, -148.91), Vector2(-80.53, -170.3), Vector2(-72.52, -195.5), Vector2(-63.87, -213.01), Vector2(-51.8, -225.77), Vector2(-36.62, -233.4), Vector2(-20.19, -229.71), Vector2(4.31, -221.97), Vector2(21.5, -217.32), Vector2(37.82, -206.89), Vector2(50.43, -192.47), Vector2(62.46, -176.98), Vector2(73.79, -161.77), Vector2(80.55, -140.81), Vector2(83.62, -111.48), Vector2(84.25, -79.26), Vector2(84.87, -47.04), Vector2(83.45, -27.43), Vector2(78.5, -5.85), Vector2(79.22, 15.27)], 40.0)
 	pruefe(gruen and absf(spieler().global_position.y) < 1.5, "Außen um Oberburg und Palas hinab zum Fuß der Rampe (y=%.1f)" % spieler().global_position.y)
+	# Treppen auf die Wehrgänge: jede hinauf und oben hinab auf den Wehrgang
+	var tr: PackedFloat32Array = current_scene.get_node("Drachenstein/Burgen/Mauertreppen").treppen
+	var treppen_ok := 0
+	for k in range(0, tr.size(), 7):
+		var fuss := Vector2(tr[k], tr[k + 1])
+		var oben := Vector2(tr[k + 3], tr[k + 4])
+		var r := (oben - fuss).normalized()
+		await setze(Vector3(fuss.x - r.x * 1.5, tr[k + 2] + 0.4, fuss.y - r.y * 1.5))
+		if await gehe_ueber([fuss, oben, oben + r * 1.3], 25.0, 0.5) and absf(spieler().global_position.y - (tr[k + 5] - 0.62)) < 0.4:
+			treppen_ok += 1
+		else:
+			print("       Treppe %d nicht hinauf (stehe bei %s, Wehrgang %.1f)" % [k / 7, spieler().global_position.snapped(Vector3.ONE * 0.1), tr[k + 5] - 0.62])
+	pruefe(tr.size() >= 70 and treppen_ok * 7 == tr.size(), "Treppen auf die Wehrgänge: %d von %d hinauf" % [treppen_ok, tr.size() / 7])
 	# Vom Marktplatz auf den Westkai und über den Kai bis an den Kanal vor dem Wassertor
 	await setze(Vector3(136, g.hoehe_bei(136, 86) + 0.3, 86))
 	var fels := await gehe_ueber([Vector2(145.69, 79.75), Vector2(149.85, 68.99), Vector2(142, 63.5), Vector2(121, 61.5), Vector2(106, 52.5), Vector2(100, 27.5), Vector2(100, -0.5)], 30.0)

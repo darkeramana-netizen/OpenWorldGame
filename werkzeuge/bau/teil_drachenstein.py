@@ -363,6 +363,83 @@ for liste, boden in [(PD.VORBURG_BAUTEN, PD.H_VORBURG), (PD.BURGHOF2_BAUTEN, PD.
     for bau in liste:
         if bau not in _BEGEHBAR:
             _nh += hausreihe(bau, boden)
+# --- Treppen auf die Wehrgänge: senkrecht zur Mauer, innen im Hof, an freien Stellen zwischen den Hausreihen (oder dort,
+# wo am wenigsten Häuser weichen müssen), nicht an Toren, Türmen, Wegen und begehbaren Bauten. Oben endet die Treppe auf
+# der Höhe der niedrigen Mauer an der Hofseite des Wehrgangs; von dort tritt man hinab auf den Wehrgang.
+def _haus_rechteck(h_, rand=0.6):
+    x_, _, z_, g_, f_ = h_
+    b_, t_ = _FORMEN[f_][0] / 2 + rand, (_FORMEN[f_][1] + 0.7) / 2 + rand
+    a_ = math.radians(g_)
+    ux_, uz_ = math.cos(a_), -math.sin(a_)          # lokal x
+    vx_, vz_ = math.sin(a_), math.cos(a_)           # lokal z
+    return [(x_ + ux_ * sx * b_ + vx_ * sz * t_, z_ + uz_ * sx * b_ + vz_ * sz * t_) for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+
+
+def _im_poly(q, poly):
+    x, z = q; innen = False
+    for (x1, z1), (x2, z2) in zip(poly, poly[1:] + poly[:1]):
+        if (z1 > z) != (z2 > z) and x < x1 + (z - z1) * (x2 - x1) / (z2 - z1):
+            innen = not innen
+    return innen
+
+
+_feste_w = [[W(q) for q in _ecken_plan(b_, 3.0)] for b_ in _BEGEHBAR + [PD.PALAS]]
+_tuerme_w = [W(q) for q in _HOF_TUERME]
+_tore_w = [W(q) for q in PD.TORE.values()]
+_wege_w = [WL(w_) for w_ in PD.BURGWEGE]
+TREPPEN = []
+_weg_haeuser = set()
+for name_, hof_, anzahl_ in [("Vorburg", PD.VORBURG, 2), ("Mittelburg", PD.MITTELBURG, 2), ("Oberburg", PD.OBERBURG, 2),
+                             ("Kernburg", PD.PALAS_HOF, 2), ("Ringmauer", None, 3), ("RingmauerNord", None, 1)]:
+    hof_w_ = WL(hof_) if hof_ else WL(PD.BURGBEZIRK if name_ == "Ringmauer" else PD.STADT)
+    kandidaten_ = []
+    for (_, ax_, az_, bx_, bz_, oben_, dicke_, aussen_) in [m_ for m_ in MAUERSTUECKE if m_[0] == name_]:
+        l_ = math.dist((ax_, az_), (bx_, bz_))
+        if l_ < 8.0:
+            continue
+        ux_, uz_ = (bx_ - ax_) / l_, (bz_ - az_) / l_
+        ix_, iz_ = -aussen_[0], -aussen_[1]          # nach innen
+        for k_ in range(int((l_ - 7.0) / 2.0) + 1):
+            s_ = 3.5 + k_ * 2.0
+            px_, pz_ = ax_ + ux_ * s_, az_ + uz_ * s_
+            top_ = (px_ + ix_ * dicke_ / 2, pz_ + iz_ * dicke_ / 2)
+            fuss_y_ = H(top_[0] + ix_ * 3, top_[1] + iz_ * 3)
+            steig_ = oben_ + 0.62 - fuss_y_
+            if steig_ < 2.0 or steig_ > 12.0:
+                continue
+            lauf_ = steig_ * 1.35
+            fuss_ = (top_[0] + ix_ * lauf_, top_[1] + iz_ * lauf_)
+            # Grundfläche mit Wangen und einem Platz vor dem Fuß
+            ecken_ = [(top_[0] + ux_ * sx * 2.4 + ix_ * t_, top_[1] + uz_ * sx * 2.4 + iz_ * t_) for sx in (-1, 1) for t_ in (0.3, lauf_ + 2.5)]
+            punkte_ = ecken_ + [((ecken_[0][0] + ecken_[3][0]) / 2, (ecken_[0][1] + ecken_[3][1]) / 2), fuss_]
+            if not all(_im_poly(q_, hof_w_) for q_ in punkte_):
+                continue
+            if any(abs(H(*q_) - fuss_y_) > 1.2 for q_ in [fuss_, ecken_[1], ecken_[3]]):
+                continue
+            if any(math.dist(q_, t_) < 7.0 for q_ in punkte_ for t_ in _tuerme_w) or any(math.dist(q_, t_) < 10.0 for q_ in punkte_ for t_ in _tore_w):
+                continue
+            if any(abstand_linie(w_, *q_) < 5.0 for w_ in _wege_w for q_ in punkte_):
+                continue
+            rechteck_ = [ecken_[0], ecken_[1], ecken_[3], ecken_[2]]
+            if any(_ueberlappen_plan(rechteck_, f_) for f_ in _feste_w):
+                continue
+            stoert_ = [i_ for i_, h_ in enumerate(HOFHAEUSER) if _ueberlappen_plan(rechteck_, _haus_rechteck(h_))]
+            kandidaten_.append((len(stoert_), (px_, pz_), [round(fuss_[0], 2), round(fuss_[1], 2), round(fuss_y_, 2),
+                                                          round(top_[0], 2), round(top_[1], 2), round(oben_ + 0.62, 2), 2.4], stoert_))
+    kandidaten_.sort(key=lambda k_: k_[0])
+    gewaehlt_ = []
+    for anz_, p_, t_, stoert_ in kandidaten_:
+        if len(gewaehlt_) >= anzahl_ or anz_ > 3:
+            break
+        if all(math.dist(p_, g_[1]) > 35.0 for g_ in gewaehlt_):
+            gewaehlt_.append((anz_, p_, t_, stoert_))
+    for _, _, t_, stoert_ in gewaehlt_:
+        TREPPEN.extend(t_)
+        _weg_haeuser.update(stoert_)
+    print(f"Mauertreppen {name_}: {len(gewaehlt_)} (Kandidaten {len(kandidaten_)}, weichende Häuser {sum(g_[0] for g_ in gewaehlt_)})")
+HOFHAEUSER = [h_ for i_, h_ in enumerate(HOFHAEUSER) if i_ not in _weg_haeuser]
+N("Mauertreppen", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+treppen = PackedFloat32Array({_zahlen(TREPPEN)})""")
 N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\n"
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _ in HOFHAEUSER) + ")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HOFHAEUSER) + ")")

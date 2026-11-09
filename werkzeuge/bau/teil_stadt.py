@@ -277,6 +277,11 @@ def abstand_vieleck(p, poly):
     return 0.0 if im_vieleck(p, poly) else min(abstand_linie([a, b], *p) for a, b in zip(poly, poly[1:] + poly[:1]))
 
 SPERR = [MARKT, pr(PD.ST_MARIEN, 2.0), pr((PD.ST_MARIEN_TURM, 18, 18, 0)), WL(PD.VORBURG)]   # in der Vorburg keine Bürgerhäuser
+# Die Treppen auf die Wehrgänge (teil_drachenstein.py) bleiben frei
+for k_ in range(0, len(TREPPEN) if "TREPPEN" in globals() else 0, 7):
+    fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
+    l_ = math.dist((fx_, fz_), (tx_, tz_))
+    SPERR.append(rechteck((fx_ + tx_) / 2, (fz_ + tz_) / 2, br_ + 4.0, l_ + 5.0, math.degrees(math.atan2(tx_ - fx_, tz_ - fz_))))
 MAUERN = [WL(SM), WL(PD.RING_NORD), WL(PD.RING_SUED_OST), WL(PD.VORBURG + PD.VORBURG[:1])]
 
 def bauplatz_frei(ecken4, haeuser_ecken, halb):
