@@ -51,6 +51,7 @@ HOF_Y = 14.0              # Oberburg (hier lag früher der Hof aus Akt I, jetzt 
 H_VORBURG = -8.0          # über der Stadt, das Vorburgtor auf Höhe der obersten Gasse
 H_UNTEN = -9.0            # Burgbezirk am Osttor der Vorburg; von dort steigt der Weg an der Mauer zur Rampe
 H_RAMPENFUSS = 0.0
+H_ABSATZ_SUED = 3.0       # Absatz an der Ringmauer im Süden unter der Felswand
 H_BURGHOF2 = 6.0          # Mittelburg
 H_KERNHOF = HOF_Y         # Oberburg
 H_KERNBURG = 16.0         # Palas, fast auf einer Ebene mit der Oberburg
@@ -311,7 +312,10 @@ WEG_OBERBURG_HOEHEN = _steigend(WEG_OBERBURG, {0: H_KERNHOF, _i(WEG_OBERBURG, G3
                                                _i(WEG_OBERBURG, G3.PALAS_TOR): H_KERNBURG, len(WEG_OBERBURG) - 1: H_KERNBURG})
 WEG_DURCHGANG_HOEHEN = [H_KERNHOF] * len(WEG_DURCHGANG)
 WEG_AUSSEN_HOEHEN = _steigend(WEG_AUSSEN, {0: H_BURGHOF2, _i(WEG_AUSSEN, (1036, 196)): H_KERNHOF,
-                                           _i(WEG_AUSSEN, (1612, 565)): H_KERNHOF, len(WEG_AUSSEN) - 1: H_RAMPENFUSS})
+                                           _i(WEG_AUSSEN, (1804, 284)): H_KERNHOF,
+                                           # im Südosten hinab auf den Absatz an der Ringmauer: darüber steht die
+                                           # Felswand unter Palas und Zwinger (wie im Modell des Spielers)
+                                           _i(WEG_AUSSEN, (1707, 499)): H_ABSATZ_SUED, len(WEG_AUSSEN) - 1: H_RAMPENFUSS})
 WEG_PALASZWINGER_HOEHEN = [H_KERNHOF] + [H_ZWINGER_KERNBURG] * (len(WEG_PALASZWINGER) - 1)
 # Die Wege im Burgbezirk und in den Höfen (die Gassen der Stadt stehen in STRASSEN)
 BURGWEGE = [WEG_VORBURG, WEG_BURG, WEG_ZWINGER, WEG_OBERBURG, WEG_DURCHGANG, WEG_AUSSEN, WEG_PALASZWINGER]

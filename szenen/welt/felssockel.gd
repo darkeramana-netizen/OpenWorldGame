@@ -31,6 +31,8 @@ const ABSTAND := 1.6        # so weit steht die Wand oben vor der Mauerlinie (di
 
 var _rauschen := FastNoiseLite.new()
 var _grob := FastNoiseLite.new()
+var _bloecke := FastNoiseLite.new()     # Felsblöcke: je Zelle ein Wert, die Zellen hoch und schmal (Klüfte senkrecht)
+var _klueft := FastNoiseLite.new()      # Abstand zur nächsten Zellgrenze: dort reißt der Fels tief ein
 
 
 func _ready() -> void:
@@ -47,8 +49,17 @@ func _baue() -> void:
 	_rauschen.fractal_octaves = 3
 	_grob.seed = 2718
 	_grob.frequency = 0.06
+	for zelle: FastNoiseLite in [_bloecke, _klueft]:
+		zelle.seed = 4242
+		zelle.noise_type = FastNoiseLite.TYPE_CELLULAR
+		zelle.frequency = 0.22
+		zelle.cellular_jitter = 0.9
+		zelle.fractal_type = FastNoiseLite.FRACTAL_NONE
+	_bloecke.cellular_return_type = FastNoiseLite.RETURN_CELL_VALUE
+	_klueft.cellular_return_type = FastNoiseLite.RETURN_DISTANCE2_SUB
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(0xFFFFFFFF)   # Flächen nicht glätten: kantige Bruchflächen wie gespaltener Fels
 	@warning_ignore("integer_division")
 	var n := saeulen.size() / SCHRITT
 	for k in n - 1:
@@ -123,12 +134,15 @@ func _punkt(i: int, t: float) -> Vector3:
 	var rx := x / m
 	var ry := y / m
 	var rz := z / m
-	# Böschung nach unten, grobe Ausbuchtungen, feine Zerklüftung und Felsbänder mit vorstehenden Absätzen
+	# Böschung nach unten, dann gespaltener Fels: hohe, schmale Blöcke stehen verschieden weit vor, an ihren Grenzen
+	# reißen tiefe senkrechte Klüfte ein; dazu Felsbänder mit vorstehenden Absätzen und eine feine Oberfläche
 	var vor := ABSTAND + tiefe * 0.1
-	vor += (_grob.get_noise_3d(rx, ry * 0.6, rz) + 0.4) * 1.3 * m          # große Ausbuchtungen
-	vor += _rauschen.get_noise_3d(rx, ry * 1.3, rz) * 0.7 * m              # Zerklüftung
-	vor += _rauschen.get_noise_3d(x * 1.1, y * 1.4, z * 1.1) * 0.35        # feine Oberfläche (immer klein)
-	vor -= absf(_rauschen.get_noise_3d(rx * 3.0, ry * 0.25, rz * 3.0)) * 0.9 * m   # senkrechte Risse
+	vor += (_grob.get_noise_3d(rx, ry * 0.6, rz) + 0.4) * 0.6 * m          # große Ausbuchtungen
+	vor += (_bloecke.get_noise_3d(rx, ry * 0.3, rz) + 0.3) * 1.5 * m       # Blöcke
+	var naht := _klueft.get_noise_3d(rx, ry * 0.3, rz)                      # klein an den Zellgrenzen
+	vor -= (1.0 - smoothstep(-0.98, -0.82, naht)) * 1.6 * m                 # tiefe Klüfte zwischen den Blöcken
+	vor += _rauschen.get_noise_3d(x * 1.1, y * 1.4, z * 1.1) * 0.3         # feine Oberfläche (immer klein)
+	vor -= absf(_rauschen.get_noise_3d(rx * 3.0, ry * 0.25, rz * 3.0)) * 0.5 * m   # feine senkrechte Risse
 	vor += _band(rx, ry, rz) * m
 	if t == 0.0:
 		vor = ABSTAND + maxf(0.0, (_grob.get_noise_3d(rx, ry * 0.6, rz) + 0.4) * 1.0)   # oben dicht an der Mauer
