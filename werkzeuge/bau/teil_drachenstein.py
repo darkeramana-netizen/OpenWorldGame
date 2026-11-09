@@ -445,6 +445,148 @@ for name_, hof_, anzahl_ in [("Vorburg", PD.VORBURG, 2), ("Mittelburg", PD.MITTE
 HOFHAEUSER = [h_ for i_, h_ in enumerate(HOFHAEUSER) if i_ not in _weg_haeuser]
 N("Mauertreppen", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 treppen = PackedFloat32Array({_zahlen(TREPPEN)})""")
+# --- Ausstattung der Höfe (szenen/welt/ausstattung.gd): Ziehbrunnen in der Mitte, Fässer, Kisten und Säcke vor den
+# Häusern (neben den Türen), Holzstapel, Karren, Pferdetränke am Stall, Waffenständer am Zeughaus und in der Oberburg,
+# Feuerkörbe mit Licht an den Toren. Nichts steht auf Wegen, vor Türen begehbarer Bauten, an Treppen oder Toren.
+random.seed(1609)
+BURG_AUSSTATTUNG = []            # (Art, x, y, z, Gier)
+BURG_SPERREN = []                # Rechtecke (Welt) der Ausstattung, für die Wege der Burgleute
+BURG_LICHTER = []                # (x, y, z)
+_A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2.6, 2.6), 11: (2.3, 1.5), 12: (2.5, 1.0),
+              13: (1.9, 0.7), 14: (0.7, 0.7)}
+_treppen_w = []
+for k_ in range(0, len(TREPPEN), 7):
+    fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
+    ux_, uz_ = (tx_ - fx_), (tz_ - fz_)
+    l_ = math.hypot(ux_, uz_); ux_, uz_ = ux_ / l_, uz_ / l_
+    _treppen_w.append([(fx_ + ux_ * t_ - uz_ * q_, fz_ + uz_ * t_ + ux_ * q_) for t_, q_ in ((-3.0, -2.6), (l_, -2.6), (l_, 2.6), (-3.0, 2.6))])
+_tueren_w = []
+for b_ in _BEGEHBAR + [PD.PALAS]:
+    (pp_, l_, br_, dr_) = b_
+    a_ = math.radians(dr_)
+    vx_, vy_ = -math.sin(a_), math.cos(a_)
+    _tueren_w.append([W(q) for q in _ecken_plan(((pp_[0] + vx_ * (br_ / 2 + 7), pp_[1] + vy_ * (br_ / 2 + 7)), 16, 14, dr_))])
+_haeuser_w = [_haus_rechteck(h_, 0.3) for h_ in HOFHAEUSER]
+_alle_wege_w = [WL(w_) for w_ in PD.BURGWEGE] + [WL(w_) for w_ in _HOF_WEGE] if "_HOF_WEGE" in globals() else [WL(w_) for w_ in PD.BURGWEGE]
+
+
+def _rechteck_w(x, z, b, t, gier):
+    a_ = math.radians(gier)
+    ux_, uz_, vx_, vz_ = math.cos(a_), -math.sin(a_), math.sin(a_), math.cos(a_)
+    return [(x + ux_ * sx * b / 2 + vx_ * sz * t / 2, z + uz_ * sx * b / 2 + vz_ * sz * t / 2) for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+
+
+def _abstand_rand(q, poly):
+    return min(abstand_linie([a_, b_], *q) for a_, b_ in zip(poly, poly[1:] + poly[:1]))
+
+
+def stelle(art, x, z, gier, hof_w, boden, wegabstand=3.2, licht=False):
+    """Stellt ein Stück auf, wenn der Platz frei ist; gibt zurück, ob es geklappt hat."""
+    b_, t_ = _A_GROESSE[art]
+    r_ = _rechteck_w(x, z, b_ + 0.3, t_ + 0.3, gier)
+    if not all(_im_poly(q_, hof_w) for q_ in r_) or min(_abstand_rand(q_, hof_w) for q_ in r_) < 2.2:
+        return False
+    if any(_ueberlappen_plan(r_, f_) for f_ in _haeuser_w + _feste_w + _treppen_w + _tueren_w + BURG_SPERREN):
+        return False
+    if any(abstand_linie(w_, *q_) < wegabstand for w_ in _alle_wege_w for q_ in r_ + [(x, z)]):
+        return False
+    if any(math.dist((x, z), t_) < 7.0 for t_ in _tore_w) or any(math.dist((x, z), (rx_, rz_)) < rr_ + 1.5 for rx_, rz_, rr_ in _runde_w):
+        return False
+    BURG_AUSSTATTUNG.append((art, round(x, 2), round(boden, 2), round(z, 2), round(gier, 1)))
+    BURG_SPERREN.append(r_)
+    if licht:
+        BURG_LICHTER.append((round(x, 2), round(boden + 2.6, 2), round(z, 2)))
+    return True
+
+
+def _naechste_kante_innen(p, poly):
+    """Richtung entlang und nach innen an der Kante des Vielecks, die p am nächsten liegt."""
+    kanten_ = [i_ for i_ in range(len(poly)) if math.dist(poly[i_], poly[(i_ + 1) % len(poly)]) > 0.01]
+    bester = min(kanten_, key=lambda i_: abstand_linie([poly[i_], poly[(i_ + 1) % len(poly)]], *p))
+    (ax_, az_), (bx_, bz_) = poly[bester], poly[(bester + 1) % len(poly)]
+    l_ = math.hypot(bx_ - ax_, bz_ - az_)
+    ux_, uz_ = (bx_ - ax_) / l_, (bz_ - az_) / l_
+    mx_, mz_ = sum(q[0] for q in poly) / len(poly), sum(q[1] for q in poly) / len(poly)
+    nx_, nz_ = -uz_, ux_
+    if nx_ * (mx_ - p[0]) + nz_ * (mz_ - p[1]) < 0:
+        nx_, nz_ = -nx_, -nz_
+    return (ux_, uz_), (nx_, nz_)
+
+
+BURG_BRUNNEN = {}
+_hoefe = [("Vorburg", PD.VORBURG, PD.H_VORBURG), ("Mittelburg", PD.MITTELBURG, PD.H_BURGHOF2),
+          ("Oberburg", PD.OBERBURG, PD.H_KERNHOF), ("Palas", PD.PALAS_HOF, PD.H_KERNBURG)]
+for name_, hof_, boden_ in _hoefe:
+    hof_w_ = WL(hof_)
+    mx_, mz_ = sum(q[0] for q in hof_w_) / len(hof_w_), sum(q[1] for q in hof_w_) / len(hof_w_)
+    # Ziehbrunnen: möglichst nahe der Mitte
+    for k_ in range(400):
+        w_, r_ = k_ * 2.4, 0.6 * math.sqrt(k_)
+        x_, z_ = mx_ + r_ * math.cos(w_), mz_ + r_ * math.sin(w_)
+        if stelle(10, x_, z_, random.uniform(0, 90), hof_w_, boden_, wegabstand=4.0):
+            BURG_BRUNNEN[name_] = (x_, z_)
+            break
+    # Feuerkörbe zu beiden Seiten jedes Tors, innen im Hof
+    for tor_ in PD.TORE.values():
+        tw_ = W(tor_)
+        if not _im_poly(tw_, hof_w_) and _abstand_rand(tw_, hof_w_) > 3.0:
+            continue
+        (ux_, uz_), (nx_, nz_) = _naechste_kante_innen(tw_, hof_w_)
+        for s_ in (-1, 1):
+            for q_ in (4.5, 5.5, 6.5):
+                x_, z_ = tw_[0] + nx_ * q_ + ux_ * s_ * 4.2, tw_[1] + nz_ * q_ + uz_ * s_ * 4.2
+                _alt = list(_tore_w)
+                _tore_w.clear()                          # Feuerkörbe gehören ans Tor
+                ok_ = stelle(14, x_, z_, 0, hof_w_, boden_, wegabstand=1.6, licht=True)
+                _tore_w.extend(_alt)
+                if ok_:
+                    break
+    # Gruppen von Fässern, Kisten und Säcken neben den Türen der Häuser, dazu Holzstapel und Karren
+    haeuser_ = [h_ for h_ in HOFHAEUSER if _im_poly((h_[0], h_[2]), hof_w_)]
+    random.shuffle(haeuser_)
+    stapel_, karren_ = 0, 0
+    for x_, _, z_, g_, f_ in haeuser_:
+        b_, t_ = _FORMEN[f_]
+        a_ = math.radians(g_)
+        vx_, vz_ = math.sin(a_), math.cos(a_)            # Vorderseite (lokal +z)
+        ux_, uz_ = math.cos(a_), -math.sin(a_)
+        vor_ = (t_ + 0.7) / 2
+        zufall_ = random.random()
+        if zufall_ < 0.12 and stapel_ < 2:
+            if stelle(11, x_ + vx_ * (vor_ + 1.7), z_ + vz_ * (vor_ + 1.7), g_, hof_w_, boden_):
+                stapel_ += 1
+            continue
+        if zufall_ < 0.2 and karren_ < 1:
+            if stelle(4, x_ + vx_ * (vor_ + 2.2) + ux_ * b_ * 0.3, z_ + vz_ * (vor_ + 2.2) + uz_ * b_ * 0.3, g_ + 90 + random.uniform(-20, 20), hof_w_, boden_):
+                karren_ += 1
+            continue
+        if zufall_ > 0.7:
+            continue
+        seite_ = random.choice((-1, 1))
+        for k_ in range(random.randint(2, 4)):
+            art_ = random.choice((0, 0, 1, 1, 2))
+            q_ = b_ / 2 - 0.6 - k_ * 0.85
+            if q_ < 1.0:
+                break
+            stelle(art_, x_ + vx_ * (vor_ + 1.1) + ux_ * seite_ * q_, z_ + vz_ * (vor_ + 1.1) + uz_ * seite_ * q_,
+                   random.uniform(0, 360), hof_w_, boden_, wegabstand=2.6)
+# Pferdetränke und Karren vor dem Stall der Vorburg, Waffenständer vor dem Zeughaus und in der Oberburg
+for bau_, art_, boden_, hof_ in [(PD.VORBURG_BAUTEN[6], 12, PD.H_VORBURG, PD.VORBURG), (PD.ZEUGHAUS, 13, PD.H_KERNBURG, PD.PALAS_HOF),
+                                 (PD.BURGHOF3_BAUTEN[0], 13, PD.H_KERNHOF, PD.OBERBURG)]:
+    (pp_, l_, br_, dr_) = bau_
+    a_ = math.radians(dr_)
+    vx_, vy_ = -math.sin(a_), math.cos(a_)
+    ux_, uy_ = math.cos(a_), math.sin(a_)
+    for q_ in (0.3, -0.3, 0.42, -0.42):
+        x_, z_ = W((pp_[0] + vx_ * (br_ / 2 + 5) + ux_ * l_ * q_, pp_[1] + vy_ * (br_ / 2 + 5) + uy_ * l_ * q_))
+        _tue = list(_tueren_w)
+        _tueren_w.clear()
+        ok_ = stelle(art_, x_, z_, -dr_ + 90, WL(hof_), boden_, wegabstand=2.6)
+        _tueren_w.extend(_tue)
+        if ok_:
+            break
+print("Ausstattung der Höfe:", len(BURG_AUSSTATTUNG), "Stücke, davon", sum(1 for a_ in BURG_AUSSTATTUNG if a_[0] == 14), "Feuerkörbe;",
+      "Brunnen in", sorted(BURG_BRUNNEN))
 N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\n"
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _ in HOFHAEUSER) + ")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HOFHAEUSER) + ")")
@@ -470,4 +612,8 @@ kollision = false""")
 
 # --- Stadt und Hafen ---
 teil("teil_stadt.py")
+N("BurgAusstattung", "Node3D", BG, "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
+  + ", ".join(f"{v:.5g}" for st_ in BURG_AUSSTATTUNG for v in st_) + ")")
+for k_, (x_, y_, z_) in enumerate(BURG_LICHTER):
+    licht(f"BurgFeuer{k_}", BG, x_, y_, z_, 11.0)
 zinnen_schreiben(DS)

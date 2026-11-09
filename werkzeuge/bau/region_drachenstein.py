@@ -155,6 +155,7 @@ pferd("PferdReiterin", "Personen", round(REITERIN[0] - 3.5, 2), round(H(REITERIN
 _grete = W((483, 496))
 person("Haendlerin", "Personen/PersonenAmBoden", _grete[0], 0, _grete[1], "Händlerin Grete Lohm", "haendlerin", 0, "0.45, 0.3, 0.2, 1", sichtbar_wenn="alarm<2")
 teil("teil_stadtleben.py")
+teil("teil_burgleben.py")   # Wachen auf den Mauern und an den Toren, Gesinde in den Höfen
 
 
 # ---------- Sprungpunkte (Entwicklermenü, F10) ----------

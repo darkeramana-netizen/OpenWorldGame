@@ -1,0 +1,26 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Halt. Wer in die Burg will, zeigt sein Zeichen. Ah, Orden. Geh durch.",
+				"Durchgang frei. Halt dich rechts, die Karren kommen von oben.",
+				{
+					"text": "Wächter {name}. Alles ruhig am Tor.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm. Das Tor bleibt zu, bis der Komtur etwas anderes sagt.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Nachts lässt du hier niemanden durch, den du nicht kennst. Merk dir das.",
+					"bedingung": "abschnitt=nacht"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Weiter. Du hältst den Durchgang auf."
+		}
+	}
+}

@@ -116,7 +116,7 @@ func _initialize() -> void:
 	# Orte
 	# Die Stadtleute gehen dieselben Wege; damit keiner dem Testläufer im Weg steht, sind sie hier durchlässig
 	# (ihre Wege prüft test_leben.gd).
-	for p in current_scene.get_node("Personen/Stadtleben").get_children():
+	for p in current_scene.get_node("Personen/Stadtleben").get_children() + current_scene.get_node("Personen/Burgleben").get_children():
 		if p is CollisionObject3D:
 			p.collision_layer = 0
 	# Wege der Burgfeste nach dem Grundriss (docs/bilder/grundriss-drachenstein-3.webp, die Wege hat der Spieler

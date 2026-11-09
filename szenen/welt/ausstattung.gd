@@ -6,7 +6,8 @@ extends Node3D
 
 ## Je Stück 5 Werte: Art, x, y (Boden), z, Gier in Grad. Arten: 0 Fass, 1 Kiste, 2 Säcke, 3 Marktstand, 4 Karren,
 ## 5 Kogge im Hafen (Segel gerefft), 6 Kogge unter vollem Segel, 7 Ruderboot (y ist bei Schiffen die Wasserlinie, der
-## Bug zeigt nach lokal -z), 8 Tretradkran (der Ausleger zeigt nach lokal -z)
+## Bug zeigt nach lokal -z), 8 Tretradkran (der Ausleger zeigt nach lokal -z), 9 Prahm,
+## 10 Ziehbrunnen mit Dach, 11 Holzstapel, 12 Pferdetränke, 13 Waffenständer mit Spießen, 14 Feuerkorb auf einem Pfahl
 @export var stuecke := PackedFloat32Array():
 	set(w):
 		stuecke = w
@@ -16,7 +17,8 @@ extends Node3D
 ## Ausdehnung der Kollisionsbox je Art (halbe Breite, Höhe, halbe Tiefe)
 const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0.6, 0.6, 0.45), Vector3(1.6, 2.6, 1.1),
 	Vector3(0.8, 1.0, 1.5), Vector3(2.6, 3.4, 9.0), Vector3(2.6, 3.4, 9.0), Vector3(0.9, 1.4, 2.6), Vector3(1.6, 9.0, 1.6),
-	Vector3(2.1, 2.2, 6.2)]
+	Vector3(2.1, 2.2, 6.2), Vector3(1.25, 3.4, 1.25), Vector3(1.1, 1.1, 0.7), Vector3(1.2, 0.8, 0.45), Vector3(0.9, 2.3, 0.3),
+	Vector3(0.3, 2.3, 0.3)]
 ## Wasserfahrzeuge: die Kollisionsbox reicht unter die Wasserlinie
 const TIEFGANG := {5: 1.6, 6: 1.6, 7: 0.5, 9: 0.8}
 ## Farben der Markisen
@@ -189,6 +191,47 @@ func _mesh(art: int) -> ArrayMesh:
 			_tretradkran()
 		9:
 			_prahm()
+		10:  # Ziehbrunnen: Steinkranz, zwei Pfosten, Welle mit Kurbel, Satteldach, Eimer
+			_zylinder("stein", Vector3.ZERO, 1.15, 1.15, 0.9, 16)
+			_zylinder("wasser", Vector3(0, 0.9, 0), 0.88, 0.88, 0.03, 16)
+			for s: float in [-1.0, 1.0]:
+				_klotz("holz_dunkel", Vector3(s * 1.0 - 0.08, 0.9, -0.08), Vector3(s * 1.0 + 0.08, 2.6, 0.08))
+			_zylinder("holz", Vector3(-1.05, 2.1, 0), 0.08, 0.08, 2.1, 8, Basis(Vector3.FORWARD, PI / 2.0))
+			_klotz("holz_dunkel", Vector3(1.05, 1.8, -0.03), Vector3(1.12, 2.15, 0.03))
+			for s: float in [-1.0, 1.0]:
+				_viereck("dach", Vector3(-1.25, 2.6, s * 0.95), Vector3(1.25, 2.6, s * 0.95), Vector3(1.25, 3.3, 0), Vector3(-1.25, 3.3, 0), Vector3(0, 0.8, s * 0.6))
+				_viereck("dach", Vector3(-1.25, 2.6, s * 0.95), Vector3(1.25, 2.6, s * 0.95), Vector3(1.25, 3.3, 0), Vector3(-1.25, 3.3, 0), Vector3(0, -0.8, -s * 0.6))
+			_zylinder("holz", Vector3(0.0, 1.3, 0), 0.16, 0.19, 0.3, 10)
+		11:  # Holzstapel: drei Lagen Scheite quer, an den Enden Pflöcke
+			for lage in 4:
+				for k in 5 - lage % 2:
+					var z := -0.5 + k * 0.25 + (0.12 if lage % 2 == 1 else 0.0)
+					_zylinder("holz", Vector3(-1.0, 0.13 + lage * 0.24, z), 0.12, 0.12, 2.0, 7, Basis(Vector3.FORWARD, PI / 2.0))
+			for s: float in [-1.0, 1.0]:
+				for z: float in [-0.65, 0.65]:
+					_klotz("holz_dunkel", Vector3(s * 1.05 - 0.05, 0, z - 0.05), Vector3(s * 1.05 + 0.05, 1.05, z + 0.05))
+		12:  # Pferdetränke: Steintrog mit Wasser
+			_klotz("stein", Vector3(-1.2, 0, -0.45), Vector3(1.2, 0.75, -0.33))
+			_klotz("stein", Vector3(-1.2, 0, 0.33), Vector3(1.2, 0.75, 0.45))
+			_klotz("stein", Vector3(-1.2, 0, -0.33), Vector3(-1.08, 0.75, 0.33))
+			_klotz("stein", Vector3(1.08, 0, -0.33), Vector3(1.2, 0.75, 0.33))
+			_klotz("stein", Vector3(-1.08, 0, -0.33), Vector3(1.08, 0.2, 0.33))
+			_klotz("wasser", Vector3(-1.08, 0.2, -0.33), Vector3(1.08, 0.62, 0.33))
+		13:  # Waffenständer: Gestell mit fünf Spießen und zwei Schilden
+			for s: float in [-1.0, 1.0]:
+				_klotz("holz_dunkel", Vector3(s * 0.85 - 0.05, 0, -0.25), Vector3(s * 0.85 + 0.05, 1.3, 0.25))
+			_klotz("holz", Vector3(-0.9, 1.0, -0.05), Vector3(0.9, 1.08, 0.05))
+			_klotz("holz", Vector3(-0.9, 0.3, -0.25), Vector3(0.9, 0.38, 0.25))
+			for k in 5:
+				var x := -0.6 + k * 0.3
+				_zylinder("holz_dunkel", Vector3(x, 0.32, -0.12), 0.025, 0.025, 1.9, 6)
+				_zylinder("metall", Vector3(x, 2.2, -0.12), 0.0, 0.05, 0.2, 6)
+			for s: float in [-1.0, 1.0]:
+				_zylinder("wimpel", Vector3(s * 0.45, 0.62, 0.12), 0.32, 0.32, 0.05, 12, Basis(Vector3.RIGHT, PI / 2.0))
+		14:  # Feuerkorb auf einem Pfahl, darin Glut
+			_klotz("holz_dunkel", Vector3(-0.07, 0, -0.07), Vector3(0.07, 1.9, 0.07))
+			_zylinder("metall", Vector3(0, 1.9, 0), 0.18, 0.32, 0.35, 10)
+			_zylinder("glut", Vector3(0, 2.05, 0), 0.26, 0.24, 0.24, 10)
 	var mesh := ArrayMesh.new()
 	for mat: String in _f:
 		var st: SurfaceTool = _f[mat]
@@ -354,7 +397,13 @@ func _material(name_: String) -> Material:
 		_:
 			var s := StandardMaterial3D.new()
 			s.roughness = 0.9
-			if not name_ in ["holz_dunkel", "korb", "rumpf_teer", "deck"]:
+			if name_ == "stein":
+				s.albedo_texture = load("res://texturen/klippe_farbe.jpg")
+				s.uv1_triplanar = true
+				s.uv1_scale = Vector3(0.5, 0.5, 0.5)
+			elif name_ in ["glut", "wasser"]:
+				pass
+			elif not name_ in ["holz_dunkel", "korb", "rumpf_teer", "deck"]:
 				s.albedo_texture = load("res://texturen/stoff_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(3, 3, 3)
@@ -362,7 +411,15 @@ func _material(name_: String) -> Material:
 				s.albedo_texture = load("res://texturen/holz_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(0.6, 0.6, 0.6)
-			s.albedo_color = {"holz_dunkel": Color(0.45, 0.36, 0.3), "korb": Color(0.85, 0.68, 0.42),
+			if name_ == "glut":
+				s.emission_enabled = true
+				s.emission = Color(1.0, 0.55, 0.2)
+				s.emission_energy_multiplier = 3.0
+			if name_ == "wasser":
+				s.roughness = 0.1
+				s.metallic = 0.3
+			s.albedo_color = {"holz_dunkel": Color(0.45, 0.36, 0.3), "glut": Color(1.0, 0.5, 0.15), "wasser": Color(0.18, 0.28, 0.3),
+				"stein": Color(0.62, 0.58, 0.52), "dach": Color(0.45, 0.25, 0.18), "korb": Color(0.85, 0.68, 0.42),
 				"rumpf_teer": Color(0.22, 0.17, 0.13), "deck": Color(0.8, 0.68, 0.52), "segel": Color(0.9, 0.85, 0.72),
 				"sack": Color(0.85, 0.76, 0.58), "markise_a": STOFFE[0], "markise_b": STOFFE[1],
 				"ware_rot": Color(0.75, 0.18, 0.1), "ware_gruen": Color(0.3, 0.5, 0.15),

@@ -1,0 +1,22 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Friede sei mit dir. Die Drachenkapelle steht jedem offen, der Stille sucht.",
+				"Hier liegen die ersten Komture begraben. Tritt leise auf.",
+				{
+					"text": "Wächter {name}. Ich bete für die, die auf den Mauern stehen.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Wenn die Glocken läuten, geh auf deinen Posten. Beten kann ich für uns beide.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Geh mit Gott, und mit wachem Blick."
+		}
+	}
+}

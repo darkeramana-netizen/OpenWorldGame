@@ -228,6 +228,17 @@ func _initialize() -> void:
 				mit_ablauf += 1
 	pruefe(current_scene.get_node("Personen/Stadtleben").get_child_count() >= 30, "Mindestens 30 Stadtleute in Drachenstein")
 	pruefe(personen >= 50, "Mindestens 50 Personen in der Region (sind %d)" % personen)
+	# Leben in der Burg: Wachen auf den Wehrgängen (über ihre Treppen hinauf), Torwachen, Gesinde
+	var burg := current_scene.get_node("Personen/Burgleben")
+	var auf_mauer := 0
+	var wachen := 0
+	for p in burg.get_children():
+		if String(p.name).begins_with("Wehrgangwache"):
+			wachen += 1
+			if p.global_position.y > current_scene.get_node("Gelaende").hoehe_bei(p.global_position.x, p.global_position.z) + 3.0:
+				auf_mauer += 1
+	pruefe(burg.get_child_count() >= 20 and wachen >= 8 and auf_mauer == wachen,
+			"Leben in der Burg: %d Personen, %d von %d Wachen oben auf den Wehrgängen" % [burg.get_child_count(), auf_mauer, wachen])
 	pruefe(mit_ablauf >= 25, "Mindestens 25 davon mit Tagesablauf (sind %d)" % mit_ablauf)
 
 	# --- Vormittag: Bürger auf dem Markt, Händler am Stand, Kinder um den Brunnen ---

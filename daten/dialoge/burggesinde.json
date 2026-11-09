@@ -1,0 +1,23 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Viel zu tun heute, Wächter. Der Brunnen leert sich nicht von allein.",
+				"Holz, Wasser, Hafer für die Pferde. Und morgen wieder von vorn.",
+				"Ihr vom Orden habt es gut, ihr müsst wenigstens nicht schleppen.",
+				{
+					"text": "Wächter {name}. Wenn Ihr was braucht, sagt es dem Haushofmeister, nicht mir.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm? Dann trag ich das hier lieber schnell hinein.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Ich muss weiter, sonst schimpft der Haushofmeister."
+		}
+	}
+}

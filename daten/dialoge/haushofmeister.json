@@ -1,0 +1,22 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Der Palas ist kein Marktplatz. Was willst du?",
+				"Küche, Keller, Stall, Zeughaus: Alles hier läuft über meine Bücher.",
+				{
+					"text": "Wächter {name}. Wenn der Komtur nach dir schickt, findest du ihn im Saal.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm. Ich lasse das Zeughaus öffnen. Holt euch, was ihr braucht.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Und jetzt lass mich arbeiten."
+		}
+	}
+}
