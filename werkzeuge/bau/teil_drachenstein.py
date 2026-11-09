@@ -452,6 +452,8 @@ random.seed(1609)
 BURG_AUSSTATTUNG = []            # (Art, x, y, z, Gier)
 BURG_SPERREN = []                # Rechtecke (Welt) der Ausstattung, für die Wege der Burgleute
 BURG_LICHTER = []                # (x, y, z)
+LAGERPLAETZE = []                # (x, z, nach innen x, z, Boden, Hof): dort arbeitet jemand
+_GRUND = {}
 _A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2.6, 2.6), 11: (2.3, 1.5), 12: (2.5, 1.0),
               13: (1.9, 0.7), 14: (0.7, 0.7)}
 _treppen_w = []
@@ -485,12 +487,17 @@ def stelle(art, x, z, gier, hof_w, boden, wegabstand=3.2, licht=False):
     b_, t_ = _A_GROESSE[art]
     r_ = _rechteck_w(x, z, b_ + 0.3, t_ + 0.3, gier)
     if not all(_im_poly(q_, hof_w) for q_ in r_) or min(_abstand_rand(q_, hof_w) for q_ in r_) < 2.2:
+        _GRUND["rand"] = _GRUND.get("rand", 0) + 1
         return False
-    if any(_ueberlappen_plan(r_, f_) for f_ in _haeuser_w + _feste_w + _treppen_w + _tueren_w + BURG_SPERREN):
-        return False
+    for n_, l_ in (("haus", _haeuser_w), ("bau", _feste_w), ("treppe", _treppen_w), ("tuer", _tueren_w), ("stueck", BURG_SPERREN)):
+        if any(_ueberlappen_plan(r_, f_) for f_ in l_):
+            _GRUND[n_] = _GRUND.get(n_, 0) + 1
+            return False
     if any(abstand_linie(w_, *q_) < wegabstand for w_ in _alle_wege_w for q_ in r_ + [(x, z)]):
+        _GRUND["weg"] = _GRUND.get("weg", 0) + 1
         return False
     if any(math.dist((x, z), t_) < 7.0 for t_ in _tore_w) or any(math.dist((x, z), (rx_, rz_)) < rr_ + 1.5 for rx_, rz_, rr_ in _runde_w):
+        _GRUND["turm"] = _GRUND.get("turm", 0) + 1
         return False
     BURG_AUSSTATTUNG.append((art, round(x, 2), round(boden, 2), round(z, 2), round(gier, 1)))
     BURG_SPERREN.append(r_)
@@ -560,16 +567,41 @@ for name_, hof_, boden_ in _hoefe:
             if stelle(4, x_ + vx_ * (vor_ + 2.2) + ux_ * b_ * 0.3, z_ + vz_ * (vor_ + 2.2) + uz_ * b_ * 0.3, g_ + 90 + random.uniform(-20, 20), hof_w_, boden_):
                 karren_ += 1
             continue
-        if zufall_ > 0.7:
+        for seite_ in ((-1, 1) if random.random() < 0.6 else (random.choice((-1, 1)),)):
+            for k_ in range(random.randint(2, 4)):
+                art_ = random.choice((0, 0, 1, 1, 2))
+                q_ = b_ / 2 - 0.6 - k_ * 0.85
+                if q_ < 1.0:
+                    break
+                stelle(art_, x_ + vx_ * (vor_ + 1.1) + ux_ * seite_ * q_, z_ + vz_ * (vor_ + 1.1) + uz_ * seite_ * q_,
+                       random.uniform(0, 360), hof_w_, boden_, wegabstand=2.4)
+    # Lagerplätze an der Hofmauer, wo kein Haus steht: Fässer, Kisten, Säcke in Gruppen, dazu Holzstapel
+    kante_ = hof_w_ + hof_w_[:1]
+    for a_, b_ in zip(kante_, kante_[1:]):
+        l_ = math.dist(a_, b_)
+        if l_ < 4.0:
             continue
-        seite_ = random.choice((-1, 1))
-        for k_ in range(random.randint(2, 4)):
-            art_ = random.choice((0, 0, 1, 1, 2))
-            q_ = b_ / 2 - 0.6 - k_ * 0.85
-            if q_ < 1.0:
-                break
-            stelle(art_, x_ + vx_ * (vor_ + 1.1) + ux_ * seite_ * q_, z_ + vz_ * (vor_ + 1.1) + uz_ * seite_ * q_,
-                   random.uniform(0, 360), hof_w_, boden_, wegabstand=2.6)
+        ux_, uz_ = (b_[0] - a_[0]) / l_, (b_[1] - a_[1]) / l_
+        nx_, nz_ = -uz_, ux_
+        if nx_ * (mx_ - a_[0]) + nz_ * (mz_ - a_[1]) < 0:
+            nx_, nz_ = -nx_, -nz_
+        gier_ = math.degrees(math.atan2(ux_, uz_)) + 90
+        t_ = 3.0
+        while t_ < l_ - 3.0:
+            px_, pz_ = a_[0] + ux_ * t_ + nx_ * 3.6, a_[1] + uz_ * t_ + nz_ * 3.6
+            wahl_ = random.random()
+            if wahl_ < 0.25:
+                if stelle(11, px_, pz_, gier_, hof_w_, boden_, wegabstand=2.4):
+                    LAGERPLAETZE.append((px_, pz_, nx_, nz_, boden_, name_))
+            elif wahl_ < 0.7:
+                gesetzt_ = 0
+                for k_ in range(random.randint(3, 5)):
+                    q_ = (k_ - 2) * 0.9
+                    gesetzt_ += stelle(random.choice((0, 0, 1, 1, 2)), px_ + ux_ * q_ + nx_ * random.uniform(-0.3, 0.6),
+                                       pz_ + uz_ * q_ + nz_ * random.uniform(-0.3, 0.6), random.uniform(0, 360), hof_w_, boden_, wegabstand=2.4)
+                if gesetzt_ >= 2:
+                    LAGERPLAETZE.append((px_, pz_, nx_, nz_, boden_, name_))
+            t_ += random.uniform(5.0, 9.0)
 # Pferdetränke und Karren vor dem Stall der Vorburg, Waffenständer vor dem Zeughaus und in der Oberburg
 for bau_, art_, boden_, hof_ in [(PD.VORBURG_BAUTEN[6], 12, PD.H_VORBURG, PD.VORBURG), (PD.ZEUGHAUS, 13, PD.H_KERNBURG, PD.PALAS_HOF),
                                  (PD.BURGHOF3_BAUTEN[0], 13, PD.H_KERNHOF, PD.OBERBURG)]:
@@ -586,7 +618,7 @@ for bau_, art_, boden_, hof_ in [(PD.VORBURG_BAUTEN[6], 12, PD.H_VORBURG, PD.VOR
         if ok_:
             break
 print("Ausstattung der Höfe:", len(BURG_AUSSTATTUNG), "Stücke, davon", sum(1 for a_ in BURG_AUSSTATTUNG if a_[0] == 14), "Feuerkörbe;",
-      "Brunnen in", sorted(BURG_BRUNNEN))
+      "Brunnen in", sorted(BURG_BRUNNEN), "abgelehnt:", _GRUND)
 N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\n"
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _ in HOFHAEUSER) + ")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HOFHAEUSER) + ")")

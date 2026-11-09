@@ -104,7 +104,7 @@ for name_, hof_, boden_ in _hoefe:
         if not any(_drin(t_, r_) for r_ in _HINDERNISSE) and strecke_frei(t_, um_brunnen_):
             tueren_.append((t_, um_brunnen_))
     random.shuffle(tueren_)
-    for i_ in range(min(3 if name_ == "Vorburg" else 2, len(tueren_) // 2)):
+    for i_ in range(min(4, len(tueren_) // 2)):
         (heim_, b1_), (arbeit_, b2_) = tueren_[2 * i_], tueren_[2 * i_ + 1]
         if not strecke_frei(b1_, b2_):
             continue
@@ -114,6 +114,25 @@ for name_, hof_, boden_ in _hoefe:
                ablauf={"morgengrauen": (p3(runde_, boden_), ["runde"]),
                        "stille_stunde": (p3([heim_], boden_), ["weg"])})
         _gs += 1
+
+# --- An den Lagerplätzen arbeitet jemand: zählt Fässer, stapelt Holz (steht davor, Blick zur Mauer) ---
+ARBEIT_NAMEN = ["Knecht Edgar Strunk", "Magd Liesel Garbe", "Knecht Thies Moor", "Magd Hanna Seil", "Knecht Fiete Rumpf",
+                "Magd Kaja Spindel", "Knecht Wido Last", "Magd Berit Kamm"]
+_ar = 0
+for hofname_ in ("Vorburg", "Mittelburg", "Oberburg", "Palas"):
+    plaetze_ = [l_ for l_ in LAGERPLAETZE if l_[5] == hofname_]
+    random.shuffle(plaetze_)
+    for px_, pz_, nx_, nz_, boden_, _ in plaetze_[:2]:
+        for q_ in (2.0, 2.5, 3.0, 3.5):
+            x_, z_ = px_ + nx_ * q_, pz_ + nz_ * q_
+            if not any(_drin((x_, z_), r_) for r_ in _HINDERNISSE):
+                break
+        else:
+            continue
+        person(f"Arbeit{_ar}", BL, round(x_, 2), boden_, round(z_, 2), ARBEIT_NAMEN[_ar % len(ARBEIT_NAMEN)], "burggesinde", 0,
+               GESINDE_TRACHTEN[(_ar + 2) % 4], gier=round(math.degrees(math.atan2(-nx_, -nz_)), 1), sichtbar_wenn="alarm<3")
+        _ar += 1
+print("Burgleben: an den Lagerplätzen", _ar)
 
 # --- Kaplan vor der Drachenkapelle, Haushofmeister vor dem Palas, Stallknecht an der Tränke ---
 for bau_, name_, anzeige_, dialog_, tracht_, boden_ in [
