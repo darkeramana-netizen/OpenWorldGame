@@ -13,6 +13,8 @@ extends Node3D
 @export var raster := 1.0
 @export var kachel := 32
 @export var kollision := true
+## Stellen ohne Fels (x, z, Radius), z. B. an den Treppen auf die Mauern
+@export var frei := PackedVector3Array()
 
 var _g: Node
 var _maske: Image
@@ -79,6 +81,9 @@ func _gewicht(x: float, z: float) -> float:
 	# An Löchern im Gelände (Gang zum Untergrundhafen) bleibt der Fels weg, sonst spannt er sich über die Öffnung
 	if _g.am_loch(x, z, 4.0):
 		return 0.0
+	for f in frei:
+		if Vector2(x - f.x, z - f.y).length() < f.z:
+			return 0.0
 	return fels * (1.0 - smoothstep(0.08, 0.35, c.r))
 
 

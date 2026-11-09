@@ -144,7 +144,7 @@ func _initialize() -> void:
 		var oben := Vector2(tr[k + 3], tr[k + 4])
 		var r := (oben - fuss).normalized()
 		await setze(Vector3(fuss.x - r.x * 1.5, tr[k + 2] + 0.4, fuss.y - r.y * 1.5))
-		if await gehe_ueber([fuss, oben, oben + r * 1.3], 25.0, 0.5) and absf(spieler().global_position.y - (tr[k + 5] - 0.62)) < 0.4:
+		if await gehe_ueber([fuss, oben, oben + r * 1.3], 25.0, 0.5) and spieler().global_position.y > tr[k + 5] - 0.95 and spieler().global_position.y < tr[k + 5] + 0.3:   # oben auf dem Wehrgang
 			treppen_ok += 1
 		else:
 			print("       Treppe %d nicht hinauf (stehe bei %s, Wehrgang %.1f)" % [k / 7, spieler().global_position.snapped(Vector3.ONE * 0.1), tr[k + 5] - 0.62])

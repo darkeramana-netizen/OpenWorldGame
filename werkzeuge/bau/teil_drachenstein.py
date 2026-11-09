@@ -383,8 +383,11 @@ def _im_poly(q, poly):
     return innen
 
 
-_feste_w = [[W(q) for q in _ecken_plan(b_, 3.0)] for b_ in _BEGEHBAR + [PD.PALAS]]
+_feste_w = [[W(q) for q in _ecken_plan(b_, 3.0)] for b_ in _BEGEHBAR + [PD.PALAS, PD.PALAS_ECKBAU,
+            (PD.BERGFRIED_KERNBURG, PD.BERGFRIED_SEITE / M, PD.BERGFRIED_SEITE / M, PD.BERGFRIED_DREH)]]
 _tuerme_w = [W(q) for q in _HOF_TUERME]
+# Rundtürme mit ihrem Radius (die Bastionen der Ringmauer sind bis 10 m dick)
+_runde_w = [(l_[i_], l_[i_ + 1], l_[i_ + 4]) for l_ in (_tuerme, _vt, _mt, _ot, _zt) for i_ in range(0, len(l_), 7)]
 _tore_w = [W(q) for q in PD.TORE.values()]
 _wege_w = [WL(w_) for w_ in PD.BURGWEGE]
 TREPPEN = []
@@ -407,7 +410,7 @@ for name_, hof_, anzahl_ in [("Vorburg", PD.VORBURG, 2), ("Mittelburg", PD.MITTE
             steig_ = oben_ + 0.62 - fuss_y_
             if steig_ < 2.0 or steig_ > 12.0:
                 continue
-            lauf_ = steig_ * 1.35
+            lauf_ = steig_ * 1.6          # gut 32°
             fuss_ = (top_[0] + ix_ * lauf_, top_[1] + iz_ * lauf_)
             # Grundfläche mit Wangen und einem Platz vor dem Fuß
             ecken_ = [(top_[0] + ux_ * sx * 2.4 + ix_ * t_, top_[1] + uz_ * sx * 2.4 + iz_ * t_) for sx in (-1, 1) for t_ in (0.3, lauf_ + 2.5)]
@@ -415,6 +418,8 @@ for name_, hof_, anzahl_ in [("Vorburg", PD.VORBURG, 2), ("Mittelburg", PD.MITTE
             if not all(_im_poly(q_, hof_w_) for q_ in punkte_):
                 continue
             if any(abs(H(*q_) - fuss_y_) > 1.2 for q_ in [fuss_, ecken_[1], ecken_[3]]):
+                continue
+            if any(math.dist(q_, (rx_, rz_)) < rr_ + 4.0 for q_ in punkte_ for rx_, rz_, rr_ in _runde_w):
                 continue
             if any(math.dist(q_, t_) < 7.0 for q_ in punkte_ for t_ in _tuerme_w) or any(math.dist(q_, t_) < 10.0 for q_ in punkte_ for t_ in _tore_w):
                 continue

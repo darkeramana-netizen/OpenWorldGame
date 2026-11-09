@@ -359,10 +359,16 @@ E("Script", "res://szenen/welt/felsmassiv.gd", "33_felsmassiv")
 E("Material", "res://material/felsmassiv.tres", "34_felsmassiv_mat")
 _rx = [q[0] for q in _ring_flaeche]
 _rz = [q[1] for q in _ring_flaeche]
+_frei_fels = []
+for k_ in range(0, len(TREPPEN) if "TREPPEN" in globals() else 0, 7):
+    fx_, fz_, _, tx_, tz_, _, _ = TREPPEN[k_:k_ + 7]
+    for t_ in [i_ / 6 for i_ in range(-2, 7)]:
+        _frei_fels += [fx_ + (tx_ - fx_) * t_, fz_ + (tz_ - fz_) * t_, 4.0]
 N("Felsmassiv", "Node3D", DS, f"""script = ExtResource("33_felsmassiv")
 gelaende = NodePath("../../Gelaende")
 bereich = Rect2({min(_rx) - 2:.1f}, {min(_rz) - 2:.1f}, {max(_rx) - min(_rx) + 4:.1f}, {max(_rz) - min(_rz) + 4:.1f})
-material = ExtResource("34_felsmassiv_mat")""")   # gelaende ist ein NodePath (kein Node-Export)
+material = ExtResource("34_felsmassiv_mat")
+frei = PackedVector3Array({", ".join(f"{v:.2f}" for v in _frei_fels)})""")   # gelaende ist ein NodePath (kein Node-Export)
 _vorher = len(FELSSTUECKE)
 FELSSTUECKE = [f_ for f_ in FELSSTUECKE if not im_vieleck((f_[1], f_[3]), _ring_flaeche)]
 # Vor dem Küstenfels keine Klippenscans und kein Geröll (Pflanzen bleiben)

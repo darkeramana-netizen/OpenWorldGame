@@ -1293,14 +1293,18 @@ func _treppe(a: Vector3, b: Vector3, breite: float) -> void:
 		_klotz("hell", c0 + u * laenge * t0, u, n, -0.12, 0.12, -hb, hb, y - 0.25, y - 0.02)
 	# Unsichtbare Rampe über den Stufenkanten: Darauf läuft die Figur hinauf, ohne an jeder Stufe hängen zu bleiben
 	# über die Vorderkanten der Stufen: eine Trittlänge vor der ersten Stufe bis zur Vorderkante der obersten
+	# 10 cm über den Kanten (sonst stehen die Kantenleisten bei steilen Treppen als Lippen über die Rampe); dafür setzt
+	# die Rampe früher am Boden an, damit unten keine Kante bleibt
 	var vor := laenge / stufen if steig > 0.0 else 0.0
-	var s0 := c0 - u * vor
+	var anlauf := 0.1 * laenge / steig if steig > 0.0 else 0.0
+	var s0 := c0 - u * (vor + anlauf)
 	var s1 := c0 + u * (laenge - vor)
 	var r0 := s0 - n * hb
 	var r1 := s0 + n * hb
 	var e0 := s1 - n * hb
 	var e1 := s1 + n * hb
-	_viereck("rampe", Vector3(r0.x, a.y + 0.02, r0.y), Vector3(e0.x, b.y + 0.02, e0.y), Vector3(e1.x, b.y + 0.02, e1.y),
+	var dy := 0.1 if steig > 0.0 else 0.02
+	_viereck("rampe", Vector3(r0.x, a.y + 0.02, r0.y), Vector3(e0.x, b.y + dy, e0.y), Vector3(e1.x, b.y + dy, e1.y),
 		Vector3(r1.x, a.y + 0.02, r1.y), Vector3.UP)
 	# Wangen: niedrige Mauern zu beiden Seiten, oben schräg mit der Treppe
 	for seite: float in [-1.0, 1.0]:
