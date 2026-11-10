@@ -1,0 +1,23 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Der Rittersaal ist kein Ort für Gaffer.",
+				"Wir warten auf Nachricht vom Komtur. Seit Tagen.",
+				"Die Ostmark ist ruhig. Zu ruhig, wenn du mich fragst.",
+				{
+					"text": "Wächter {name}. Setz dich, der Wein ist gut heute.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm? Dann zu den Mauern, wir folgen.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Geh mit Gott."
+		}
+	}
+}

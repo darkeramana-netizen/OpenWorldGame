@@ -1,0 +1,23 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Die Betten machen sich nicht von allein.",
+				"Wenn die Herrschaft Gäste hat, schlafen wir auf dem Stroh. Wie immer.",
+				"Im Winter zieht es durch jede Ritze. Die Läden helfen nur wenig.",
+				{
+					"text": "Du bist der neue Wächter? Dann sieh zu, dass du die Stiefel abtrittst.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm? Dann verriegeln wir die Läden und beten.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Jetzt aber an die Arbeit."
+		}
+	}
+}

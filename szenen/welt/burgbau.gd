@@ -159,7 +159,7 @@ func _baue() -> void:
 			st.generate_tangents()   # für die Normalenkarte der Dächer
 		st.commit(mesh)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
-		if not mat.begins_with("metall") and mat != "dunkel":
+		if not mat.begins_with("metall") and mat != "dunkel" and not mat.begins_with("zier_"):
 			st.commit(fest)
 	for mat: String in _rund:
 		var st: SurfaceTool = _rund[mat]
@@ -167,7 +167,7 @@ func _baue() -> void:
 			st.generate_tangents()   # Kegeldächer: ohne Tangenten wird die Schieferstruktur falsch schattiert
 		st.commit(mesh)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
-		if not mat.begins_with("metall") and mat != "dunkel":
+		if not mat.begins_with("metall") and mat != "dunkel" and not mat.begins_with("zier_"):
 			st.commit(fest)
 	var anzeige := MeshInstance3D.new()
 	anzeige.name = "Mesh"
@@ -896,6 +896,8 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 					_klotz("holz", bm, uz, nx, 0.95, 1.05, -0.5, 0.5, y, y + 1.0)
 	if zweck > 0:
 		_einrichtung(zweck, c, uz, nx, iL, iB, fb, gh, stockwerke, lauf, traufe - 0.3)
+	if art != 1:
+		_hausrat(zweck, art, c, uz, nx, L, iL, iB, fb, gh, stockwerke, lauf, traufe - 0.3)
 	# Licht je Geschoss: Hängeleuchten etwa alle 9 m entlang des Baus (warm, ohne Schatten)
 	var anzahl := maxi(1, int(ceil(2.0 * iL / 9.0)))
 	for k in stockwerke:
@@ -1085,6 +1087,264 @@ func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, i
 				_klotz("metall", c + uz * (iL - 2.6), uz, nx, -0.37, 0.37, -0.52, 0.52, y + 0.42, y + 0.47)
 
 
+## Hausrat an den freien Wandstrecken der Längsseiten, je nach Zweck des Baus: Truhen, Schränke, Fässer, Säcke,
+## Wandbänke, Wandbretter mit Krügen, Kleiderhaken, Kräuterbündel, Sättel; dazu Wandleuchter. Frei bleiben Tür,
+## Treppen (bis frei_s), der Giebel +L (Kamin, Herd, Betten, Thron) und die Plätze, die _einrichtung belegt;
+## hohe Möbel stehen nicht vor Fenstern.
+func _hausrat(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L: float, iL: float, iB: float, fb: float,
+		gh: float, stockwerke: int, lauf: float, decke_oben: float) -> void:
+	if zweck == 2 or zweck == 6:
+		return   # Zeughaus und Kapelle sind an den Wänden schon voll
+	var frei_s := -iL + 0.9 + lauf + 1.2 if stockwerke > 1 else -iL + 0.6
+	var fenster: Array[float] = []
+	var fenster_halb := 0.8
+	if art == 3:
+		var achsen := maxi(5, int((2.0 * L - 2.0) / 4.4))
+		for f in achsen:
+			fenster.append(-L + 1.0 + (f + 0.5) * (2.0 * L - 2.0) / achsen)
+		fenster_halb = 1.4
+	else:
+		var anzahl := int((2.0 * L - 2.0) / 3.4)
+		for f in anzahl:
+			fenster.append(-L + 1.0 + (f + 0.5) * (2.0 * L - 2.0) / anzahl)
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = hash(Vector2i(int(c.x * 10.0), int(c.y * 10.0)))
+	for k in stockwerke:
+		var y := fb + k * gh
+		var decke := decke_oben if k == stockwerke - 1 else y + gh - 0.5
+		var ende := iL - (2.4 if k > 0 or zweck == 1 else 1.1)
+		for e: float in [-1.0, 1.0]:
+			# Brüstungshöhe der Fenster auf dieser Wand (über dem Boden); ohne Fenster beliebig hoch
+			var bruestung := 99.0
+			if art == 3:
+				if k > 0:
+					bruestung = gh * 0.18 - 0.2 if e > 0 else gh * 0.3 - 0.15
+			elif not (art == 2 and k > 0):
+				bruestung = gh * 0.55 - minf(1.7, gh * 0.48) / 2.0 - 0.15
+			# gesperrte Strecken entlang s auf dieser Wand
+			var sperren: Array[Vector2] = []
+			if k == 0 and e > 0:
+				sperren.append(Vector2(-1.9, 1.9))                       # Tür
+			var ts := iL * (0.42 if art == 3 else 0.15)
+			var lang := minf(iL * 0.9, 6.0) if art == 3 else minf(iL * 0.5, 2.4)
+			if iB < 2.3:
+				sperren.append(Vector2(ts - lang / 2.0 - 0.3, ts + lang / 2.0 + 0.3))   # Tisch in der Mitte reicht bis an die Wand
+			match zweck:
+				1:
+					sperren.append(Vector2(iL * 0.35 - 1.6, iL * 0.35 + 1.6))
+					if e < 0:
+						sperren.append(Vector2(-iL * 0.1 - 1.0, -iL * 0.1 + 1.0))
+				3:
+					if k == stockwerke - 1:
+						sperren.append(Vector2(frei_s, iL))              # Rittersaal: Tafeln an beiden Wänden
+				4:
+					if k == 0 and e < 0:
+						continue                                         # Pferdeboxen
+				5:
+					if e < 0:
+						sperren.append(Vector2(iL * 0.5 - 0.9, iL * 0.5 + 0.9))
+					sperren.append(Vector2(iL - 3.1, iL))
+			var s_ := frei_s
+			var i := 0
+			while s_ < ende:
+				# bis zu sechs Versuche: vor einem Fenster passt oft ein niedriges Stück, wo ein hohes nicht passt
+				var stueck: Array = []
+				var a := s_
+				var b := s_
+				var frei := false
+				for versuch in 6:
+					stueck = _hausrat_wahl(zweck, k, zufall)
+					var br_: float = stueck[1]
+					var hoch: bool = float(stueck[2]) > bruestung - 0.05
+					a = s_
+					b = s_ + br_
+					frei = b <= ende
+					for sp: Vector2 in sperren:
+						if b > sp.x and a < sp.y:
+							frei = false
+					if frei and hoch:
+						for fp: float in fenster:
+							if b > fp - fenster_halb and a < fp + fenster_halb:
+								frei = false
+					if frei:
+						break
+				if not frei:
+					s_ += 0.5
+					continue
+				var breite: float = stueck[1]
+				var m := c + uz * ((a + b) / 2.0) + nx * e * iB
+				_hausrat_stueck(stueck[0], m, uz, nx * -e, breite, y, decke, zufall)
+				s_ = b + zufall.randf_range(0.2, 0.7)
+				i += 1
+			# Wandleuchter zwischen den Fenstern
+			for f in fenster.size() - 1:
+				var ws := (fenster[f] + fenster[f + 1]) / 2.0
+				if ws < frei_s or ws > ende:
+					continue
+				var gesperrt := false
+				for sp: Vector2 in sperren:
+					if ws > sp.x - 0.3 and ws < sp.y + 0.3:
+						gesperrt = true
+				if gesperrt or zufall.randf() < 0.4:
+					continue
+				var lm := c + uz * ws + nx * e * iB
+				var n := nx * -e
+				var ly := y + minf(2.3, decke - y - 0.6)
+				_klotz("metall", lm, uz, n, -0.08, 0.08, 0.0, 0.04, ly - 0.25, ly + 0.05)
+				_klotz("metall", lm, uz, n, -0.02, 0.02, 0.0, 0.25, ly - 0.05, ly - 0.01)
+				_klotz("metall", lm, uz, n, -0.06, 0.06, 0.19, 0.31, ly - 0.01, ly + 0.02)
+				_klotz("hell", lm, uz, n, -0.025, 0.025, 0.225, 0.275, ly + 0.02, ly + 0.17)
+				_klotz("glut", lm, uz, n, -0.012, 0.012, 0.238, 0.262, ly + 0.17, ly + 0.22)
+
+
+## Wählt ein Stück Hausrat: [Name, Breite entlang der Wand, Höhe (höher als die Brüstung: nicht vor Fenstern)]
+func _hausrat_wahl(zweck: int, k: int, zufall: RandomNumberGenerator) -> Array:
+	var liste: Array
+	match zweck:
+		1:   # Küche und Vorrat
+			liste = [["faesser", 1.4, 0.95], ["saecke", 1.3, 0.85], ["wandbrett", 1.6, 2.25], ["kraeuter", 1.4, 2.06],
+				["hackklotz", 0.8, 0.82], ["bottich", 1.0, 0.55], ["kisten", 1.0, 1.0], ["pfannen", 1.2, 2.25]]
+		3:   # Palas: Truhen, Kredenz, Wandbänke
+			liste = [["truhe", 1.1, 0.65], ["kredenz", 1.6, 2.1], ["wandbank", 2.0, 1.0], ["truhe", 1.1, 0.65],
+				["schrank", 1.3, 2.1]]
+		4:   # Stall: Sättel, Zaumzeug, Futterkisten, Heugabeln
+			liste = [["saettel", 1.6, 1.88], ["futter", 1.2, 0.95], ["geraet", 1.0, 2.0], ["saecke", 1.3, 0.85]]
+		_:   # Wohn- und Gesindehaus
+			liste = [["truhe", 1.1, 0.65], ["schrank", 1.3, 2.1], ["haken", 1.2, 1.85], ["wandbank", 1.8, 1.0],
+				["wandbrett", 1.6, 2.25], ["faesser", 1.4, 0.95], ["strohlager", 2.1, 0.34] if k == 0 else ["truhe", 1.1, 0.65],
+				["kisten", 1.0, 1.0]]
+	return liste[zufall.randi() % liste.size()]
+
+
+## Ein Stück Hausrat an der Wand: m auf der Wandfläche, n zeigt in den Raum, u entlang der Wand.
+func _hausrat_stueck(name_: String, m: Vector2, u: Vector2, n: Vector2, breite: float, y: float, decke: float,
+		zufall: RandomNumberGenerator) -> void:
+	var b := breite / 2.0
+	match name_:
+		"truhe":
+			_klotz("holz", m, u, n, -b + 0.05, b - 0.05, 0.05, 0.6, y, y + 0.5)
+			_klotz("holz", m, u, n, -b + 0.03, b - 0.03, 0.03, 0.62, y + 0.5, y + 0.6, true)
+			for q: float in [-0.6, 0.0, 0.6]:
+				_klotz("metall", m + u * q * (b - 0.1), u, n, -0.04, 0.04, 0.02, 0.64, y + 0.05, y + 0.62)
+			_klotz("metall", m, u, n, -0.07, 0.07, 0.62, 0.65, y + 0.38, y + 0.52)
+		"schrank":
+			_klotz("holz", m, u, n, -b + 0.05, b - 0.05, 0.02, 0.55, y, y + 2.0)
+			_klotz("holz", m, u, n, -b, b, 0.0, 0.6, y + 2.0, y + 2.1, true)
+			_klotz("holz", m, u, n, -b + 0.02, b - 0.02, 0.0, 0.58, y, y + 0.12)
+			_klotz("dunkel", m, u, n, -0.01, 0.01, 0.55, 0.56, y + 0.15, y + 1.95)
+			for q: float in [-1.0, 1.0]:
+				_klotz("metall", m + u * q * 0.08, u, n, -0.015, 0.015, 0.55, 0.6, y + 1.0, y + 1.15)
+				for hy: float in [0.4, 1.6]:
+					_klotz("metall", m + u * q * (b - 0.25), u, n, -0.2, 0.2, 0.55, 0.57, y + hy, y + hy + 0.05)
+		"kredenz":
+			_klotz("holz", m, u, n, -b + 0.05, b - 0.05, 0.02, 0.5, y, y + 0.95)
+			_klotz("holz", m, u, n, -b, b, 0.0, 0.55, y + 0.95, y + 1.02, true)
+			_klotz("holz", m, u, n, -b + 0.05, b - 0.05, 0.0, 0.25, y + 1.02, y + 2.1)
+			for br: float in [1.5, 2.0]:
+				_klotz("holz", m, u, n, -b + 0.05, b - 0.05, 0.0, 0.3, y + br, y + br + 0.04)
+			for t in 5:
+				var tp := m + u * (-b + 0.3 + t * (breite - 0.6) / 4.0)
+				_klotz("metall", tp, u, n, -0.09, 0.09, 0.08, 0.22, y + 1.02, y + 1.3 if t % 2 == 0 else y + 1.1)
+				_klotz("metall", tp, u, n, -0.07, 0.07, 0.08, 0.2, y + 1.54, y + 1.72)
+			_klotz("stoff", m, u, n, -b + 0.1, b - 0.1, 0.48, 0.51, y + 0.55, y + 1.0)
+		"wandbank":
+			_klotz("holz", m, u, n, -b, b, 0.0, 0.45, y + 0.42, y + 0.48)
+			for q: float in [-1.0, 1.0]:
+				_klotz("holz", m + u * q * (b - 0.15), u, n, -0.05, 0.05, 0.05, 0.4, y, y + 0.42)
+			_klotz("holz", m, u, n, -b, b, 0.0, 0.06, y + 0.48, y + 1.0)
+			_klotz("stoff", m + u * zufall.randf_range(-b + 0.4, b - 0.4), u, n, -0.25, 0.25, 0.08, 0.4, y + 0.48, y + 0.56)
+		"wandbrett", "pfannen":
+			for hy: float in [1.4, 1.9]:
+				_klotz("holz", m, u, n, -b, b, 0.0, 0.28, y + hy - 0.04, y + hy, true)
+				for q: float in [-1.0, 1.0]:
+					_klotz("holz", m + u * q * (b - 0.15), u, n, -0.03, 0.03, 0.0, 0.25, y + hy - 0.25, y + hy - 0.04)
+				var t := -b + 0.2
+				while t < b - 0.15:
+					var hoehe := zufall.randf_range(0.12, 0.3)
+					_klotz("hell" if zufall.randf() < 0.5 else "metall", m + u * t, u, n, -0.08, 0.08, 0.06, 0.22, y + hy, y + hy + hoehe)
+					t += zufall.randf_range(0.22, 0.38)
+			if name_ == "pfannen":
+				# Pfannen und Kellen an Haken unter dem Brett
+				var t2 := -b + 0.25
+				while t2 < b - 0.2:
+					_klotz("metall", m + u * t2, u, n, -0.015, 0.015, 0.02, 0.05, y + 0.9, y + 1.3)
+					_klotz("metall", m + u * t2, u, n, -0.15, 0.15, 0.02, 0.06, y + 0.6, y + 0.9)
+					t2 += 0.4
+			else:
+				_klotz("holz", m, u, n, -b + 0.1, b - 0.1, 0.05, 0.5, y, y + 0.7)   # Unterschrank
+		"kraeuter":
+			_klotz("holz", m, u, n, -b, b, 0.02, 0.08, y + 2.0, y + 2.06)
+			var t := -b + 0.15
+			while t < b - 0.1:
+				_klotz("stroh" if zufall.randf() < 0.5 else "stoff", m + u * t, u, n, -0.06, 0.06, 0.04, 0.14, y + 1.55, y + 2.0)
+				t += 0.25
+			_klotz("holz", m, u, n, -b + 0.1, b - 0.1, 0.05, 0.5, y, y + 0.7)
+			_klotz("holz", m, u, n, -b + 0.05, b - 0.05, 0.03, 0.55, y + 0.7, y + 0.78, true)
+		"faesser":
+			for q: float in [-0.35, 0.35]:
+				var fm := m + u * q + n * 0.38
+				_mantel("holz", fm, 0.28, 0.33, y, y + 0.45, 10)
+				_mantel("holz", fm, 0.33, 0.28, y + 0.45, y + 0.9, 10)
+				_ring("holz", fm, 0.0, 0.28, y + 0.9, 10)
+				for ry: float in [0.15, 0.75]:
+					_mantel("metall", fm, 0.32, 0.33, y + ry, y + ry + 0.05, 10)
+			_klotz("holz", m + n * 0.38, u, n, -0.25, 0.25, -0.2, 0.2, y + 0.9, y + 0.95)
+		"saecke":
+			for t in 3:
+				var q := -b + 0.25 + t * (breite - 0.5) / 2.0
+				_klotz("stroh", m + u * q, u, n, -0.22, 0.22, 0.05, 0.5, y, y + 0.5 + 0.08 * (t % 2), true)
+			_klotz("stroh", m + u * 0.1, u, n, -0.2, 0.2, 0.08, 0.45, y + 0.5, y + 0.85, true)
+		"kisten":
+			_klotz("holz", m, u, n, -0.42, 0.42, 0.05, 0.85, y, y + 0.7)
+			_klotz("metall", m, u, n, -0.44, 0.44, 0.04, 0.87, y + 0.6, y + 0.66)
+			_klotz("holz", m + u * 0.05, u, n, -0.3, 0.3, 0.15, 0.7, y + 0.7, y + 1.0)
+		"hackklotz":
+			_mantel("holz", m + n * 0.45, 0.32, 0.32, y, y + 0.7, 10)
+			_ring("holz", m + n * 0.45, 0.0, 0.32, y + 0.7, 10)
+			_klotz("metall", m + n * 0.45, u, n, -0.02, 0.12, -0.02, 0.02, y + 0.7, y + 0.82)
+			_klotz("holz", m + n * 0.45 + u * 0.12, u, n, 0.0, 0.35, -0.015, 0.015, y + 0.75, y + 0.78)
+		"bottich":
+			_mantel("holz", m + n * 0.45, 0.4, 0.44, y, y + 0.55, 12)
+			_ring("wasser_innen", m + n * 0.45, 0.0, 0.4, y + 0.5, 12)
+			_mantel("metall", m + n * 0.45, 0.43, 0.445, y + 0.4, y + 0.45, 12)
+		"haken":
+			_klotz("holz", m, u, n, -b, b, 0.0, 0.05, y + 1.75, y + 1.85)
+			var t := -b + 0.2
+			while t < b - 0.1:
+				_klotz("holz", m + u * t, u, n, -0.02, 0.02, 0.05, 0.15, y + 1.78, y + 1.82)
+				if zufall.randf() < 0.7:
+					_klotz("stoff", m + u * t, u, n, -0.18, 0.18, 0.06, 0.16, y + 0.9, y + 1.8)
+				t += 0.35
+			_klotz("holz", m, u, n, -b + 0.1, b - 0.1, 0.0, 0.35, y + 0.4, y + 0.46)   # Schuhbank
+		"strohlager":
+			_klotz("stroh", m, u, n, -b + 0.05, b - 0.05, 0.05, 0.95, y, y + 0.22)
+			_klotz("stoff", m, u, n, -b + 0.3, b - 0.15, 0.1, 0.9, y + 0.22, y + 0.28)
+			_klotz("hell", m + u * (-b + 0.3), u, n, -0.2, 0.15, 0.2, 0.8, y + 0.22, y + 0.34)
+		"saettel":
+			for t in 2:
+				var sm := m + u * (-b / 2.0 + t * b)
+				_klotz("holz", sm, u, n, -0.04, 0.04, 0.0, 0.55, y + 1.1, y + 1.18)
+				_klotz("stoff_leder", sm, u, n, -0.3, 0.3, 0.05, 0.55, y + 1.18, y + 1.32, true)
+				_klotz("stoff_leder", sm, u, n, -0.3, 0.3, 0.05, 0.1, y + 0.7, y + 1.18)
+				_klotz("metall", sm, u, n, -0.03, 0.03, 0.04, 0.1, y + 0.5, y + 0.7)
+			_klotz("holz", m, u, n, -b + 0.1, b - 0.1, 0.0, 0.05, y + 1.8, y + 1.88)
+			var t2 := -b + 0.25
+			while t2 < b - 0.2:
+				_klotz("stoff_leder", m + u * t2, u, n, -0.03, 0.03, 0.04, 0.08, y + 1.2, y + 1.85)   # Zaumzeug
+				t2 += 0.45
+		"futter":
+			_klotz("holz", m, u, n, -b + 0.05, b - 0.05, 0.05, 0.75, y, y + 0.8)
+			_klotz("holz", m, u, n, -b + 0.05, b - 0.05, 0.05, 0.75, y + 0.8, y + 0.86, true)
+			_klotz("stroh", m + u * 0.2, u, n, -0.4, 0.3, 0.2, 0.6, y + 0.86, y + 0.95)
+		"geraet":
+			for t in 3:
+				var gm := m + u * (-0.35 + t * 0.35)
+				_klotz("holz", gm, u, n, -0.02, 0.02, 0.08, 0.12, y, y + 1.7)
+				_klotz("metall", gm, u, n, -0.12, 0.12, 0.08, 0.14, y + 1.7, y + 1.75)
+				for z: float in [-0.1, 0.0, 0.1]:
+					_klotz("metall", gm + u * z, u, n, -0.01, 0.01, 0.08, 0.14, y + 1.75, y + 2.0)
+
+
 ## Regal an der Wand (Seite -1/1 über nx), Breite entlang uz, mit Krügen und Töpfen auf den Brettern.
 func _regal(m: Vector2, uz: Vector2, nx: Vector2, seite: float, y: float, breite: float, hoehe: float) -> void:
 	var n := nx * seite
@@ -1112,15 +1372,24 @@ func _leuchter(m: Vector2, uz: Vector2, nx: Vector2, y: float) -> void:
 		_klotz("glut", m + uz * e, uz, nx, -0.015, 0.015, -0.015, 0.015, y + 1.72, y + 1.77)
 
 
-## Fenster von innen: helle Scheibe (Tageslicht), Fensterkreuz und Fensterbank. seite zeigt in den Raum.
+## Fenster von innen: helle Scheibe (Tageslicht) mit Bleiruten, tiefe Nische mit Gewände, Sitzbank und Sturz.
+## seite zeigt in den Raum.
 func _fenster_innen(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, ym: float, fb: float, fh: float) -> void:
 	var nn := n * signf(seite)
 	var m := c + u * pos + n * abstand
 	var b := fb / 2.0
-	_klotz("fensterlicht", m, u, nn, -b, b, 0.005, 0.025, ym - fh / 2.0, ym + fh / 2.0)
-	_klotz("hell", m, u, nn, -b - 0.12, b + 0.12, 0.0, 0.25, ym - fh / 2.0 - 0.12, ym - fh / 2.0, true)
-	_klotz("holz", m, u, nn, -0.04, 0.04, 0.025, 0.07, ym - fh / 2.0, ym + fh / 2.0)
-	_klotz("holz", m, u, nn, -b, b, 0.025, 0.07, ym + fh * 0.1 - 0.04, ym + fh * 0.1 + 0.04)
+	var y0 := ym - fh / 2.0
+	var y1 := ym + fh / 2.0
+	_klotz("fensterlicht", m, u, nn, -b, b, 0.005, 0.025, y0, y1)
+	_bleiglas(m, u, nn, -b, b, y0, y1, 0.03, "metall")
+	_klotz("zier_hell", m, u, nn, -b - 0.2, b + 0.2, 0.0, 0.3, y0 - 0.1, y0, true)
+	_klotz("zier_hell", m, u, nn, -b - 0.2, -b, 0.0, 0.22, y0, y1)
+	_klotz("zier_hell", m, u, nn, b, b + 0.2, 0.0, 0.22, y0, y1)
+	_klotz("zier_hell", m, u, nn, -b - 0.25, b + 0.25, 0.0, 0.24, y1, y1 + 0.22, true)
+	_klotz("zier_holz", m, u, nn, -0.04, 0.04, 0.025, 0.07, y0, y1)
+	_klotz("zier_holz", m, u, nn, -b, b, 0.025, 0.07, y0 + fh * 0.64 - 0.04, y0 + fh * 0.64 + 0.04)
+	# Riegel am Fensterflügel
+	_klotz("metall", m, u, nn, 0.05, 0.16, 0.07, 0.09, ym - 0.03, ym + 0.03)
 
 
 func _hoehle(w: PackedFloat32Array) -> void:
@@ -1473,7 +1742,7 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 		_gesims(wand, c, uz, nx, B, L, 0.12, y - 0.15, y + 0.1, begehbar)
 	_gesims(wand, c, uz, nx, B, L, 0.3, traufe - 0.4, traufe, begehbar)
 	if art == 3:
-		_palas_fassade(c, uz, nx, B, L, boden, gh, geschosse, traufe, dh)
+		_palas_fassade(c, uz, nx, B, L, boden, gh, geschosse, traufe, dh, begehbar)
 	# Fenster auf allen vier Seiten
 	for k in (0 if art == 3 else geschosse):
 		if art == 2 and k > 0:
@@ -1545,7 +1814,7 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 ## zwischen Lisenen, unter der Traufe ein Bogenfries, auf dem Dach zwei Gauben; hinten und an den Giebeln kleinere
 ## Rundbogenfenster; Eckquader in hellem Stein.
 func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden: float, gh: float, geschosse: int,
-		traufe: float, dh: float) -> void:
+		traufe: float, dh: float, begehbar := false) -> void:
 	var achsen := maxi(5, int((2.0 * L - 2.0) / 4.4))
 	var abst := (2.0 * L - 2.0) / achsen
 	for f in achsen:
@@ -1564,9 +1833,18 @@ func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, bo
 			_klotz("hell", m, uz, nx, -0.09, 0.09, -0.04, 0.1, fu, fu + fh - 0.45)
 			_klotz("hell", m, uz, nx, -0.16, 0.16, -0.04, 0.14, fu + fh - 0.45, fu + fh - 0.32)
 			_klotz("hell", m, uz, nx, -1.15, 1.15, -0.02, 0.18, fu - 0.16, fu)
+			_klotz("zier_hell", m, uz, nx, -1.25, 1.25, -0.02, 0.32, fu - 0.26, fu - 0.12, true)   # Sohlbank vorstehend
+			for e: float in [-1.0, 1.0]:
+				_klotz("zier_hell", m + uz * e * 1.12, uz, nx, -0.12, 0.12, -0.02, 0.26, fu - 0.5, fu - 0.26, true)   # Konsolen
+			if begehbar:
+				for e: float in [-1.0, 1.0]:
+					_fenster_innen(c, uz, nx, pos + e * 0.52, B - 0.6, -1.0, fu + (fh - 0.4) / 2.0, 0.8, fh - 0.4)
 		# Rückseite und Giebel: kleinere Fenster
 		for k in range(1, geschosse):
 			_rundbogen(c + uz * pos - nx * B, uz, -nx, boden + k * gh + gh * 0.3, 0.9, gh * 0.38, 0.2)
+			if begehbar:
+				_fenster_innen(c, uz, nx, pos, -(B - 0.6), 1.0, boden + k * gh + gh * 0.3 + (gh * 0.38 - 0.45) / 2.0, 0.9,
+					gh * 0.38 - 0.45)
 	# Lisenen zwischen den Achsen, vom ersten Obergeschoss bis unter den Fries
 	for f in achsen + 1:
 		var pos := -L + 1.0 + f * abst
@@ -1621,7 +1899,14 @@ func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, bo
 func _rundbogen(m: Vector2, u: Vector2, n: Vector2, unten: float, breite: float, hoehe: float, rahmen: float) -> void:
 	var b := breite / 2.0
 	var kaempfer := unten + hoehe - b
-	_klotz("dunkel", m, u, n, -b, b, -0.06, 0.02, unten, kaempfer)
+	var glas := rahmen < 0.3      # schmale Rahmen: Fenster mit Bleiglas, breite: dunkle Arkade
+	var fuell := "zier_glas" if glas else "dunkel"
+	_klotz(fuell, m, u, n, -b, b, -0.06, 0.02, unten, kaempfer)
+	if glas:
+		_bleiglas(m, u, n, -b, b, unten, kaempfer, 0.03, "metall")
+		# tiefe Laibung: das Gewände steht weit vor
+		_klotz("zier_hell", m, u, n, -b - rahmen, -b, 0.1, 0.24, unten, kaempfer)
+		_klotz("zier_hell", m, u, n, b, b + rahmen, 0.1, 0.24, unten, kaempfer)
 	var N3 := Vector3(n.x, 0, n.y)
 	var mitte := Vector3(m.x + n.x * 0.02, kaempfer, m.y + n.y * 0.02)
 	for k in 8:
@@ -1629,10 +1914,10 @@ func _rundbogen(m: Vector2, u: Vector2, n: Vector2, unten: float, breite: float,
 		var w1 := PI * (k + 1) / 8.0
 		var p0 := m + u * (b * cos(w0)) + n * 0.02
 		var p1 := m + u * (b * cos(w1)) + n * 0.02
-		_dreieck("dunkel", mitte, Vector3(p0.x, kaempfer + b * sin(w0), p0.y), Vector3(p1.x, kaempfer + b * sin(w1), p1.y), N3)
+		_dreieck(fuell, mitte, Vector3(p0.x, kaempfer + b * sin(w0), p0.y), Vector3(p1.x, kaempfer + b * sin(w1), p1.y), N3)
 		var wm := PI * (k + 0.5) / 8.0
 		var q := m + u * ((b + rahmen * 0.5) * cos(wm))
-		_klotz("hell", q, u, n, -0.18, 0.18, -0.02, 0.1, kaempfer + (b + rahmen * 0.5) * sin(wm) - rahmen * 0.5,
+		_klotz("hell", q, u, n, -0.18, 0.18, -0.02, 0.24 if glas else 0.1, kaempfer + (b + rahmen * 0.5) * sin(wm) - rahmen * 0.5,
 			kaempfer + (b + rahmen * 0.5) * sin(wm) + rahmen * 0.5)
 	_klotz("hell", m, u, n, -b - rahmen, -b, -0.02, 0.1, unten, kaempfer)
 	_klotz("hell", m, u, n, b, b + rahmen, -0.02, 0.1, unten, kaempfer)
@@ -1678,11 +1963,12 @@ func _doppelfenster(m: Vector2, u: Vector2, n: Vector2, ym: float, fh: float) ->
 	var y1 := ym + fh / 2.0 - 0.6
 	for seite: float in [-1.0, 1.0]:
 		var mx := seite * 0.48
-		_klotz("dunkel", m + u * mx, u, n, -0.32, 0.32, -0.05, 0.02, y0, y1)
+		_klotz("zier_glas", m + u * mx, u, n, -0.32, 0.32, -0.05, 0.02, y0, y1)
+		_bleiglas(m + u * mx, u, n, -0.32, 0.32, y0, y1, 0.025, "metall")
 		var a := m + u * (mx - 0.32) + n * 0.03
 		var e := m + u * (mx + 0.32) + n * 0.03
 		var s_ := m + u * mx + n * 0.03
-		_dreieck("dunkel", Vector3(a.x, y1, a.y), Vector3(e.x, y1, e.y), Vector3(s_.x, y1 + 0.6, s_.y), Vector3(n.x, 0, n.y))
+		_dreieck("zier_glas", Vector3(a.x, y1, a.y), Vector3(e.x, y1, e.y), Vector3(s_.x, y1 + 0.6, s_.y), Vector3(n.x, 0, n.y))
 	# Mittelpfosten, Rahmen, Sohlbank und Bogenfeld
 	_klotz("hell", m, u, n, -0.16, 0.16, -0.02, 0.08, y0, y1 + 0.3)
 	_klotz("hell", m, u, n, -0.98, -0.8, -0.02, 0.1, y0, y1 + 0.2)
@@ -1691,28 +1977,144 @@ func _doppelfenster(m: Vector2, u: Vector2, n: Vector2, ym: float, fh: float) ->
 	_klotz("hell", m, u, n, -0.98, 0.98, -0.02, 0.12, y1 + 0.75, y1 + 0.95, true)
 
 
-## Fenster in einer Wand: Laibung dunkel, Rahmen, Sohlbank und Sturz aus Stein. u entlang der Wand, n nach außen.
+## Fenster in einer Wand, u entlang der Wand, n nach außen. Glas mit Bleiverglasung in Rauten, tiefes Gewände aus
+## Quadern (wirkt wie eine Laibung in der Mauer), steinernes Fensterkreuz, Sohlbank mit Wasserschräge und Konsolen,
+## Sturz mit Verdachung und Endsteinen, dazu aufgeklappte Bretterläden mit Eisenbändern. "hoch" (Kirchen):
+## Spitzbogen aus gestuften Steinen statt Läden. Zierteile ohne Kollision (Präfix "zier_").
 func _fenster(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, ym: float, fb: float,
 		fh: float, hoch: bool) -> void:
 	var nn := n * signf(seite)
 	var m := c + u * pos + n * abstand
 	var b := fb / 2.0
-	_klotz("dunkel", m, u, nn, -b, b, -0.05, 0.02, ym - fh / 2.0, ym + fh / 2.0)
-	_klotz("hell", m, u, nn, -b - 0.18, b + 0.18, -0.02, 0.14, ym - fh / 2.0 - 0.2, ym - fh / 2.0, true)
-	_klotz("hell", m, u, nn, -b - 0.18, b + 0.18, -0.02, 0.1, ym + fh / 2.0, ym + fh / 2.0 + (0.45 if hoch else 0.25), true)
-	_klotz("hell", m, u, nn, -b - 0.16, -b, -0.02, 0.08, ym - fh / 2.0, ym + fh / 2.0)
-	_klotz("hell", m, u, nn, b, b + 0.16, -0.02, 0.08, ym - fh / 2.0, ym + fh / 2.0)
-	if not hoch:
-		# Fensterkreuz
-		_klotz("holz", m, u, nn, -0.05, 0.05, -0.03, 0.04, ym - fh / 2.0, ym + fh / 2.0)
-		_klotz("holz", m, u, nn, -b, b, -0.03, 0.04, ym + fh * 0.1 - 0.05, ym + fh * 0.1 + 0.05)
-		# aufgeklappte Fensterläden aus Brettern, mit zwei Querleisten
+	var y0 := ym - fh / 2.0
+	var y1 := ym + fh / 2.0
+	var T := 0.3   # Tiefe des Gewändes
+	_klotz("zier_glas", m, u, nn, -b, b, -0.04, 0.01, y0, y1)
+	_bleiglas(m, u, nn, -b, b, y0, y1, 0.015, "metall")
+	# Gewände: Quader im Wechsel lang und kurz, mit Fugen; innen eine Stufe (Fase)
+	var y := y0
+	var lang := true
+	while y < y1 - 0.05:
+		var oben := minf(y + 0.36, y1)
+		var w := 0.36 if lang else 0.24
 		for s_: float in [-1.0, 1.0]:
-			var a0 := s_ * (b + 0.2)
-			var a1 := s_ * (b + 0.2 + b)
-			_klotz("holz", m, u, nn, minf(a0, a1), maxf(a0, a1), 0.06, 0.11, ym - fh / 2.0, ym + fh / 2.0)
-			for q: float in [-0.3, 0.3]:
-				_klotz("holz", m, u, nn, minf(a0, a1) + 0.04, maxf(a0, a1) - 0.04, 0.11, 0.14, ym + fh * q - 0.05, ym + fh * q + 0.05)
+			_klotz("zier_hell", m, u, nn, (b + 0.07) if s_ > 0 else -b - w, (b + w) if s_ > 0 else -b - 0.07, -0.02, T,
+				y, oben - 0.025)
+			_klotz("zier_hell", m, u, nn, b if s_ > 0 else -b - 0.07, (b + 0.07) if s_ > 0 else -b, -0.02, T - 0.1, y, oben)
+		y = oben
+		lang = not lang
+	# Sohlbank mit Wasserschräge (vorstehende Platte), darunter eine Schicht und zwei Konsolen
+	_klotz("zier_hell", m, u, nn, -b - 0.32, b + 0.32, -0.02, T + 0.14, y0 - 0.12, y0, true)
+	_klotz("zier_hell", m, u, nn, -b - 0.28, b + 0.28, -0.02, T + 0.02, y0 - 0.24, y0 - 0.12, true)
+	for s_: float in [-1.0, 1.0]:
+		var k0 := s_ * (b + 0.08)
+		var k1 := s_ * (b + 0.26)
+		_klotz("zier_hell", m, u, nn, minf(k0, k1), maxf(k0, k1), -0.02, T, y0 - 0.42, y0 - 0.24, true)
+		_klotz("zier_hell", m, u, nn, minf(k0, k1) + 0.03, maxf(k0, k1) - 0.03, -0.02, T - 0.12, y0 - 0.56, y0 - 0.42, true)
+	if hoch:
+		# Spitzbogen: Glas als Dreieck, darüber gestufte Bogensteine und ein Schlussstein
+		var spitze := b * 1.2
+		var g0 := m + u * -b + nn * 0.005
+		var g1 := m + u * b + nn * 0.005
+		var gs := m + nn * 0.005
+		_dreieck("zier_glas", Vector3(g0.x, y1, g0.y), Vector3(g1.x, y1, g1.y), Vector3(gs.x, y1 + spitze, gs.y),
+			Vector3(nn.x, 0, nn.y))
+		var stufen := 5
+		for k in stufen:
+			var t0 := float(k) / stufen
+			var t1 := float(k + 1) / stufen
+			var innen_ := b * (1.0 - t1)
+			for s_: float in [-1.0, 1.0]:
+				var a0 := s_ * innen_
+				var a1 := s_ * (innen_ + 0.3)
+				_klotz("zier_hell", m, u, nn, minf(a0, a1), maxf(a0, a1), -0.02, T, y1 + spitze * t0, y1 + spitze * t1 + 0.04)
+		_klotz("zier_hell", m, u, nn, -0.18, 0.18, -0.02, T + 0.06, y1 + spitze - 0.05, y1 + spitze + 0.3, true)
+		# Mittelpfosten mit kleinem Kapitell
+		_klotz("zier_hell", m, u, nn, -0.06, 0.06, -0.02, 0.14, y0, y1)
+		_klotz("zier_hell", m, u, nn, -0.1, 0.1, -0.02, 0.18, y1 - 0.12, y1, true)
+		# Tropfleiste über dem Bogen
+		_klotz("zier_hell", m, u, nn, -b - 0.42, b + 0.42, -0.02, T + 0.12, y1 - 0.1, y1, true)
+		return
+	# Sturz aus einem Block, darüber die Verdachung mit herabhängenden Endsteinen
+	_klotz("zier_hell", m, u, nn, -b - 0.3, b + 0.3, -0.02, T, y1, y1 + 0.32, true)
+	_klotz("zier_hell", m, u, nn, -b - 0.44, b + 0.44, -0.02, T + 0.12, y1 + 0.32, y1 + 0.44, true)
+	for s_: float in [-1.0, 1.0]:
+		var k0 := s_ * (b + 0.3)
+		var k1 := s_ * (b + 0.44)
+		_klotz("zier_hell", m, u, nn, minf(k0, k1), maxf(k0, k1), -0.02, T + 0.12, y1 + 0.02, y1 + 0.32, true)
+	# Fensterkreuz aus Stein (bei breiten Fenstern), sonst nur ein Kämpfer
+	if fb >= 0.9:
+		_klotz("zier_hell", m, u, nn, -0.06, 0.06, -0.02, 0.12, y0, y1)
+	var kh := y0 + fh * 0.64
+	_klotz("zier_hell", m, u, nn, -b, b, -0.02, 0.12, kh - 0.06, kh + 0.06, true)
+	# Wirbel (Ladenhalter) und aufgeklappte Läden: drei Bretter mit Fugen, zwei Leisten, Strebe, Eisenbänder
+	for s_: float in [-1.0, 1.0]:
+		var a0 := s_ * (b + 0.4)
+		var a1 := s_ * (b + 0.4 + b + 0.05)
+		var lo := minf(a0, a1)
+		var hi := maxf(a0, a1)
+		var brett := (hi - lo) / 3.0
+		for k in 3:
+			_klotz("zier_holz", m, u, nn, lo + k * brett + 0.008, lo + (k + 1) * brett - 0.008, 0.05, 0.1, y0 + 0.02,
+				y1 - 0.02, true)
+		for q: float in [0.18, 0.82]:
+			var yq := y0 + fh * q
+			_klotz("zier_holz", m, u, nn, lo + 0.05, hi - 0.05, 0.1, 0.14, yq - 0.055, yq + 0.055)
+			# Langband aus Eisen bis zum Gewände, mit Kloben
+			var b0 := s_ * (b + 0.3)
+			_klotz("metall", m, u, nn, minf(b0, a1 - s_ * 0.12), maxf(b0, a1 - s_ * 0.12), 0.14, 0.16, yq - 0.025, yq + 0.025)
+			_klotz("metall", m, u, nn, minf(b0, b0 + s_ * 0.1), maxf(b0, b0 + s_ * 0.1), T, T + 0.04, yq - 0.04, yq + 0.04)
+		_strebe("zier_holz", m, u, nn, Vector2(lo + 0.1, y0 + fh * 0.18), Vector2(hi - 0.1, y0 + fh * 0.82), 0.09, 0.12)
+		# Halter am Mauerwerk neben dem Laden
+		_klotz("metall", m, u, nn, hi + 0.02 if s_ > 0 else lo - 0.06, hi + 0.06 if s_ > 0 else lo - 0.02, 0.0, 0.12,
+			ym - 0.04, ym + 0.04)
+
+
+## Bleiverglasung in Rauten: dünne flache Bleiruten, auf das Rechteck (u0..u1, y0..y1) zugeschnitten.
+func _bleiglas(m: Vector2, u: Vector2, nn: Vector2, u0: float, u1: float, y0: float, y1: float, ab: float, mat: String) -> void:
+	var h := y1 - y0
+	var d := 0.24
+	var N := Vector3(nn.x, 0, nn.y)
+	var punkt := func(s_: float, t: float) -> Vector3:
+		var q := m + u * s_ + nn * ab
+		return Vector3(q.x, y0 + t, q.y)
+	var k := u0 - h
+	while k < u1 + h:
+		# s = t + k und s = -t + k, jeweils zugeschnitten
+		for richtung: float in [1.0, -1.0]:
+			var ta := maxf(0.0, (u0 - k) * richtung)
+			var tb := minf(h, (u1 - k) * richtung)
+			if richtung < 0:
+				ta = maxf(0.0, (k - u1))
+				tb = minf(h, (k - u0))
+			if tb - ta < 0.02:
+				continue
+			var pa: Vector3 = punkt.call(k + richtung * ta, ta)
+			var pb: Vector3 = punkt.call(k + richtung * tb, tb)
+			var quer := Vector3(u.x, 0, u.y) * 0.009 * -richtung + Vector3.UP * 0.009
+			_viereck(mat, pa - quer, pb - quer, pb + quer, pa + quer, N)
+		k += d
+	# Rahmen aus Blei rundherum
+	for t: float in [0.0, h]:
+		var pa: Vector3 = punkt.call(u0, t)
+		var pb: Vector3 = punkt.call(u1, t)
+		_viereck(mat, pa - Vector3.UP * 0.015, pb - Vector3.UP * 0.015, pb + Vector3.UP * 0.015, pa + Vector3.UP * 0.015, N)
+
+
+## Schräge Leiste in der Wandebene von a nach e (je (u, y)), Breite b, vor der Wand von n0 bis n1.
+func _strebe(mat: String, m: Vector2, u: Vector2, nn: Vector2, a: Vector2, e: Vector2, b: float, n1: float) -> void:
+	var U := Vector3(u.x, 0, u.y)
+	var N := Vector3(nn.x, 0, nn.y)
+	var r := (e - a).normalized()
+	var q := Vector2(-r.y, r.x) * b / 2.0
+	var p := func(v: Vector2, ab: float) -> Vector3:
+		var g := m + nn * ab
+		return Vector3(g.x, 0, g.y) + U * v.x + Vector3.UP * v.y
+	_viereck(mat, p.call(a - q, n1), p.call(e - q, n1), p.call(e + q, n1), p.call(a + q, n1), N)
+	for s_: float in [-1.0, 1.0]:
+		var aussen := (U * q.x + Vector3.UP * q.y) * s_
+		_viereck(mat, p.call(a + q * s_, n1 - 0.04), p.call(e + q * s_, n1 - 0.04), p.call(e + q * s_, n1),
+			p.call(a + q * s_, n1), aussen)
 
 
 func _tuer(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, boden: float, tb: float, th: float,
@@ -1740,6 +2142,9 @@ static var _materialien := {}
 func _material(name_: String) -> Material:
 	if _materialien.has(name_):
 		return _materialien[name_]
+	if name_.begins_with("zier_"):
+		_materialien[name_] = _material(name_.trim_prefix("zier_"))   # gleiche Optik, aber ohne Kollision
+		return _materialien[name_]
 	if name_.ends_with("_uv"):
 		var basis: StandardMaterial3D = _material(name_.trim_suffix("_uv")).duplicate()
 		basis.uv1_triplanar = false
@@ -1766,6 +2171,24 @@ func _material(name_: String) -> Material:
 		h.albedo_color = Color(0.74, 0.62, 0.32)
 		h.roughness = 1.0
 		m = h
+	elif name_ == "wasser_innen":
+		var wi := StandardMaterial3D.new()
+		wi.albedo_color = Color(0.12, 0.18, 0.2)
+		wi.roughness = 0.05
+		wi.metallic = 0.3
+		m = wi
+	elif name_ == "stoff_leder":
+		var le := StandardMaterial3D.new()
+		le.albedo_color = Color(0.33, 0.2, 0.11)
+		le.roughness = 0.7
+		m = le
+	elif name_ == "glas":
+		var gl := StandardMaterial3D.new()
+		gl.albedo_color = Color(0.1, 0.13, 0.13)
+		gl.metallic = 0.4
+		gl.roughness = 0.1
+		gl.metallic_specular = 0.9
+		m = gl
 	elif name_ == "dunkel":
 		var s := StandardMaterial3D.new()
 		s.albedo_color = Color(0.03, 0.03, 0.035)

@@ -470,21 +470,64 @@ func _fenster(flaechen: Dictionary, mitte: Vector3, seite: int, hoehe: float, la
 		_viereck(st, a, b, b + Vector3(0, hoehe, 0), a + Vector3(0, hoehe, 0))
 	else:
 		_viereck(st, b, a, a + Vector3(0, hoehe, 0), b + Vector3(0, hoehe, 0))
-	# Rahmen, Sprosse, Fensterbank
-	var r := 0.07
-	var z0 := minf(z, z + 0.08 * seite)
-	var z1 := maxf(z, z + 0.08 * seite)
-	_quader(flaechen, "rahmen", Vector3(a.x - r, a.y - r, z0), Vector3(b.x + r, a.y, z1 + 0.06))
+	# Bleiruten in Rauten
+	var blei := _st(flaechen, "metall")
+	var zb := z + 0.012 * seite
+	var d := 0.22
+	var k := -w / 2 - hoehe
+	while k < w / 2 + hoehe:
+		for r: float in [1.0, -1.0]:
+			var ta := maxf(0.0, -w / 2 - k) if r > 0 else maxf(0.0, k - w / 2)
+			var tb := minf(hoehe, w / 2 - k) if r > 0 else minf(hoehe, k + w / 2)
+			if tb - ta < 0.02:
+				continue
+			var pa := Vector3(mitte.x + k + r * ta, mitte.y + ta, zb)
+			var pb := Vector3(mitte.x + k + r * tb, mitte.y + tb, zb)
+			var q := Vector3(-0.008, 0.008 * r, 0)
+			if seite == 1:
+				_viereck(blei, pa - q, pb - q, pb + q, pa + q)
+			else:
+				_viereck(blei, pa + q, pb + q, pb - q, pa - q)
+		k += d
+	# Rahmen tief aus der Wand: Pfosten, Riegel, Sprosse, Kämpfer
+	var r := 0.09
+	var t := 0.16
+	var z0 := minf(z - 0.02 * seite, z + t * seite)
+	var z1 := maxf(z - 0.02 * seite, z + t * seite)
 	_quader(flaechen, "rahmen", Vector3(a.x - r, a.y + hoehe, z0), Vector3(b.x + r, a.y + hoehe + r, z1))
 	_quader(flaechen, "rahmen", Vector3(a.x - r, a.y, z0), Vector3(a.x, a.y + hoehe, z1))
 	_quader(flaechen, "rahmen", Vector3(b.x, a.y, z0), Vector3(b.x + r, a.y + hoehe, z1))
-	_quader(flaechen, "rahmen", Vector3(mitte.x - 0.025, a.y, z0), Vector3(mitte.x + 0.025, a.y + hoehe, z1))
-	_quader(flaechen, "rahmen", Vector3(a.x, a.y + hoehe * 0.55, z0), Vector3(b.x, a.y + hoehe * 0.55 + 0.05, z1))
+	var zm0 := minf(z, z + 0.08 * seite)
+	var zm1 := maxf(z, z + 0.08 * seite)
+	_quader(flaechen, "rahmen", Vector3(mitte.x - 0.03, a.y, zm0), Vector3(mitte.x + 0.03, a.y + hoehe, zm1))
+	_quader(flaechen, "rahmen", Vector3(a.x, a.y + hoehe * 0.62, zm0), Vector3(b.x, a.y + hoehe * 0.62 + 0.06, zm1))
+	# Sturzbrett mit kleiner Verdachung darüber
+	var zv := z + 0.24 * seite
+	_quader(flaechen, "rahmen", Vector3(a.x - r - 0.08, a.y + hoehe + r, minf(z, zv)), Vector3(b.x + r + 0.08, a.y + hoehe + r + 0.07, maxf(z, zv)))
+	# Fensterbank aus einem Brett auf zwei Knaggen
+	var zs := z + 0.28 * seite
+	_quader(flaechen, "rahmen", Vector3(a.x - r - 0.06, a.y - 0.07, minf(z, zs)), Vector3(b.x + r + 0.06, a.y, maxf(z, zs)))
+	for x_: float in [a.x - 0.02, b.x - 0.06]:
+		_quader(flaechen, "rahmen", Vector3(x_, a.y - 0.3, minf(z, z + 0.2 * seite)), Vector3(x_ + 0.08, a.y - 0.07, maxf(z, z + 0.2 * seite)))
+		_quader(flaechen, "rahmen", Vector3(x_, a.y - 0.42, minf(z, z + 0.08 * seite)), Vector3(x_ + 0.08, a.y - 0.3, maxf(z, z + 0.08 * seite)))
 	if laeden:
-		for s: int in [-1, 1]:
-			var x0 := mitte.x + s * (w / 2 + r)
-			var x1 := x0 + s * w * 0.5
-			_quader(flaechen, "laden", Vector3(minf(x0, x1), a.y, z0), Vector3(maxf(x0, x1), a.y + hoehe, z0 + 0.04 * seite if seite > 0 else z0 + 0.04))
+		for s_: int in [-1, 1]:
+			var x0 := mitte.x + s_ * (w / 2 + r + 0.02)
+			var x1 := x0 + s_ * w * 0.5
+			var lo := minf(x0, x1)
+			var hi := maxf(x0, x1)
+			var la := minf(z + 0.04 * seite, z + 0.09 * seite)
+			var lb := maxf(z + 0.04 * seite, z + 0.09 * seite)
+			var br := (hi - lo) / 3.0
+			for n_ in 3:
+				_quader(flaechen, "laden", Vector3(lo + n_ * br + 0.006, a.y, la), Vector3(lo + (n_ + 1) * br - 0.006, a.y + hoehe, lb))
+			for qy: float in [0.15, 0.85]:
+				var yq := a.y + hoehe * qy
+				var ea := minf(z + 0.09 * seite, z + 0.12 * seite)
+				var eb := maxf(z + 0.09 * seite, z + 0.12 * seite)
+				_quader(flaechen, "laden", Vector3(lo + 0.03, yq - 0.05, ea), Vector3(hi - 0.03, yq + 0.05, eb))
+				_quader(flaechen, "metall", Vector3(minf(x0 - s_ * 0.1, x1 - s_ * 0.08), yq - 0.02, minf(z + 0.12 * seite, z + 0.135 * seite)),
+					Vector3(maxf(x0 - s_ * 0.1, x1 - s_ * 0.08), yq + 0.02, maxf(z + 0.12 * seite, z + 0.135 * seite)))
 
 
 ## Satteldach. Ist der Giebel zur Straße (First entlang z), sind die Dachflächen links und rechts.

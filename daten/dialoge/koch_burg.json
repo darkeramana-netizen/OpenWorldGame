@@ -1,0 +1,23 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Raus aus meiner Küche, wenn du nicht schälen willst.",
+				"Zweihundert Mäuler, jeden Tag. Die Wachen essen wie die Wölfe.",
+				"Der Kessel brodelt seit dem Morgengrauen. Graupen mit Speck, wie immer.",
+				{
+					"text": "Wächter {name}. Für dich findet sich ein Kanten Brot.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm? Dann wird kalt gegessen. Niemand hat Zeit zum Kochen.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Und fass das Brot nicht an, das ist für den Rittersaal."
+		}
+	}
+}

@@ -9,7 +9,8 @@ extends Node3D
 ## Bug zeigt nach lokal -z), 8 Tretradkran (der Ausleger zeigt nach lokal -z), 9 Prahm,
 ## 10 Ziehbrunnen mit Dach, 11 Holzstapel, 12 Pferdetränke, 13 Waffenständer mit Spießen, 14 Feuerkorb auf einem Pfahl,
 ## 15 Amboss auf dem Klotz, 16 Esse mit Rauchfang, 17 Unterstand (offen nach lokal +z), 18 Heuhaufen, 19 Pferd (Kopf nach
-## lokal +z), 20 Wandlaterne (an einer Wand, die lokal bei z = 0 steht; ohne Kollision)
+## lokal +z), 20 Wandlaterne (an einer Wand, die lokal bei z = 0 steht; ohne Kollision), 21 Schmiede (gemauerte
+## Werkstatt mit Pultdach, Rücken an der Hofmauer bei lokal -z, offen nach +z; innen Esse, Amboss, Werkbank)
 @export var stuecke := PackedFloat32Array():
 	set(w):
 		stuecke = w
@@ -21,7 +22,20 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(0.8, 1.0, 1.5), Vector3(2.6, 3.4, 9.0), Vector3(2.6, 3.4, 9.0), Vector3(0.9, 1.4, 2.6), Vector3(1.6, 9.0, 1.6),
 	Vector3(2.1, 2.2, 6.2), Vector3(1.25, 3.4, 1.25), Vector3(1.1, 1.1, 0.7), Vector3(1.2, 0.8, 0.45), Vector3(0.9, 2.3, 0.3),
 	Vector3(0.3, 2.3, 0.3), Vector3(0.4, 0.95, 0.35), Vector3(0.9, 1.2, 0.7), Vector3(2.2, 2.9, 1.6), Vector3(0.95, 1.1, 0.95),
-	Vector3(0.35, 1.7, 1.2), Vector3.ZERO]
+	Vector3(0.35, 1.7, 1.2), Vector3.ZERO, Vector3.ONE]
+## Arten mit mehreren Kollisionskästen (begehbar): je Kasten die Ecken unten und oben (lokal)
+const KAESTEN := {21: [
+	[Vector3(-3.8, -0.5, -3.5), Vector3(3.8, 4.6, -2.2)],     # Rückwand
+	[Vector3(-3.8, -0.5, -2.2), Vector3(-3.3, 4.2, 2.7)],     # Seitenwände
+	[Vector3(3.3, -0.5, -2.2), Vector3(3.8, 4.2, 2.7)],
+	[Vector3(-3.3, -0.5, 2.2), Vector3(-0.9, 1.0, 2.7)],      # Brüstung links
+	[Vector3(-3.3, 2.6, 2.15), Vector3(3.3, 3.4, 2.75)],      # Sturz und Wand darüber
+	[Vector3(0.9, -0.5, 2.2), Vector3(3.3, 3.0, 2.7)],        # Wand rechts
+	[Vector3(-3.3, -0.5, -2.2), Vector3(-1.2, 0.85, -1.05)],  # Esse
+	[Vector3(-1.85, -0.5, -0.35), Vector3(-0.95, 0.9, 0.35)],  # Amboss
+	[Vector3(-0.3, -0.5, -2.2), Vector3(0.6, 0.6, -1.55)],    # Löschtrog
+	[Vector3(0.9, -0.5, -2.2), Vector3(2.0, 0.6, -1.4)],      # Kohlenkiste
+	[Vector3(2.4, -0.5, -1.2), Vector3(3.3, 0.9, 1.4)]]}      # Werkbank
 ## Wasserfahrzeuge: die Kollisionsbox reicht unter die Wasserlinie
 const TIEFGANG := {5: 1.6, 6: 1.6, 7: 0.5, 9: 0.8}
 ## Farben der Markisen
@@ -56,6 +70,15 @@ func _baue() -> void:
 		mm.instance_count = lagen.size()
 		for k in lagen.size():
 			mm.set_instance_transform(k, lagen[k])
+			if KAESTEN.has(art):
+				for ka: Array in KAESTEN[art]:
+					var f := CollisionShape3D.new()
+					var bx := BoxShape3D.new()
+					bx.size = ka[1] - ka[0]
+					f.shape = bx
+					f.transform = lagen[k] * Transform3D(Basis(), (ka[0] + ka[1]) / 2.0)
+					koerper.add_child(f)
+				continue
 			if e_ == Vector3.ZERO:
 				continue          # ohne Kollision (Wandlaterne)
 			var form := CollisionShape3D.new()
@@ -282,6 +305,8 @@ func _mesh(art: int) -> ArrayMesh:
 			_klotz("metall", Vector3(-0.16, 2.48, 0.32), Vector3(0.16, 2.54, 0.64))
 			_klotz("glut", Vector3(-0.11, 2.12, 0.37), Vector3(0.11, 2.48, 0.59))
 			_klotz("metall", Vector3(-0.15, 2.07, 0.33), Vector3(0.15, 2.12, 0.63))
+		21:
+			_schmiede()
 		14:  # Feuerkorb auf einem Pfahl, darin Glut
 			_klotz("holz_dunkel", Vector3(-0.07, 0, -0.07), Vector3(0.07, 1.9, 0.07))
 			_zylinder("metall", Vector3(0, 1.9, 0), 0.18, 0.32, 0.35, 10)
@@ -294,6 +319,169 @@ func _mesh(art: int) -> ArrayMesh:
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
 	_meshes[art] = mesh
 	return mesh
+
+
+## Schmiede: Bruchsteinwände an die Hofmauer gelehnt, vorn eine Brüstung mit Pfosten, darüber ein hochgeklappter
+## Laden, rechts gemauert mit kleinem Fenster; Pultdach aus Ziegeln auf Sparren, Schlot über der Esse.
+func _schmiede() -> void:
+	var dach_y := func(z: float) -> float:
+		return 4.9 + (z + 3.5) * (3.35 - 4.9) / 7.0
+	# Wände
+	_klotz("bruchstein", Vector3(-3.8, -0.5, -3.5), Vector3(3.8, 4.6, -2.2))
+	for s_: float in [-1.0, 1.0]:
+		var x0 := s_ * 3.3
+		var x1 := s_ * 3.8
+		_klotz("bruchstein", Vector3(minf(x0, x1), -0.5, -2.2), Vector3(maxf(x0, x1), 3.3, 2.7))
+		# Giebeldreieck bis unter das Dach
+		for x: float in [x0, x1]:
+			_viereck("bruchstein", Vector3(x, 3.3, -2.2), Vector3(x, 3.3, 2.7), Vector3(x, dach_y.call(2.7), 2.7),
+				Vector3(x, dach_y.call(-2.2), -2.2), Vector3(signf(x - (x0 + x1) / 2.0), 0, 0))
+		_viereck("bruchstein", Vector3(x0, dach_y.call(-2.2), -2.2), Vector3(x1, dach_y.call(-2.2), -2.2),
+			Vector3(x1, dach_y.call(2.7), 2.7), Vector3(x0, dach_y.call(2.7), 2.7), Vector3(0, 1, 0.2))
+		# Eckquader vorn
+		var y := 0.0
+		var lang := true
+		while y < 3.2:
+			var w := 0.75 if lang else 0.45
+			_klotz("quader", Vector3(minf(x1, x1 - s_ * w), y, 2.25 if lang else 2.0), Vector3(maxf(x1, x1 - s_ * w) + (0.02 if s_ > 0 else -0.0), y + 0.4, 2.74))
+			y += 0.42
+			lang = not lang
+	# Vorderseite: Brüstung links, Türöffnung, Wand rechts mit Fenster, darüber Sturzbalken und Mauerband
+	_klotz("bruchstein", Vector3(-3.3, -0.5, 2.2), Vector3(-0.9, 1.0, 2.7))
+	_klotz("quader", Vector3(-3.35, 1.0, 2.15), Vector3(-0.85, 1.12, 2.82))
+	_klotz("bruchstein", Vector3(0.9, -0.5, 2.2), Vector3(1.6, 2.6, 2.7))
+	_klotz("bruchstein", Vector3(2.6, -0.5, 2.2), Vector3(3.3, 2.6, 2.7))
+	_klotz("bruchstein", Vector3(1.6, -0.5, 2.2), Vector3(2.6, 1.2, 2.7))
+	_klotz("bruchstein", Vector3(1.6, 2.1, 2.2), Vector3(2.6, 2.6, 2.7))
+	_klotz("quader", Vector3(1.5, 1.08, 2.15), Vector3(2.7, 1.2, 2.86))
+	_klotz("quader", Vector3(1.5, 2.1, 2.15), Vector3(2.7, 2.28, 2.8))
+	_klotz("glas", Vector3(1.6, 1.2, 2.4), Vector3(2.6, 2.1, 2.45))
+	_klotz("holz_dunkel", Vector3(2.07, 1.2, 2.45), Vector3(2.13, 2.1, 2.5))
+	for k in 5:
+		_klotz("metall", Vector3(1.6, 1.32 + k * 0.17, 2.6), Vector3(2.6, 1.35 + k * 0.17, 2.64))   # Gitterstäbe
+	for x: float in [-0.9, 0.9, -2.1]:
+		_klotz("holz_dunkel", Vector3(x - 0.13, 0.0 if absf(x) < 1.0 else 1.0, 2.2), Vector3(x + 0.13, 2.6, 2.72))
+	_klotz("holz_dunkel", Vector3(-3.4, 2.6, 2.15), Vector3(3.4, 2.92, 2.78))
+	_klotz("bruchstein", Vector3(-3.3, 2.92, 2.2), Vector3(3.3, 3.4, 2.7))
+	_klotz("quader", Vector3(-1.0, -0.02, 2.1), Vector3(1.0, 0.08, 2.85))                       # Schwelle
+	# hochgeklappter Laden über der linken Öffnung, auf zwei Stangen gestützt
+	var l0 := Vector3(-3.15, 2.6, 2.78)
+	var l1 := Vector3(-3.15, 2.05, 3.85)
+	for d: float in [0.0, 0.06]:
+		_viereck("holz", l0 + Vector3(0, d, 0), Vector3(-1.05, l0.y + d, l0.z), Vector3(-1.05, l1.y + d, l1.z), l1 + Vector3(0, d, 0),
+			Vector3(0, 1, 0.5) if d > 0.0 else Vector3(0, -1, -0.5))
+	for x: float in [-2.8, -1.4]:
+		_seil("holz_dunkel", Vector3(x, 1.12, 2.75), Vector3(x, 2.1, 3.8), 0.03)
+		_klotz("holz_dunkel", Vector3(x - 0.04, 2.02, 2.8), Vector3(x + 0.04, 2.6, 3.8))   # Leisten auf dem Laden
+	# Dach: Ziegelfläche, Unterseite und Sparren, Stirnbrett
+	var dz0 := -3.6
+	var dz1 := 3.5
+	for s_: float in [1.0, -1.0]:
+		var o := 0.16 if s_ > 0 else 0.0
+		_viereck("ziegel" if s_ > 0 else "holz_dunkel", Vector3(-4.1, dach_y.call(dz0) + o, dz0), Vector3(4.1, dach_y.call(dz0) + o, dz0),
+			Vector3(4.1, dach_y.call(dz1) + o, dz1), Vector3(-4.1, dach_y.call(dz1) + o, dz1), Vector3(0, s_, s_ * 0.22))
+	_klotz("holz_dunkel", Vector3(-4.15, dach_y.call(dz1) - 0.12, dz1 - 0.05), Vector3(4.15, dach_y.call(dz1) + 0.2, dz1 + 0.03))
+	for s_: float in [-1.0, 1.0]:
+		var x := s_ * 4.1
+		_viereck("holz_dunkel", Vector3(x, dach_y.call(dz0), dz0), Vector3(x, dach_y.call(dz1), dz1),
+			Vector3(x, dach_y.call(dz1) + 0.16, dz1), Vector3(x, dach_y.call(dz0) + 0.16, dz0), Vector3(s_, 0, 0))
+	var sx := -3.0
+	while sx <= 3.05:
+		var a := Vector3(sx, dach_y.call(-2.2) - 0.02, -2.2)
+		var e := Vector3(sx, dach_y.call(3.3) - 0.02, 3.3)
+		for d: float in [0.0, -0.16]:
+			_viereck("holz_dunkel", a + Vector3(-0.07, d, 0), e + Vector3(-0.07, d, 0), e + Vector3(0.07, d, 0), a + Vector3(0.07, d, 0),
+				Vector3(0, -1 if d < 0 else 1, 0))
+		for q: float in [-0.07, 0.07]:
+			_viereck("holz_dunkel", a + Vector3(q, 0, 0), e + Vector3(q, 0, 0), e + Vector3(q, -0.16, 0), a + Vector3(q, -0.16, 0),
+				Vector3(signf(q), 0, 0))
+		sx += 0.75
+	_klotz("holz_dunkel", Vector3(-3.3, 2.6, 0.2), Vector3(3.3, 2.82, 0.42))   # Unterzug
+	# Schlot über der Esse, durch das Dach, mit Abdeckplatte
+	_klotz("bruchstein", Vector3(-2.75, 3.0, -3.4), Vector3(-1.65, 6.6, -2.3))
+	_klotz("quader", Vector3(-2.85, 6.6, -3.5), Vector3(-1.55, 6.75, -2.2))
+	_klotz("quader", Vector3(-2.6, 6.75, -3.25), Vector3(-1.8, 6.85, -2.45))
+	# Esse: gemauerter Herd, Feuergrube mit Glut, Rauchhaube bis zum Schlot
+	_klotz("bruchstein", Vector3(-3.3, 0.0, -2.2), Vector3(-1.2, 0.85, -1.05))
+	_klotz("quader", Vector3(-3.32, 0.85, -2.2), Vector3(-1.18, 0.95, -1.0))
+	_klotz("glut", Vector3(-2.75, 0.9, -1.95), Vector3(-1.7, 1.0, -1.3))
+	_klotz("kohle", Vector3(-2.85, 0.95, -2.05), Vector3(-2.75, 1.05, -1.2))
+	_klotz("kohle", Vector3(-1.7, 0.95, -2.05), Vector3(-1.6, 1.05, -1.2))
+	_klotz("quader", Vector3(-3.3, 1.95, -2.2), Vector3(-1.1, 2.15, -0.95))
+	_viereck("bruchstein", Vector3(-3.3, 2.15, -0.95), Vector3(-1.1, 2.15, -0.95), Vector3(-1.65, 3.4, -2.2), Vector3(-2.75, 3.4, -2.2), Vector3(0, 0.6, 1))
+	_viereck("bruchstein", Vector3(-1.1, 2.15, -0.95), Vector3(-1.1, 2.15, -2.2), Vector3(-1.65, 3.4, -2.2), Vector3(-1.65, 3.4, -2.2), Vector3(1, 0.4, 0))
+	for x: float in [-3.25, -1.15]:
+		_klotz("metall", Vector3(x - 0.04, 0.95, -1.05), Vector3(x + 0.04, 1.95, -0.97))   # Eisenstützen der Haube
+	# Blasebalg neben der Esse mit Hebelstange
+	_viereck("stoff_leder", Vector3(-1.15, 0.6, -2.1), Vector3(-0.35, 0.6, -2.1), Vector3(-0.35, 0.95, -2.1), Vector3(-1.15, 0.7, -2.1), Vector3(0, 0, -1))
+	_klotz("holz_dunkel", Vector3(-1.15, 0.55, -2.15), Vector3(-0.35, 0.6, -1.55))
+	_klotz("stoff_leder", Vector3(-1.1, 0.6, -2.1), Vector3(-0.4, 0.82, -1.6))
+	_klotz("holz_dunkel", Vector3(-1.15, 0.82, -2.15), Vector3(-0.35, 0.87, -1.55))
+	_klotz("holz_dunkel", Vector3(-1.2, 0.0, -2.1), Vector3(-1.1, 0.55, -2.0))
+	_klotz("holz_dunkel", Vector3(-0.45, 0.0, -2.1), Vector3(-0.35, 0.55, -2.0))
+	_seil("holz_dunkel", Vector3(-0.4, 0.87, -1.85), Vector3(-0.1, 1.9, -1.85), 0.035)
+	_klotz("metall", Vector3(-0.15, 1.85, -1.95), Vector3(-0.05, 2.1, -1.75))
+	# Amboss auf dem Klotz, daneben Zangen und Hammer
+	_zylinder("holz_dunkel", Vector3(-1.4, 0, 0), 0.34, 0.37, 0.55, 10)
+	_klotz("metall", Vector3(-1.52, 0.55, -0.1), Vector3(-1.28, 0.7, 0.1))
+	_klotz("metall", Vector3(-1.72, 0.7, -0.15), Vector3(-1.15, 0.9, 0.15))
+	_zylinder("metall", Vector3(-1.15, 0.8, 0), 0.0, 0.1, 0.34, 8, Basis(Vector3.FORWARD, PI / 2.0))
+	_klotz("metall", Vector3(-1.62, 0.9, -0.05), Vector3(-1.35, 0.94, 0.0))     # Werkstück
+	_klotz("glut", Vector3(-1.4, 0.9, -0.05), Vector3(-1.3, 0.94, 0.0))
+	# Löschtrog mit Wasser
+	_klotz("holz_dunkel", Vector3(-0.3, 0.0, -2.2), Vector3(0.6, 0.6, -1.55))
+	_klotz("wasser", Vector3(-0.24, 0.6, -2.14), Vector3(0.54, 0.61, -1.61))
+	# Werkzeugwand: Brett mit Zangen, Hämmern und Hufeisen
+	_klotz("holz", Vector3(0.7, 1.0, -2.2), Vector3(3.1, 2.4, -2.14))
+	_klotz("holz_dunkel", Vector3(0.7, 2.25, -2.14), Vector3(3.1, 2.3, -2.08))
+	for k in 6:
+		var x := 0.95 + k * 0.38
+		match k % 3:
+			0:   # Zange
+				_klotz("metall", Vector3(x - 0.06, 1.35, -2.13), Vector3(x - 0.03, 2.2, -2.1), 0.0)
+				_klotz("metall", Vector3(x + 0.03, 1.35, -2.13), Vector3(x + 0.06, 2.2, -2.1), 0.0)
+				_klotz("metall", Vector3(x - 0.07, 2.0, -2.13), Vector3(x + 0.07, 2.06, -2.09))
+			1:   # Hammer
+				_klotz("holz_dunkel", Vector3(x - 0.02, 1.55, -2.13), Vector3(x + 0.02, 2.2, -2.1))
+				_klotz("metall", Vector3(x - 0.1, 1.48, -2.14), Vector3(x + 0.1, 1.58, -2.07))
+			2:   # Hufeisen
+				_klotz("metall", Vector3(x - 0.09, 1.9, -2.13), Vector3(x - 0.06, 2.1, -2.1))
+				_klotz("metall", Vector3(x + 0.06, 1.9, -2.13), Vector3(x + 0.09, 2.1, -2.1))
+				_klotz("metall", Vector3(x - 0.09, 1.87, -2.13), Vector3(x + 0.09, 1.9, -2.1))
+				_klotz("metall", Vector3(x - 0.09, 1.4, -2.13), Vector3(x + 0.09, 1.6, -2.1))
+	# Kohlenkiste
+	_klotz("holz_dunkel", Vector3(0.9, 0.0, -2.2), Vector3(2.0, 0.6, -1.4))
+	_klotz("kohle", Vector3(0.95, 0.6, -2.15), Vector3(1.95, 0.66, -1.45))
+	_klotz("kohle", Vector3(1.2, 0.66, -2.0), Vector3(1.7, 0.72, -1.6))
+	# Werkbank an der rechten Wand mit Schraubstock, Klingen, Kette
+	_klotz("holz", Vector3(2.4, 0.78, -1.2), Vector3(3.3, 0.9, 1.4))
+	for z: float in [-1.1, 1.25]:
+		for x: float in [2.5, 3.15]:
+			_klotz("holz_dunkel", Vector3(x - 0.05, 0.0, z - 0.05), Vector3(x + 0.05, 0.78, z + 0.05))
+	_klotz("holz_dunkel", Vector3(2.45, 0.2, -1.1), Vector3(3.2, 0.26, 1.3))
+	_klotz("metall", Vector3(2.4, 0.9, 0.9), Vector3(2.62, 1.1, 1.15))
+	_klotz("metall", Vector3(2.3, 0.98, 1.0), Vector3(2.4, 1.02, 1.05))
+	for k in 3:
+		_klotz("metall", Vector3(2.6, 0.9, -0.9 + k * 0.25), Vector3(3.2, 0.92, -0.84 + k * 0.25), 0.05 * k)
+	for k in 6:
+		_klotz("metall", Vector3(2.7 + k * 0.07, 0.9, 0.3), Vector3(2.75 + k * 0.07, 0.93, 0.36))
+	# Fass mit Eisenstangen, Stapel Roheisen
+	_zylinder("holz", Vector3(2.85, 0, 2.0), 0.28, 0.32, 0.8, 10)
+	for k in 5:
+		_seil("metall", Vector3(2.8 + (k % 3) * 0.05, 0.3, 1.95 + int(k / 3.0) * 0.08), Vector3(2.75 + k * 0.04, 1.8, 1.9 + k * 0.03), 0.015)
+	for k in 4:
+		_klotz("metall", Vector3(0.1, k * 0.08, -0.6 + (k % 2) * 0.05), Vector3(0.9, k * 0.08 + 0.07, -0.45 + (k % 2) * 0.05))
+	# Zunftschild am Ausleger vorn rechts
+	_klotz("metall", Vector3(3.05, 3.05, 2.7), Vector3(3.11, 3.11, 3.6))
+	_klotz("metall", Vector3(3.05, 2.6, 2.7), Vector3(3.11, 3.1, 2.76))
+	for z: float in [2.95, 3.45]:
+		_klotz("metall", Vector3(3.07, 2.85, z - 0.01), Vector3(3.09, 3.05, z + 0.01))
+	_klotz("holz", Vector3(3.04, 2.3, 2.85), Vector3(3.12, 2.85, 3.55))
+	_klotz("metall", Vector3(3.0, 2.45, 3.05), Vector3(3.16, 2.52, 3.35))
+	_klotz("metall", Vector3(3.0, 2.52, 3.13), Vector3(3.16, 2.68, 3.27))
+	_klotz("metall", Vector3(3.0, 2.68, 3.02), Vector3(3.16, 2.75, 3.38))
+	# Boden aus gestampftem Lehm mit Schlacke
+	_klotz("lehm", Vector3(-3.3, -0.3, -2.2), Vector3(3.3, 0.02, 2.2))
 
 
 ## Seil oder Stange als dünner Zylinder von a nach b.
@@ -448,6 +636,12 @@ func _material(name_: String) -> Material:
 			m = load("res://material/holz.tres")
 		"metall":
 			m = load("res://material/metall.tres")
+		"bruchstein":
+			m = load("res://material/bruchstein.tres")
+		"quader":
+			m = load("res://material/hell.tres")
+		"ziegel":
+			m = load("res://material/dach.tres")
 		_:
 			var s := StandardMaterial3D.new()
 			s.roughness = 0.9
@@ -455,7 +649,7 @@ func _material(name_: String) -> Material:
 				s.albedo_texture = load("res://texturen/klippe_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(0.5, 0.5, 0.5)
-			elif name_ in ["glut", "wasser"]:
+			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder"]:
 				pass
 			elif name_ in ["fell", "haar"]:
 				pass
@@ -471,7 +665,7 @@ func _material(name_: String) -> Material:
 				s.emission_enabled = true
 				s.emission = Color(1.0, 0.55, 0.2)
 				s.emission_energy_multiplier = 3.0
-			if name_ == "wasser":
+			if name_ in ["wasser", "glas"]:
 				s.roughness = 0.1
 				s.metallic = 0.3
 			s.albedo_color = {"holz_dunkel": Color(0.45, 0.36, 0.3), "glut": Color(1.0, 0.5, 0.15), "wasser": Color(0.18, 0.28, 0.3),
@@ -481,7 +675,8 @@ func _material(name_: String) -> Material:
 				"sack": Color(0.85, 0.76, 0.58), "markise_a": STOFFE[0], "markise_b": STOFFE[1],
 				"ware_rot": Color(0.75, 0.18, 0.1), "ware_gruen": Color(0.3, 0.5, 0.15),
 				"ware_tuch": STOFFE[2], "ware_tuch2": STOFFE[3], "seil": Color(0.5, 0.42, 0.3),
-				"wimpel": Color(0.65, 0.08, 0.06)}.get(name_, Color(0.6, 0.6, 0.6))
+				"wimpel": Color(0.65, 0.08, 0.06), "glas": Color(0.1, 0.13, 0.13), "kohle": Color(0.05, 0.05, 0.05),
+				"lehm": Color(0.32, 0.27, 0.22), "stoff_leder": Color(0.35, 0.22, 0.12)}.get(name_, Color(0.6, 0.6, 0.6))
 			if name_.begins_with("markise") or name_ in ["segel", "wimpel"]:
 				s.cull_mode = BaseMaterial3D.CULL_DISABLED
 			m = s

@@ -506,7 +506,8 @@ BURG_LICHTER = []                # (x, y, z)
 LAGERPLAETZE = []                # (x, z, nach innen x, z, Boden, Hof): dort arbeitet jemand
 _GRUND = {}
 _A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2.6, 2.6), 11: (2.3, 1.5), 12: (2.5, 1.0),
-              13: (1.9, 0.7), 14: (0.7, 0.7), 15: (0.8, 0.7), 16: (1.8, 1.4), 17: (4.6, 3.6), 18: (1.9, 1.9), 19: (0.7, 2.6)}
+              13: (1.9, 0.7), 14: (0.7, 0.7), 15: (0.8, 0.7), 16: (1.8, 1.4), 17: (4.6, 3.6), 18: (1.9, 1.9), 19: (0.7, 2.6),
+              21: (7.6, 5.4)}
 _treppen_w = []
 for k_ in range(0, len(TREPPEN), 7):
     fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
@@ -623,8 +624,15 @@ for name_, hof_, boden_ in _hoefe:
     # Werkplätze: Schmiede, Holzplatz und ein Unterstand für Karren in der Vorburg, Holzplatz und Unterstand in der
     # Mittelburg (die Stücke stehen mit dem Rücken zur Hofmauer)
     if name_ in ("Vorburg", "Mittelburg"):
-        if name_ == "Vorburg":
-            werkplatz("Schmiede", [(16, 0.0, 0.0, 0), (15, 0.0, 2.6, 90), (1, -2.0, 0.0, 15), (0, 2.1, -0.1, 0), (13, 3.6, 0.0, 0)], hof_w_, boden_)
+        if "Schmiede" not in WERKPLAETZE:
+            # Schmiede als gemauerte Werkstatt mit dem Rücken zur Hofmauer, davor Fässer, Kisten und Holz
+            if werkplatz("Schmiede", [(21, 0.0, 0.0, 0), (0, -3.0, 3.7, 0), (0, -2.2, 3.8, 0), (1, 3.0, 3.7, 20),
+                                      (11, 6.2, 0.8, 90)], hof_w_, boden_, tiefe=2.0):
+                px_, pz_, (ux_, uz_), (nx_, nz_), _ = WERKPLAETZE["Schmiede"]
+                lx_, lz_ = nz_, -nx_                     # lokal x der Schmiede
+                BURG_LICHTER.append((round(px_ + lx_ * -2.2 + nx_ * -1.6, 2), round(boden_ + 1.6, 2),
+                                     round(pz_ + lz_ * -2.2 + nz_ * -1.6, 2)))
+                print("Schmiede:", round(px_, 1), round(boden_, 1), round(pz_, 1), "nach innen", round(nx_, 2), round(nz_, 2))
         werkplatz(f"Holzplatz {name_}", [(11, -1.4, 0.0, 90), (11, 1.4, 0.2, 90), (1, 0.0, 2.6, 30)], hof_w_, boden_)
         werkplatz(f"Unterstand {name_}", [(17, 0.0, 0.6, 0), (4, 3.6, 1.6, 10)], hof_w_, boden_, tiefe=1.6)
     # Feuerkörbe zu beiden Seiten jedes Tors, innen im Hof
@@ -762,6 +770,37 @@ for bau_, boden_ in [(b_, PD.H_VORBURG) for b_ in (PD.VORBURG_BAUTEN[0], PD.VORB
             BURG_LICHTER.append((round(lx_, 2), round(boden_ + 2.3, 2), round(lz_, 2)))
         _laternen += 1
 print("Werkplätze:", sorted(WERKPLAETZE), "Pferde und Heu am Stall:", _pferde, "Laternen:", _laternen, "Lichter:", len(BURG_LICHTER))
+# --- Lage eines Punktes in einem begehbaren Bau. Lage im Rahmen des Baus wie in szenen/welt/burgbau.gd (_innenraum): uz entlang des
+# Firsts, nx quer zur Tür (+B), Treppen am Giebel -L.
+def _innen(bau, hoehe, boden, art=0):
+    (pp_, laenge_, breite_, dreh_) = bau
+    x_, z_ = W(pp_)
+    g_ = math.radians(-dreh_)
+    nx_ = (math.cos(g_), -math.sin(g_))
+    uz_ = (math.sin(g_), math.cos(g_))
+    B_, L_ = breite_ * M / 2, laenge_ * M / 2
+    geschosse_ = 1 if art == 1 else max(1, int(hoehe / (4.6 if art == 3 else 3.6)))
+    gh_ = hoehe / geschosse_
+
+    def punkt(s, q, k=0):
+        return (round(x_ + uz_[0] * s + nx_[0] * q, 2), round(boden + 0.03 + k * gh_, 2), round(z_ + uz_[1] * s + nx_[1] * q, 2))
+
+    def blick(s0, q0, s1, q1):
+        a_, b_ = punkt(s0, q0), punkt(s1, q1)
+        return round(math.degrees(math.atan2(b_[0] - a_[0], b_[2] - a_[2])), 1)
+    return punkt, blick, L_ - 0.6, B_ - 0.6, geschosse_
+
+
+# Pferde in den Boxen des Stalls (Kopf zur Krippe an der Wand -B)
+pk_, bl_, iL_, iB_, _ = _innen(PD.VORBURG_BAUTEN[6], 7, PD.H_VORBURG)
+s_, _boxen = -iL_ + 0.6, 0
+while s_ < iL_ - 2.0:
+    if _boxen % 2 == 0:
+        x_, y_, z_ = pk_(s_ + 1.4, -(iB_ - 1.5))
+        BURG_AUSSTATTUNG.append((19, x_, round(y_ - 0.03, 2), z_, bl_(0, 0, 0, -1)))
+    s_ += 2.8
+    _boxen += 1
+print("Pferde in den Boxen des Stalls:", (_boxen + 1) // 2)
 print("Ausstattung der Höfe:", len(BURG_AUSSTATTUNG), "Stücke, davon", sum(1 for a_ in BURG_AUSSTATTUNG if a_[0] == 14), "Feuerkörbe;",
       "Brunnen in", sorted(BURG_BRUNNEN), "abgelehnt:", _GRUND)
 N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\n"

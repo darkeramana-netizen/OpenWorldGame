@@ -137,14 +137,14 @@ print("Burgleben: an den Lagerplätzen", _ar)
 # --- Der Schmied am Amboss ---
 if "Schmiede" in WERKPLAETZE:
     px_, pz_, (ux_, uz_), (nx_, nz_), boden_ = WERKPLAETZE["Schmiede"]
-    ax_, az_ = px_ + nx_ * 2.6, pz_ + nz_ * 2.6                  # Amboss
-    sx_, sz_ = ax_ + ux_ * 1.0 + nx_ * 0.6, az_ + uz_ * 1.0 + nz_ * 0.6
+    lx_, lz_ = nz_, -nx_                                         # lokal x der Schmiede (Rücken zur Mauer, offen nach n)
+    ax_, az_ = px_ + lx_ * -1.4, pz_ + lz_ * -1.4                # Amboss in der Werkstatt
+    sx_, sz_ = ax_ + lx_ * 0.85 + nx_ * 0.45, az_ + lz_ * 0.85 + nz_ * 0.45
     person("Burgschmied", BL, round(sx_, 2), boden_, round(sz_, 2), "Burgschmied Wendel Hart", "schmied_burg", 0, "0.3, 0.22, 0.16, 1",
            gier=round(math.degrees(math.atan2(ax_ - sx_, az_ - sz_)), 1), sichtbar_wenn="alarm<3")
 
 # --- Kaplan vor der Drachenkapelle, Haushofmeister vor dem Palas, Stallknecht an der Tränke ---
 for bau_, name_, anzeige_, dialog_, tracht_, boden_ in [
-        (PD.DRACHENKAPELLE, "Kaplan", "Kaplan Benedikt Saar", "kaplan", "0.15, 0.13, 0.14, 1", PD.H_KERNBURG),
         (PD.PALAS, "Haushofmeister", "Haushofmeister Reinold Esch", "haushofmeister", "0.35, 0.18, 0.15, 1", PD.H_KERNBURG)]:
     (pp_, l_, br_, dr_) = bau_
     a_ = math.radians(dr_)
@@ -162,4 +162,43 @@ if _traenke:
     sx_, sz_ = x_ + math.sin(a_) * 1.6, z_ + math.cos(a_) * 1.6
     person("Stallknecht", BL, round(sx_, 2), y_, round(sz_, 2), "Stallknecht Jorin Mähne", "burggesinde", 0, GESINDE_TRACHTEN[1],
            gier=round(g_ + 180, 1), sichtbar_wenn="alarm<3")
+
+# --- Leute in den Gebäuden: Koch und Magd in der Küche, Zeugwart, Ritter im Rittersaal, Mägde in den Gesindehäusern
+# (Lage im Bau über _innen aus teil_drachenstein.py)
+_drinnen = 0
+pk_, bl_, iL_, iB_, _ = _innen(PD.BURGKUECHE, 7, PD.H_KERNBURG)
+person("Burgkoch", BL, *pk_(iL_ - 2.3, 0.4), "Burgkoch Hamm Seidel", "koch_burg", 0, "0.62, 0.58, 0.5, 1",
+       gier=bl_(iL_ - 2.3, 0.4, iL_, 0.4), sichtbar_wenn="alarm<3")
+person("Kuechenmagd", BL, *pk_(iL_ * 0.35, -(iB_ - 1.35)), "Küchenmagd Grete Lauch", "magd_burg", 0, GESINDE_TRACHTEN[2],
+       gier=bl_(0, 0, 0, -1), sichtbar_wenn="alarm<3")
+pk_, bl_, iL_, iB_, _ = _innen(PD.ZEUGHAUS, 8, PD.H_KERNBURG)
+person("Zeugwart", BL, *pk_(iL_ * 0.3, 0.6), "Zeugwart Bertram Esch", "zeugwart", 1, WACHE_TRACHT,
+       gier=bl_(0, 0, 0, -1), sichtbar_wenn="alarm<3")
+_drinnen += 3
+pk_, bl_, iL_, iB_, gs_ = _innen(PD.PALAS, 16, PD.H_KERNBURG, art=3)
+lauf_ = (16 / gs_) * 1.75
+t0_, t1_ = -iL_ + 0.9 + lauf_ + 2.8 + 0.8, iL_ - 3.2
+for i_, (anz_, s_, e_) in enumerate([("Ritter Gunther von Asch", 0.3, 1), ("Ritterin Adela Brand", 0.6, -1),
+                                       ("Ritter Wolfram Steg", 0.75, 1)]):
+    s_ = t0_ + (t1_ - t0_) * s_
+    q_ = e_ * (iB_ - 1.9 - 1.45)
+    person(f"Ritter{i_}", BL, *pk_(s_, q_, gs_ - 1), anz_, "ritter_burg", 2, "0.38, 0.1, 0.08, 1",
+           gier=bl_(s_, q_, s_, e_ * iB_), sichtbar_wenn="alarm<3")
+    _drinnen += 1
+# Schreiber im Erdgeschoss des Palas, an einem Pult
+pk_, bl_, iL_, iB_, gs_ = _innen(PD.PALAS, 16, PD.H_KERNBURG, art=3)
+for nr_, (bau_, hoehe_, boden_, name_) in enumerate([(PD.VORBURG_BAUTEN[0], 7, PD.H_VORBURG, "Magd Liese Korb"),
+                                                     (PD.BURGHOF2_BAUTEN[2], 8, PD.H_BURGHOF2, "Magd Tilde Hanf"),
+                                                     (PD.BURGHOF2_BAUTEN[6], 8, PD.H_BURGHOF2, "Knecht Arno Wiese"),
+                                                     (PD.BURGHOF3_BAUTEN[2], 8, PD.H_KERNHOF, "Magd Berta Schaub")]):
+    pk_, bl_, iL_, iB_, _ = _innen(bau_, hoehe_, boden_)
+    q_ = -min(iB_ - 0.9, 1.7)
+    person(f"Hausgesinde{nr_}", BL, *pk_(iL_ * 0.15, q_), name_, "magd_burg", 0, GESINDE_TRACHTEN[nr_ % 4],
+           gier=bl_(0, 0, 0, 1), sichtbar_wenn="alarm<3")
+    _drinnen += 1
+# Kaplan am Altar der Kapelle (Altar am Giebel -L)
+pk_, bl_, iL_, iB_, _ = _innen(PD.DRACHENKAPELLE, 11, PD.H_KERNBURG, art=1)
+person("Kaplan", BL, *pk_(-iL_ + 2.6, 0.0), "Kaplan Benedikt Saar", "kaplan", 0, "0.15, 0.13, 0.14, 1",
+       gier=bl_(0, 0, -1, 0))
+print("Burgleben: in den Gebäuden", _drinnen, "Personen, Kaplan am Altar")
 print("Burgleben:", _wachen, "Wehrgangwachen,", _tw, "Torwachen,", _gs, "Gesinde, Kaplan, Haushofmeister" + (", Stallknecht" if _traenke else ""))

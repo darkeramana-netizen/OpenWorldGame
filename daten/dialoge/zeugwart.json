@@ -1,0 +1,23 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Jeder Spieß ist gezählt. Jeder.",
+				"Wer eine Waffe will, braucht ein Zeichen vom Hauptmann.",
+				"Das Pech in den Fässern ist für die Mauer. Nicht anfassen, es klebt eine Woche.",
+				{
+					"text": "Wächter {name}. Deine Ausrüstung liegt bereit, wenn du sie brauchst.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm! Alles raus, was eine Spitze hat!",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Und schreib dich ins Buch, bevor du gehst."
+		}
+	}
+}

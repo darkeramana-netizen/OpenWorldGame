@@ -115,8 +115,8 @@ OBERBURG_BAUTEN = [_bau((975, 325), (1025, 245), 32), _bau((1030, 248), (1112, 2
                    _bau((1012, 380), (1040, 392), 26),                                       # kleines Haus im Südwesten
                    _bau((1072, 418), (1108, 420), 24), _bau((1130, 420), (1175, 422), 22)]   # an der Südostecke steht das Torhaus über dem Südtor
 PALAS_BAUTEN = [_bau((1365, 255), (1430, 235), 40),                                          # Nordwestflügel
-                _bau((1318, 300), (1340, 275), 32), _bau((1316, 364), (1320, 402), 30),          # Westflügel (Burgküche südlich des Tors)
-                _bau((1335, 395), (1395, 445), 44),                                          # Drachenkapelle im Südwesten
+                _bau((1318, 300), (1340, 275), 32), _bau((1316, 362), (1318, 392), 30),          # Westflügel (Burgküche südlich des Tors)
+                _bau((1350, 407), (1390, 437), 44),                                          # Drachenkapelle im Südwesten
                 _bau((1410, 450), (1465, 445), 22), _bau((1470, 440), (1535, 430), 26),          # Südflügel
                 _bau((1590, 335), (1600, 410), 34),                                          # Zeughaus im Osten
                 _bau((1311, 302), (1313, 330), 30)]                                          # Westflügel nördlich des Tors
