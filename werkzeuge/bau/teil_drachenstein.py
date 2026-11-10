@@ -732,6 +732,34 @@ for k, x in enumerate([-2.5, 2.5]):
 schild("SchildUebungsplatz", OB_, 0, 3.5, 4, "Übungsplatz", 40)
 schild("SchildKernburg", BG, *(lambda p: (p[0], PD.H_KERNBURG + 10, p[1]))(W(PD.MITTE_PALAS)), "Palas", 44)
 
+# Banner an den Wänden (Art 1): an der Hofseite des Palas, am Bergfried unter der Krone und an den Tortürmen der
+# Haupttore; Gier so, dass das Tuch vor der Wand zum Hof hängt
+def _banner_plan(pp, richtung_plan, y, breite=1.6, laenge=4.5):
+    """Banner an der Wand im Planpunkt pp; richtung_plan zeigt aus der Wand heraus (Plan)."""
+    x_, z_ = W(pp)
+    nx_, nz_ = richtung_plan[1], -richtung_plan[0]          # Plan (dx, dy) → Welt (dy, -dx)
+    l_ = math.hypot(nx_, nz_)
+    FAHNEN.extend([round(x_, 2), round(y, 2), round(z_, 2), round(math.degrees(math.atan2(nx_ / l_, nz_ / l_)), 1), breite, laenge, 1])
+
+
+(pp_, l_, br_, dr_) = PD.PALAS
+_a = math.radians(dr_)
+_vor = (-math.sin(_a), math.cos(_a))
+for q_ in (-0.32, 0.0, 0.32):
+    _banner_plan((pp_[0] + _vor[0] * (br_ / 2 + 0.8) + math.cos(_a) * l_ * q_, pp_[1] + _vor[1] * (br_ / 2 + 0.8) + math.sin(_a) * l_ * q_),
+                 _vor, PD.H_KERNBURG + 14.5, 1.8, 6.0)
+_bm = PD.BERGFRIED_KERNBURG
+_zum_hof = (PD.MITTE_PALAS[0] - _bm[0], PD.MITTE_PALAS[1] - _bm[1])
+_zl = math.hypot(*_zum_hof)
+_zum_hof = (_zum_hof[0] / _zl, _zum_hof[1] / _zl)
+_banner_plan((_bm[0] + _zum_hof[0] * (PD.BERGFRIED_SEITE / M / 2 + 0.8), _bm[1] + _zum_hof[1] * (PD.BERGFRIED_SEITE / M / 2 + 0.8)),
+             _zum_hof, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE - 5.0, 3.0, 10.0)
+for tor_, hof_, boden_ in [("Rampentor", PD.MITTELBURG, PD.H_BURGHOF2), ("Palastor", PD.PALAS_HOF, PD.H_KERNBURG),
+                           ("Vorburgtor", PD.VORBURG, PD.H_VORBURG)]:
+    tw_ = W(PD.TORE[tor_])
+    (ux_, uz_), (nx_, nz_) = _naechste_kante_innen(tw_, WL(hof_))
+    # über dem Torbogen auf der Hofseite (Welt → Plan: Richtung (nx, nz) ist Plan (-nz, nx))
+    _banner_plan(PD.plan((tw_[0] + nx_ * 2.3, tw_[1] + nz_ * 2.3)), (-nz_, nx_), boden_ + 9.5, 1.6, 3.8)
 N("Fahnen", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 fahnen = PackedFloat32Array({_zahlen(FAHNEN)})
 kollision = false""")

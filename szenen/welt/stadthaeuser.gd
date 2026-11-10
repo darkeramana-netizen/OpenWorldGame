@@ -266,6 +266,44 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		for e: float in [-1.0, 1.0]:
 			_quader(flaechen, "rahmen", Vector3(e * bb - 0.035, by + 0.06, z0), Vector3(e * bb + 0.035, by + 0.95, z0 + 0.93))
 			_quader(flaechen, "balken", Vector3(e * bb - 0.04, by + 0.92, z0), Vector3(e * bb + 0.04, by + 1.0, z0 + 0.93))
+	# Vordach über der Tür (bei etwa jedem dritten Haus): Pultdach auf zwei Knaggen
+	if zufall.randf() < 0.38:
+		var vb := 1.15
+		var vy := 2.62
+		var vt := 0.95
+		_quader(flaechen, "balken", Vector3(-vb, vy - 0.08, t / 2), Vector3(vb, vy + 0.04, t / 2 + 0.12))
+		for e: float in [-1.0, 1.0]:
+			_quader(flaechen, "balken", Vector3(e * (vb - 0.12) - 0.05, vy - 0.55, t / 2), Vector3(e * (vb - 0.12) + 0.05, vy, t / 2 + 0.12))
+			_knagge(flaechen, e * (vb - 0.12), vy - 0.55, vy, t / 2, t / 2 + vt - 0.1)
+		var vs := _st(flaechen, "dach0" if nur_ziegel else "dach%d" % form[6])
+		var d0 := Vector3(-vb - 0.1, vy + 0.45, t / 2 + 0.02)
+		var d1 := Vector3(vb + 0.1, vy + 0.45, t / 2 + 0.02)
+		var d2 := Vector3(vb + 0.1, vy + 0.02, t / 2 + vt)
+		var d3 := Vector3(-vb - 0.1, vy + 0.02, t / 2 + vt)
+		_viereck(vs, d0, d1, d2, d3)
+		_viereck(vs, d3, d2, d1, d0)
+	# Erker am obersten Geschoss (bei etwa jedem vierten Haus mit mindestens zwei Obergeschossen): Fachwerkkasten an
+	# einer Ecke der Vorderseite, auf Knaggen, mit eigenem Pultdach
+	if og >= 2 and b >= 6.0 and zufall.randf() < 0.3:
+		var ex := (b / 2 - 1.1) * (1.0 if zufall.randf() < 0.5 else -1.0)
+		var ez := t / 2 + aus
+		var ey0 := EG + OG * (og - 1) + 0.15
+		var ey1 := ey0 + OG - 0.35
+		var ew := 0.85
+		var et := 0.75
+		_quader(flaechen, "putz%d" % form[5], Vector3(ex - ew, ey0, ez), Vector3(ex + ew, ey1, ez + et))
+		_fachwerk(flaechen, Vector3(ex - ew, ey0, ez), Vector3(ex + ew, ey1, ez + et))
+		_fenster(flaechen, Vector3(ex, ey0 + 0.6, ez + et), 1, 1.2, false)
+		_quader(flaechen, "balken", Vector3(ex - ew - 0.05, ey0 - 0.18, ez), Vector3(ex + ew + 0.05, ey0, ez + et + 0.05))
+		for e: float in [-1.0, 1.0]:
+			_knagge(flaechen, ex + e * (ew - 0.15), ey0 - 0.9, ey0 - 0.15, ez, ez + et - 0.1)
+		var es := _st(flaechen, "dach0" if nur_ziegel else "dach%d" % form[6])
+		var r0 := Vector3(ex - ew - 0.15, ey1 + 0.55, ez)
+		var r1 := Vector3(ex + ew + 0.15, ey1 + 0.55, ez)
+		var r2 := Vector3(ex + ew + 0.15, ey1 - 0.05, ez + et + 0.2)
+		var r3 := Vector3(ex - ew - 0.15, ey1 - 0.05, ez + et + 0.2)
+		_viereck(es, r0, r1, r2, r3)
+		_viereck(es, r3, r2, r1, r0)
 	# Sockelleiste aus Stein
 	_quader(flaechen, "quader", Vector3(-b / 2 - 0.08, -0.6, -t / 2 - 0.08), Vector3(b / 2 + 0.08, 0.45, t / 2 + 0.08))
 
@@ -398,6 +436,15 @@ func _fachwerk(flaechen: Dictionary, lo: Vector3, hi: Vector3) -> void:
 		for k in felder + 1:
 			var z := lo.z + (hi.z - lo.z) * k / felder
 			_quader(flaechen, "balken", Vector3(minf(x, xx), lo.y, z - s / 2), Vector3(maxf(x, xx), hi.y, z + s / 2))
+
+
+## Knagge: schräge Stütze unter einem vorstehenden Bauteil, als Treppe aus vier Klötzen von (x, y0, z0) an der Wand
+## bis (x, y1, z1) unter dem Bauteil
+func _knagge(flaechen: Dictionary, x: float, y0: float, y1: float, z0: float, z1: float) -> void:
+	for k in 4:
+		var t0 := float(k) / 4.0
+		var t1 := float(k + 1) / 4.0
+		_quader(flaechen, "balken", Vector3(x - 0.06, y0 + (y1 - y0) * t0, z0), Vector3(x + 0.06, y0 + (y1 - y0) * t1, z0 + (z1 - z0) * t1))
 
 
 func _strebe(flaechen: Dictionary, a: Vector3, b: Vector3, vor: float) -> void:

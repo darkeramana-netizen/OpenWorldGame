@@ -1139,6 +1139,14 @@ func _tor(c: Vector2, u: Vector2, boden: float, breite: float, oben: float, dick
 	# Brustwehr und Zinnen auf dem Bogen
 	_klotz(stein, c, u, n, -w - 0.8, w + 0.8, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
 	_zinnen(c, u, n, breite + 1.6, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR)
+	# Torflügel aus Bohlen mit Eisenbändern, geöffnet: zu beiden Seiten an die Laibung geklappt (ohne Kollision, damit
+	# sie den Durchgang nicht verengen)
+	var fl := minf(w - 0.1, 2.0 * d - 0.4)
+	for seite: float in [-1.0, 1.0]:
+		var x := seite * (w - 0.1)
+		_klotz("holz", c, u, n, x - 0.06, x + 0.06, -d + 0.15, -d + 0.15 + fl, boden + 0.05, kaempfer + w * 0.6, true)
+		for y: float in [boden + 0.6, kaempfer - 0.3, kaempfer + w * 0.4]:
+			_klotz("metall", c, u, n, x - seite * 0.08 - 0.02, x - seite * 0.08 + 0.02, -d + 0.15, -d + 0.15 + fl * 0.85, y, y + 0.12, true)
 	# Fallgitter, hochgezogen: nur die Spitzen schauen unter dem Bogen hervor
 	var unterkante := maxf(kaempfer + w * 0.45, boden + 3.2)
 	var stab := -w + 0.25
