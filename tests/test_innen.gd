@@ -173,6 +173,18 @@ func _initialize() -> void:
 	var keller := await wendel(mitte, -1, mitte.y - 23.8, 60.0)
 	pruefe(keller <= mitte.y - 23.5, "Wendelrampe hinunter bis Ebene -4 (Höhe %.1f)" % (keller - mitte.y))
 
+	# --- Drachenstein: Bergfried hinter dem Palas, durch die Tür hinein und die Wendelrampe hinauf auf die Plattform ---
+	var bf_innen: Node3D = current_scene.get_node("Drachenstein/Burgen/BergfriedInnen")
+	var bf := bf_innen.global_position
+	var tw: float = bf_innen.treppen_winkel
+	await setze(polar(bf, 15.0, tw, bf.y + 0.4))
+	var bf_drin := await gehe_ueber([polar(bf, 8.5, tw, 0), polar(bf, 5.5, tw, 0), polar(bf, 3.0, tw, 0)])
+	pruefe(bf_drin and absf(spieler().global_position.y - bf.y) < 0.6, "Drachenstein: durch die Tür in den Bergfried bis ins Treppenhaus")
+	var bf_oben := await wendel(bf, 1, bf.y + bf_innen.dach_hoehe() - 0.3, 90.0)
+	pruefe(bf_oben >= bf.y + bf_innen.dach_hoehe() - 0.5, "Drachenstein: Wendelrampe im Bergfried hinauf bis auf die Plattform (%.1f m)" % (bf_oben - bf.y))
+	await gehe_ueber(ring(bf, 5.5, tw, tw + 180.0))
+	pruefe(spieler().global_position.y > bf.y + bf_innen.dach_hoehe() - 0.5, "Drachenstein: auf der Plattform des Bergfrieds bis zur anderen Seite")
+
 	# --- Gravecrest: Fallgatter, Torhaus, Donjon ---
 	S.setze_flag("gravecrest_zugang", false)
 	await setze(Vector3(-606, 70.4, -364.8))

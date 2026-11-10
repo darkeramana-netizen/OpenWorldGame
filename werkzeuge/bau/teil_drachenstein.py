@@ -245,7 +245,12 @@ ZW = PD.ZWINGER_KERNBURG + [PD.ZWINGER_KERNBURG[0]]
 mauerring("Zwingermauer", BG, WL(ZW), 6.0, dicke=3.0, mitte=W(PD.MITTE_PALAS),
          tore=tore_an(ZW, (PD.TORE["Zwingertor des Palas"], 5.0, "", None, False), (PD.TORE["Zwingerpforte des Palas"], 3.5, "", None, False)))
 KB = PD.PALAS_HOF + [PD.PALAS_HOF[0]]
-mauerring("Kernburg", BG, WL(KB), 8.0, dicke=3.5, mitte=W(PD.MITTE_PALAS),
+# Im Bergfried steht keine Hofmauer: er hat eigene, hohle Mauern (begehbar)
+_bfa = math.radians(PD.BERGFRIED_DREH)
+_bfh = PD.BERGFRIED_SEITE / M / 2 - 1.2
+_bf_ecken = [W((PD.BERGFRIED_KERNBURG[0] + (math.cos(_bfa) * sx - math.sin(_bfa) * sy) * _bfh,
+                PD.BERGFRIED_KERNBURG[1] + (math.sin(_bfa) * sx + math.cos(_bfa) * sy) * _bfh)) for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+mauerring("Kernburg", BG, WL(KB), 8.0, dicke=3.5, mitte=W(PD.MITTE_PALAS), aussparen=[_bf_ecken],
          tore=tor_an(KB, PD.TORE["Palastor"], 5.0, "Palastor"))
 _zt = []
 for (gp, gr) in PD.G3.PALAS_ZWINGER_TUERME:
@@ -264,15 +269,61 @@ _HOF_TUERME.append(_eb[0])
 
 # Bergfried (wie im Referenzbild): sehr hoher, schlichter Vierkantturm mit Zinnenkrone, an der Nordmauer hinter dem Palas
 bx, bz = W(PD.BERGFRIED_KERNBURG)
+# Begehbar (Dach -2): hohle Mauern, die Tür auf der Seite zum Hof neben dem Palas (Welt -u); innen baut turm.gd
+# Böden, Treppenhaus und eine Wendelrampe bis auf die Plattform unter der Krone.
+_bu = richtung_welt(PD.BERGFRIED_DREH)                  # Welt u (entlang der Nordostmauer)
+_bn = (-_bu[1], _bu[0])                                  # Welt n
 N("BergfriedKernburg", "Node3D", BG, f"""script = ExtResource("28_burgbau")
-torbauten = PackedFloat32Array({_zahlen([bx, bz, *richtung_welt(PD.BERGFRIED_DREH), PD.H_KERNBURG - 3, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE, PD.BERGFRIED_SEITE, PD.BERGFRIED_SEITE, 1, -1])})""")
+hohl_boden = {PD.H_KERNBURG}
+torbauten = PackedFloat32Array({_zahlen([bx, bz, round(_bn[0], 4), round(_bn[1], 4), PD.H_KERNBURG - 3, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE, PD.BERGFRIED_SEITE, PD.BERGFRIED_SEITE, -1, -2])})""")
+_bh = PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE - PD.H_KERNBURG
+_bstufe = _bh / 8
+_tuer_w = round(math.degrees(math.atan2(-_bu[1], -_bu[0])), 2)
+_innen = PD.BERGFRIED_SEITE / 2 - 2.5 + 0.3
+N("BergfriedInnen", "Node3D", BG, f"""transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, {bx}, {PD.H_KERNBURG}, {bz})
+script = ExtResource("14_turm")
+ebenen_nummern = PackedInt32Array(0, 1, 2, 3, 4, 5, 6, 7)
+ebenen_namen = PackedStringArray("Eingang", "Wachstube", "Vorratskammer", "Waffenkammer", "Kammer des Komturs", "Archiv", "Glockenstube", "Türmerstube")
+boden_hoehen = PackedFloat32Array({", ".join(f"{k * _bstufe:.3f}" for k in range(9))})
+aussen_radien = PackedFloat32Array({", ".join([f"{_innen / math.cos(math.pi / 4):.3f}"] * 8)})
+wandstaerken = PackedFloat32Array({", ".join(["0.5"] * 8)})
+ecken = 4
+ohne_mauer = true
+achteck_winkel = {_tuer_w}
+treppen_winkel = {_tuer_w}
+treppenhaus_radius = 4.2
+saeulen_radius = 1.1
+material_wand = ExtResource("Material_mauer")
+material_boden = ExtResource("Material_boden")
+material_rampe = ExtResource("Material_holz")""")
+# Einrichtung der Ebenen (in den vier Ecken des Raums um das Treppenhaus, die Tür zum Treppenhaus bleibt frei)
+BI = BG + "/BergfriedInnen"
+_ecke = lambda k_, r_=7.4: (round(r_ * math.cos(math.radians(_tuer_w + 45 + 90 * k_)), 2), round(r_ * math.sin(math.radians(_tuer_w + 45 + 90 * k_)), 2))
+_drehung = lambda k_: round(-(_tuer_w + 45 + 90 * k_), 1)
+for ebene_, teile_ in enumerate([
+        [("Bank", 2.6, 0.45, 0.5, "Material_holz"), ("Bank", 2.6, 0.45, 0.5, "Material_holz"), ("Waffen", 1.6, 2.2, 0.4, "Material_metall"), ("Truhe", 1.2, 0.7, 0.8, "Material_holz")],
+        [("Tisch", 2.2, 0.8, 1.1, "Material_holz"), ("Bank", 2.2, 0.45, 0.45, "Material_holz"), ("Fass", 0.8, 1.0, 0.8, "Material_holz"), ("Pritsche", 2.0, 0.5, 0.9, "Material_stoff")],
+        [("Kisten", 1.6, 1.6, 1.6, "Material_holz"), ("Kisten", 1.6, 1.2, 1.6, "Material_holz"), ("Saecke", 1.4, 0.8, 1.2, "Material_stoff"), ("Faesser", 1.6, 1.0, 1.6, "Material_holz")],
+        [("Spiesse", 2.0, 2.6, 0.4, "Material_metall"), ("Ruestung", 0.6, 1.9, 0.6, "Material_metall"), ("Spiesse", 2.0, 2.6, 0.4, "Material_metall"), ("Schilde", 1.6, 1.4, 0.3, "Material_holz")],
+        [("Bett", 2.2, 0.6, 1.5, "Material_stoff"), ("Tisch", 1.8, 0.8, 1.0, "Material_holz"), ("Truhe", 1.4, 0.8, 0.8, "Material_holz"), ("Teppich", 2.6, 0.03, 1.8, "Material_stoff")],
+        [("Regal", 2.4, 2.6, 0.5, "Material_holz"), ("Pult", 1.4, 1.1, 0.9, "Material_papier"), ("Regal", 2.4, 2.6, 0.5, "Material_holz"), ("Truhe", 1.2, 0.7, 0.8, "Material_holz")],
+        [("Glockenstuhl", 2.6, 0.3, 0.3, "Material_holz"), ("Seil", 0.1, 3.0, 0.1, "Material_holz"), ("Kisten", 1.2, 1.0, 1.2, "Material_holz"), ("Bank", 2.0, 0.45, 0.5, "Material_holz")],
+        [("Tisch", 1.8, 0.8, 1.0, "Material_holz"), ("Feuerbecken", 1.0, 0.9, 1.0, "Material_metall"), ("Pritsche", 2.0, 0.5, 0.9, "Material_stoff"), ("Fass", 0.8, 1.0, 0.8, "Material_holz")]]):
+    y0_ = ebene_ * _bstufe
+    for k_, (n_, sx_, sy_, sz_, mat_) in enumerate(teile_):
+        x_, z_ = _ecke(k_)
+        box(f"E{ebene_}{n_}{k_}", BI, x_, round(y0_ + sy_ / 2, 2), z_, sx_, sy_, sz_, mat_, gier=_drehung(k_) + 45)
+    if ebene_ == 6:      # die Glocke hängt über der Mitte des Raums an einem Balken
+        x_, z_ = _ecke(0, 6.0)
+        zyl("Glocke", BI, x_, round(y0_ + 4.2, 2), z_, 0.9, 1.4, "Material_metall", 12, kollision=False)
+BERGFRIED_TUER = (round(bx - _bu[0] * PD.BERGFRIED_SEITE / 2, 2), round(bz - _bu[1] * PD.BERGFRIED_SEITE / 2, 2))
 _HOF_TUERME.append(PD.BERGFRIED_KERNBURG)
 schild("SchildBergfriedKernburg", BG, bx, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE + 12, bz, "Bergfried", 56)
 FAHNEN.extend([bx, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE + 0.05, bz, 30, 3.6, 6.0, 0])
 
 # Palas: drei Geschosse mit gotischen Doppelfenstern, steiles Schieferdach, an der Nordostmauer
 gebaeude("Palas", BG, PD.PALAS, 16, PD.H_KERNBURG, mat="Material_hell", dachhoehe=11, art=3, zweck=3)
-gebaeude("Drachenkapelle", BG, PD.DRACHENKAPELLE, 11, PD.H_KERNBURG, mat="Material_hell", art=1, dachhoehe=8)
+gebaeude("Drachenkapelle", BG, PD.DRACHENKAPELLE, 11, PD.H_KERNBURG, mat="Material_hell", art=1, dachhoehe=8, zweck=6)
 gebaeude("Burgkueche", BG, PD.BURGKUECHE, 7, PD.H_KERNBURG, dach="Material_dach", zweck=1)
 gebaeude("Zeughaus", BG, PD.ZEUGHAUS, 8, PD.H_KERNBURG, zweck=2)
 

@@ -22,6 +22,11 @@ extends Node3D
 @export var eingang_hoehe: float = 5.0
 ## Drehung des Achtecks: Eine Seite zeigt genau in diese Richtung.
 @export var achteck_winkel: float = 0.0
+## Anzahl der Ecken (8 Achteck, 4 Vierkantturm)
+@export var ecken: int = 8
+## Nur das Innere (Böden, Treppenhaus, Rampe, Säule, Dachboden): die Außenmauern und die Krone baut ein anderer
+## Baustein (z. B. der Bergfried in burgbau.gd)
+@export var ohne_mauer := false
 @export var treppen_winkel: float = 0.0
 @export var treppenhaus_radius: float = 4.6
 @export var saeulen_radius: float = 1.2
@@ -90,7 +95,8 @@ func _baue() -> void:
 	var n := ebenen_anzahl()
 	for i in n:
 		_beginne_mesh()
-		_baue_mauer(i)
+		if not ohne_mauer:
+			_baue_mauer(i)
 		_baue_boden(i)
 		_baue_rampe(i)
 		_baue_treppenhaus(i)
@@ -150,18 +156,18 @@ func _baue_mauer(i: int) -> void:
 	var oben := boden_hoehen[i + 1]
 	var r := aussen_radien[i]
 	var staerke := wandstaerken[i]
-	var apothem := r * cos(deg_to_rad(22.5))
-	var laenge := 2.0 * apothem * tan(deg_to_rad(22.5)) + 0.05
+	var apothem := r * cos(deg_to_rad(_halb()))
+	var laenge := 2.0 * apothem * tan(deg_to_rad(_halb())) + 0.05
 	var tueren: Array[float] = []
 	for e in eingaenge:
 		if int(e.x) == ebenen_nummern[i]:
 			tueren.append(e.y)
-	for k in 8:
-		var winkel := achteck_winkel + k * 45.0
+	for k in ecken:
+		var winkel := achteck_winkel + k * 360.0 / ecken
 		var mitte := apothem - staerke / 2.0
 		var hat_tuer := false
 		for t in tueren:
-			if absf(angle_difference(deg_to_rad(t), deg_to_rad(winkel))) < deg_to_rad(22.5):
+			if absf(angle_difference(deg_to_rad(t), deg_to_rad(winkel))) < deg_to_rad(_halb()):
 				hat_tuer = true
 		if not hat_tuer:
 			_quader_tangential(_st_wand, winkel, mitte, 0.0, laenge, unten, oben, staerke)
@@ -176,7 +182,7 @@ func _baue_mauer(i: int) -> void:
 
 func _baue_boden(i: int) -> void:
 	var hoehe := boden_hoehen[i]
-	var apothem := aussen_radien[i] * cos(deg_to_rad(22.5))
+	var apothem := aussen_radien[i] * cos(deg_to_rad(_halb()))
 	var loch := 0.0 if i == 0 else treppenhaus_radius
 	_ring(_st_boden, hoehe, loch, apothem)
 
@@ -185,7 +191,7 @@ func _baue_dach() -> void:
 	var n := ebenen_anzahl()
 	var hoehe := dach_hoehe()
 	var r := aussen_radien[n - 1]
-	var apothem := r * cos(deg_to_rad(22.5))
+	var apothem := r * cos(deg_to_rad(_halb()))
 	_ring(_st_boden, hoehe, treppenhaus_radius, apothem)
 	# Absatz über dem Treppenhaus: Nur das letzte Viertel vor der Ankunft der Rampe bleibt
 	# offen, damit niemand auf dem Dach ins Treppenloch fällt.
@@ -194,9 +200,11 @@ func _baue_dach() -> void:
 	var frei := clampf((letzte_hoehe - BODEN_STAERKE - 2.4) / letzte_hoehe * 360.0, 0.0, 300.0)
 	_scheibe(_st_boden, hoehe, treppenhaus_radius, treppen_winkel, treppen_winkel + frei)
 	# Brüstung mit Zinnen.
-	var laenge := 2.0 * apothem * tan(deg_to_rad(22.5)) + 0.05
-	for k in 8:
-		var winkel := achteck_winkel + k * 45.0
+	var laenge := 2.0 * apothem * tan(deg_to_rad(_halb())) + 0.05
+	if ohne_mauer:
+		return
+	for k in ecken:
+		var winkel := achteck_winkel + k * 360.0 / ecken
 		_quader_tangential(_st_wand, winkel, apothem - 0.5, 0.0, laenge, hoehe, hoehe + 1.0, 1.0)
 		for z in [-1, 0, 1]:
 			_quader_tangential(_st_wand, winkel, apothem - 0.5, z * laenge / 3.0, laenge / 6.0,
@@ -261,7 +269,7 @@ func _baue_saeule() -> void:
 func _baue_licht_und_schild(i: int) -> void:
 	var unten := boden_hoehen[i]
 	var hoehe := boden_hoehen[i + 1] - unten
-	var innen := aussen_radien[i] * cos(deg_to_rad(22.5)) - wandstaerken[i]
+	var innen := aussen_radien[i] * cos(deg_to_rad(_halb())) - wandstaerken[i]
 	var gegenueber := deg_to_rad(treppen_winkel + 180.0)
 	if mit_licht:
 		var licht := OmniLight3D.new()
@@ -354,7 +362,7 @@ func _scheibe(st: SurfaceTool, hoehe: float, radius: float, von: float, bis: flo
 
 
 func _achteck_rand(w: float, apothem: float) -> Vector3:
-	var relativ := fposmod(rad_to_deg(w) - achteck_winkel + 22.5, 45.0) - 22.5
+	var relativ := fposmod(rad_to_deg(w) - achteck_winkel + _halb(), 2.0 * _halb()) - _halb()
 	var r := apothem / cos(deg_to_rad(relativ))
 	return Vector3(cos(w), 0.0, sin(w)) * r
 
@@ -368,3 +376,8 @@ func _viereck(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, n
 	st.set_normal(normale)
 	for index in [0, 1, 2, 0, 2, 3]:
 		st.add_vertex(punkte[index])
+
+
+## Halber Winkel einer Seite (22,5° beim Achteck, 45° beim Viereck)
+func _halb() -> float:
+	return 180.0 / ecken

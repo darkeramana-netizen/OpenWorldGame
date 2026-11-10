@@ -78,6 +78,10 @@ extends Node3D
 const ZINNE_BREITE := 1.5
 const ZINNE_ABSTAND := 2.5
 const BRUSTWEHR := 1.1       # Höhe der Brustwehr über dem Wehrgang
+const HOHL_WAND := 2.5       # Mauerstärke eines begehbaren Bergfrieds
+const HOHL_TUER := 3.0
+## Fußboden im Erdgeschoss eines begehbaren Bergfrieds (Torbau mit Dach -2)
+@export var hohl_boden := 0.0
 const ZINNE_HOEHE := 1.5     # Zinnen darüber
 const BRUSTWEHR_DICKE := 0.6
 const KAEMPFER := 3.4        # Höhe, in der der Torbogen ansetzt
@@ -913,7 +917,8 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 			add_child(l)
 
 
-## Einrichtung nach dem Zweck des Baus (Gebäudewert Art // 100): 1 Küche, 2 Zeughaus, 3 Palas, 4 Stall, 5 Gesindehaus.
+## Einrichtung nach dem Zweck des Baus (Gebäudewert Art // 100): 1 Küche, 2 Zeughaus, 3 Palas (oben der Rittersaal), 4 Stall,
+## 5 Gesindehaus, 6 Kapelle.
 ## Die Möbel stehen an den Wänden; Tür (Mitte der Längsseite +B), Treppen (am Giebel -L) und die Mitte bleiben frei.
 func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, iB: float, fb: float, gh: float, stockwerke: int,
 		lauf: float, decke_oben: float) -> void:
@@ -969,6 +974,15 @@ func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, i
 								_klotz("metall", sm, uz, nx, -0.08, 0.08, -0.05, 0.05, y + 2.22, y + 2.38)
 					s_ += 1.8
 					i += 1
+				# Schleifstein, Pfeilbündel und Pechfässer an der Giebelwand +L
+				if k == 0:
+					var gm := c + uz * (iL - 1.0)
+					_klotz("holz", gm + nx * 1.6, uz, nx, -0.3, 0.3, -0.5, 0.5, y, y + 0.7)
+					_klotz("bruchstein", gm + nx * 1.6, uz, nx, -0.07, 0.07, -0.45, 0.45, y + 0.5, y + 1.3)
+					for i2 in 4:
+						var pm := gm + nx * (-0.4 - i2 * 0.7)
+						_klotz("holz", pm, uz, nx, -0.2, 0.2, -0.2, 0.2, y, y + 0.9)
+						_klotz("metall", pm, uz, nx, -0.22, 0.22, -0.22, 0.22, y + 0.85, y + 0.9)
 			3:   # Palas: Teppich, Thron am Giebel +L, Wandteppiche, Kerzenständer
 				_klotz("stoff", c, uz, nx, -iL * 0.6, iL * 0.6, -1.3, 1.3, y, y + 0.02)
 				if k == stockwerke - 1 or stockwerke == 1:
@@ -989,6 +1003,67 @@ func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, i
 					ws += 6.0
 				for e: float in [-1.0, 1.0]:
 					_leuchter(c + uz * (iL * 0.42 + e * 3.5) + nx * 1.6, uz, nx, y)
+				if k == stockwerke - 1:
+					# Rittersaal: zwei lange Tafeln an den Längswänden mit Bänken, Krüge und Teller darauf, dazwischen
+					# der Teppich zum Thron; ein großer Kamin in der Mitte der Längswand -B, Kronleuchter an Ketten
+					var t0 := frei_s + 0.8
+					var t1 := iL - 3.2
+					if t1 - t0 > 3.0:
+						for e: float in [-1.0, 1.0]:
+							var q := e * (iB - 1.9)
+							var tm := c + uz * ((t0 + t1) / 2.0) + nx * q
+							var tl := (t1 - t0) / 2.0
+							_klotz("holz", tm, uz, nx, -tl, tl, -0.55, 0.55, y + 0.74, y + 0.82)
+							var bs := -tl + 0.3
+							while bs < tl:
+								_klotz("holz", tm + uz * bs, uz, nx, -0.08, 0.08, -0.45, 0.45, y, y + 0.74)
+								bs += 2.4
+							for f: float in [-1.0, 1.0]:
+								_klotz("holz", tm + nx * f * 0.95, uz, nx, -tl, tl, -0.17, 0.17, y + 0.42, y + 0.48)
+							var gs := -tl + 0.6
+							var gi := 0
+							while gs < tl - 0.3:
+								_klotz("metall" if gi % 3 == 0 else "hell", tm + uz * gs + nx * (0.25 if gi % 2 == 0 else -0.25), uz, nx,
+									-0.1, 0.1, -0.1, 0.1, y + 0.82, y + 0.86 + 0.14 * float(gi % 3 == 0))
+								gs += 0.8
+								gi += 1
+						var km := c + uz * ((t0 + t1) / 2.0) + nx * -(iB - 0.45)
+						_klotz("bruchstein", km, uz, nx, -1.8, -1.3, -0.45, 0.45, y, y + 1.8)
+						_klotz("bruchstein", km, uz, nx, 1.3, 1.8, -0.45, 0.45, y, y + 1.8)
+						_klotz("bruchstein", km, uz, nx, -2.0, 2.0, -0.6, 0.45, y + 1.8, y + 2.2, true)
+						_klotz("bruchstein", km, uz, nx, -1.2, 1.2, -0.3, 0.45, y + 2.2, decke)
+						_klotz("glut", km, uz, nx, -1.1, 1.1, -0.3, 0.3, y, y + 0.4)
+						for e: float in [-0.5, 0.5]:
+							var lm := c + uz * (t0 + (t1 - t0) * (0.5 + e * 0.6))
+							var ly := minf(y + 3.6, decke - 1.0)
+							_klotz("metall", lm, uz, nx, -0.02, 0.02, -0.02, 0.02, ly + 0.2, decke)
+							for w in 8:
+								var a := TAU * w / 8.0
+								var rp := lm + uz * cos(a) * 0.9 + nx * sin(a) * 0.9
+								_klotz("metall", rp, uz, nx, -0.06, 0.06, -0.06, 0.06, ly, ly + 0.08)
+								_klotz("glut", rp, uz, nx, -0.02, 0.02, -0.02, 0.02, ly + 0.08, ly + 0.22)
+							var kl := OmniLight3D.new()
+							kl.light_color = Color(1.0, 0.78, 0.5)
+							kl.light_energy = 2.2
+							kl.omni_range = 11.0
+							kl.position = Vector3(lm.x, ly - 0.2, lm.y)
+							add_child(kl)
+			6:   # Kapelle: Altarbild, zwei Kerzenleuchter am Altar, Taufstein beim Eingang, Banner an den Wänden
+				var am := c + uz * (-iL + 0.08)
+				_klotz("stoff", am, uz, nx, -0.04, 0.04, -1.6, 1.6, y + 1.8, y + 4.6)
+				_klotz("holz", am, uz, nx, -0.08, 0.1, -1.75, 1.75, y + 4.6, y + 4.8)
+				_klotz("hell", am, uz, nx, -0.06, 0.06, -0.12, 0.12, y + 2.6, y + 4.1)
+				_klotz("hell", am, uz, nx, -0.06, 0.06, -0.75, 0.75, y + 3.5, y + 3.74)
+				for e: float in [-1.0, 1.0]:
+					_leuchter(c + uz * (-iL + 1.9) + nx * e * 2.2, uz, nx, y)
+				var fm := c + uz * (iL - 2.2) + nx * (iB - 1.4)
+				_klotz("hell", fm, uz, nx, -0.3, 0.3, -0.3, 0.3, y, y + 0.7)
+				_klotz("hell", fm, uz, nx, -0.5, 0.5, -0.5, 0.5, y + 0.7, y + 1.0)
+				var ws := -iL + 4.5
+				while ws < iL - 4.0:
+					for e: float in [-1.0, 1.0]:
+						_klotz("stoff", c + uz * ws + nx * e * (iB - 0.04), uz, nx, -0.6, 0.6, -0.03, 0.03, y + 2.5, y + 5.5)
+					ws += 5.0
 			4:   # Stall: Boxen mit Trennwänden und Krippen an der Längswand -B, Heu und Stroh
 				if k == 0:
 					var s_ := frei_s
@@ -1170,11 +1245,18 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 	var b := breite / 2.0
 	var t := tiefe / 2.0
 	var h := oben - unten
-	_klotz(stein, c, u, n, -b, b, -t, t, unten, oben)
+	var hohl := dach <= -1.5          # begehbarer Bergfried: Mauern mit Tür zur Hofseite (-n), innen baut turm.gd
+	if hohl:
+		_hohl(c, u, n, b, t, HOHL_WAND, unten, oben, hohl_boden)
+	else:
+		_klotz(stein, c, u, n, -b, b, -t, t, unten, oben)
 	# Anlauf rundum
 	var vor := clampf(h * 0.08, 0.5, 1.2)
 	var hoch := clampf(h * 0.25, 1.5, 5.0)
-	_klotz(stein, c, u, n, -b - vor * 0.5, b + vor * 0.5, -t - vor * 0.5, t + vor * 0.5, unten, unten + hoch * 0.5)
+	if hohl:
+		_hohl(c, u, n, b + vor * 0.5, t + vor * 0.5, HOHL_WAND + vor * 0.5, unten, unten + hoch * 0.5, hohl_boden)
+	else:
+		_klotz(stein, c, u, n, -b - vor * 0.5, b + vor * 0.5, -t - vor * 0.5, t + vor * 0.5, unten, unten + hoch * 0.5)
 	# Ecksteine (Eckquaderung) in hellerem Stein
 	var y := unten + hoch
 	var wechsel := false
@@ -1188,7 +1270,10 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 		y += 0.5
 		wechsel = not wechsel
 	# Gesims
-	_klotz(stein, c, u, n, -b - 0.2, b + 0.2, -t - 0.2, t + 0.2, oben - 0.5, oben - 0.2, true)
+	if hohl:
+		_hohl(c, u, n, b + 0.2, t + 0.2, 0.6, oben - 0.5, oben - 0.2, -1000.0)
+	else:
+		_klotz(stein, c, u, n, -b - 0.2, b + 0.2, -t - 0.2, t + 0.2, oben - 0.5, oben - 0.2, true)
 	# Pechnasen: Kragsteine und vorkragende Brustwehr auf der Feldseite
 	var k := -b + 0.4
 	while k < b - 0.2:
@@ -1200,7 +1285,7 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 		_klotz("dunkel", c, u, n, -0.08, 0.08, seite * t - 0.02 if seite > 0 else -t - 0.015, seite * t + 0.015 if seite > 0 else -t + 0.02,
 			unten + h * 0.55, unten + h * 0.55 + 1.2)
 	if dach < 0.0:
-		_bergfried_krone(c, u, n, b, t, unten, oben)
+		_bergfried_krone(c, u, n, b, t, unten, oben, hohl)
 	elif dach >= 1.0:
 		# Mauerband rundum bis unter das Dach, sonst schwebt es über dem Turm
 		_klotz(stein, c, u, n, -b, b, -t, t, oben, oben + 1.3)
@@ -1234,11 +1319,12 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 
 ## Krone eines Bergfrieds (dach < 0): Zinnenplattform, vier Ecktürmchen mit Kegeldach auf Kragsteinen, Reihen von
 ## Schießscharten und oben große Bogenfenster.
-func _bergfried_krone(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, unten: float, oben: float) -> void:
+func _bergfried_krone(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, unten: float, oben: float, hohl := false) -> void:
 	# Schlichter Vierkantturm wie im Referenzbild: Bogenfries unter einer leicht vorkragenden Brustwehr mit Zinnen,
 	# oben auf jeder Seite ein gekuppeltes Rundbogenfenster, darunter nur Schlitze.
 	var vor := 0.35
-	_klotz("boden", c, u, n, -b, b, -t, t, oben, oben + 0.05)
+	if not hohl:
+		_klotz("boden", c, u, n, -b, b, -t, t, oben, oben + 0.05)     # hohl: das Dach mit dem Treppenloch baut turm.gd
 	for seite in [[u, n, b, t], [-u, -n, b, t], [n, -u, t, b], [-n, u, t, b]]:
 		var su: Vector2 = seite[0]
 		var sn: Vector2 = seite[1]
@@ -1268,9 +1354,16 @@ func _bergfried_krone(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, un
 		_klotz("hell", m, su, sn, -1.4, 1.4, -0.02, 0.2, yf - 0.25, yf, true)    # Sohlbank
 	# Gliederung wie im Referenzbild: geböschter Sockel, ein Gesimsband unter dem Obergeschoss, darunter auf jeder
 	# Seite ein einzelnes Rundbogenfenster
-	_klotz(stein, c, u, n, -b - 0.6, b + 0.6, -t - 0.6, t + 0.6, unten, unten + 5.5, true)
-	_klotz("hell", c, u, n, -b - 0.7, b + 0.7, -t - 0.7, t + 0.7, unten + 5.5, unten + 5.85, true)
-	_klotz("hell", c, u, n, -b - 0.18, b + 0.18, -t - 0.18, t + 0.18, oben - 9.6, oben - 9.25, true)
+	if hohl:
+		_hohl(c, u, n, b + 0.6, t + 0.6, HOHL_WAND + 0.6, unten, unten + 5.5, hohl_boden)
+		_hohl(c, u, n, b + 0.7, t + 0.7, 0.7, unten + 5.5, unten + 5.85, hohl_boden)
+	else:
+		_klotz(stein, c, u, n, -b - 0.6, b + 0.6, -t - 0.6, t + 0.6, unten, unten + 5.5, true)
+		_klotz("hell", c, u, n, -b - 0.7, b + 0.7, -t - 0.7, t + 0.7, unten + 5.5, unten + 5.85, true)
+	if hohl:
+		_hohl(c, u, n, b + 0.18, t + 0.18, 0.5, oben - 9.6, oben - 9.25, -1000.0)
+	else:
+		_klotz("hell", c, u, n, -b - 0.18, b + 0.18, -t - 0.18, t + 0.18, oben - 9.6, oben - 9.25, true)
 	for seite in [[u, n, b, t], [-u, -n, b, t], [n, -u, t, b], [-n, u, t, b]]:
 		_rundbogen(c + seite[1] * (seite[3] + 0.02), seite[0], seite[1], oben - 16.5, 1.0, 2.4, 0.22)
 	# Schlitze in Reihen
@@ -1279,6 +1372,24 @@ func _bergfried_krone(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, un
 		for seite in [[u, n, b, t], [-u, -n, b, t], [n, -u, t, b], [-n, u, t, b]]:
 			_klotz("dunkel", c + seite[1] * seite[3], seite[0], seite[1], -0.09, 0.09, -0.04, 0.02, y, y + 1.4)
 		y += 7.0
+
+
+## Hohler Turmkörper: vier Mauern der Stärke dicke um die Mitte, auf der Seite -n eine Tür (HOHL_TUER breit, unten
+## ab tuer_boden 3,6 m hoch) mit einem Rahmen aus hellem Stein.
+func _hohl(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, dicke: float, unten: float, oben: float, tuer_boden: float) -> void:
+	_klotz(stein, c, u, n, -b, b, t - dicke, t, unten, oben)
+	_klotz(stein, c, u, n, -b, -b + dicke, -t + dicke, t - dicke, unten, oben)
+	_klotz(stein, c, u, n, b - dicke, b, -t + dicke, t - dicke, unten, oben)
+	var w := HOHL_TUER / 2.0
+	var th := tuer_boden + 3.6
+	_klotz(stein, c, u, n, -b, -w, -t, -t + dicke, unten, oben)
+	_klotz(stein, c, u, n, w, b, -t, -t + dicke, unten, oben)
+	if oben > th:
+		_klotz(stein, c, u, n, -w, w, -t, -t + dicke, maxf(unten, th), oben)
+	if unten < tuer_boden:
+		_klotz(stein, c, u, n, -w, w, -t, -t + dicke, unten, minf(oben, tuer_boden))
+	if unten <= th and oben >= th:
+		_klotz("hell", c, u, n, -w - 0.3, w + 0.3, -t - 0.12, -t + 0.05, th, th + 0.4)
 
 
 ## Treppe aus Steinstufen (je 0,25 m) zwischen zwei Wangenmauern, alle 16 Stufen ein Absatz.

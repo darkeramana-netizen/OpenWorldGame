@@ -83,14 +83,23 @@ def _zahlen(werte):
 MAUERSTUECKE = []   # (Name, ax, az, bx, bz, Wehrgang, Dicke, außen) aller Mauerstücke, z. B. für Wachen auf der Mauer
 
 
+def _drin_poly(q, poly):
+    x, z = q; innen = False
+    for (x1, z1), (x2, z2) in zip(poly, poly[1:] + poly[:1]):
+        if (z1 > z) != (z2 > z) and x < x1 + (z - z1) * (x2 - x1) / (z2 - z1):
+            innen = not innen
+    return innen
+
+
 def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=None, strassen=(), torbreite=6.0,
              turm_r=0.0, turm_extra=5.0, turm_dach=True, mitte=(0, 0), zinnen=True, mat="Material_mauer",
-             torname="", hoehe_min=None, oben_fest=None):
+             torname="", hoehe_min=None, oben_fest=None, aussparen=()):
     """Mauer entlang eines Linienzugs (Welt x, z). tore: {Kantenindex: (Anteil, Breite, Name)}; dazu Tore,
     wo Straßen kreuzen. turm_r > 0: Rundtürme an den Ecken. mitte: ein Punkt innerhalb (für die Feldseite).
     Gebaut wird von szenen/welt/burgbau.gd (Anlauf, Gesims, Wehrgang, Zinnen, Rundtürme, Torbögen); hier
     entstehen nur die Maße. Gibt die Liste der Tore zurück: (x, z, Richtung x, Richtung z, Name).
-    oben_fest: Mauerkrone auf genau dieser Höhe (Kaimauern bündig mit dem Kai)."""
+    oben_fest: Mauerkrone auf genau dieser Höhe (Kaimauern bündig mit dem Kai).
+    aussparen: Vielecke (Welt), in denen keine Mauer steht (dort steht z. B. ein begehbarer Turm mit eigenen Mauern)."""
     pkt = punkte + [punkte[0]] if geschlossen else list(punkte)
     tore = dict(tore or {})
     for i in range(len(pkt) - 1):
@@ -121,11 +130,15 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
         for t0, t1 in abschnitte:
             if t1 - t0 <= 0.001:
                 continue
-            n = max(1, math.ceil(laenge * (t1 - t0) / 16))
+            nah = any(min(math.dist(q_, (x1 + (x2 - x1) * f_, z1 + (z2 - z1) * f_)) for f_ in (0, 0.25, 0.5, 0.75, 1))
+                      < laenge + 30 for poly_ in aussparen for q_ in poly_)
+            n = max(1, math.ceil(laenge * (t1 - t0) / (1.0 if nah else 16)))
             for k in range(n):
                 u0 = t0 + (t1 - t0) * k / n; u1 = t0 + (t1 - t0) * (k + 1) / n
                 ax, az = x1 + (x2 - x1) * u0, z1 + (z2 - z1) * u0
                 bx, bz = x1 + (x2 - x1) * u1, z1 + (z2 - z1) * u1
+                if any(_drin_poly(((ax + bx) / 2, (az + bz) / 2), poly_) for poly_ in aussparen):
+                    continue
                 werte = [H(ax + (bx - ax) * s / 4 + nx * o, az + (bz - az) * s / 4 + nz * o)
                          for s in range(5) for o in (-dicke / 2 - 2, 0, dicke / 2 + 2)]
                 unten = min(werte) - 2.5
