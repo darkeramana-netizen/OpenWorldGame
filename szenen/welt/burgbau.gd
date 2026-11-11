@@ -2341,6 +2341,16 @@ func _material(name_: String) -> Material:
 		var basis: StandardMaterial3D = _material(name_.trim_suffix("_uv")).duplicate()
 		basis.uv1_triplanar = false
 		basis.uv1_world_triplanar = false
+		# Dächer: Ziegel- und Schieferreihen mit echter Tiefe (Parallax, braucht die Tangenten der _uv-Flächen)
+		var hk := {"dach": ["schiefer", 2.2], "ziegel": ["dach", 3.0]}
+		var basisname := name_.trim_suffix("_uv")
+		if hk.has(basisname):
+			basis.heightmap_enabled = true
+			basis.heightmap_texture = load("res://texturen/%s_hoehe.jpg" % hk[basisname][0])
+			basis.heightmap_scale = hk[basisname][1]
+			basis.heightmap_deep_parallax = true
+			basis.heightmap_min_layers = 6
+			basis.heightmap_max_layers = 16
 		_materialien[name_] = basis
 		return basis
 	var m: Material

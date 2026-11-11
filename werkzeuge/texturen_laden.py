@@ -7,6 +7,7 @@ das Skript nach texturen/groessen.json; texturen_erzeugen.py liest sie für die 
 
 Aufruf:  python3 werkzeuge/texturen_laden.py            # alle
          python3 werkzeuge/texturen_laden.py quader dach  # nur diese
+         python3 werkzeuge/texturen_laden.py --hoehen     # nur die Höhenkarten (<name>_hoehe.jpg)
 Danach:  python3 werkzeuge/texturen_erzeugen.py material  # Materialien mit den echten Kachelgrößen
 """
 import io, json, sys, urllib.request
@@ -38,6 +39,8 @@ QUELLEN = {
     "sumpf": ("mud_forest", "1k", False),
 }
 API = "https://api.polyhaven.com"
+# Texturen mit Höhenkarte (<name>_hoehe.jpg): Mauern, Böden, Dächer, Holz
+MIT_HOEHE = {"quader", "bruchstein", "basalt", "hellstein", "holz", "dach", "schiefer", "platten", "pflaster", "putz"}
 # Kantenlänge einer Kachel für ambientCG-Texturen (die API nennt keine Größe)
 ACG_METER = {"Grass004": 2.0}
 
@@ -77,12 +80,30 @@ def lade(name):
         if endung == "rau" and bild.width > 1024:
             bild = bild.resize((1024, 1024), Image.LANCZOS)
         bild.save(ZIEL / f"{name}_{endung}.jpg", quality=88, optimize=True)
+    if name in MIT_HOEHE:
+        # Höhenkarte (Displacement) für Parallax und Fugenschatten im Steinshader, 1k reicht
+        url = dateien["Displacement"]["1k"]["jpg"]["url"]
+        bild = ImageOps.autocontrast(Image.open(io.BytesIO(hole(url))).convert("L"), cutoff=0.5)
+        bild.save(ZIEL / f"{name}_hoehe.jpg", quality=90, optimize=True)
     meter = round(max(info.get("dimensions") or [2000]) / 1000.0, 2)
     print(f"{name:10s} ← {ph} ({aufl}, {meter} m)")
     return ph, meter, info.get("authors", {})
 
 
+def lade_hoehen():
+    """Nur die Höhenkarten nachladen (die übrigen Texturen bleiben, wie sie sind)."""
+    for name in sorted(MIT_HOEHE):
+        dateien = json.loads(hole(f"{API}/files/{QUELLEN[name][0]}"))
+        url = dateien["Displacement"]["1k"]["jpg"]["url"]
+        bild = ImageOps.autocontrast(Image.open(io.BytesIO(hole(url))).convert("L"), cutoff=0.5)
+        bild.save(ZIEL / f"{name}_hoehe.jpg", quality=90, optimize=True)
+        print(f"{name:10s} Höhenkarte")
+
+
 if __name__ == "__main__":
+    if sys.argv[1:] == ["--hoehen"]:
+        lade_hoehen()
+        sys.exit()
     namen = sys.argv[1:] or list(QUELLEN)
     groessen_datei = ZIEL / "groessen.json"
     groessen = json.loads(groessen_datei.read_text()) if groessen_datei.exists() else {}

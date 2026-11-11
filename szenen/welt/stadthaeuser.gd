@@ -589,6 +589,10 @@ func _dach(flaechen: Dictionary, mat: String, giebel_mat: String, traufe: float,
 
 # ---------- Materialien ----------
 
+## Parallax-Tiefe je Textur (Godot: Hundertstel einer Kachel)
+const PARALLAX := {"quader": 1.6, "bruchstein": 2.4, "dach": 3.0, "schiefer": 2.2, "holz": 0.8, "putz": 0.6}
+
+
 func _material(name_: String) -> Material:
 	if _mat_cache.has(name_):
 		return _mat_cache[name_]
@@ -608,6 +612,14 @@ func _material(name_: String) -> Material:
 		var s := 1.0 / float(tex[name_][1])
 		m.uv1_scale = Vector3(s, s, s)
 		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+		# Parallax aus der Höhenkarte: Fugen, Ziegelreihen und Holzmaserung mit echter Tiefe
+		if PARALLAX.has(t) and name_ not in ["tuer", "laden", "rahmen"]:
+			m.heightmap_enabled = true
+			m.heightmap_texture = load("res://texturen/%s_hoehe.jpg" % t)
+			m.heightmap_scale = PARALLAX[t]
+			m.heightmap_deep_parallax = true
+			m.heightmap_min_layers = 6
+			m.heightmap_max_layers = 16
 	match name_:
 		"quader", "bruchstein":
 			m.albedo_color = Color(1.25, 1.18, 1.05)   # heller, warmer Kalkstein wie an den Burgmauern

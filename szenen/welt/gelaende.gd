@@ -28,6 +28,7 @@ var _loch := PackedByteArray()   # je Rasterpunkt 1 = Loch
 func _ready() -> void:
 	add_to_group("gelaende")
 	if _lade():
+		_setze_hoehen_global()
 		_markiere_loecher()
 		_baue_kacheln()
 		_baue_rand()
@@ -79,6 +80,14 @@ func _lade() -> bool:
 	meeresspiegel = float(info["meeresspiegel"])
 	_hoehen = FileAccess.get_file_as_bytes(daten.path_join("hoehen.r32")).to_float32_array()
 	return _hoehen.size() == breite * tiefe
+
+
+## Die Höhen als Textur für die Shader (stein.gdshader: Feuchte am Mauerfuß über dem Gelände).
+func _setze_hoehen_global() -> void:
+	var bild := Image.create_from_data(breite, tiefe, false, Image.FORMAT_RF, _hoehen.to_byte_array())
+	RenderingServer.global_shader_parameter_set("gelaende_hoehe", ImageTexture.create_from_image(bild))
+	RenderingServer.global_shader_parameter_set("gelaende_rahmen",
+		Vector4(ursprung.x, ursprung.y, (breite - 1) * abstand, (tiefe - 1) * abstand))
 
 
 func _markiere_loecher() -> void:

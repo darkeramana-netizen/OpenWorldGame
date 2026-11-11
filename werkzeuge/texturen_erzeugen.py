@@ -378,6 +378,8 @@ MATERIAL_ORDNER = ZIEL.parent / "material"
 # Diese Materialien nutzen szenen/welt/stein.gdshader (keine sichtbare Wiederholung, Moos): Name → (Moos, Schwankung)
 STEIN_SHADER = {"mauer": (0.35, 0.18), "hell": (0.25, 0.12), "basalt": (0.3, 0.15), "kai": (0.45, 0.2),
                 "bruchstein": (0.4, 0.18), "boden": (0.15, 0.15), "pflaster": (0.1, 0.15)}
+# Parallax-Tiefe (Meter) für stein.gdshader, aus texturen/<tex>_hoehe.jpg (texturen_laden.py --hoehen)
+STEIN_TIEFE = {"mauer": 0.05, "hell": 0.035, "basalt": 0.06, "kai": 0.07, "bruchstein": 0.07, "boden": 0.03, "pflaster": 0.045}
 
 
 def schreibe_materialien():
@@ -389,12 +391,13 @@ def schreibe_materialien():
         s = 1.0 / m
         if name in STEIN_SHADER:
             moos, schwankung = STEIN_SHADER[name]
-            (MATERIAL_ORDNER / f"{name}.tres").write_text(f'''[gd_resource type="ShaderMaterial" load_steps=5 format=3]
+            (MATERIAL_ORDNER / f"{name}.tres").write_text(f'''[gd_resource type="ShaderMaterial" load_steps=6 format=3]
 
 [ext_resource type="Shader" path="res://szenen/welt/stein.gdshader" id="1_shader"]
 [ext_resource type="Texture2D" path="res://texturen/{tex}_farbe.jpg" id="2_farbe"]
 [ext_resource type="Texture2D" path="res://texturen/{tex}_normal.jpg" id="3_normal"]
 [ext_resource type="Texture2D" path="res://texturen/{tex}_rau.jpg" id="4_rau"]
+[ext_resource type="Texture2D" path="res://texturen/{tex}_hoehe.jpg" id="5_hoehe"]
 
 [resource]
 shader = ExtResource("1_shader")
@@ -405,6 +408,8 @@ shader_parameter/meter = {m}
 shader_parameter/ton = Color({ton[0]}, {ton[1]}, {ton[2]}, 1)
 shader_parameter/schwankung = {schwankung}
 shader_parameter/moos = {moos}
+shader_parameter/hoehe = ExtResource("5_hoehe")
+shader_parameter/tiefe = {STEIN_TIEFE.get(name, 0.04)}
 ''', encoding="utf-8")
             continue
         (MATERIAL_ORDNER / f"{name}.tres").write_text(f'''[gd_resource type="StandardMaterial3D" load_steps=4 format=3]
