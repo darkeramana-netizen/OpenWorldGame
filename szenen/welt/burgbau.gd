@@ -1093,8 +1093,8 @@ func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, i
 ## hohe Möbel stehen nicht vor Fenstern.
 func _hausrat(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L: float, iL: float, iB: float, fb: float,
 		gh: float, stockwerke: int, lauf: float, decke_oben: float) -> void:
-	if zweck == 2 or zweck == 6:
-		return   # Zeughaus und Kapelle sind an den Wänden schon voll
+	if zweck == 6:
+		return   # die Kapelle ist schon voll (Bänke, Altar, Taufstein)
 	var frei_s := -iL + 0.9 + lauf + 1.2 if stockwerke > 1 else -iL + 0.6
 	var fenster: Array[float] = []
 	var fenster_halb := 0.8
@@ -1113,7 +1113,15 @@ func _hausrat(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L: flo
 		var y := fb + k * gh
 		var decke := decke_oben if k == stockwerke - 1 else y + gh - 0.5
 		var ende := iL - (2.4 if k > 0 or zweck == 1 else 1.1)
+		# Längsseiten mit Treppe auf diesem Geschoss: hinauf (zu Decke k + 1) und herauf (durch das Loch in Decke k)
+		var treppen_seiten: Array[float] = []
+		if k < stockwerke - 1:
+			treppen_seiten.append(-1.0 if (k + 1) % 2 == 1 else 1.0)
+		if k > 0:
+			treppen_seiten.append(-1.0 if k % 2 == 1 else 1.0)
 		for e: float in [-1.0, 1.0]:
+			# an der Seite ohne Treppe darf der Hausrat bis an den Giebel -L stehen
+			var start := frei_s if e in treppen_seiten else -iL + 0.7
 			# Brüstungshöhe der Fenster auf dieser Wand (über dem Boden); ohne Fenster beliebig hoch
 			var bruestung := 99.0
 			if art == 3:
@@ -1144,9 +1152,9 @@ func _hausrat(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L: flo
 					if e < 0:
 						sperren.append(Vector2(iL * 0.5 - 0.9, iL * 0.5 + 0.9))
 					sperren.append(Vector2(iL - 3.1, iL))
-			var s_ := frei_s
+			var s_ := start
 			var i := 0
-			while s_ < ende:
+			while zweck != 2 and s_ < ende:   # im Zeughaus stehen an den Wänden schon die Ständer
 				# bis zu sechs Versuche: vor einem Fenster passt oft ein niedriges Stück, wo ein hohes nicht passt
 				var stueck: Array = []
 				var a := s_
@@ -1179,13 +1187,13 @@ func _hausrat(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L: flo
 			# Wandleuchter zwischen den Fenstern
 			for f in fenster.size() - 1:
 				var ws := (fenster[f] + fenster[f + 1]) / 2.0
-				if ws < frei_s or ws > ende:
+				if ws < start or ws > ende:
 					continue
 				var gesperrt := false
 				for sp: Vector2 in sperren:
 					if ws > sp.x - 0.3 and ws < sp.y + 0.3:
 						gesperrt = true
-				if gesperrt or zufall.randf() < 0.4:
+				if gesperrt or zweck == 2 or zufall.randf() < 0.4:
 					continue
 				var lm := c + uz * ws + nx * e * iB
 				var n := nx * -e
@@ -1195,6 +1203,190 @@ func _hausrat(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L: flo
 				_klotz("metall", lm, uz, n, -0.06, 0.06, 0.19, 0.31, ly - 0.01, ly + 0.02)
 				_klotz("hell", lm, uz, n, -0.025, 0.025, 0.225, 0.275, ly + 0.02, ly + 0.17)
 				_klotz("glut", lm, uz, n, -0.012, 0.012, 0.238, 0.262, ly + 0.17, ly + 0.22)
+			# Raummitte: Möbel zwischen dem Hausrat an der Wand und dem freien Mittelgang (|q| < 0,9)
+			var qm := iB - 1.55
+			if qm >= 1.5 and not (zweck == 3 and k == stockwerke - 1):
+				var sm := start + 0.8
+				while sm < ende - 0.7:
+					var st_ := _mitte_wahl(zweck, zufall)
+					var br: float = st_[1]
+					var a := sm
+					var b := sm + br
+					var frei := b <= ende
+					for sp: Vector2 in sperren:
+						if b > sp.x - 0.4 and a < sp.y + 0.4:
+							frei = false
+					if b > ts - lang / 2.0 - 0.9 and a < ts + lang / 2.0 + 0.9:
+						frei = false   # Tisch mit Bänken in der Mitte
+					if not frei:
+						sm += 0.5
+						continue
+					_mitte_stueck(st_[0], c + uz * ((a + b) / 2.0) + nx * e * qm, uz, nx * -e, br, y, zufall)
+					sm = b + zufall.randf_range(0.5, 1.1)
+
+
+## Möbel für die Raummitte: [Name, Breite entlang des Baus]
+func _mitte_wahl(zweck: int, zufall: RandomNumberGenerator) -> Array:
+	var liste: Array
+	match zweck:
+		1:
+			liste = [["arbeitstisch", 1.7], ["koerbe", 1.3], ["zuber", 1.1]]
+		2:
+			liste = [["waffenkiste", 1.3], ["ruestbock", 1.0], ["pfeilfass", 0.9], ["arbeitstisch", 1.7]]
+		3:
+			liste = [["pult", 1.2], ["schach", 1.5], ["truhe", 1.2], ["kohlebecken", 0.9]]
+		4:
+			liste = [["heu", 1.7], ["karre", 1.5], ["koerbe", 1.3]]
+		_:
+			liste = [["webstuhl", 1.7], ["spinnrad", 1.4], ["arbeitstisch", 1.7], ["zuber", 1.1], ["kohlebecken", 0.9],
+				["koerbe", 1.3]]
+	return liste[zufall.randi() % liste.size()]
+
+
+## Ein Möbelstück in der Raummitte: m die Mitte, u entlang des Baus, n zur Raummitte; Ausdehnung ±breite/2 und ±0,6.
+func _mitte_stueck(name_: String, m: Vector2, u: Vector2, n: Vector2, breite: float, y: float,
+		zufall: RandomNumberGenerator) -> void:
+	var b := breite / 2.0 - 0.05
+	match name_:
+		"arbeitstisch":
+			_klotz("holz", m, u, n, -b, b, -0.42, 0.42, y + 0.82, y + 0.9, true)
+			for su: float in [-1.0, 1.0]:
+				for sn: float in [-1.0, 1.0]:
+					_klotz("holz", m + u * su * (b - 0.1) + n * sn * 0.32, u, n, -0.05, 0.05, -0.05, 0.05, y, y + 0.82)
+			_klotz("holz", m, u, n, -b + 0.1, b - 0.1, -0.03, 0.03, y + 0.18, y + 0.24)
+			var t := -b + 0.25
+			while t < b - 0.2:
+				match zufall.randi() % 4:
+					0: _mantel("stroh", m + u * t, 0.14, 0.18, y + 0.9, y + 1.08, 8)          # Korb
+					1: _mantel("hell", m + u * t + n * 0.15, 0.07, 0.1, y + 0.9, y + 1.15, 8)   # Krug
+					2: _klotz("stroh", m + u * t, u, n, -0.15, 0.15, -0.09, 0.09, y + 0.9, y + 0.98)   # Brot
+					3: _klotz("metall", m + u * t - n * 0.1, u, n, -0.13, 0.13, -0.13, 0.13, y + 0.9, y + 0.93)   # Teller
+				t += zufall.randf_range(0.3, 0.45)
+			_mantel("holz", m - n * 0.75 + u * 0.3, 0.17, 0.17, y, y + 0.45, 8)          # Schemel
+			_ring("holz", m - n * 0.75 + u * 0.3, 0.0, 0.17, y + 0.45, 8)
+		"koerbe":
+			for i in 3:
+				var km := m + u * (-b + 0.3 + i * (2.0 * b - 0.6) / 2.0) + n * (0.15 if i % 2 == 0 else -0.2)
+				var r := zufall.randf_range(0.2, 0.28)
+				_mantel("stroh", km, r * 0.85, r, y, y + 0.38, 10)
+				_ring(["stroh", "holz", "stoff"][i], km, 0.0, r * 0.95, y + 0.34, 10)
+		"zuber":
+			_mantel("holz", m, 0.42, 0.47, y, y + 0.5, 12)
+			_ring("wasser_innen", m, 0.0, 0.44, y + 0.44, 12)
+			for ry: float in [0.08, 0.38]:
+				_mantel("metall", m, 0.44, 0.46, y + ry, y + ry + 0.04, 12)
+			_klotz("holz", m + u * 0.35 + n * 0.05, u, n, -0.02, 0.02, -0.18, 0.18, y + 0.3, y + 0.8)   # Waschbrett
+			_klotz("stoff", m - u * 0.2, u, n, -0.25, 0.25, -0.3, 0.3, y + 0.5, y + 0.53)
+		"kohlebecken":
+			for w in 3:
+				var a := TAU * w / 3.0
+				_klotz("metall", m + u * cos(a) * 0.22 + n * sin(a) * 0.22, u, n, -0.025, 0.025, -0.025, 0.025, y, y + 0.6)
+			_mantel("metall", m, 0.18, 0.3, y + 0.55, y + 0.75, 10)
+			_ring("glut", m, 0.0, 0.27, y + 0.72, 10)
+		"webstuhl":
+			for su: float in [-1.0, 1.0]:
+				for sn: float in [-0.35, 0.45]:
+					_klotz("holz", m + u * su * (b - 0.08) + n * sn, u, n, -0.05, 0.05, -0.05, 0.05, y, y + 1.75)
+				_klotz("holz", m + u * su * (b - 0.08), u, n, -0.04, 0.04, -0.35, 0.45, y + 1.68, y + 1.75)
+			_klotz("holz", m + n * -0.35, u, n, -b, b, -0.06, 0.06, y + 0.82, y + 0.92)   # Brustbaum
+			_klotz("holz", m + n * 0.45, u, n, -b, b, -0.07, 0.07, y + 0.78, y + 0.92)   # Kettbaum
+			_klotz("stoff", m + n * -0.12, u, n, -b + 0.12, b - 0.12, -0.2, 0.2, y + 0.9, y + 0.91)   # gewebtes Tuch
+			_klotz("hell", m + n * 0.25, u, n, -b + 0.12, b - 0.12, -0.2, 0.2, y + 0.9, y + 0.905)    # Kettfäden
+			_klotz("holz", m + n * 0.05, u, n, -b + 0.1, b - 0.1, -0.02, 0.02, y + 1.0, y + 1.05)    # Webschaft
+			_klotz("holz", m + n * 0.05, u, n, -b + 0.1, b - 0.1, -0.02, 0.02, y + 1.45, y + 1.5)
+			_klotz("holz", m, u, n, -b, b, -0.04, 0.04, y + 1.68, y + 1.75)
+			_klotz("holz", m + n * -0.65, u, n, -b + 0.2, b - 0.2, -0.15, 0.15, y + 0.45, y + 0.5)   # Bank
+			for su: float in [-1.0, 1.0]:
+				_klotz("holz", m + n * -0.65 + u * su * (b - 0.3), u, n, -0.04, 0.04, -0.12, 0.12, y, y + 0.45)
+		"spinnrad":
+			var sm := m + u * -0.2
+			_klotz("holz", sm, u, n, -0.4, 0.4, -0.12, 0.12, y + 0.3, y + 0.38)
+			for su: float in [-0.35, 0.35]:
+				_klotz("holz", sm + u * su, u, n, -0.03, 0.03, -0.03, 0.03, y, y + 0.3)
+			_klotz("holz", sm + u * -0.15, u, n, -0.02, 0.02, -0.02, 0.02, y + 0.38, y + 0.8)
+			for w in 14:
+				var a := TAU * w / 14.0
+				_klotz("holz", sm + u * (-0.15 + cos(a) * 0.3), u, n, -0.03, 0.03, -0.02, 0.02,
+					y + 0.8 + sin(a) * 0.3 - 0.03, y + 0.8 + sin(a) * 0.3 + 0.03)
+			_klotz("holz", sm + u * 0.3, u, n, -0.015, 0.015, -0.015, 0.015, y + 0.38, y + 1.2)   # Rocken
+			_klotz("stroh", sm + u * 0.3, u, n, -0.06, 0.06, -0.06, 0.06, y + 0.95, y + 1.18)
+			_mantel("holz", m + u * 0.4 - n * 0.4, 0.16, 0.16, y, y + 0.42, 8)          # Schemel
+			_ring("holz", m + u * 0.4 - n * 0.4, 0.0, 0.16, y + 0.42, 8)
+			_mantel("stroh", m + u * 0.45 + n * 0.3, 0.16, 0.2, y, y + 0.25, 8)          # Korb mit Wolle
+			_ring("hell", m + u * 0.45 + n * 0.3, 0.0, 0.19, y + 0.22, 8)
+		"pult":
+			for su: float in [-1.0, 1.0]:
+				_klotz("holz", m + u * su * 0.4, u, n, -0.04, 0.04, -0.2, 0.2, y, y + 1.0)
+			var p := func(su: float, sn: float, yy: float) -> Vector3:
+				var q := m + u * su + n * sn
+				return Vector3(q.x, yy, q.y)
+			_viereck("holz", p.call(-0.5, -0.25, y + 1.0), p.call(0.5, -0.25, y + 1.0), p.call(0.5, 0.25, y + 1.2),
+				p.call(-0.5, 0.25, y + 1.2), Vector3(n.x, 3, n.y) * -1.0 + Vector3(0, 6, 0))
+			_klotz("holz", m, u, n, -0.5, 0.5, 0.2, 0.3, y + 1.0, y + 1.22)
+			_viereck("hell", p.call(-0.3, -0.15, y + 1.07), p.call(0.3, -0.15, y + 1.07), p.call(0.3, 0.15, y + 1.19),
+				p.call(-0.3, 0.15, y + 1.19), Vector3(0, 1, 0))                                     # aufgeschlagenes Buch
+			_klotz("stoff", m + u * 0.42, u, n, -0.05, 0.05, 0.22, 0.28, y + 1.22, y + 1.26)
+			_klotz("hell", m + u * 0.4 + n * 0.25, u, n, -0.02, 0.02, -0.02, 0.02, y + 1.26, y + 1.4)
+			_klotz("glut", m + u * 0.4 + n * 0.25, u, n, -0.01, 0.01, -0.01, 0.01, y + 1.4, y + 1.44)
+			_mantel("holz", m - n * 0.55, 0.17, 0.17, y, y + 0.6, 8)
+			_ring("holz", m - n * 0.55, 0.0, 0.17, y + 0.6, 8)
+		"schach":
+			_klotz("holz", m, u, n, -0.38, 0.38, -0.38, 0.38, y + 0.68, y + 0.74, true)
+			_klotz("holz", m, u, n, -0.06, 0.06, -0.06, 0.06, y, y + 0.68)
+			_klotz("holz", m, u, n, -0.25, 0.25, -0.25, 0.25, y, y + 0.05)
+			for i in 4:
+				for j in 4:
+					_klotz("hell" if (i + j) % 2 == 0 else "holz", m + u * (-0.21 + i * 0.14) + n * (-0.21 + j * 0.14), u, n,
+						-0.07, 0.07, -0.07, 0.07, y + 0.74, y + 0.75)
+			for i in 5:
+				_klotz("hell" if i < 3 else "dunkel", m + u * zufall.randf_range(-0.25, 0.25) + n * zufall.randf_range(-0.25, 0.25),
+					u, n, -0.02, 0.02, -0.02, 0.02, y + 0.75, y + 0.83)
+			for su: float in [-1.0, 1.0]:
+				_klotz("holz", m + u * su * 0.6, u, n, -0.18, 0.18, -0.2, 0.2, y + 0.42, y + 0.47)
+				_klotz("holz", m + u * su * 0.6, u, n, -0.13, 0.13, -0.14, 0.14, y, y + 0.42)
+		"truhe":
+			_hausrat_stueck("truhe", m - n * 0.3, u, n, breite - 0.1, y, y + 3.0, zufall)
+		"waffenkiste":
+			_klotz("holz", m, u, n, -b, b, -0.35, 0.35, y, y + 0.6)
+			_klotz("holz", m, u, n, -b, b, 0.35, 0.4, y + 0.55, y + 1.2)   # offener Deckel
+			for i in 5:
+				var t := -b + 0.15 + i * (2.0 * b - 0.3) / 4.0
+				_klotz("metall", m + u * t, u, n, -0.015, 0.015, -0.12, 0.12, y + 0.6, y + 0.63)
+				_klotz("stoff_leder", m + u * t, u, n, -0.02, 0.02, -0.02, 0.02, y + 0.63, y + 0.85)
+			for q: float in [-0.6, 0.6]:
+				_klotz("metall", m + u * q * b, u, n, -0.04, 0.04, -0.37, 0.37, y + 0.1, y + 0.5)
+		"ruestbock":
+			_klotz("holz", m, u, n, -0.3, 0.3, -0.3, 0.3, y, y + 0.06)
+			_klotz("holz", m, u, n, -0.04, 0.04, -0.04, 0.04, y, y + 1.65)
+			_klotz("holz", m, u, n, -0.3, 0.3, -0.03, 0.03, y + 1.45, y + 1.5)
+			_klotz("metall", m, u, n, -0.24, 0.24, -0.15, 0.15, y + 0.95, y + 1.5)
+			_klotz("metall", m, u, n, -0.27, 0.27, -0.16, 0.16, y + 0.85, y + 0.98)
+			_klotz("metall", m, u, n, -0.13, 0.13, -0.14, 0.14, y + 1.6, y + 1.88)
+			_klotz("dunkel", m, u, n, -0.09, 0.09, 0.14, 0.15, y + 1.7, y + 1.74)
+			_klotz("stoff", m, u, n, -0.22, 0.22, 0.15, 0.17, y + 0.95, y + 1.45)   # Wappenrock
+		"pfeilfass":
+			_mantel("holz", m, 0.24, 0.28, y, y + 0.7, 10)
+			_ring("holz", m, 0.0, 0.24, y + 0.7, 10)
+			for i in 9:
+				var a := TAU * i / 9.0
+				var pm := m + u * cos(a) * 0.13 + n * sin(a) * 0.13
+				_klotz("holz", pm, u, n, -0.007, 0.007, -0.007, 0.007, y + 0.7, y + 1.15)
+				_klotz("hell", pm, u, n, -0.025, 0.025, -0.004, 0.004, y + 1.05, y + 1.15)
+		"heu":
+			_klotz("stroh", m, u, n, -b, b, -0.5, 0.5, y, y + 0.45, true)
+			_klotz("stroh", m + u * 0.1, u, n, -b + 0.3, b - 0.2, -0.4, 0.45, y + 0.45, y + 0.85, true)
+			_klotz("holz", m + n * -0.5, u, n, -0.015, 0.015, -0.015, 0.015, y, y + 1.6)   # Heugabel
+			_klotz("metall", m + n * -0.5, u, n, -0.1, 0.1, -0.01, 0.01, y + 1.55, y + 1.85)
+		"karre":
+			_klotz("holz", m + u * 0.15, u, n, -0.5, 0.45, -0.32, 0.32, y + 0.3, y + 0.62)
+			_klotz("stroh", m + u * 0.15, u, n, -0.45, 0.4, -0.28, 0.28, y + 0.62, y + 0.7)
+			for w in 10:
+				var a := TAU * w / 10.0
+				_klotz("holz", m + u * (0.65 + cos(a) * 0.2), u, n, -0.03, 0.03, -0.03, 0.03, y + 0.22 + sin(a) * 0.2 - 0.03,
+					y + 0.22 + sin(a) * 0.2 + 0.03)
+			for sn: float in [-0.25, 0.25]:
+				_klotz("holz", m + n * sn, u, n, -0.75, 0.65, -0.025, 0.025, y + 0.4, y + 0.45)
+				_klotz("holz", m + n * sn + u * -0.2, u, n, -0.025, 0.025, -0.025, 0.025, y, y + 0.32)
 
 
 ## Wählt ein Stück Hausrat: [Name, Breite entlang der Wand, Höhe (höher als die Brüstung: nicht vor Fenstern)]

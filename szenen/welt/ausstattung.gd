@@ -407,11 +407,46 @@ func _schmiede() -> void:
 	_klotz("glut", Vector3(-2.75, 0.9, -1.95), Vector3(-1.7, 1.0, -1.3))
 	_klotz("kohle", Vector3(-2.85, 0.95, -2.05), Vector3(-2.75, 1.05, -1.2))
 	_klotz("kohle", Vector3(-1.7, 0.95, -2.05), Vector3(-1.6, 1.05, -1.2))
-	_klotz("quader", Vector3(-3.3, 1.95, -2.2), Vector3(-1.1, 2.15, -0.95))
-	_viereck("bruchstein", Vector3(-3.3, 2.15, -0.95), Vector3(-1.1, 2.15, -0.95), Vector3(-1.65, 3.4, -2.2), Vector3(-2.75, 3.4, -2.2), Vector3(0, 0.6, 1))
-	_viereck("bruchstein", Vector3(-1.1, 2.15, -0.95), Vector3(-1.1, 2.15, -2.2), Vector3(-1.65, 3.4, -2.2), Vector3(-1.65, 3.4, -2.2), Vector3(1, 0.4, 0))
+	# Feuerwand hinter der Glut (hellere Ziegel), Feuerbock und Schürhaken
+	_klotz("ziegelstein", Vector3(-2.9, 0.95, -2.2), Vector3(-1.5, 1.9, -2.12))
+	_klotz("metall", Vector3(-2.3, 0.95, -2.12), Vector3(-2.1, 1.05, -1.95))   # Düse des Blasebalgs
+	_seil("metall", Vector3(-1.55, 0.97, -1.4), Vector3(-1.0, 1.25, -0.8), 0.012)
+	_seil("metall", Vector3(-1.6, 0.97, -1.6), Vector3(-0.95, 1.2, -1.15), 0.014)
+	# Rauchhaube: vierseitiger Trichter aus Bruchstein, unten ein Rahmen aus Quadern mit Eisenband,
+	# oben der Hals in den Schlot (innen und außen sichtbar)
+	var hu := [Vector3(-3.3, 2.2, -2.2), Vector3(-1.1, 2.2, -2.2), Vector3(-1.1, 2.2, -0.95), Vector3(-3.3, 2.2, -0.95)]
+	var ho := [Vector3(-2.75, 3.5, -2.2), Vector3(-1.65, 3.5, -2.2), Vector3(-1.65, 3.5, -1.7), Vector3(-2.75, 3.5, -1.7)]
+	for k in [1, 2, 3]:   # rechts, vorn, links (hinten ist die Wand)
+		var a0: Vector3 = hu[k]
+		var a1: Vector3 = hu[(k + 1) % 4]
+		var b1: Vector3 = ho[(k + 1) % 4]
+		var b0: Vector3 = ho[k]
+		var mitte := (a0 + a1 + b0 + b1) / 4.0
+		var aussen := (mitte - Vector3(-2.2, 3.2, -1.95)).normalized()
+		_viereck("bruchstein", a0, a1, b1, b0, aussen)
+		_viereck("ruß", a0 - aussen * 0.02, a1 - aussen * 0.02, b1 - aussen * 0.02, b0 - aussen * 0.02, -aussen)
+	_klotz("bruchstein", Vector3(-2.75, 3.5, -2.3), Vector3(-1.65, 4.45, -1.7))     # Hals bis unter das Dach
+	_klotz("quader", Vector3(-3.3, 1.95, -1.08), Vector3(-1.0, 2.25, -0.88))         # Rahmen vorn
+	_klotz("quader", Vector3(-1.2, 1.95, -2.2), Vector3(-1.0, 2.25, -0.88))          # Rahmen rechts
+	_klotz("metall", Vector3(-3.3, 2.02, -0.89), Vector3(-0.99, 2.08, -0.86))        # Eisenband
+	_klotz("metall", Vector3(-1.01, 2.02, -2.2), Vector3(-0.98, 2.08, -0.86))
 	for x: float in [-3.25, -1.15]:
 		_klotz("metall", Vector3(x - 0.04, 0.95, -1.05), Vector3(x + 0.04, 1.95, -0.97))   # Eisenstützen der Haube
+	# Haken am Rahmen mit Zangen und einem Schöpflöffel
+	for k in 4:
+		var x := -3.0 + k * 0.5
+		_klotz("metall", Vector3(x - 0.015, 1.75, -0.86), Vector3(x + 0.015, 1.95, -0.83))
+		if k % 2 == 0:
+			_klotz("metall", Vector3(x - 0.04, 1.2, -0.85), Vector3(x - 0.015, 1.78, -0.83))
+			_klotz("metall", Vector3(x + 0.015, 1.2, -0.85), Vector3(x + 0.04, 1.78, -0.83))
+		else:
+			_klotz("holz_dunkel", Vector3(x - 0.015, 1.35, -0.85), Vector3(x + 0.015, 1.78, -0.83))
+			_klotz("metall", Vector3(x - 0.07, 1.25, -0.88), Vector3(x + 0.07, 1.35, -0.78))
+	# Wassereimer und Kohlenschaufel neben der Esse
+	_zylinder("holz", Vector3(-3.0, 0, -0.6), 0.17, 0.19, 0.38, 8)
+	_klotz("wasser", Vector3(-3.13, 0.35, -0.73), Vector3(-2.87, 0.36, -0.47))
+	_seil("holz_dunkel", Vector3(-3.2, 0.0, -0.25), Vector3(-3.25, 1.2, -0.3), 0.02)
+	_klotz("metall", Vector3(-3.3, 0.0, -0.36), Vector3(-3.1, 0.25, -0.2))
 	# Blasebalg neben der Esse mit Hebelstange
 	_viereck("stoff_leder", Vector3(-1.15, 0.6, -2.1), Vector3(-0.35, 0.6, -2.1), Vector3(-0.35, 0.95, -2.1), Vector3(-1.15, 0.7, -2.1), Vector3(0, 0, -1))
 	_klotz("holz_dunkel", Vector3(-1.15, 0.55, -2.15), Vector3(-0.35, 0.6, -1.55))
@@ -642,6 +677,11 @@ func _material(name_: String) -> Material:
 			m = load("res://material/hell.tres")
 		"ziegel":
 			m = load("res://material/dach.tres")
+		"ziegelstein":
+			var zs: StandardMaterial3D = load("res://material/dach.tres").duplicate()
+			zs.albedo_color = Color(0.85, 0.55, 0.4)
+			zs.uv1_scale = Vector3(1.2, 1.2, 1.2)
+			m = zs
 		_:
 			var s := StandardMaterial3D.new()
 			s.roughness = 0.9
@@ -649,7 +689,7 @@ func _material(name_: String) -> Material:
 				s.albedo_texture = load("res://texturen/klippe_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(0.5, 0.5, 0.5)
-			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder"]:
+			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder", "ruß"]:
 				pass
 			elif name_ in ["fell", "haar"]:
 				pass
@@ -676,7 +716,8 @@ func _material(name_: String) -> Material:
 				"ware_rot": Color(0.75, 0.18, 0.1), "ware_gruen": Color(0.3, 0.5, 0.15),
 				"ware_tuch": STOFFE[2], "ware_tuch2": STOFFE[3], "seil": Color(0.5, 0.42, 0.3),
 				"wimpel": Color(0.65, 0.08, 0.06), "glas": Color(0.1, 0.13, 0.13), "kohle": Color(0.05, 0.05, 0.05),
-				"lehm": Color(0.32, 0.27, 0.22), "stoff_leder": Color(0.35, 0.22, 0.12)}.get(name_, Color(0.6, 0.6, 0.6))
+				"lehm": Color(0.32, 0.27, 0.22), "stoff_leder": Color(0.35, 0.22, 0.12),
+				"ruß": Color(0.07, 0.06, 0.055)}.get(name_, Color(0.6, 0.6, 0.6))
 			if name_.begins_with("markise") or name_ in ["segel", "wimpel"]:
 				s.cull_mode = BaseMaterial3D.CULL_DISABLED
 			m = s
