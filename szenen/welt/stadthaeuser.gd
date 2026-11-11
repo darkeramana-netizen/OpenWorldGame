@@ -213,8 +213,16 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		_quader(flaechen, oben_mat, lo, hi)
 		if fachwerk:
 			_fachwerk(flaechen, lo, hi)
-			# Schwelle des vorkragenden Geschosses
+			# Schwelle des vorkragenden Geschosses, darunter ein abgesetztes Füllholz und die Köpfe der Deckenbalken
 			_quader(flaechen, "balken", Vector3(-b / 2 - 0.05, y - 0.22, -t / 2 - aus - 0.05), Vector3(b / 2 + 0.05, y, t / 2 + aus + 0.05))
+			_quader(flaechen, "balken", Vector3(-b / 2 - 0.02, y - 0.3, -t / 2 - aus - 0.01), Vector3(b / 2 + 0.02, y - 0.22, t / 2 + aus + 0.01))
+			var bx := -b / 2 + 0.3
+			while bx < b / 2 - 0.2:
+				for sz: int in [1, -1]:
+					var z0 := (t / 2 + aus - VORKRAGUNG - 0.02) * sz
+					var z1 := (t / 2 + aus + 0.03) * sz
+					_quader(flaechen, "balken", Vector3(bx - 0.07, y - 0.46, minf(z0, z1)), Vector3(bx + 0.07, y - 0.3, maxf(z0, z1)))
+				bx += 0.6
 		y += OG
 	var traufe := y
 	var front := t / 2 + aus
@@ -420,14 +428,25 @@ func _fachwerk(flaechen: Dictionary, lo: Vector3, hi: Vector3) -> void:
 		_quader(flaechen, "balken", Vector3(lo.x, hi.y - s, minf(z, zz)), Vector3(hi.x, hi.y, maxf(z, zz)))
 		_quader(flaechen, "balken", Vector3(lo.x, lo.y + 0.7, minf(z, zz)), Vector3(hi.x, lo.y + 0.7 + s, maxf(z, zz)))
 		var felder := maxi(3, int(breite / 1.15))
+		var zm := z + d * 0.5 * seite
 		for k in felder + 1:
 			var x := lo.x + breite * k / felder
 			_quader(flaechen, "balken", Vector3(x - s / 2, lo.y, minf(z, zz)), Vector3(x + s / 2, hi.y, maxf(z, zz)))
-		# Streben in den äußeren Feldern (Mann-Figur angedeutet)
+			# Holznägel an Riegel und Rähm
+			for yn: float in [lo.y + 0.7 + s / 2, hi.y - s / 2]:
+				var zn := z + (d + 0.012) * seite
+				_quader(flaechen, "nagel", Vector3(x - 0.02, yn - 0.02, minf(zz, zn)), Vector3(x + 0.02, yn + 0.02, maxf(zz, zn)))
+			# Kopfbänder an den inneren Ständern
+			if k > 0 and k < felder:
+				for e: float in [-1.0, 1.0]:
+					_balken(flaechen, "balken", Vector3(x + e * s / 2, hi.y - s - 0.42, zm), Vector3(x + e * 0.45, hi.y - s, zm), d, 0.09)
+		# Streben in den äußeren Feldern (Mann-Figur): vom Fuß des Eckständers zum Rähm, als echte Balken
 		for ecke: int in [0, felder - 1]:
 			var x0 := lo.x + breite * ecke / felder
 			var x1 := lo.x + breite * (ecke + 1) / felder
-			_strebe(flaechen, Vector3(x0, lo.y + 0.7, z), Vector3(x1, hi.y - s, z), seite * d)
+			var xa := x0 if ecke == 0 else x1
+			var xb := x1 if ecke == 0 else x0
+			_balken(flaechen, "balken", Vector3(xa, lo.y + s, zm), Vector3(xb, hi.y - s, zm), d, s)
 	for seite: int in [1, -1]:
 		var x := hi.x if seite == 1 else lo.x
 		var xx := x + d * seite
@@ -561,6 +580,7 @@ func _dach(flaechen: Dictionary, mat: String, giebel_mat: String, traufe: float,
 			_viereck_uv(st, [a, b, c, d], [uv_a, uv_b, uv_c, uv_d])
 		# Traufkante
 		_viereck(_st(flaechen, "balken"), a, b, oben[1], oben[0]) if gerade else _viereck(_st(flaechen, "balken"), b, a, oben[0], oben[1])
+	_dach_details(flaechen, mat, punkt, traufe, unten, halbe, laenge, hoehe, dicke, wand_halbe)
 	# Giebelwände (Dreiecke) an beiden Enden, etwas hinter der Dachkante
 	var gs := _st(flaechen, giebel_mat)
 	for e: int in [1, -1]:
@@ -585,6 +605,88 @@ func _dach(flaechen: Dictionary, mat: String, giebel_mat: String, traufe: float,
 				var off: Vector3 = punkt.call(0.0, v, 0.0)
 				_quader(flaechen, "balken", Vector3(minf(lo.x, hi.x + off.x), lo.y, minf(lo.z, hi.z + off.z)),
 						Vector3(maxf(lo.x, hi.x + off.x), hi.y, maxf(lo.z, hi.z + off.z)))
+
+
+## Ziegelreihen (jede Reihe steht vor), Firstkappen, Ortgangbretter, Sparrenköpfe und Regenrinnen eines Satteldachs.
+func _dach_details(flaechen: Dictionary, mat: String, punkt: Callable, traufe: float, unten: float, halbe: float,
+		laenge: float, hoehe: float, dicke: float, wand_halbe: float) -> void:
+	var st := _st(flaechen, mat)
+	var oben := traufe + hoehe
+	var L: Vector3 = punkt.call(0.0, 1.0, 0.0) - punkt.call(0.0, 0.0, 0.0)
+	var schritt := 0.3 if mat == "dach0" else 0.24
+	for s: int in [1, -1]:
+		var D: Vector3 = (punkt.call(s * halbe, 0.0, unten) - punkt.call(0.0, 0.0, oben)).normalized()   # hinab
+		var N := D.cross(L).normalized()
+		if N.y < 0.0:
+			N = -N
+		var lang := Vector2(halbe, oben - unten).length()
+		var t := schritt
+		while t < lang - 0.15:
+			var f0 := 1.0 - t / lang
+			var f1 := 1.0 - (t + schritt) / lang
+			var a0: Vector3 = punkt.call(s * halbe * f0, -laenge, unten + (oben - unten) * (1.0 - f0) + dicke)
+			var b0: Vector3 = punkt.call(s * halbe * f0, laenge, unten + (oben - unten) * (1.0 - f0) + dicke)
+			var a1: Vector3 = punkt.call(s * halbe * f1, -laenge, unten + (oben - unten) * (1.0 - f1) + dicke)
+			var b1: Vector3 = punkt.call(s * halbe * f1, laenge, unten + (oben - unten) * (1.0 - f1) + dicke)
+			var hub := N * 0.035
+			_vier(st, a0, b0, b0 + hub, a0 + hub, D)
+			_vier(st, a0 + hub, b0 + hub, b1 + N * 0.003, a1 + N * 0.003, N)
+			t += schritt
+		# Ortgangbretter
+		for e: int in [1, -1]:
+			var l := (laenge + 0.03) * e
+			_balken(flaechen, "balken", punkt.call(s * halbe, l, unten + dicke - 0.08), punkt.call(0.0, l, oben + dicke - 0.08), 0.05, 0.3)
+		# Sparrenköpfe unter dem Überstand
+		if halbe > wand_halbe + 0.25:
+			var sp := -laenge + 0.4
+			while sp < laenge - 0.3:
+				var q0 := wand_halbe * s
+				var q1 := (halbe - 0.06) * s
+				var y0 := unten + (oben - unten) * (1.0 - wand_halbe / halbe) - 0.1
+				var y1 := unten + (oben - unten) * (0.06 / halbe) - 0.1
+				_balken(flaechen, "balken", punkt.call(q0, sp, y0), punkt.call(q1, sp, y1), 0.1, 0.14)
+				sp += 0.8
+		# Regenrinne an der Traufe mit kurzem Rohrstutzen an einem Ende
+		var r0: Vector3 = punkt.call((halbe + 0.03) * s, -laenge, unten - 0.16)
+		var r1: Vector3 = punkt.call((halbe + 0.2) * s, laenge, unten + 0.02)
+		_quader(flaechen, "metall", Vector3(minf(r0.x, r1.x), r0.y, minf(r0.z, r1.z)), Vector3(maxf(r0.x, r1.x), r1.y, maxf(r0.z, r1.z)))
+		var p0: Vector3 = punkt.call((halbe + 0.07) * s, laenge - 0.5, unten - 0.9)
+		var p1: Vector3 = punkt.call((halbe + 0.17) * s, laenge - 0.4, unten - 0.1)
+		_quader(flaechen, "metall", Vector3(minf(p0.x, p1.x), p0.y, minf(p0.z, p1.z)), Vector3(maxf(p0.x, p1.x), p1.y, maxf(p0.z, p1.z)))
+	# Firstkappen
+	var f := -laenge
+	while f < laenge - 0.1:
+		_balken(flaechen, mat, punkt.call(0.0, f, oben + dicke + 0.06), punkt.call(0.0, minf(f + 0.44, laenge), oben + dicke + 0.03), 0.3, 0.12)
+		f += 0.4
+
+
+## Viereck mit Vorderseite nach "aussen" (Reihenfolge wird passend gedreht).
+func _vier(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, aussen: Vector3) -> void:
+	if (b - a).cross(c - a).dot(aussen) >= 0.0:
+		_viereck(st, a, b, c, d)
+	else:
+		_viereck(st, a, d, c, b)
+
+
+## Balken (Quader) von a nach b, Querschnitt breite × hoehe, die Höhe möglichst nach oben.
+func _balken(flaechen: Dictionary, mat: String, a: Vector3, b: Vector3, breite: float, hoehe: float) -> void:
+	var st := _st(flaechen, mat)
+	var d := (b - a).normalized()
+	var sd := d.cross(Vector3.UP)
+	if sd.length() < 0.01:
+		sd = d.cross(Vector3.RIGHT)
+	sd = sd.normalized()
+	var o := sd.cross(d).normalized()
+	if o.y < 0.0:
+		o = -o
+	var bs := sd * breite / 2.0
+	var ho := o * hoehe / 2.0
+	_vier(st, a - bs + ho, b - bs + ho, b + bs + ho, a + bs + ho, o)
+	_vier(st, a - bs - ho, b - bs - ho, b + bs - ho, a + bs - ho, -o)
+	_vier(st, a + bs - ho, b + bs - ho, b + bs + ho, a + bs + ho, sd)
+	_vier(st, a - bs - ho, b - bs - ho, b - bs + ho, a - bs + ho, -sd)
+	_vier(st, a - bs - ho, a + bs - ho, a + bs + ho, a - bs + ho, -d)
+	_vier(st, b - bs - ho, b + bs - ho, b + bs + ho, b - bs + ho, d)
 
 
 # ---------- Materialien ----------
@@ -625,6 +727,9 @@ func _material(name_: String) -> Material:
 			m.albedo_color = Color(1.25, 1.18, 1.05)   # heller, warmer Kalkstein wie an den Burgmauern
 		"balken", "rahmen":
 			m.albedo_color = Color(0.62, 0.5, 0.4)
+		"nagel":
+			m.albedo_color = Color(0.2, 0.15, 0.11)
+			m.roughness = 0.9
 		"tuer":
 			m.albedo_color = Color(0.7, 0.5, 0.35)
 		"laden":

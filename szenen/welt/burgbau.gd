@@ -388,9 +388,63 @@ func _zinnen(m: Vector2, u: Vector2, n: Vector2, laenge: float, n0: float, n1: f
 	var rest := (laenge - anzahl * ZINNE_ABSTAND) / 2.0
 	for k in anzahl:
 		var mitte := -laenge / 2.0 + rest + (k + 0.5) * ZINNE_ABSTAND
-		_klotz(stein, m, u, n, mitte - ZINNE_BREITE / 2, mitte + ZINNE_BREITE / 2, n0, n1, y, y + ZINNE_HOEHE)
-		# Schießscharte: schmaler dunkler Schlitz auf der Feldseite
-		_klotz("dunkel", m, u, n, mitte - 0.07, mitte + 0.07, n1 - 0.02, n1 + 0.015, y + 0.25, y + 1.0)
+		_zinne(m, u, n, mitte - ZINNE_BREITE / 2, mitte + ZINNE_BREITE / 2, n0, n1, y, ZINNE_HOEHE)
+
+
+## Zufall aus der Lage: bei jedem Bau gleich
+func _h01(p: Vector2) -> float:
+	return fposmod(sin(p.x * 12.9898 + p.y * 78.233) * 43758.5453, 1.0)
+
+
+## Eine Zinne (Mauerzahn) von a0 bis a1 entlang u, n0 bis n1 quer (n1 ist die Feldseite): Mauerwerk, darauf eine
+## vorstehende Abdeckplatte aus hellem Stein; Höhe leicht verschieden wie bei echt gesetzten Steinen. Breite Zinnen
+## haben auf der Feldseite eine Kreuzscharte mit Rundloch und Gewände, auf der Hofseite eine dunkle Nische.
+func _zinne(m: Vector2, u: Vector2, n: Vector2, a0: float, a1: float, n0: float, n1: float, y: float, h: float) -> void:
+	var z := _h01(m + u * (a0 + a1) + n * 3.1)
+	var hh := h - 0.06 + z * 0.12
+	_klotz(stein, m, u, n, a0, a1, n0, n1, y, y + hh - 0.14)
+	_klotz("hell", m, u, n, a0 - 0.05, a1 + 0.05, n0 - 0.06, n1 + 0.07, y + hh - 0.14, y + hh, true)
+	_klotz("hell", m, u, n, a0 + 0.08, a1 - 0.08, n0 + 0.04, n1 - 0.04, y + hh, y + hh + 0.05)   # Grat der Platte
+	if a1 - a0 < 1.0 or hh < 1.2:
+		return
+	var mc := (a0 + a1) / 2.0
+	_scharte(m + u * mc + n * n1, u, n, y + hh * 0.5, hh * 0.5 - 0.42)
+	_klotz("dunkel", m, u, n, mc - 0.2, mc + 0.2, n0 - 0.012, n0 + 0.02, y + 0.2, y + hh - 0.5)
+
+
+## Schießscharte in einer Wandfläche (m auf der Fläche, n nach außen): senkrechter Schlitz mit Querschlitz und
+## Rundloch unten, helles Gewände mit Sturz und Sohlbank. hl: halbe Länge des Schlitzes.
+func _scharte(m: Vector2, u: Vector2, n: Vector2, ym: float, hl: float) -> void:
+	hl = maxf(hl, 0.25)
+	_klotz("dunkel", m, u, n, -0.05, 0.05, -0.02, 0.012, ym - hl, ym + hl)
+	_klotz("dunkel", m, u, n, -0.1, 0.1, -0.02, 0.012, ym - hl - 0.06, ym - hl + 0.12)
+	_klotz("dunkel", m, u, n, -0.22, 0.22, -0.02, 0.012, ym - 0.035, ym + 0.035)
+	for s_: float in [-1.0, 1.0]:
+		var j0 := s_ * 0.05
+		var j1 := s_ * 0.14
+		_klotz("zier_hell", m, u, n, minf(j0, j1), maxf(j0, j1), -0.01, 0.04, ym - hl - 0.12, ym + hl + 0.1)
+	_klotz("zier_hell", m, u, n, -0.2, 0.2, -0.01, 0.05, ym + hl + 0.1, ym + hl + 0.2)
+	_klotz("zier_hell", m, u, n, -0.2, 0.2, -0.01, 0.06, ym - hl - 0.22, ym - hl - 0.12)
+
+
+## Balken (Quader) von a nach b mit Querschnitt breite × hoehe; die Höhe liegt möglichst in Richtung "hoch".
+func _balken(mat: String, a: Vector3, b: Vector3, breite: float, hoehe: float, hoch := Vector3.UP) -> void:
+	var d := (b - a).normalized()
+	var s_ := d.cross(hoch)
+	if s_.length() < 0.01:
+		s_ = d.cross(Vector3.RIGHT)
+	s_ = s_.normalized()
+	var o := s_.cross(d).normalized()
+	if o.dot(hoch) < 0.0:
+		o = -o
+	var bs := s_ * breite / 2.0
+	var ho := o * hoehe / 2.0
+	_viereck(mat, a - bs + ho, b - bs + ho, b + bs + ho, a + bs + ho, o)
+	_viereck(mat, a - bs - ho, b - bs - ho, b + bs - ho, a + bs - ho, -o)
+	_viereck(mat, a + bs - ho, b + bs - ho, b + bs + ho, a + bs + ho, s_)
+	_viereck(mat, a - bs - ho, b - bs - ho, b - bs + ho, a - bs + ho, -s_)
+	_viereck(mat, a - bs - ho, a + bs - ho, a + bs + ho, a - bs + ho, -d)
+	_viereck(mat, b - bs - ho, b + bs - ho, b + bs + ho, b - bs + ho, d)
 
 
 func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: float, aussen: Vector2, zinnen: bool) -> void:
@@ -421,14 +475,60 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			(N + Vector3.UP * vor / hoch).normalized())
 		_dreieck(stein, p.call(-l, d, unten), p.call(-l, d + vor, unten), p.call(-l, d, unten + hoch), Vector3(-u.x, 0, -u.y))
 		_dreieck(stein, p.call(l, d, unten), p.call(l, d + vor, unten), p.call(l, d, unten + hoch), Vector3(u.x, 0, u.y))
+		# Sockelband am oberen Ende des Anlaufs
+		_klotz("hell", m, u, n, -l, l, d - 0.02, d + 0.1, unten + hoch - 0.12, unten + hoch + 0.12, true)
+	# Gerüstlöcher (Rüstlöcher) in Reihen auf beiden Seiten, versetzt und lückenhaft wie beim echten Bau
+	var y_r := unten + (clampf(h * 0.3, 2.0, 6.0) if h > 4.0 else 0.5) + 0.9
+	var reihe := 0
+	var N3 := Vector3(n.x, 0, n.y)
+	while y_r < oben - 1.3:
+		var s_ := -laenge / 2.0 + 1.0 + fmod(reihe * 1.3, 2.6)
+		while s_ < laenge / 2.0 - 0.6:
+			for seite: float in [1.0, -1.0]:
+				if _h01(m + u * s_ + Vector2(y_r, seite * 7.0)) < 0.55:
+					var q := m + u * s_ + n * (d + 0.012) * seite
+					var U3 := Vector3(u.x, 0, u.y) * 0.1
+					var mp := Vector3(q.x, y_r, q.y)
+					_viereck("dunkel", mp - U3 - Vector3(0, 0.1, 0), mp + U3 - Vector3(0, 0.1, 0), mp + U3 + Vector3(0, 0.1, 0),
+						mp - U3 + Vector3(0, 0.1, 0), N3 * seite)
+			s_ += 2.6
+		y_r += 1.35
+		reihe += 1
+	# Wasserspeier auf der Hofseite: der Wehrgang entwässert durch steinerne Rinnen
+	var ws := -laenge / 2.0 + 4.5
+	while ws < laenge / 2.0 - 1.0:
+		_klotz("zier_hell", m, u, n, ws - 0.14, ws + 0.14, -d - 0.7, -d, oben - 0.34, oben - 0.12, true)
+		_klotz("dunkel", m, u, n, ws - 0.05, ws + 0.05, -d - 0.68, -d, oben - 0.12, oben - 0.11)
+		ws += 9.0
 	# Gesims unter der Brustwehr
 	_klotz(stein, m, u, n, -l, l, d - 0.1, d + 0.22, oben - 0.5, oben - 0.2, true)
 	# Wehrgang mit Plattenbelag
 	_klotz("boden", m, u, n, -l, l, -d + 0.05, d - BRUSTWEHR_DICKE, oben, oben + 0.06)
 	# Brustwehr und Zinnen auf der Feldseite, eine niedrige Mauer auf der Hofseite
 	_klotz(stein, m, u, n, -l, l, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
+	_klotz("hell", m, u, n, -l, l, d - BRUSTWEHR_DICKE - 0.05, d + 0.06, oben + BRUSTWEHR - 0.1, oben + BRUSTWEHR + 0.02, true)
 	_klotz(stein, m, u, n, -l, l, -d, -d + 0.35, oben, oben + 0.6)
+	_klotz("hell", m, u, n, -l, l, -d - 0.04, -d + 0.39, oben + 0.52, oben + 0.62, true)
 	_zinnen(m, u, n, laenge, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR)
+
+
+## Wetterfahne auf einer Turmspitze: Stange mit Kugel, Fahnenblech mit Zacken, Windrose darunter.
+func _wetterfahne(p: Vector3) -> void:
+	var c := Vector2(p.x, p.z)
+	var u := Vector2(1, 0)
+	var n := Vector2(0, 1)
+	_klotz("metall", c, u, n, -0.025, 0.025, -0.025, 0.025, p.y - 0.6, p.y + 1.1)
+	_klotz("metall", c, u, n, -0.09, 0.09, -0.09, 0.09, p.y - 0.15, p.y + 0.03)
+	_klotz("metall", c, u, n, -0.35, 0.35, -0.012, 0.012, p.y + 0.238, p.y + 0.262)   # Windrose
+	_klotz("metall", c, u, n, -0.012, 0.012, -0.35, 0.35, p.y + 0.238, p.y + 0.262)
+	var a := Vector3(p.x + 0.03, p.y + 0.55, p.z)
+	var b := Vector3(p.x + 0.03, p.y + 1.0, p.z)
+	var e1 := Vector3(p.x + 0.85, p.y + 0.9, p.z)
+	var e2 := Vector3(p.x + 0.7, p.y + 0.75, p.z)
+	var e3 := Vector3(p.x + 0.85, p.y + 0.6, p.z)
+	for seite: float in [1.0, -1.0]:
+		_viereck("metall", a, b, e1, e2, Vector3(0, 0, seite))
+		_dreieck("metall", a, e2, e3, Vector3(0, 0, seite))
 
 
 func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachhoehe: float) -> void:
@@ -449,7 +549,7 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 			var w := TAU * (k + 0.5 * reihe) / 4.0 + 0.4
 			var d := Vector2(cos(w), sin(w))
 			var t := Vector2(-d.y, d.x)
-			_klotz("dunkel", c + d * (r - 0.05), t, d, -0.08, 0.08, 0.0, 0.08, y - 0.6, y + 0.6)
+			_scharte(c + d * r, t, d, y, 0.55)
 	if dach == 1:
 		# Kegeldach mit Traufe und Knauf
 		# Traufkranz: ein schmaler Mauerring, auf dem das Dach mit kurzem Überstand sitzt
@@ -457,6 +557,7 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 		_kegel("dach", c, r + 0.35, oben, dachhoehe, teile)
 		_kegel("metall", c, 0.25, oben + dachhoehe - 0.3, 1.4, 8)
 		_ring(stein, c, 0.0, r, oben, teile, true)
+		_wetterfahne(Vector3(c.x, oben + dachhoehe + 1.1, c.y))
 	else:
 		# Zinnenkranz auf Kragsteinen
 		var ri := r + 0.1
@@ -470,11 +571,20 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 		_ring(stein, c, ri, ra, oben + BRUSTWEHR, teile, true)
 		_ring(stein, c, r, ra, oben, teile, false)
 		_ring("boden", c, 0.0, ri, oben + 0.05, teile, true)
+		# Gusslöcher (Maschikulis) zwischen den Kragsteinen
+		for k in teile:
+			var w0 := TAU * (k - 0.28) / teile
+			var w1 := TAU * (k + 0.28) / teile
+			var y_ := oben - 0.012
+			_viereck("dunkel", Vector3(c.x + cos(w0) * (r + 0.08), y_, c.y + sin(w0) * (r + 0.08)),
+				Vector3(c.x + cos(w1) * (r + 0.08), y_, c.y + sin(w1) * (r + 0.08)),
+				Vector3(c.x + cos(w1) * (ra - 0.12), y_, c.y + sin(w1) * (ra - 0.12)),
+				Vector3(c.x + cos(w0) * (ra - 0.12), y_, c.y + sin(w0) * (ra - 0.12)), Vector3.DOWN)
 		var zinnen := maxi(6, int(TAU * ra / ZINNE_ABSTAND))
 		for k in zinnen:
 			var w := TAU * k / zinnen
 			var d := Vector2(cos(w), sin(w))
-			_klotz(stein, c + d * (ri + ra) / 2.0, Vector2(-d.y, d.x), d, -0.65, 0.65, -0.3, 0.3, oben + BRUSTWEHR, oben + BRUSTWEHR + ZINNE_HOEHE)
+			_zinne(c + d * (ri + ra) / 2.0, Vector2(-d.y, d.x), d, -0.65, 0.65, -0.3, 0.3, oben + BRUSTWEHR, ZINNE_HOEHE)
 
 
 ## Schalenturm (dach 2): halbrund vor die Mauer gestellt und zur Innenseite offen (Richtung innen_winkel), wie an der
@@ -525,7 +635,7 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 		if k % 2 == 0:
 			var dm := (d0 + d1).normalized()
 			var mp := c + Vector2(dm.x, dm.z) * (r - dicke * 0.5)
-			_klotz(stein, mp, Vector2(-dm.z, dm.x), Vector2(dm.x, dm.z), -0.7, 0.7, -dicke * 0.5, dicke * 0.5, oben, oben + ZINNE_HOEHE)
+			_zinne(mp, Vector2(-dm.z, dm.x), Vector2(dm.x, dm.z), -0.7, 0.7, -dicke * 0.5, dicke * 0.5, oben, ZINNE_HOEHE)
 	# Stirnflächen der offenen Schale
 	for k: int in [0, schritte]:
 		var a: Vector3 = punkte.call(ri, unten, k)
@@ -550,7 +660,7 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 	for k: int in [2, 6, 10]:
 		var w: float = w_start + PI * (k + 0.5) / schritte
 		var d := Vector2(cos(w), sin(w))
-		_klotz("dunkel", c + d * (r - 0.05), Vector2(-d.y, d.x), d, -0.08, 0.08, 0.0, 0.08, yb + 0.4, yb + 1.6)
+		_scharte(c + d * r, Vector2(-d.y, d.x), d, yb + 1.0, 0.55)
 
 
 ## Erkertürmchen: rund, unten auf einem kegelförmigen Kragstein, Schießscharten, Gesims und spitzes Kegeldach.
@@ -1743,8 +1853,8 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 	_klotz(stein, c, u, n, -b, b, t + 0.1, t + 0.75, oben + 0.1, oben + 1.3, true)
 	# Schießscharten
 	for seite: float in [-1.0, 1.0]:
-		_klotz("dunkel", c, u, n, -0.08, 0.08, seite * t - 0.02 if seite > 0 else -t - 0.015, seite * t + 0.015 if seite > 0 else -t + 0.02,
-			unten + h * 0.55, unten + h * 0.55 + 1.2)
+		for e_: float in ([-0.3, 0.3] if b > 3.0 else [0.0]):
+			_scharte(c + n * t * seite + u * e_ * b, u * seite, n * seite, unten + h * 0.55 + 0.6, 0.55)
 	if dach < 0.0:
 		_bergfried_krone(c, u, n, b, t, unten, oben, hohl)
 	elif dach >= 1.0:
@@ -1766,6 +1876,7 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 				(mitte - Vector3(c.x, mitte.y, c.y)).normalized() + Vector3.UP * 0.5)
 		_viereck("dach", ecken[0], ecken[1], ecken[2], ecken[3], Vector3.DOWN)
 		_kegel("metall", c, 0.2, spitze.y - 0.3, 1.2, 8)
+		_wetterfahne(Vector3(c.x, spitze.y + 0.9, c.y))
 	else:
 		# Plattform mit Brustwehr rundum und Zinnen auf allen vier Seiten
 		_klotz("boden", c, u, n, -b, b, -t, t, oben, oben + 0.05)
@@ -1994,12 +2105,82 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 		_dreieck(wand, p.call(L * seite, -B, traufe), p.call(L * seite, B, traufe), p.call(L * seite, 0.0, first - 0.1),
 			Vector3(uz.x, 0, uz.y) * seite)
 	_klotz(dach, c, uz, nx, -L - gu, L + gu, -0.22, 0.22, first - 0.15, first + 0.12)
-	# Schornstein
+	_dach_details(c, uz, nx, B, L, ue, gu, traufe, first, boden, dach)
+	# Schornstein: gemauert mit Gurtgesimsen, Abdeckplatte und zwei Tonaufsätzen
 	if art == 0 or art == 3:
 		var sx := L * 0.45
 		var sn := B * 0.35
-		_klotz("bruchstein", c + uz * sx + nx * sn, uz, nx, -0.4, 0.4, -0.4, 0.4, traufe, first + 1.0)
-		_klotz("bruchstein", c + uz * sx + nx * sn, uz, nx, -0.5, 0.5, -0.5, 0.5, first + 0.9, first + 1.15)
+		var sm := c + uz * sx + nx * sn
+		_klotz("bruchstein", sm, uz, nx, -0.4, 0.4, -0.4, 0.4, traufe, first + 1.0)
+		_klotz("hell", sm, uz, nx, -0.46, 0.46, -0.46, 0.46, first + 0.35, first + 0.47, true)
+		_klotz("hell", sm, uz, nx, -0.52, 0.52, -0.52, 0.52, first + 0.9, first + 1.08, true)
+		_klotz("bruchstein", sm, uz, nx, -0.42, 0.42, -0.42, 0.42, first + 1.08, first + 1.2)
+		for e: float in [-0.18, 0.18]:
+			var tm := sm + uz * e
+			_mantel("ziegelton", tm, 0.12, 0.09, first + 1.2, first + 1.6, 8)
+			_ring("dunkel", tm, 0.0, 0.085, first + 1.59, 8)
+		# Verwahrung aus Blech, wo der Schornstein das Dach durchstößt
+		_klotz("metall", sm, uz, nx, -0.47, 0.47, -0.47, 0.47, first - absf(sn) * (first - traufe) / B - 0.05,
+			first - absf(sn) * (first - traufe) / B + 0.18)
+
+
+## Dachdetails eines Satteldachs: Ziegelreihen (jede Reihe steht über der nächsten vor), Ortgangbretter an den
+## Giebeln, Sparrenköpfe unter dem Überstand, Firstziegel, Regenrinnen mit Fallrohren bis zum Boden.
+func _dach_details(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, ue: float, gu: float, traufe: float,
+		first: float, boden: float, dach: String) -> void:
+	var neig := (first - traufe) / B
+	var y_rand := traufe - ue * neig
+	var p := func(su: float, sn: float, y: float) -> Vector3:
+		var q := c + uz * su + nx * sn
+		return Vector3(q.x, y, q.y)
+	var schritt := 0.26 if dach == "dach" else 0.34   # Schiefer feiner als Ziegel
+	for seite: float in [-1.0, 1.0]:
+		var N := (Vector3(nx.x * seite, 0, nx.y * seite) * neig + Vector3.UP).normalized()
+		var weit := (B + ue)
+		var t := schritt
+		while t < weit - 0.15:
+			var sn0 := (weit - t) * seite
+			var sn1 := (weit - t - schritt) * seite
+			var y0: float = first - (weit - t) * neig
+			var y1: float = first - (weit - t - schritt) * neig
+			var a0: Vector3 = p.call(-L - gu, sn0, y0)
+			var b0: Vector3 = p.call(L + gu, sn0, y0)
+			var a1: Vector3 = p.call(-L - gu, sn1, y1)
+			var b1: Vector3 = p.call(L + gu, sn1, y1)
+			var hub := N * 0.04
+			var unten_dir := Vector3(nx.x * seite, -neig, nx.y * seite).normalized()
+			_viereck(dach, a0, b0, b0 + hub, a0 + hub, unten_dir)
+			_viereck(dach, a0 + hub, b0 + hub, b1 + N * 0.003, a1 + N * 0.003, N)
+			t += schritt
+		# Ortgangbretter an beiden Giebeln
+		for ende: float in [-1.0, 1.0]:
+			var e := (L + gu + 0.03) * ende
+			_balken("holz", p.call(e, weit * seite, y_rand - 0.06), p.call(e, 0.0, first - 0.06), 0.06, 0.34)
+		# Sparrenköpfe unter dem Überstand
+		var sp := -L + 0.35
+		while sp < L - 0.2:
+			_balken("holz", p.call(sp, B * seite, traufe - 0.3), p.call(sp, (B + ue - 0.06) * seite, y_rand + 0.06 * neig - 0.3),
+				0.12, 0.16)
+			sp += 0.85
+		# Regenrinne an der Traufe, Fallrohre an beiden Enden
+		var r0 := (B + ue + 0.04) * seite
+		var r1 := (B + ue + 0.24) * seite
+		_klotz("metall", c, uz, nx, -L - gu, L + gu, minf(r0, r1), maxf(r0, r1), y_rand - 0.32, y_rand - 0.14)
+		_klotz("dunkel", c, uz, nx, -L - gu + 0.02, L + gu - 0.02, minf(r0, r1) + 0.03, maxf(r0, r1) - 0.03, y_rand - 0.14,
+			y_rand - 0.13)
+		for ende: float in [-1.0, 1.0]:
+			var fs := (L - 0.35) * ende
+			var w0 := (B + 0.04) * seite
+			var w1 := (B + 0.16) * seite
+			_klotz("metall", c + uz * fs, uz, nx, -0.06, 0.06, minf(w0, w1), maxf(w0, w1), boden, y_rand - 0.42)
+			_klotz("metall", c + uz * fs, uz, nx, -0.06, 0.06, minf(w0, r1), maxf(w0, r1), y_rand - 0.44, y_rand - 0.32)
+			_klotz("metall", c + uz * fs, uz, nx, -0.1, 0.1, minf(w0, w1) - 0.02, maxf(w0, w1) + 0.02, boden + 1.8, boden + 1.86)
+	# Firstziegel: Reihe gewölbter Kappen, jede ein Stück über der nächsten
+	var f := -L - gu
+	while f < L + gu - 0.1:
+		var f1 := minf(f + 0.46, L + gu)
+		_balken(dach, p.call(f, 0.0, first + 0.16), p.call(f1, 0.0, first + 0.13), 0.42, 0.14)
+		f += 0.42
 
 
 ## Palas wie im Referenzbild: zum Hof (+B) unten eine Arkade aus Rundbögen, darüber Reihen von Rundbogenfenstern
@@ -2373,6 +2554,11 @@ func _material(name_: String) -> Material:
 		h.albedo_color = Color(0.74, 0.62, 0.32)
 		h.roughness = 1.0
 		m = h
+	elif name_ == "ziegelton":
+		var zt := StandardMaterial3D.new()
+		zt.albedo_color = Color(0.62, 0.32, 0.2)
+		zt.roughness = 0.85
+		m = zt
 	elif name_ == "wasser_innen":
 		var wi := StandardMaterial3D.new()
 		wi.albedo_color = Color(0.12, 0.18, 0.2)
