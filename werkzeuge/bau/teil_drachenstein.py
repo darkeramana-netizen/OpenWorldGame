@@ -507,7 +507,7 @@ LAGERPLAETZE = []                # (x, z, nach innen x, z, Boden, Hof): dort arb
 _GRUND = {}
 _A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2.6, 2.6), 11: (2.3, 1.5), 12: (2.5, 1.0),
               13: (1.9, 0.7), 14: (0.7, 0.7), 15: (0.8, 0.7), 16: (1.8, 1.4), 17: (4.6, 3.6), 18: (1.9, 1.9), 19: (0.7, 2.6),
-              21: (7.6, 5.4)}
+              21: (7.6, 5.4), 22: (0.4, 1.0), 23: (0.3, 0.6), 24: (0.7, 1.4), 25: (0.7, 1.3), 26: (0.9, 2.2)}
 _treppen_w = []
 for k_ in range(0, len(TREPPEN), 7):
     fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
@@ -741,6 +741,23 @@ if "Unterstand Mittelburg" in WERKPLAETZE:
     px_, pz_, (ux_, uz_), (nx_, nz_), boden_ = WERKPLAETZE["Unterstand Mittelburg"]
     for e_ in (-4.0, -5.5):
         stelle(19, px_ + ux_ * e_ + nx_ * 1.2, pz_ + uz_ * e_ + nz_ * 1.2, math.degrees(math.atan2(-nx_, -nz_)), WL(PD.MITTELBURG), boden_, wegabstand=2.6)
+# Tiere in den Höfen (szenen/figuren/tier.gd über ausstattung.gd): je Hof ein Hund und zwei Katzen, in der Vorburg
+# beim Stall dazu Schweine, Schafe und eine Kuh
+_tiere = {}
+for name_, hof_, boden_ in _hoefe:
+    hof_w_ = WL(hof_)
+    xs_, zs_ = [q[0] for q in hof_w_], [q[1] for q in hof_w_]
+    wunsch_ = [(22, 1), (23, 2)] + ([(24, 2), (25, 3), (26, 1)] if name_ == "Vorburg" else [])
+    for art_, anzahl_ in wunsch_:
+        gesetzt_ = 0
+        for _ in range(300):
+            if gesetzt_ >= anzahl_:
+                break
+            x_, z_ = random.uniform(min(xs_), max(xs_)), random.uniform(min(zs_), max(zs_))
+            if stelle(art_, x_, z_, random.uniform(0, 360), hof_w_, boden_, wegabstand=2.2):
+                gesetzt_ += 1
+        _tiere[art_] = _tiere.get(art_, 0) + gesetzt_
+print("Tiere in den Höfen (Art: Anzahl):", _tiere)
 # Laternen neben den Türen: an jedem Haus und jedem begehbaren Bau eine, an jeder zweiten brennt nachts ein Licht
 _laternen = 0
 for k_, (x_, y_, z_, g_, f_) in enumerate(HOFHAEUSER):

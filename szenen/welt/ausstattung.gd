@@ -9,7 +9,8 @@ extends Node3D
 ## Bug zeigt nach lokal -z), 8 Tretradkran (der Ausleger zeigt nach lokal -z), 9 Prahm,
 ## 10 Ziehbrunnen mit Dach, 11 Holzstapel, 12 Pferdetränke, 13 Waffenständer mit Spießen, 14 Feuerkorb auf einem Pfahl,
 ## 15 Amboss auf dem Klotz, 16 Esse mit Rauchfang, 17 Unterstand (offen nach lokal +z), 18 Heuhaufen, 19 Pferd (Kopf nach
-## lokal +z), 20 Wandlaterne (an einer Wand, die lokal bei z = 0 steht; ohne Kollision), 21 Schmiede (gemauerte
+## lokal +z; als lebendes Tier), 20 Wandlaterne (an einer Wand, die lokal bei z = 0 steht; ohne Kollision),
+## 22 Hund, 23 Katze, 24 Schwein, 25 Schaf, 26 Kuh (lebende Tiere, tier.gd), 21 Schmiede (gemauerte
 ## Werkstatt mit Pultdach, Rücken an der Hofmauer bei lokal -z, offen nach +z; innen Esse, Amboss, Werkbank)
 @export var stuecke := PackedFloat32Array():
 	set(w):
@@ -22,7 +23,10 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(0.8, 1.0, 1.5), Vector3(2.6, 3.4, 9.0), Vector3(2.6, 3.4, 9.0), Vector3(0.9, 1.4, 2.6), Vector3(1.6, 9.0, 1.6),
 	Vector3(2.1, 2.2, 6.2), Vector3(1.25, 3.4, 1.25), Vector3(1.1, 1.1, 0.7), Vector3(1.2, 0.8, 0.45), Vector3(0.9, 2.3, 0.3),
 	Vector3(0.3, 2.3, 0.3), Vector3(0.4, 0.95, 0.35), Vector3(0.9, 1.2, 0.7), Vector3(2.2, 2.9, 1.6), Vector3(0.95, 1.1, 0.95),
-	Vector3(0.35, 1.7, 1.2), Vector3.ZERO, Vector3.ONE]
+	Vector3(0.35, 1.7, 1.2), Vector3.ZERO, Vector3.ONE, Vector3.ZERO, Vector3.ZERO, Vector3(0.35, 0.9, 0.7),
+	Vector3(0.35, 1.0, 0.65), Vector3(0.45, 1.5, 1.1)]
+## Arten, die als lebende Tiere (szenen/figuren/tier.gd) statt als MultiMesh entstehen: Art → Tierart
+const TIERE := {19: 0, 22: 4, 23: 5, 24: 3, 25: 2, 26: 1}
 ## Arten mit mehreren Kollisionskästen (begehbar): je Kasten die Ecken unten und oben (lokal)
 const KAESTEN := {21: [
 	[Vector3(-3.8, -0.5, -3.5), Vector3(3.8, 4.6, -2.2)],     # Rückwand
@@ -64,6 +68,21 @@ func _baue() -> void:
 	for art: int in je_art:
 		var lagen: Array = je_art[art]
 		var e_: Vector3 = KASTEN[art]
+		if TIERE.has(art):
+			# lebende Tiere: Modell mit Animation, Kopf wie bisher nach lokal +z (das Tier blickt nach -z)
+			for k in lagen.size():
+				var tier: Node3D = load("res://szenen/figuren/tier.gd").new()
+				tier.art = TIERE[art]
+				tier.transform = lagen[k] * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
+				add_child(tier)
+				if e_ != Vector3.ZERO:
+					var form_t := CollisionShape3D.new()
+					var box_t := BoxShape3D.new()
+					box_t.size = Vector3(e_.x * 2.0, e_.y, e_.z * 2.0)
+					form_t.shape = box_t
+					form_t.transform = lagen[k] * Transform3D(Basis(), Vector3(0, e_.y / 2.0, 0))
+					koerper.add_child(form_t)
+			continue
 		var mm := MultiMesh.new()
 		mm.transform_format = MultiMesh.TRANSFORM_3D
 		mm.mesh = _mesh(art)

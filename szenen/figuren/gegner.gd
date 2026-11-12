@@ -52,6 +52,7 @@ func _ready() -> void:
 	figur.merkmale_aus(anzeige_name + str(get_index()))
 	figur.tracht = tracht
 	figur.frisur = 4 if waffe == "puppe" else 2     # Gesetzlose tragen Kapuzen, die Puppe hat keinen Kopfputz
+	figur.einfach = waffe == "puppe"                # die Strohpuppe bleibt eine Puppe aus einfachen Formen
 	if waffe == "puppe":
 		figur.haut = Color(0.75, 0.62, 0.38)       # Stroh
 	_waffe.visible = waffe != "puppe"
@@ -71,6 +72,9 @@ func treffer(schaden: float, _quelle: Node3D, _art: String) -> void:
 		return
 	leben -= schaden
 	wach = true
+	var figur := _koerper.get_node_or_null("Figur")
+	if figur and figur.has_method("aktion") and leben > 0.0:
+		figur.aktion("Hit_Chest" if randf() < 0.5 else "Hit_Head")
 	var tween := create_tween()
 	tween.tween_property(_koerper, "scale", Vector3(1.15, 0.9, 1.15), 0.08)
 	tween.tween_property(_koerper, "scale", Vector3.ONE, 0.12)
@@ -91,8 +95,12 @@ func _liegen() -> void:
 	besiegt = true
 	wach = false
 	remove_from_group("treffbar")
-	_koerper.rotation.x = -PI / 2.0
-	_koerper.position.y = 0.3
+	var figur := _koerper.get_node_or_null("Figur")
+	if figur and figur.has_method("hat_modell") and figur.hat_modell():
+		figur.aktion("Death01")              # das Modell sinkt selbst zu Boden
+	else:
+		_koerper.rotation.x = -PI / 2.0
+		_koerper.position.y = 0.3
 	_waffe.visible = false
 	$Kollision.set_deferred("disabled", true)
 	$Name.visible = false
@@ -181,6 +189,9 @@ func _physics_process(delta: float) -> void:
 func _hole_aus(werte: Array) -> void:
 	_werte = werte
 	_ausholen = werte[2]
+	var figur := _koerper.get_node_or_null("Figur")
+	if figur and figur.has_method("aktion"):
+		figur.aktion("Sword_Attack")
 	_waffe.rotation.x = -1.2   # sichtbar ausholen: jetzt zurückweichen oder blocken
 
 

@@ -70,6 +70,9 @@ func angreifen() -> void:
 		_angriff = "hieb" if waffe == "saebel" else "bajonett"
 		_ausholen = ANGRIFFE[_angriff][2]
 		var teil := _saebel if waffe == "saebel" else _muskete
+		var figur := _koerper.get_node_or_null("Figur")
+		if figur and figur.has_method("aktion"):
+			figur.aktion("Sword_Attack" if waffe == "saebel" else "Punch_Jab")
 		var tween := create_tween()
 		tween.tween_property(teil, "rotation:x", -1.2, _ausholen * 0.6)
 		tween.tween_property(teil, "rotation:x", 0.0, 0.25)
@@ -156,6 +159,9 @@ func treffer(schaden: float, quelle: Node3D, art: String) -> void:
 			schaden *= BLOCK_FAKTOR
 	leben -= schaden
 	_seit_treffer = 0.0
+	var figur := _koerper.get_node_or_null("Figur")
+	if figur and figur.has_method("aktion"):
+		figur.aktion("Hit_Chest")
 	leben_geaendert.emit(leben)
 	if leben <= 0.0:
 		_verwundet()
