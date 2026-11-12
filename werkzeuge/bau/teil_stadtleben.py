@@ -235,7 +235,7 @@ for i, (name, anzeige, k) in enumerate([("Fischhaendlerin", "Fischhändlerin Mar
     stand = _freier_platz(STAENDE[k], 2.2)
     blick = _blick(stand, STAENDE[k])
     stadtmensch(name, anzeige, "stadt_haendler", 0, FARBEN[i + 2], wohnung(), {
-        "morgengrauen": (stand, [f"blick={blick}"]),
+        "morgengrauen": (stand, [f"blick={blick}", "haltung=reden"]),
         "stille_stunde": ("heim", ["weg"]),
     }, sichtbar_wenn="alarm<2")
 
@@ -245,8 +245,8 @@ BUERGER = [("Hedda", "Hedda Korn"), ("Wilm", "Wilm Asch"), ("Fenja", "Fenja Torb
 for i, (name, anzeige) in enumerate(BUERGER):
     plan = {
         "morgengrauen": ("heim", ["weg"]),
-        "vormittag": (MARKTPLAETZE[i], []),
-        "mittag": (AM_BRUNNEN[i % 4] if i % 2 == 0 else MARKTPLAETZE[(i + 3) % 8], []),
+        "vormittag": (MARKTPLAETZE[i], ["haltung=reden"] if i % 2 == 0 else []),
+        "mittag": (AM_BRUNNEN[i % 4] if i % 2 == 0 else MARKTPLAETZE[(i + 3) % 8], ["haltung=reden"]),
         "nachmittag": (VOR_DER_KIRCHE[i % 4], []) if i % 3 == 0 else ("heim", ["weg"]),
         "stille_stunde": ("heim", ["weg"]),
     }
@@ -257,7 +257,7 @@ for i, (name, anzeige) in enumerate([("Schmied", "Schmied Harm Eckel"), ("Schust
                                      ("Boettcher", "Böttcher Ewald Daube"), ("Baecker", "Bäcker Lorenz Krume")]):
     tuer_punkt = wohnung()
     stadtmensch(name, anzeige, "stadt_handwerker", 0, FARBEN[(i + 5) % 8], tuer_punkt, {
-        "morgengrauen": (tuer_punkt, []),
+        "morgengrauen": (tuer_punkt, ["haltung=arbeiten"]),
         "stille_stunde": ("heim", ["weg"]),
     }, sichtbar_wenn="alarm<3")
 
@@ -287,14 +287,14 @@ for name, anzeige, kordel, strecke, schicht in [
     if schicht == "tag":
         plan = {"morgengrauen": (strecke, []), "stille_stunde": ("heim", ["weg"])}
     else:
-        plan = {"morgengrauen": ("heim", ["weg"]), "nacht": (strecke, [])}
+        plan = {"morgengrauen": ("heim", ["weg"]), "nacht": (strecke, ["haltung=fackel"])}
     stadtmensch(name, anzeige, "streife", kordel, ORDEN, WACHWECHSEL, plan)
 
 # --- Hafen: Fischer und Träger am Westkai, ein Kaufmann aus Velmund unter Aufsicht am Docklager ---
 for i, (name, anzeige) in enumerate([("FischerKlaas", "Fischer Klaas Wend"), ("FischerinTora", "Fischerin Tora Lunk"),
                                      ("FischerHinnerk", "Fischer Hinnerk Saal")]):
     stadtmensch(name, anzeige, "hafen", 0, FARBEN[(i + 1) % 8], wohnung(), {
-        "morgengrauen": (W((630 + 25 * i, 436)), ["blick=90"]),
+        "morgengrauen": (W((630 + 25 * i, 436)), ["blick=90", "haltung=knien" if i % 2 == 0 else "haltung=arbeiten"]),
         "stille_stunde": ("heim", ["weg"]),
     }, sichtbar_wenn="alarm<3")
 for i, (name, anzeige) in enumerate([("TraegerOle", "Hafenträger Jonte Pahl"), ("TraegerinMieke", "Hafenträgerin Mieke Strand")]):

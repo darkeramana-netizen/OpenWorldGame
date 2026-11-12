@@ -42,6 +42,11 @@ var _seit_treffer: float = 99.0
 
 func _ready() -> void:
 	_zeige_waffe()
+	# Säbel und Muskete in die rechte Hand der Figur (wenn sie ein Modell hat)
+	var figur := _koerper.get_node_or_null("Figur")
+	if figur and figur.has_method("halte"):
+		figur.halte(_saebel)
+		figur.halte(_muskete)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -71,11 +76,12 @@ func angreifen() -> void:
 		_ausholen = ANGRIFFE[_angriff][2]
 		var teil := _saebel if waffe == "saebel" else _muskete
 		var figur := _koerper.get_node_or_null("Figur")
-		if figur and figur.has_method("aktion"):
-			figur.aktion("Sword_Attack" if waffe == "saebel" else "Punch_Jab")
-		var tween := create_tween()
-		tween.tween_property(teil, "rotation:x", -1.2, _ausholen * 0.6)
-		tween.tween_property(teil, "rotation:x", 0.0, 0.25)
+		if figur and figur.has_method("hat_modell") and figur.hat_modell():
+			figur.aktion("Sword_Attack" if waffe == "saebel" else "Punch_Jab")   # der Arm holt aus, die Waffe in der Hand mit
+		else:
+			var tween := create_tween()
+			tween.tween_property(teil, "rotation:x", -1.2, _ausholen * 0.6)
+			tween.tween_property(teil, "rotation:x", 0.0, 0.25)
 
 
 func nachladen() -> void:

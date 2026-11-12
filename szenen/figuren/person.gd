@@ -23,11 +23,14 @@ const KORDELFARBEN := {
 ## Tagesablauf: eine Zeile je Tagesabschnitt, "abschnitt: x,y,z; x,y,z; … | Zusatz | Zusatz".
 ## Beginnt der Abschnitt, geht die Person die Wegpunkte ab. Zusätze: "weg" (danach ist sie fort, etwa im
 ## Haus), "runde" (die Wegpunkte immer wieder, etwa eine Streife; "runde=2": erst hingehen, dann ab dem
-## dritten Wegpunkt immer wieder), "blick=180" (Blickrichtung am Ziel).
+## dritten Wegpunkt immer wieder), "blick=180" (Blickrichtung am Ziel), "haltung=sitzen" (Haltung, siehe unten).
 ## Abschnitte ohne Zeile ändern nichts. Ist der Spieler weit weg, steht sie gleich am Ziel.
 @export var tagesablauf: PackedStringArray = []
 ## Gehtempo in m/s.
 @export var tempo: float = 1.3
+## Haltung im Stand (figur.gd): "" stehen, "reden", "sitzen", "arbeiten", "knien", "fackel", "schwert". Im
+## Tagesablauf kann jeder Abschnitt eine eigene setzen ("haltung=fackel").
+@export var haltung: String = ""
 
 ## Weiter weg als das sieht der Spieler niemanden gehen: Die Person steht dann gleich am Ziel.
 const SICHTWEITE_GEHEN := 45.0
@@ -50,6 +53,7 @@ func _ready() -> void:
 	figur.rock = kordel != Kordel.KEINE    # Ordensleute tragen den langen Rock der Tracht
 	figur.kordel_farbe = KORDELFARBEN[kordel]
 	figur.scale *= groesse
+	figur.haltung = haltung
 	Spielstand.flag_geaendert.connect(func(_f: String) -> void: _pruefe_sichtbarkeit())
 	Spielstand.alarm_geaendert.connect(func(_s: int) -> void: _pruefe_sichtbarkeit())
 	Spielzeit.abschnitt_gewechselt.connect(func(_a: StringName) -> void:
@@ -84,6 +88,8 @@ static func lies_ablauf(zeilen: PackedStringArray) -> Dictionary:
 				eintrag["runde"] = zusatz.substr(6).to_int()
 			elif zusatz.begins_with("blick="):
 				eintrag["blick"] = zusatz.substr(6).to_float()
+			elif zusatz.begins_with("haltung="):
+				eintrag["haltung"] = zusatz.substr(8)
 		ergebnis[zeile.substr(0, doppelpunkt).strip_edges()] = eintrag
 	return ergebnis
 
@@ -104,6 +110,7 @@ func _folge_ablauf(sofort: bool) -> void:
 	if eintrag == _ziel_eintrag and _route.is_empty() and eintrag["runde"] < 0:
 		return
 	_ziel_eintrag = eintrag
+	$Figur.haltung = eintrag.get("haltung", haltung)
 	var punkte: Array[Vector3] = eintrag["punkte"]
 	var ab: int = eintrag["runde"]
 	_runde.assign(punkte.slice(ab) if ab >= 0 else [])
@@ -181,7 +188,14 @@ func interagieren(spieler: Node3D) -> void:
 		Spielstand.stille_gebrochen(anzeige_name)
 		return
 	_spricht = true
-	Dialog.beendet.connect(func(_d: String) -> void: _spricht = false, CONNECT_ONE_SHOT)
+	var vorher: String = $Figur.haltung
+	if vorher in ["", "arbeiten", "knien"]:
+		$Figur.haltung = "reden"          # wer angesprochen wird, unterbricht die Arbeit und redet
+	var danach := func(_d: String) -> void:
+		_spricht = false
+		if $Figur.haltung == "reden" and vorher != "reden":
+			$Figur.haltung = vorher
+	Dialog.beendet.connect(danach, CONNECT_ONE_SHOT)
 	Dialog.starte(dialog_id, anzeige_name)
 
 

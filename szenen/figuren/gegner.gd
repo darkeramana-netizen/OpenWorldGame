@@ -58,6 +58,8 @@ func _ready() -> void:
 	_waffe.visible = waffe != "puppe"
 	if waffe == "muskete":
 		_waffe.scale = Vector3(1.4, 1.4, 1.6)
+	if waffe != "puppe":
+		figur.halte(_waffe)          # die Klinge in die rechte Hand
 	if flag_besiegt != "" and Spielstand.hat_flag(flag_besiegt):
 		_liegen()
 

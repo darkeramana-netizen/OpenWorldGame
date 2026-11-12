@@ -52,7 +52,13 @@ extends Node3D
 		if is_inside_tree():
 			_plane_bau()
 ## Haltung im Stand: "" stehen, "reden", "sitzen", "arbeiten", "knien", "fackel", "schwert"
-@export var haltung: String = ""
+@export var haltung: String = "":
+	set(wert):
+		if wert == haltung:
+			return
+		haltung = wert
+		if _modell != null:
+			_setze_handding()
 @export var bart: bool = false
 
 const MODELLE := "res://modelle/figuren/"
@@ -60,8 +66,9 @@ const MODELLE := "res://modelle/figuren/"
 const SCHLEIFEN := ["Idle", "Idle_Talking", "Idle_Torch", "Walk", "Walk_Formal", "Jog_Fwd", "Sprint", "Sitting_Idle",
 	"Sitting_Talking", "Crouch_Idle", "Crouch_Fwd", "Sword_Idle", "Fixing_Kneeling", "Swim_Idle", "Swim_Fwd", "Push",
 	"Driving", "Dance", "Spell_Simple_Idle", "Pistol_Idle"]
-const HALTUNGEN := {"": "Idle", "reden": "Idle_Talking", "sitzen": "Sitting_Idle", "arbeiten": "Interact",
-	"knien": "Fixing_Kneeling", "fackel": "Idle_Torch", "schwert": "Sword_Idle"}
+const HALTUNGEN := {"": "Idle", "reden": "Idle_Talking", "sitzen": "Sitting_Idle", "sitzend_reden": "Sitting_Talking",
+	"arbeiten": "Interact",
+	"knien": "Crouch_Idle", "fackel": "Idle_Torch", "schwert": "Sword_Idle"}
 
 static var _szenen := {}
 static var _bibliothek: AnimationLibrary
@@ -72,6 +79,7 @@ var _modell: Node3D
 var _name_text := ""
 var _bau_geplant := false
 var _einmal := ""        # laufende einmalige Animation (aktion)
+var _gehalten: Array[Node3D] = []   # Waffen in der rechten Hand (halte)
 
 const HUEFTE := 0.93
 const SCHULTER := 1.43
@@ -98,6 +106,11 @@ func _plane_bau() -> void:
 
 func _baue() -> void:
 	_bau_geplant = false
+	# gehaltene Waffen retten, bevor das alte Modell verschwindet
+	for w in _gehalten:
+		if is_instance_valid(w) and w.get_parent() != self:
+			w.get_parent().remove_child(w)
+			add_child(w)
 	for k in get_children():
 		if k.has_meta("figur_teil"):
 			k.free()
@@ -428,8 +441,8 @@ func _baue_modell() -> bool:
 		_haenge_an(skelett, MODELLE + "haare/Hair_Beard.gltf")
 	if frisur == 3:
 		_hut(skelett)
-	if haltung in ["fackel", "schwert"]:
-		_in_hand(skelett, haltung)
+	_setze_handding()
+	_halte_alle()
 	_anim = AnimationPlayer.new()
 	_anim.name = "Anim"
 	_modell.add_child(_anim)
@@ -486,9 +499,54 @@ static func _am_kopf(v: int, je: int, knochen: PackedInt32Array, gewichte: Packe
 	return behalten.has(bester)
 
 
+## Waffe (Säbel, Muskete, Klinge eines Gegners) in die rechte Hand: der Knoten hängt an einem Griff am Handknochen,
+## seine eigene Drehung (Ausholen, Blocken in kampf.gd) bleibt frei. Die Klinge zeigt beim Knoten nach -z.
+func halte(waffe: Node3D) -> void:
+	if einfach or waffe == null:
+		return
+	if not waffe in _gehalten:
+		_gehalten.append(waffe)
+	if _modell != null:
+		_halte_alle()
+
+
+func _halte_alle() -> void:
+	if _modell == null:
+		return
+	var skelett: Skeleton3D = _modell.get_node("Armature/Skeleton3D")
+	var griff := skelett.get_node_or_null("Waffenhand/Griff")
+	if griff == null:
+		var halter := BoneAttachment3D.new()
+		halter.name = "Waffenhand"
+		halter.bone_name = "hand_r"
+		skelett.add_child(halter)
+		griff = Node3D.new()
+		griff.name = "Griff"
+		griff.position = Vector3(0.0, 0.09, 0.03)
+		griff.rotation = Vector3(PI / 2.0, 0.0, 0.0)   # -z der Waffe zeigt aus der Faust (+y der Hand)
+		halter.add_child(griff)
+	for w in _gehalten:
+		if is_instance_valid(w) and w.get_parent() != griff:
+			w.get_parent().remove_child(w)
+			griff.add_child(w)
+			w.position = Vector3.ZERO
+
+
+## Fackel oder Schwert der Haltung in die rechte Hand (vorheriges entfernen)
+func _setze_handding() -> void:
+	var skelett: Skeleton3D = _modell.get_node("Armature/Skeleton3D")
+	var alt := skelett.get_node_or_null("Handding")
+	if alt:
+		alt.free()
+	if haltung in ["fackel", "schwert"]:
+		_in_hand(skelett, haltung)
+		_faerben()
+
+
 ## Fackel oder Schwert in der rechten Hand
 func _in_hand(skelett: Skeleton3D, was: String) -> void:
 	var halter := BoneAttachment3D.new()
+	halter.name = "Handding"
 	halter.bone_name = "hand_r"
 	skelett.add_child(halter)
 	var teile: Array = []

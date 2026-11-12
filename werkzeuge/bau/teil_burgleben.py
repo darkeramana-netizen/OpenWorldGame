@@ -58,7 +58,7 @@ for k_ in range(0, len(TREPPEN), 7):
     punkte_ = [(fx_, fy_, fz_), (tx_, ty_, tz_), (px_, y_, pz_), (w1_[0], y_, w1_[1]), (w2_[0], y_, w2_[1]), (w1_[0], y_, w1_[1])]
     punkte_ = [tuple(round(v_, 2) for v_ in q_) for q_ in punkte_]
     person(f"Wehrgangwache{_wachen}", BL, *punkte_[3], WACHEN_NAMEN[_wachen % len(WACHEN_NAMEN)], "mauerwache", 1, WACHE_TRACHT,
-           ablauf={"morgengrauen": (punkte_, ["runde=3"])}, tempo=1.1)
+           ablauf={"morgengrauen": (punkte_, ["runde=3"]), "nacht": (punkte_, ["runde=3", "haltung=fackel"])}, tempo=1.1)
     _wachen += 1
 
 # --- Torwachen: zu beiden Seiten der Tore, mit Blick nach außen ---
@@ -80,7 +80,9 @@ for tor_, hof_, innen_, anzahl_ in TOR_WACHEN:
                 break
         blick_ = math.degrees(math.atan2(-nx_ * seite_, -nz_ * seite_))      # vom Tor weg nach außen
         person(f"Torwache{_tw}", BL, round(x_, 2), round(H(x_, z_), 2), round(z_, 2), TORWACHEN_NAMEN[_tw % len(TORWACHEN_NAMEN)],
-               "torwache_burg", 1, WACHE_TRACHT, gier=round(blick_, 1))
+               "torwache_burg", 1, WACHE_TRACHT, gier=round(blick_, 1),
+               ablauf={"morgengrauen": (p3([(x_, z_)]), [f"blick={round(blick_, 1)}"]),
+                       "nacht": (p3([(x_, z_)]), [f"blick={round(blick_, 1)}", "haltung=fackel"])})
         _tw += 1
 
 # --- Gesinde: tagsüber zwischen Brunnen und Häusern, abends daheim ---
@@ -130,7 +132,8 @@ for hofname_ in ("Vorburg", "Mittelburg", "Oberburg", "Palas"):
         else:
             continue
         person(f"Arbeit{_ar}", BL, round(x_, 2), boden_, round(z_, 2), ARBEIT_NAMEN[_ar % len(ARBEIT_NAMEN)], "burggesinde", 0,
-               GESINDE_TRACHTEN[(_ar + 2) % 4], gier=round(math.degrees(math.atan2(-nx_, -nz_)), 1), sichtbar_wenn="alarm<3")
+               GESINDE_TRACHTEN[(_ar + 2) % 4], gier=round(math.degrees(math.atan2(-nx_, -nz_)), 1), sichtbar_wenn="alarm<3",
+               haltung="knien" if _ar % 2 == 0 else "arbeiten")
         _ar += 1
 print("Burgleben: an den Lagerplätzen", _ar)
 
@@ -141,7 +144,7 @@ if "Schmiede" in WERKPLAETZE:
     ax_, az_ = px_ + lx_ * -1.4, pz_ + lz_ * -1.4                # Amboss in der Werkstatt
     sx_, sz_ = ax_ + lx_ * 0.85 + nx_ * 0.45, az_ + lz_ * 0.85 + nz_ * 0.45
     person("Burgschmied", BL, round(sx_, 2), boden_, round(sz_, 2), "Burgschmied Wendel Hart", "schmied_burg", 0, "0.3, 0.22, 0.16, 1",
-           gier=round(math.degrees(math.atan2(ax_ - sx_, az_ - sz_)), 1), sichtbar_wenn="alarm<3")
+           gier=round(math.degrees(math.atan2(ax_ - sx_, az_ - sz_)), 1), sichtbar_wenn="alarm<3", haltung="arbeiten")
 
 # --- Kaplan vor der Drachenkapelle, Haushofmeister vor dem Palas, Stallknecht an der Tränke ---
 for bau_, name_, anzeige_, dialog_, tracht_, boden_ in [
@@ -154,26 +157,26 @@ for bau_, name_, anzeige_, dialog_, tracht_, boden_ in [
             break
     vx_, vz_ = W((pp_[0], pp_[1]))
     person(name_, BL, round(x_, 2), boden_, round(z_, 2), anzeige_, dialog_, 2 if name_ == "Haushofmeister" else 0, tracht_,
-           gier=round(math.degrees(math.atan2(x_ - vx_, z_ - vz_)), 1))
+           gier=round(math.degrees(math.atan2(x_ - vx_, z_ - vz_)), 1), haltung="reden")
 _traenke = [a_ for a_ in BURG_AUSSTATTUNG if a_[0] == 12]
 if _traenke:
     _, x_, y_, z_, g_ = _traenke[0]
     a_ = math.radians(g_)
     sx_, sz_ = x_ + math.sin(a_) * 1.6, z_ + math.cos(a_) * 1.6
     person("Stallknecht", BL, round(sx_, 2), y_, round(sz_, 2), "Stallknecht Jorin Mähne", "burggesinde", 0, GESINDE_TRACHTEN[1],
-           gier=round(g_ + 180, 1), sichtbar_wenn="alarm<3")
+           gier=round(g_ + 180, 1), sichtbar_wenn="alarm<3", haltung="arbeiten")
 
 # --- Leute in den Gebäuden: Koch und Magd in der Küche, Zeugwart, Ritter im Rittersaal, Mägde in den Gesindehäusern
 # (Lage im Bau über _innen aus teil_drachenstein.py)
 _drinnen = 0
 pk_, bl_, iL_, iB_, _ = _innen(PD.BURGKUECHE, 7, PD.H_KERNBURG)
 person("Burgkoch", BL, *pk_(iL_ - 2.3, 0.4), "Burgkoch Hamm Seidel", "koch_burg", 0, "0.62, 0.58, 0.5, 1",
-       gier=bl_(iL_ - 2.3, 0.4, iL_, 0.4), sichtbar_wenn="alarm<3")
+       gier=bl_(iL_ - 2.3, 0.4, iL_, 0.4), sichtbar_wenn="alarm<3", haltung="arbeiten")
 person("Kuechenmagd", BL, *pk_(iL_ * 0.35, -(iB_ - 1.35)), "Küchenmagd Grete Lauch", "magd_burg", 0, GESINDE_TRACHTEN[2],
-       gier=bl_(0, 0, 0, -1), sichtbar_wenn="alarm<3")
+       gier=bl_(0, 0, 0, -1), sichtbar_wenn="alarm<3", haltung="arbeiten")
 pk_, bl_, iL_, iB_, _ = _innen(PD.ZEUGHAUS, 8, PD.H_KERNBURG)
 person("Zeugwart", BL, *pk_(iL_ * 0.3, 0.6), "Zeugwart Bertram Esch", "zeugwart", 1, WACHE_TRACHT,
-       gier=bl_(0, 0, 0, -1), sichtbar_wenn="alarm<3")
+       gier=bl_(0, 0, 0, -1), sichtbar_wenn="alarm<3", haltung="arbeiten")
 _drinnen += 3
 pk_, bl_, iL_, iB_, gs_ = _innen(PD.PALAS, 16, PD.H_KERNBURG, art=3)
 lauf_ = (16 / gs_) * 1.75
@@ -181,9 +184,9 @@ t0_, t1_ = -iL_ + 0.9 + lauf_ + 2.8 + 0.8, iL_ - 3.2
 for i_, (anz_, s_, e_) in enumerate([("Ritter Gunther von Asch", 0.3, 1), ("Ritterin Adela Brand", 0.6, -1),
                                        ("Ritter Wolfram Steg", 0.75, 1)]):
     s_ = t0_ + (t1_ - t0_) * s_
-    q_ = e_ * (iB_ - 1.9 - 1.45)
+    q_ = e_ * (iB_ - 1.9 - 0.95)          # auf der inneren Bank, das Gesicht zur Tafel
     person(f"Ritter{i_}", BL, *pk_(s_, q_, gs_ - 1), anz_, "ritter_burg", 2, "0.38, 0.1, 0.08, 1",
-           gier=bl_(s_, q_, s_, e_ * iB_), sichtbar_wenn="alarm<3")
+           gier=bl_(s_, q_, s_, e_ * iB_), sichtbar_wenn="alarm<3", haltung="sitzend_reden" if i_ == 1 else "sitzen")
     _drinnen += 1
 # Schreiber im Erdgeschoss des Palas, an einem Pult
 pk_, bl_, iL_, iB_, gs_ = _innen(PD.PALAS, 16, PD.H_KERNBURG, art=3)
@@ -192,13 +195,15 @@ for nr_, (bau_, hoehe_, boden_, name_) in enumerate([(PD.VORBURG_BAUTEN[0], 7, P
                                                      (PD.BURGHOF2_BAUTEN[6], 8, PD.H_BURGHOF2, "Knecht Arno Wiese"),
                                                      (PD.BURGHOF3_BAUTEN[2], 8, PD.H_KERNHOF, "Magd Berta Schaub")]):
     pk_, bl_, iL_, iB_, _ = _innen(bau_, hoehe_, boden_)
-    q_ = -min(iB_ - 0.9, 1.7)
+    sitzt_ = nr_ % 2 == 0
+    q_ = -0.95 if sitzt_ else -min(iB_ - 0.9, 1.7)     # auf der Bank am Tisch oder an der Wand bei der Arbeit
     person(f"Hausgesinde{nr_}", BL, *pk_(iL_ * 0.15, q_), name_, "magd_burg", 0, GESINDE_TRACHTEN[nr_ % 4],
-           gier=bl_(0, 0, 0, 1), sichtbar_wenn="alarm<3")
+           gier=bl_(0, 0, 0, 1) if sitzt_ else bl_(0, 0, 0, -1), sichtbar_wenn="alarm<3",
+           haltung="sitzen" if sitzt_ else "arbeiten")
     _drinnen += 1
 # Kaplan am Altar der Kapelle (Altar am Giebel -L)
 pk_, bl_, iL_, iB_, _ = _innen(PD.DRACHENKAPELLE, 11, PD.H_KERNBURG, art=1)
 person("Kaplan", BL, *pk_(-iL_ + 2.6, 0.0), "Kaplan Benedikt Saar", "kaplan", 0, "0.15, 0.13, 0.14, 1",
-       gier=bl_(0, 0, -1, 0))
+       gier=bl_(0, 0, -1, 0), haltung="knien")
 print("Burgleben: in den Gebäuden", _drinnen, "Personen, Kaplan am Altar")
 print("Burgleben:", _wachen, "Wehrgangwachen,", _tw, "Torwachen,", _gs, "Gesinde, Kaplan, Haushofmeister" + (", Stallknecht" if _traenke else ""))

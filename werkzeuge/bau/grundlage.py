@@ -68,7 +68,8 @@ text = "{text}"
 font_size = {groesse}
 outline_size = 14""")
 
-def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0, sichtbar_wenn="", ablauf=None, tempo=None, groesse=None):
+def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0, sichtbar_wenn="", ablauf=None, tempo=None, groesse=None,
+           haltung=""):
     """ablauf: {abschnitt: (punkte, zusätze)} mit punkte = [(x, y, z), ...] und zusätze z. B. ["weg"],
     ["runde"] oder ["blick=180"] (siehe person.gd, tagesablauf)."""
     zusatz = f'\nsichtbar_wenn = "{sichtbar_wenn}"' if sichtbar_wenn else ""
@@ -82,6 +83,8 @@ def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0, sic
         zusatz += f"\ntempo = {tempo}"
     if groesse:
         zusatz += f"\ngroesse = {groesse}"
+    if haltung:
+        zusatz += f'\nhaltung = "{haltung}"'
     N(name, None, parent, f"""{T(x,y,z,gier)}
 anzeige_name = "{anzeige}"
 dialog_id = "{dialog}"
