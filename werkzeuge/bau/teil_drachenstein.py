@@ -507,7 +507,8 @@ LAGERPLAETZE = []                # (x, z, nach innen x, z, Boden, Hof): dort arb
 _GRUND = {}
 _A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2.6, 2.6), 11: (2.3, 1.5), 12: (2.5, 1.0),
               13: (1.9, 0.7), 14: (0.7, 0.7), 15: (0.8, 0.7), 16: (1.8, 1.4), 17: (4.6, 3.6), 18: (1.9, 1.9), 19: (0.7, 2.6),
-              21: (7.6, 5.4), 22: (0.4, 1.0), 23: (0.3, 0.6), 24: (0.7, 1.4), 25: (0.7, 1.3), 26: (0.9, 2.2)}
+              21: (7.6, 5.4), 22: (0.4, 1.0), 23: (0.3, 0.6), 24: (0.7, 1.4), 25: (0.7, 1.3), 26: (0.9, 2.2),
+              27: (0.6, 1.1), 28: (4.2, 0.6), 29: (1.2, 1.2), 30: (1.6, 1.2), 31: (0.2, 0.3)}
 _treppen_w = []
 for k_ in range(0, len(TREPPEN), 7):
     fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
@@ -758,6 +759,62 @@ for name_, hof_, boden_ in _hoefe:
                 gesetzt_ += 1
         _tiere[art_] = _tiere.get(art_, 0) + gesetzt_
 print("Tiere in den Höfen (Art: Anzahl):", _tiere)
+# Kleinteile: Leitern an den Hofmauern, Wäscheleinen, Stroh, Pfützen; Tauben auf den Kappen der Hofseiten-Brustwehr
+_klein = {}
+for name_, hof_, boden_ in _hoefe:
+    hof_w_ = WL(hof_)
+    xs_, zs_ = [q[0] for q in hof_w_], [q[1] for q in hof_w_]
+    mx_, mz_ = sum(xs_) / len(xs_), sum(zs_) / len(zs_)
+    kanten_ = []
+    for a_, b_ in zip(hof_w_, hof_w_[1:] + hof_w_[:1]):
+        l_ = math.dist(a_, b_)
+        if l_ < 6.0:
+            continue
+        ux_, uz_ = (b_[0] - a_[0]) / l_, (b_[1] - a_[1]) / l_
+        nx_, nz_ = -uz_, ux_
+        if nx_ * (mx_ - a_[0]) + nz_ * (mz_ - a_[1]) < 0:
+            nx_, nz_ = -nx_, -nz_
+        kanten_.append((a_, l_, ux_, uz_, nx_, nz_))
+    def an_der_mauer(art_, anzahl_, innen_, wegabstand_=1.6):
+        gesetzt_ = 0
+        for _ in range(200):
+            if gesetzt_ >= anzahl_ or not kanten_:
+                break
+            a_, l_, ux_, uz_, nx_, nz_ = random.choice(kanten_)
+            t_ = random.uniform(2.0, l_ - 2.0)
+            x_, z_ = a_[0] + ux_ * t_ + nx_ * innen_, a_[1] + uz_ * t_ + nz_ * innen_
+            if stelle(art_, x_, z_, math.degrees(math.atan2(nx_, nz_)), hof_w_, boden_, wegabstand=wegabstand_):
+                gesetzt_ += 1
+        _klein[art_] = _klein.get(art_, 0) + gesetzt_
+    def irgendwo(art_, anzahl_, wegabstand_):
+        gesetzt_ = 0
+        for _ in range(250):
+            if gesetzt_ >= anzahl_:
+                break
+            x_, z_ = random.uniform(min(xs_), max(xs_)), random.uniform(min(zs_), max(zs_))
+            if stelle(art_, x_, z_, random.uniform(0, 360), hof_w_, boden_, wegabstand=wegabstand_):
+                gesetzt_ += 1
+        _klein[art_] = _klein.get(art_, 0) + gesetzt_
+    an_der_mauer(27, 2, 3.05)
+    an_der_mauer(29, 4, 3.1, 1.2)
+    if name_ in ("Vorburg", "Mittelburg"):
+        irgendwo(28, 2, 2.2)
+    irgendwo(30, 4, 0.0)            # Pfützen liegen auch auf den Wegen
+# Tauben auf der niedrigen Mauer zur Hofseite (Kappe in 0,62 m Höhe über dem Wehrgang)
+_tauben = 0
+for m_ in random.sample(MAUERSTUECKE, min(45, len(MAUERSTUECKE))):
+    _, ax_, az_, bx_, bz_, oben_, dicke_, aussen_ = m_
+    l_ = math.dist((ax_, az_), (bx_, bz_))
+    if l_ < 3.0:
+        continue
+    t_ = random.uniform(0.15, 0.85)
+    for k_ in range(random.randint(1, 3)):
+        tt_ = t_ + k_ * 0.3 / l_
+        x_ = ax_ + (bx_ - ax_) * tt_ - aussen_[0] * (dicke_ / 2 - 0.17)
+        z_ = az_ + (bz_ - az_) * tt_ - aussen_[1] * (dicke_ / 2 - 0.17)
+        BURG_AUSSTATTUNG.append((31, round(x_, 2), round(oben_ + 0.62, 2), round(z_, 2), round(random.uniform(0, 360), 1)))
+        _tauben += 1
+print("Kleinteile in den Höfen (Art: Anzahl):", _klein, "Tauben:", _tauben)
 # Laternen neben den Türen: an jedem Haus und jedem begehbaren Bau eine, an jeder zweiten brennt nachts ein Licht
 _laternen = 0
 for k_, (x_, y_, z_, g_, f_) in enumerate(HOFHAEUSER):

@@ -101,69 +101,13 @@ func _baue() -> void:
 		mmi.name = "Form%d_%d" % [f, fv % VARIANTEN]
 		mmi.multimesh = mm
 		add_child(mmi)
-		# Rauch aus etwa jedem siebten Schornstein
+		# Rauch aus etwa jedem dritten Schornstein (dort brennt ein Herdfeuer)
 		for k in je_form[fv].size():
-			if je_form[fv][k] % 7 != 3:
+			if je_form[fv][k] % 3 != 1:
 				continue
 			var h: Vector4 = haeuser[je_form[fv][k]]
 			var t := Transform3D(Basis(Vector3.UP, deg_to_rad(h.w)), Vector3(h.x, h.y, h.z))
-			add_child(_rauch(t * (_schornsteine[_schluessel(f, fv % VARIANTEN)] as Vector3)))
-
-
-## Dünner, langsam aufsteigender Rauch über einem Schornstein (wenige weiche Teilchen).
-static var _rauch_mesh: QuadMesh = null
-
-func _rauch(p: Vector3) -> GPUParticles3D:
-	if _rauch_mesh == null:
-		_rauch_mesh = QuadMesh.new()
-		_rauch_mesh.size = Vector2(1.2, 1.2)
-		var m := StandardMaterial3D.new()
-		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
-		m.vertex_color_use_as_albedo = true
-		var verlauf := Gradient.new()
-		verlauf.set_color(0, Color(1, 1, 1, 1))
-		verlauf.set_color(1, Color(1, 1, 1, 0))
-		var tex := GradientTexture2D.new()
-		tex.gradient = verlauf
-		tex.fill = GradientTexture2D.FILL_RADIAL
-		tex.fill_from = Vector2(0.5, 0.5)
-		tex.fill_to = Vector2(1.0, 0.5)
-		tex.width = 64
-		tex.height = 64
-		m.albedo_texture = tex
-		_rauch_mesh.material = m
-	var t := GPUParticles3D.new()
-	t.amount = 14
-	t.lifetime = 7.0
-	t.preprocess = 7.0
-	t.position = p
-	t.draw_pass_1 = _rauch_mesh
-	t.visibility_range_end = 260.0
-	var pm := ParticleProcessMaterial.new()
-	pm.direction = Vector3(0.2, 1, 0)
-	pm.spread = 12.0
-	pm.initial_velocity_min = 0.6
-	pm.initial_velocity_max = 1.0
-	pm.gravity = Vector3(0.12, 0.05, 0.04)
-	pm.scale_min = 0.6
-	pm.scale_max = 1.0
-	var groesse := Curve.new()
-	groesse.add_point(Vector2(0, 0.5))
-	groesse.add_point(Vector2(1, 2.6))
-	var gt := CurveTexture.new()
-	gt.curve = groesse
-	pm.scale_curve = gt
-	var farbe := Gradient.new()
-	farbe.set_color(0, Color(0.55, 0.53, 0.5, 0.0))
-	farbe.add_point(0.15, Color(0.55, 0.53, 0.5, 0.32))
-	farbe.set_color(farbe.get_point_count() - 1, Color(0.7, 0.7, 0.7, 0.0))
-	var ft := GradientTexture1D.new()
-	ft.gradient = farbe
-	pm.color_ramp = ft
-	t.process_material = pm
-	return t
+			add_child(Rauch.erzeuge(t * (_schornsteine[_schluessel(f, fv % VARIANTEN)] as Vector3)))
 
 
 ## Tür eines Hauses (für Wege): Weltpunkt vor der Tür.

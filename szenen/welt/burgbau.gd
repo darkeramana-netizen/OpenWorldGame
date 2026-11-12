@@ -2119,6 +2119,7 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 			var tm := sm + uz * e
 			_mantel("ziegelton", tm, 0.12, 0.09, first + 1.2, first + 1.6, 8)
 			_ring("dunkel", tm, 0.0, 0.085, first + 1.59, 8)
+		add_child(Rauch.erzeuge(Vector3(sm.x, first + 1.65, sm.y)))
 		# Verwahrung aus Blech, wo der Schornstein das Dach durchstößt
 		_klotz("metall", sm, uz, nx, -0.47, 0.47, -0.47, 0.47, first - absf(sn) * (first - traufe) / B - 0.05,
 			first - absf(sn) * (first - traufe) / B + 0.18)

@@ -10,7 +10,8 @@ extends Node3D
 ## 10 Ziehbrunnen mit Dach, 11 Holzstapel, 12 Pferdetränke, 13 Waffenständer mit Spießen, 14 Feuerkorb auf einem Pfahl,
 ## 15 Amboss auf dem Klotz, 16 Esse mit Rauchfang, 17 Unterstand (offen nach lokal +z), 18 Heuhaufen, 19 Pferd (Kopf nach
 ## lokal +z; als lebendes Tier), 20 Wandlaterne (an einer Wand, die lokal bei z = 0 steht; ohne Kollision),
-## 22 Hund, 23 Katze, 24 Schwein, 25 Schaf, 26 Kuh (lebende Tiere, tier.gd), 21 Schmiede (gemauerte
+## 22 Hund, 23 Katze, 24 Schwein, 25 Schaf, 26 Kuh (lebende Tiere, tier.gd), 27 Leiter (lehnt nach lokal -z an einer
+## Wand), 28 Wäscheleine mit Wäsche, 29 Stroh am Boden, 30 Pfütze, 31 Taube (27 bis 31 ohne Kollision), 21 Schmiede (gemauerte
 ## Werkstatt mit Pultdach, Rücken an der Hofmauer bei lokal -z, offen nach +z; innen Esse, Amboss, Werkbank)
 @export var stuecke := PackedFloat32Array():
 	set(w):
@@ -24,7 +25,7 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(2.1, 2.2, 6.2), Vector3(1.25, 3.4, 1.25), Vector3(1.1, 1.1, 0.7), Vector3(1.2, 0.8, 0.45), Vector3(0.9, 2.3, 0.3),
 	Vector3(0.3, 2.3, 0.3), Vector3(0.4, 0.95, 0.35), Vector3(0.9, 1.2, 0.7), Vector3(2.2, 2.9, 1.6), Vector3(0.95, 1.1, 0.95),
 	Vector3(0.35, 1.7, 1.2), Vector3.ZERO, Vector3.ONE, Vector3.ZERO, Vector3.ZERO, Vector3(0.35, 0.9, 0.7),
-	Vector3(0.35, 1.0, 0.65), Vector3(0.45, 1.5, 1.1)]
+	Vector3(0.35, 1.0, 0.65), Vector3(0.45, 1.5, 1.1), Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO]
 ## Arten, die als lebende Tiere (szenen/figuren/tier.gd) statt als MultiMesh entstehen: Art → Tierart
 const TIERE := {19: 0, 22: 4, 23: 5, 24: 3, 25: 2, 26: 1}
 ## Arten mit mehreren Kollisionskästen (begehbar): je Kasten die Ecken unten und oben (lokal)
@@ -107,6 +108,9 @@ func _baue() -> void:
 			form.shape = box
 			form.transform = lagen[k] * Transform3D(Basis(), Vector3(0, e.y / 2.0 - TIEFGANG.get(art, 0.0), 0))
 			koerper.add_child(form)
+		if art == 21:
+			for lage: Transform3D in lagen:
+				add_child(Rauch.erzeuge(lage * Vector3(-2.2, 6.95, -2.85), 1.8))   # die Esse brennt immer
 		var inst := MultiMeshInstance3D.new()
 		inst.name = "Art%d" % art
 		inst.multimesh = mm
@@ -326,6 +330,48 @@ func _mesh(art: int) -> ArrayMesh:
 			_klotz("metall", Vector3(-0.15, 2.07, 0.33), Vector3(0.15, 2.12, 0.63))
 		21:
 			_schmiede()
+		27:  # Leiter: zwei Holme und Sprossen, oben an der Wand
+			for x: float in [-0.22, 0.22]:
+				_seil("holz_dunkel", Vector3(x, 0, 0), Vector3(x, 4.4, -1.6), 0.035)
+			var k := 0.3
+			while k < 4.3:
+				var z := -1.6 * k / 4.4
+				_seil("holz", Vector3(-0.22, k, z), Vector3(0.22, k, z), 0.02)
+				k += 0.32
+		28:  # Wäscheleine zwischen zwei Pfosten, daran Hemden, Tücher und Laken
+			for x: float in [-2.0, 2.0]:
+				_klotz("holz_dunkel", Vector3(x - 0.05, 0, -0.05), Vector3(x + 0.05, 1.95, 0.05))
+				_klotz("holz_dunkel", Vector3(x - 0.18, 1.85, -0.03), Vector3(x + 0.18, 1.9, 0.03))
+			_seil("seil", Vector3(-2.0, 1.88, 0), Vector3(0, 1.78, 0), 0.018)
+			_seil("seil", Vector3(0, 1.78, 0), Vector3(2.0, 1.88, 0), 0.018)
+			var stuecke := [[-1.5, 0.55, 0.5, "segel"], [-0.8, 0.5, 0.75, "ware_tuch"], [0.0, 0.7, 0.9, "sack"],
+				[0.85, 0.45, 0.6, "ware_tuch2"], [1.5, 0.4, 0.45, "markise_b"]]
+			for st: Array in stuecke:
+				var x: float = st[0]
+				var b: float = st[1] / 2.0
+				var oben := 1.88 - 0.1 * (1.0 - absf(x) / 2.0)
+				_klotz(st[3], Vector3(x - b, oben - st[2], -0.01), Vector3(x + b, oben, 0.01), 0.04 * x)
+				_klotz("holz", Vector3(x - b + 0.05, oben - 0.02, -0.02), Vector3(x - b + 0.08, oben + 0.04, 0.02))   # Klammern
+				_klotz("holz", Vector3(x + b - 0.08, oben - 0.02, -0.02), Vector3(x + b - 0.05, oben + 0.04, 0.02))
+		29:  # verstreutes Stroh: flache, unregelmäßige Büschel
+			for i in 9:
+				var w := i * 2.39
+				var r := 0.15 + (i % 4) * 0.18
+				var m := Vector3(cos(w) * r, 0, sin(w) * r)
+				_klotz("heu", m + Vector3(-0.28, 0, -0.18), m + Vector3(0.28, 0.04 + (i % 3) * 0.04, 0.18), w)
+		30:  # Pfütze: flache, glänzende Wasserflecken
+			for i in 3:
+				var m := Vector3((i - 1) * 0.45, 0.012 + i * 0.002, (i % 2) * 0.3 - 0.15)
+				_zylinder("wasser", m, 0.35 + i * 0.12, 0.35 + i * 0.12, 0.004, 14)
+		31:  # Taube: Rumpf, Brust, Kopf mit Schnabel, Schwanz
+			_klotz("taube", Vector3(-0.055, 0.05, -0.1), Vector3(0.055, 0.15, 0.1))
+			_klotz("taube_hals", Vector3(-0.045, 0.1, -0.13), Vector3(0.045, 0.19, -0.07))
+			_klotz("taube", Vector3(-0.035, 0.18, -0.15), Vector3(0.035, 0.24, -0.08))
+			_klotz("ware_rot", Vector3(-0.01, 0.2, -0.18), Vector3(0.01, 0.215, -0.15))
+			_klotz("taube_dunkel", Vector3(-0.05, 0.07, 0.08), Vector3(0.05, 0.1, 0.2), 0.0)
+			_klotz("taube_dunkel", Vector3(-0.06, 0.08, -0.06), Vector3(0.06, 0.14, 0.12))
+			for x: float in [-0.02, 0.02]:
+				_klotz("ware_rot", Vector3(x - 0.006, 0, -0.02), Vector3(x + 0.006, 0.05, -0.01))
 		14:  # Feuerkorb auf einem Pfahl, darin Glut
 			_klotz("holz_dunkel", Vector3(-0.07, 0, -0.07), Vector3(0.07, 1.9, 0.07))
 			_zylinder("metall", Vector3(0, 1.9, 0), 0.18, 0.32, 0.35, 10)
@@ -710,7 +756,7 @@ func _material(name_: String) -> Material:
 				s.uv1_scale = Vector3(0.5, 0.5, 0.5)
 			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder", "ruß"]:
 				pass
-			elif name_ in ["fell", "haar"]:
+			elif name_ in ["fell", "haar", "taube", "taube_hals", "taube_dunkel"]:
 				pass
 			elif not name_ in ["holz_dunkel", "korb", "rumpf_teer", "deck"]:
 				s.albedo_texture = load("res://texturen/stoff_farbe.jpg")
@@ -725,9 +771,9 @@ func _material(name_: String) -> Material:
 				s.emission = Color(1.0, 0.55, 0.2)
 				s.emission_energy_multiplier = 3.0
 			if name_ in ["wasser", "glas"]:
-				s.roughness = 0.1
-				s.metallic = 0.3
-			s.albedo_color = {"holz_dunkel": Color(0.45, 0.36, 0.3), "glut": Color(1.0, 0.5, 0.15), "wasser": Color(0.18, 0.28, 0.3),
+				s.roughness = 0.04
+				s.metallic = 0.55
+			s.albedo_color = {"holz_dunkel": Color(0.45, 0.36, 0.3), "glut": Color(1.0, 0.5, 0.15), "wasser": Color(0.1, 0.12, 0.12),
 				"stein": Color(0.62, 0.58, 0.52), "dach": Color(0.45, 0.25, 0.18), "heu": Color(0.82, 0.7, 0.36),
 				"fell": Color(0.36, 0.22, 0.13), "haar": Color(0.12, 0.09, 0.07), "korb": Color(0.85, 0.68, 0.42),
 				"rumpf_teer": Color(0.22, 0.17, 0.13), "deck": Color(0.8, 0.68, 0.52), "segel": Color(0.9, 0.85, 0.72),
@@ -736,6 +782,7 @@ func _material(name_: String) -> Material:
 				"ware_tuch": STOFFE[2], "ware_tuch2": STOFFE[3], "seil": Color(0.5, 0.42, 0.3),
 				"wimpel": Color(0.65, 0.08, 0.06), "glas": Color(0.1, 0.13, 0.13), "kohle": Color(0.05, 0.05, 0.05),
 				"lehm": Color(0.32, 0.27, 0.22), "stoff_leder": Color(0.35, 0.22, 0.12),
+				"taube": Color(0.55, 0.57, 0.62), "taube_hals": Color(0.35, 0.45, 0.42), "taube_dunkel": Color(0.32, 0.33, 0.37),
 				"ruß": Color(0.07, 0.06, 0.055)}.get(name_, Color(0.6, 0.6, 0.6))
 			if name_.begins_with("markise") or name_ in ["segel", "wimpel"]:
 				s.cull_mode = BaseMaterial3D.CULL_DISABLED

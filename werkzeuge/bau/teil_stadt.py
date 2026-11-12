@@ -424,6 +424,25 @@ for x, z in STAENDE_MEHR:
     for seite in (-1, 1):
         px_, pz_ = x + random.uniform(-0.6, 0.6), z + seite * random.uniform(2.4, 2.8)
         AUSSTATTUNG.append((random.choice((0, 1, 2)), px_, H(px_, pz_), pz_, random.uniform(0, 360)))
+# Leben zwischen den Ständen (ohne Kollision): Tauben picken auf dem Pflaster, Pfützen, Katzen und Hunde
+_stadt_klein = {}
+for x, z in STAENDE + STAENDE_MEHR:
+    w_ = random.uniform(0, math.tau)
+    if random.random() < 0.45:
+        for k in range(random.randint(2, 5)):
+            px_, pz_ = x + math.cos(w_) * 3.5 + random.uniform(-0.8, 0.8), z + math.sin(w_) * 3.5 + random.uniform(-0.8, 0.8)
+            AUSSTATTUNG.append((31, px_, H(px_, pz_), pz_, random.uniform(0, 360)))
+            _stadt_klein[31] = _stadt_klein.get(31, 0) + 1
+    if random.random() < 0.3:
+        px_, pz_ = x + math.cos(w_ + 2.0) * 4.0, z + math.sin(w_ + 2.0) * 4.0
+        AUSSTATTUNG.append((30, px_, H(px_, pz_), pz_, random.uniform(0, 360)))
+        _stadt_klein[30] = _stadt_klein.get(30, 0) + 1
+    if random.random() < 0.25:
+        art_ = 23 if random.random() < 0.6 else 22
+        px_, pz_ = x + math.cos(w_ - 2.0) * 2.8, z + math.sin(w_ - 2.0) * 2.8
+        AUSSTATTUNG.append((art_, px_, H(px_, pz_), pz_, random.uniform(0, 360)))
+        _stadt_klein[art_] = _stadt_klein.get(art_, 0) + 1
+print("Stadt: Tauben, Pfützen, Katzen, Hunde:", _stadt_klein)
 N("Ausstattung", "Node3D", ST, "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
   + ", ".join(f"{v:.5g}" for st_ in AUSSTATTUNG for v in st_) + ")")
 
