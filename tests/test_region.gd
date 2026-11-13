@@ -213,7 +213,7 @@ func _initialize() -> void:
 				var tnv := Vector2(-tuv.y, tuv.x) * signf(tb[k + 8] if tb[k + 8] != 0.0 else 1.0)
 				if tb[k + 9] >= 1.0 and absf(tc.distance_to(gm) - (to[i + 5] / 2.0 + 2.6)) < 0.8:
 					var zt: Dictionary = bau._torturm_zugang(tc, tuv, tnv, tb[k + 6] / 2.0, tb[k + 7] / 2.0, tb[k + 5], to)
-					if not zt.is_empty():
+					if not zt.is_empty() and zt["wege"].any(func(w): return (w as Vector2).distance_to(gm) < 1.0):
 						punkte.append(tc)
 						for w in zt["wege"]:
 							if (w as Vector2).distance_to(gm) > 1.0:

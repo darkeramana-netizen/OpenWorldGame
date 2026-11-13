@@ -95,6 +95,7 @@ var _flach := {}   # Material → SurfaceTool, Normalen werden erzeugt (kantig)
 var _nachbarn_mauern: Array = []    # [a, b, Krone, Dicke] aller Mauerstücke dieses Baus und seiner Geschwister
 var _hohle: Array = []              # [Mitte, Radius, Innenradius, Wehrganghöhe] der hohlen Rundtürme
 var _hohle_eckig: Array = []        # [Mitte, u, n, halbe Breite innen, halbe Tiefe innen, Kammerboden] der hohlen Tortürme
+var _nachbarn_bauten: Array = []    # [Mitte, nx, uz, halbe Breite, halbe Länge, Boden, Traufe] der Gebäude der Geschwister
 var _rund := {}    # Material → SurfaceTool, Normalen von Hand (glatte Rundungen)
 var _bereit := false
 
@@ -748,10 +749,19 @@ func _sammle_nachbarn() -> void:
 	_nachbarn_mauern = []
 	_hohle = []
 	_hohle_eckig = []
+	_nachbarn_bauten = []
 	var knoten: Array = get_parent().get_children() if get_parent() != null else [self]
 	for k: Node in knoten:
 		if not ("mauern" in k and "tuerme" in k):
 			continue
+		if "gebaeude" in k:
+			var gb: PackedFloat32Array = k.gebaeude
+			var j := 0
+			while j + 11 < gb.size():
+				var gg := deg_to_rad(gb[j + 2])
+				_nachbarn_bauten.append([Vector2(gb[j], gb[j + 1]), Vector2(cos(gg), -sin(gg)), Vector2(sin(gg), cos(gg)),
+					gb[j + 3] / 2.0, gb[j + 4] / 2.0, gb[j + 5], gb[j + 5] + gb[j + 7]])
+				j += 12
 		var m: PackedFloat32Array = k.mauern
 		var i := 0
 		while i + 9 < m.size():
@@ -806,7 +816,19 @@ func _torturm_zugang(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, obe
 				if absf(ld.y) > 0.001:
 					aus = minf(aus, ((t if ld.y > 0.0 else -t) - lp.y) / ld.y)
 				var ausp := lp + ld * aus
-				treffer.append([ausp, m[2], p0 + dir * (aus + 1.0)])
+				# Tritt die Mauer an einer Ecke aus, führt keine Tür hinaus (sie ginge in die Ecke)
+				var entlang := absf(ausp.y) if absf(ausp.x) / b > absf(ausp.y) / t else absf(ausp.x)
+				var grenze := (t - TORTURM_WAND) if absf(ausp.x) / b > absf(ausp.y) / t else b
+				if entlang > grenze - 0.4:
+					continue
+				# Ragt das Stück kaum aus dem Turm, deckt ein höheres nächstes Stück den Wehrgang vor der Tür zu
+				var stufe: float = m[2]
+				if aus > 0.0 and (q0 - p0).length() - aus < float(m[3]) * 0.5 + 0.3:
+					for m2: Array in _nachbarn_mauern:
+						for e2 in 2:
+							if (m2[e2] as Vector2).distance_to(q0) < 0.05 and (m2[1 - e2] as Vector2).distance_to(p0) > (q0 - p0).length():
+								stufe = maxf(stufe, m2[2])
+				treffer.append([ausp, stufe, p0 + dir * (aus + 0.4)])
 	var i := 0
 	var am_tor := false
 	while i + 7 < tore_.size():
@@ -815,7 +837,15 @@ func _torturm_zugang(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, obe
 		if absf(absf(l.dot(u)) - (tore_[i + 5] / 2.0 + 2.6)) < 0.7 and absf(l.dot(n)) < 1.5:
 			# der Weg über dem Bogen liegt mindestens 1 m über dem Scheitel (wie in _tor)
 			var lg := Vector2(l.dot(u), l.dot(n))
-			treffer.append([Vector2(signf(lg.x) * b, 0.0), maxf(tore_[i + 6], tore_[i + 4] + KAEMPFER + tore_[i + 5] / 2.0 + 1.0), g])
+			var weg_y := maxf(tore_[i + 6], tore_[i + 4] + KAEMPFER + tore_[i + 5] / 2.0 + 1.0)
+			# Steht ein Gebäude auf dem Torbogen (Torhaus), geht es dorthin nicht hinaus
+			var bebaut := false
+			for bt: Array in _nachbarn_bauten:
+				var lb: Vector2 = g - (bt[0] as Vector2)
+				if absf(lb.dot(bt[1])) < float(bt[3]) and absf(lb.dot(bt[2])) < float(bt[4]) and float(bt[5]) < weg_y + 2.0 and float(bt[6]) > weg_y:
+					bebaut = true
+			if not bebaut:
+				treffer.append([Vector2(signf(lg.x) * b, 0.0), weg_y, g, true])   # true: der Torweg
 			am_tor = true
 		i += 8
 	if not am_tor or treffer.is_empty():
@@ -838,9 +868,14 @@ func _torturm_zugang(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, obe
 				seiten.append(seite)
 				stufen.append(float(tr[1]))
 				# entlang der Wand: auf den Seiten ±n die u-Lage (über die Ecken laufend), auf ±u die n-Lage (innen)
-				var halb := (b if seite.y != 0.0 else t - TORTURM_WAND) - 0.9
-				mitten.append(clampf(l.x if seite.y != 0.0 else l.y, -halb, halb))
-				wege.append(tr[2])
+				var halb := (b if seite.y != 0.0 else t - TORTURM_WAND) - 0.8
+				var mi := clampf(l.x if seite.y != 0.0 else l.y, -halb, halb)
+				mitten.append(mi)
+				# vor der Tür: gerade aus ihr heraus, 0,4 m vor die Wand (der Torweg: seine Mitte)
+				if tr.size() > 3:
+					wege.append(tr[2])
+				else:
+					wege.append(c + n * seite.y * (t + 0.15) + u * mi if seite.y != 0.0 else c + u * seite.x * (b + 0.15) + n * mi)
 				tief = minf(tief, float(tr[1]))
 	return {"boden": tief + 0.06, "seiten": seiten, "stufen": stufen, "mitten": mitten, "wege": wege}
 
@@ -873,8 +908,16 @@ func _turm_zugang(c: Vector2, r: float, oben: float) -> Dictionary:
 			if p.distance_to(c) < r + 0.6 and q.distance_to(c) > r + 0.6:
 				var o := _auf_kreis(p, q, c, r)
 				var i_ := _auf_kreis(p, q, c, ri) if p.distance_to(c) < ri else c + (o - c).normalized() * ri
-				treffer.append([o, m[2], i_, o + (q - p).normalized() * 1.2])
-				hoch = maxf(hoch, m[2])
+				# Ragt das Stück kaum aus dem Turm, deckt ein höheres nächstes Stück mit seiner Überlappung den Wehrgang
+				# vor der Tür zu: dann zählt dessen Höhe
+				var stufe: float = m[2]
+				if q.distance_to(c) - r < float(m[3]) * 0.5 + 0.3:
+					for m2: Array in _nachbarn_mauern:
+						for e2 in 2:
+							if (m2[e2] as Vector2).distance_to(q) < 0.05 and (m2[1 - e2] as Vector2).distance_to(c) > q.distance_to(c):
+								stufe = maxf(stufe, m2[2])
+				treffer.append([o, stufe, i_, o + (q - p).normalized() * 0.4])
+				hoch = maxf(hoch, stufe)
 	if treffer.is_empty() or oben - hoch < 3.2:
 		return {}
 	var tueren: Array[float] = []
