@@ -197,12 +197,19 @@ func setze_zeit(stunde: float) -> void:
 func flach(v: Vector3) -> Vector2:
 	return Vector2(v.x, v.z)
 
-## Bodenhöhe unter einem Punkt (Strahl nach unten), um Schweben und Versinken zu erkennen.
+## Bodenhöhe unter einem Punkt (Strahl nach unten), um Schweben und Versinken zu erkennen. Andere Leute, Tiere und
+## der Spieler sind kein Boden (wer dicht an jemandem vorbeigeht, schwebt nicht).
 func boden_unter(p: Vector3, ausnahme: Node3D) -> float:
 	var abfrage := PhysicsRayQueryParameters3D.create(p + Vector3.UP * 1.5, p + Vector3.DOWN * 4.0, 1)
 	abfrage.exclude = [ausnahme.get_rid()]
-	var t: Dictionary = current_scene.get_world_3d().direct_space_state.intersect_ray(abfrage)
-	return t.position.y if t else NAN
+	for versuch in 4:
+		var t: Dictionary = current_scene.get_world_3d().direct_space_state.intersect_ray(abfrage)
+		if not t:
+			return NAN
+		if not (t.collider is CharacterBody3D or t.collider.has_method("unterwegs") or t.collider.has_meta("tier")):
+			return t.position.y
+		abfrage.exclude += [t.rid]
+	return NAN
 
 func _initialize() -> void:
 	await process_frame

@@ -192,8 +192,8 @@ func _physics_process(delta: float) -> void:
 	if _ausweich_takt <= 0.0:
 		_ausweich_takt = 0.2
 		_ausweichen = _ausweich_richtung(weg)
-	if _ausweichen == Vector3.INF:
-		# Jemand steht direkt im Weg: kurz warten. Wartet der andere auf einen selbst (zwei stehen sich gegenüber),
+	if _ausweichen == Vector3.INF and weg.length() > 1.0:
+		# Jemand steht direkt im Weg: kurz warten (dicht vor dem Wegpunkt nicht: dort geht man hin). Wartet der andere auf einen selbst (zwei stehen sich gegenüber),
 		# löste sich das nie: nach 0,8 s geht man langsam rechts vorbei; Entgegenkommende weichen so beide nach
 		# ihrer rechten Seite aus und kommen aneinander vorbei.
 		_gewartet += delta
