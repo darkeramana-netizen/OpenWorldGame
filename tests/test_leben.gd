@@ -245,16 +245,16 @@ func _initialize() -> void:
 	await setze_zeit(10.0)
 	var gesinde: Node3D = burg.get_node("Gesinde0")
 	var brunnen_punkt := Vector3.INF
-	for zeile in gesinde.tagesablauf:
-		for teil in zeile.split(":", true, 1)[1].split("|")[0].split(";"):
-			var z := teil.split(",")
+	for zeile: String in gesinde.tagesablauf:
+		for teil: String in zeile.split(":", true, 1)[1].split("|")[0].split(";"):
+			var z: PackedStringArray = teil.split(",")
 			if z.size() >= 5 and z[3].strip_edges() == "arbeiten" and int(z[4]) >= 7:
 				brunnen_punkt = Vector3(z[0].to_float(), z[1].to_float(), z[2].to_float())
 	pruefe(brunnen_punkt != Vector3.INF, "Das Gesinde hat einen Arbeitsgang mit Rast am Brunnen")
 	if brunnen_punkt != Vector3.INF:
 		await setze(brunnen_punkt + Vector3(2.5, 1.0, 0.0))
 		var start := {}
-		for t: Node3D in get_tree().get_nodes_in_group("tiere"):
+		for t: Node3D in get_nodes_in_group("tiere"):
 			if t.revier.size() >= 3 and t.global_position.distance_to(spieler().global_position) < 60.0:
 				start[t] = t.global_position
 		var rastend := false
