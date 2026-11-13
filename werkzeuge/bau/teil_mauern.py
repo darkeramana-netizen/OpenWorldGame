@@ -230,10 +230,46 @@ def mauern_verbinden(fang=3.0):
         w = werte_je[k]
         return (w[i + 2 * e], w[i + 2 * e + 1])
 
+    def richtung(k, i):
+        (ax, az), (bx, bz) = ende(k, i, 0), ende(k, i, 1)
+        l_ = math.hypot(bx - ax, bz - az)
+        return ((bx - ax) / l_, (bz - az) / l_, l_) if l_ > 0.01 else (1.0, 0.0, 0.0)
+
+    # Doppelmauern: Zwei Ringe, deren Mauern Rücken an Rücken (Feldseiten entgegengesetzt) dieselbe Grenze ziehen,
+    # teilen sich eine Mauer: das niedrigere Stück, das fast ganz von der anderen gedeckt ist, entfällt
+    weg = set()
+    for (k, i) in stuecke:
+        w = werte_je[k]
+        ux, uz, l_ = richtung(k, i)
+        if l_ < 1.0:
+            continue
+        (ax, az) = ende(k, i, 0)
+        gedeckt = 0.0
+        hoechste = -1e9
+        for (k2, i2) in stuecke:
+            w2 = werte_je[k2]
+            if k2 == k or (k2, i2) in weg or w2[i2 + 7] * w[i + 7] + w2[i2 + 8] * w[i + 8] >= 0.0:
+                continue
+            vx, vz, l2 = richtung(k2, i2)
+            if l2 < 1.0 or abs(ux * vx + uz * vz) < 0.97:
+                continue
+            mx, mz = (w2[i2] + w2[i2 + 2]) / 2, (w2[i2 + 1] + w2[i2 + 3]) / 2
+            quer = abs((mx - ax) * -uz + (mz - az) * ux)
+            if quer > (w[i + 6] + w2[i2 + 6]) / 2:
+                continue
+            s0 = (w2[i2] - ax) * ux + (w2[i2 + 1] - az) * uz
+            s1 = (w2[i2 + 2] - ax) * ux + (w2[i2 + 3] - az) * uz
+            gedeckt += max(0.0, min(l_, max(s0, s1)) - max(0.0, min(s0, s1)))
+            hoechste = max(hoechste, w2[i2 + 5])
+        if gedeckt > 0.7 * l_ and w[i + 5] <= hoechste:
+            weg.add((k, i))
+    stuecke = [st for st in stuecke if st not in weg]
+
     def stoesse(p, ausser):
         return sum(1 for (k, i) in stuecke for e in (0, 1) if (k, i) != ausser and math.dist(ende(k, i, e), p) < 0.05)
 
     verschoben = []
+    teilung = []
     for (k, i) in stuecke:
         for e in (0, 1):
             p = ende(k, i, e)
@@ -250,6 +286,21 @@ def mauern_verbinden(fang=3.0):
                         bestes = (d, q)
             if bestes:
                 verschoben.append((k, i, e, p, bestes[1]))
+                continue
+            # sonst: endet es an der Flanke einer anderen Mauer, wird diese dort geteilt (ein Stoß wie ein T)
+            for (k2, i2) in stuecke:
+                if k2 == k:
+                    continue
+                w2 = werte_je[k2]
+                vx, vz, l2 = richtung(k2, i2)
+                (cx, cz) = ende(k2, i2, 0)
+                entlang = (p[0] - cx) * vx + (p[1] - cz) * vz
+                quer = abs((p[0] - cx) * -vz + (p[1] - cz) * vx)
+                if 2.0 < entlang < l2 - 2.0 and quer < w2[i2 + 6] / 2 + 1.0:
+                    x = (cx + vx * entlang, cz + vz * entlang)
+                    teilung.append((k2, i2, x))
+                    verschoben.append((k, i, e, p, x))
+                    break
     for (k, i, e, p, q) in verschoben:
         w = werte_je[k]
         w[i + 2 * e], w[i + 2 * e + 1] = q
@@ -261,6 +312,20 @@ def mauern_verbinden(fang=3.0):
                 else:
                     m_[3:5] = q
                 MAUERSTUECKE[j] = tuple(m_)
+    # geteilte Stücke (T-Stöße) und entfallene Doppelmauern in die Werte übernehmen
+    for k in werte_je:
+        w = werte_je[k]
+        neu = []
+        for i in range(0, len(w) - 9, 10):
+            if (k, i) in weg:
+                continue
+            stueck = w[i:i + 10]
+            for (k2, i2, x) in teilung:
+                if (k2, i2) == (k, i):
+                    neu += stueck[:2] + list(x) + stueck[4:]
+                    stueck = list(x) + stueck[2:]
+            neu += stueck
+        werte_je[k] = neu
     for k, w in werte_je.items():
         text = re.sub(r'\nmauern = PackedFloat32Array\([^)]*\)', "\nmauern = PackedFloat32Array(%s)" % _zahlen(w), knoten[k])
         for (k_, i, e, p, q) in verschoben:
@@ -274,4 +339,4 @@ def mauern_verbinden(fang=3.0):
                         t[j], t[j + 1] = q
                 text = text.replace(m.group(0), "\ntuerme = PackedFloat32Array(%s)" % _zahlen(t))
         knoten[k] = text
-    return verschoben
+    return verschoben, len(weg), len(teilung)
