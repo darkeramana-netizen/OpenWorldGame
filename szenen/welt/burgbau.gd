@@ -517,28 +517,40 @@ func _balken(mat: String, a: Vector3, b: Vector3, breite: float, hoehe: float, h
 
 
 func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: float, aussen: Vector2, zinnen: bool) -> void:
-	# An einem hohlen Rundturm endet die Mauer in seiner Wand (mit ihrer Überlappung), nicht in seiner Kammer
+	# An einem hohlen Turm endet die Mauer in seiner Wand (samt Überlappung und Breite), nicht in seiner Kammer; ein
+	# Stück, das knapp vor dem Turm endet, überlappt nicht in seine Wand hinein
+	var ueber_a := dicke * 0.5
+	var ueber_b := dicke * 0.5
 	for t: Array in _hohle:
 		var tc: Vector2 = t[0]
 		if oben + 2.7 <= float(t[3]):
 			continue                      # die Mauer bleibt unter dem Boden der Kammer
-		# nur Enden, die wirklich im Turm liegen (ein Stück, das knapp davor endet, bleibt, wo es ist)
 		var weg := float(t[2]) + 0.05 + dicke * 0.5
 		var in_a := a.distance_to(tc) < weg - 0.01
 		var in_b := b.distance_to(tc) < weg - 0.01
 		if in_a and in_b:
 			return                        # ganz im Turm
 		if in_a:
-			a = _auf_kreis(a, b, tc, weg)
+			a = _turm_ende(a, b, tc, t[2], dicke)
+		elif a.distance_to(tc) < float(t[1]) + ueber_a + 0.05:
+			ueber_a = maxf(0.0, a.distance_to(tc) - float(t[1]) - 0.05)
 		if in_b:
-			b = _auf_kreis(b, a, tc, weg)
+			b = _turm_ende(b, a, tc, t[2], dicke)
+		elif b.distance_to(tc) < float(t[1]) + ueber_b + 0.05:
+			ueber_b = maxf(0.0, b.distance_to(tc) - float(t[1]) - 0.05)
 	for t: Array in _hohle_eckig:
 		if oben + 2.7 <= float(t[5]):
 			continue
 		if _im_turm(a, t) and _im_turm(b, t):
 			return                        # ganz im Turm
-		a = _aus_turm(a, b, t, dicke)
-		b = _aus_turm(b, a, t, dicke)
+		var a2 := _aus_turm(a, b, t, dicke)
+		var b2 := _aus_turm(b, a, t, dicke)
+		if a2 == a:
+			ueber_a = minf(ueber_a, _vor_turm(a, t))
+		if b2 == b:
+			ueber_b = minf(ueber_b, _vor_turm(b, t))
+		a = a2
+		b = b2
 	var laenge := a.distance_to(b)
 	if laenge < 0.2:
 		return
@@ -546,8 +558,9 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 	var n := Vector2(-u.y, u.x)
 	if n.dot(aussen) < 0.0:
 		n = -n
-	var m := (a + b) / 2.0
-	var l := laenge / 2.0 + dicke * 0.5   # an Ecken überlappen, damit keine Lücken klaffen
+	# an Ecken überlappen, damit keine Lücken klaffen (vor hohlen Türmen weniger)
+	var m := (a + b) / 2.0 + u * (ueber_b - ueber_a) / 2.0
+	var l := laenge / 2.0 + (ueber_a + ueber_b) / 2.0
 	var h := oben - unten
 	var d := dicke / 2.0
 	# Mauerkörper
@@ -678,6 +691,28 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 			_zinne(c + d * (ri + ra) / 2.0, Vector2(-d.y, d.x), d, -0.65, 0.65, -0.3, 0.3, oben + BRUSTWEHR, ZINNE_HOEHE)
 
 
+## Wie weit ein Mauerende außerhalb eines hohlen Torturms über seine Wand hinaus überlappen darf (sonst halbe Dicke)
+func _vor_turm(p: Vector2, t: Array) -> float:
+	var l: Vector2 = p - (t[0] as Vector2)
+	var ab := maxf(absf(l.dot(t[1])) - float(t[3]) - TORTURM_WAND, absf(l.dot(t[2])) - float(t[4]) - TORTURM_WAND)
+	return maxf(0.0, ab - 0.05) if ab < 3.0 else 99.0
+
+
+## Ende einer Mauer (von innen im Rundturm nach aussen_) an seiner Wand: weit genug draußen, dass der Mauerkörper mit
+## Überlappung (halbe Dicke) und ganzer Breite die Kammer (Radius ri) nicht berührt, auch wenn sie schräg ankommt
+func _turm_ende(innen: Vector2, aussen_: Vector2, tc: Vector2, ri: float, dicke: float) -> Vector2:
+	var dir := (aussen_ - innen).normalized()
+	var quer := dir.orthogonal() * dicke * 0.5
+	var weg := ri + 0.05 + dicke * 0.5
+	for k in 40:
+		var e := _auf_kreis(innen, aussen_, tc, weg)
+		var e2 := e - dir * dicke * 0.5
+		if (e2 + quer).distance_to(tc) >= ri + 0.05 and (e2 - quer).distance_to(tc) >= ri + 0.05:
+			return e
+		weg += 0.1
+	return _auf_kreis(innen, aussen_, tc, weg)
+
+
 func _im_turm(p: Vector2, t: Array) -> bool:
 	var l: Vector2 = p - (t[0] as Vector2)
 	return absf(l.dot(t[1])) < float(t[3]) + TORTURM_WAND + 0.3 and absf(l.dot(t[2])) < float(t[4]) + TORTURM_WAND + 0.3
@@ -759,8 +794,19 @@ func _torturm_zugang(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, obe
 	for m: Array in _nachbarn_mauern:
 		for e in 2:
 			if drin.call(m[e]) and not drin.call(m[1 - e]):
-				var l: Vector2 = (m[1 - e] as Vector2) - c
-				treffer.append([Vector2(l.dot(u), l.dot(n)), m[2]])
+				# wo die Mauerachse den Turm verlässt (lokal), danach 1 m weiter auf dem Wehrgang
+				var p0: Vector2 = m[e]
+				var q0: Vector2 = m[1 - e]
+				var lp := Vector2((p0 - c).dot(u), (p0 - c).dot(n))
+				var dir := (q0 - p0).normalized()
+				var ld := Vector2(dir.dot(u), dir.dot(n))
+				var aus := INF
+				if absf(ld.x) > 0.001:
+					aus = minf(aus, ((b if ld.x > 0.0 else -b) - lp.x) / ld.x)
+				if absf(ld.y) > 0.001:
+					aus = minf(aus, ((t if ld.y > 0.0 else -t) - lp.y) / ld.y)
+				var ausp := lp + ld * aus
+				treffer.append([ausp, m[2], p0 + dir * (aus + 1.0)])
 	var i := 0
 	var am_tor := false
 	while i + 7 < tore_.size():
@@ -768,7 +814,8 @@ func _torturm_zugang(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, obe
 		var l := g - c
 		if absf(absf(l.dot(u)) - (tore_[i + 5] / 2.0 + 2.6)) < 0.7 and absf(l.dot(n)) < 1.5:
 			# der Weg über dem Bogen liegt mindestens 1 m über dem Scheitel (wie in _tor)
-			treffer.append([Vector2(l.dot(u), l.dot(n)), maxf(tore_[i + 6], tore_[i + 4] + KAEMPFER + tore_[i + 5] / 2.0 + 1.0)])
+			var lg := Vector2(l.dot(u), l.dot(n))
+			treffer.append([Vector2(signf(lg.x) * b, 0.0), maxf(tore_[i + 6], tore_[i + 4] + KAEMPFER + tore_[i + 5] / 2.0 + 1.0), g])
 			am_tor = true
 		i += 8
 	if not am_tor or treffer.is_empty():
@@ -780,6 +827,8 @@ func _torturm_zugang(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, obe
 		return {}
 	var seiten: Array[Vector2] = []
 	var stufen: Array[float] = []
+	var mitten: Array[float] = []        # Lage der Tür entlang ihrer Wand
+	var wege: Array = []                  # Punkt vor der Tür (Welt)
 	var tief := hoch
 	for tr: Array in treffer:
 		if hoch - float(tr[1]) < 1.0:
@@ -788,8 +837,12 @@ func _torturm_zugang(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, obe
 			if not seite in seiten:
 				seiten.append(seite)
 				stufen.append(float(tr[1]))
+				# entlang der Wand: auf den Seiten ±n die u-Lage (über die Ecken laufend), auf ±u die n-Lage (innen)
+				var halb := (b if seite.y != 0.0 else t - TORTURM_WAND) - 0.9
+				mitten.append(clampf(l.x if seite.y != 0.0 else l.y, -halb, halb))
+				wege.append(tr[2])
 				tief = minf(tief, float(tr[1]))
-	return {"boden": tief + 0.06, "seiten": seiten, "stufen": stufen}
+	return {"boden": tief + 0.06, "seiten": seiten, "stufen": stufen, "mitten": mitten, "wege": wege}
 
 
 ## Punkt auf der Strecke von p (im Kreis) nach q mit Abstand rad zur Mitte c: dort tritt die Mauerachse aus dem Kreis
@@ -812,16 +865,22 @@ func _turm_wand(r: float) -> float:
 func _turm_zugang(c: Vector2, r: float, oben: float) -> Dictionary:
 	var hoch := -INF
 	var treffer: Array = []
+	var ri := r - _turm_wand(r)
 	for m: Array in _nachbarn_mauern:
 		for e in 2:
 			var p: Vector2 = m[e]
-			if p.distance_to(c) < r + 0.6 and (m[1 - e] as Vector2).distance_to(c) > r + 0.6:
-				treffer.append([_auf_kreis(p, m[1 - e], c, r), m[2]])
+			var q: Vector2 = m[1 - e]
+			if p.distance_to(c) < r + 0.6 and q.distance_to(c) > r + 0.6:
+				var o := _auf_kreis(p, q, c, r)
+				var i_ := _auf_kreis(p, q, c, ri) if p.distance_to(c) < ri else c + (o - c).normalized() * ri
+				treffer.append([o, m[2], i_, o + (q - p).normalized() * 1.2])
 				hoch = maxf(hoch, m[2])
 	if treffer.is_empty() or oben - hoch < 3.2:
 		return {}
 	var tueren: Array[float] = []
+	var innen_w: Array[float] = []
 	var stufen: Array[float] = []
+	var wege: Array = []
 	var tief := hoch
 	for t: Array in treffer:
 		if hoch - float(t[1]) < 1.0:
@@ -832,11 +891,14 @@ func _turm_zugang(c: Vector2, r: float, oben: float) -> Dictionary:
 				if absf(angle_difference(w, w_)) < 0.5:
 					doppelt = true
 			if not doppelt:
+				var di: Vector2 = (t[2] as Vector2) - c
 				tueren.append(w)
+				innen_w.append(atan2(di.y, di.x))
 				stufen.append(float(t[1]))
+				wege.append([t[3], t[2]])        # vor der Tür auf dem Wehrgang, an der Innenwand
 				tief = minf(tief, float(t[1]))
 	# Boden auf dem tiefsten Wehrgang; zu höheren führt vor der Tür ein Keil hinauf
-	return {"boden": tief, "tueren": tueren, "stufen": stufen}
+	return {"boden": tief, "tueren": tueren, "innen_w": innen_w, "stufen": stufen, "wege": wege}
 
 
 ## Hohler Rundturm: unten massiv bis auf die Höhe des Wehrgangs, darüber eine Kammer mit Türen zu den Wehrgängen und
@@ -852,6 +914,7 @@ func _rundturm_hohl(c: Vector2, unten: float, oben: float, r: float, dach: int, 
 	var ri := r - _turm_wand(r)
 	var fb: float = float(zugang["boden"]) + 0.06
 	var tueren: Array = zugang["tueren"]
+	var innen_w: Array = zugang["innen_w"]
 	var stufen_: Array = zugang["stufen"]
 	var steig := oben + 0.05 - fb
 	var th := 2.5                       # Türhöhe (über einem höheren Wehrgang bleiben 2,5 m)
@@ -893,17 +956,26 @@ func _rundturm_hohl(c: Vector2, unten: float, oben: float, r: float, dach: int, 
 		var wm := (w0 + w1) / 2.0
 		var tuer := Vector2(INF, -INF)    # Tür in diesem Stück (Winkel von, bis)
 		var nahe_tuer := false
-		for t: float in tueren:
+		var schwelle := fb
+		for j in tueren.size():
+			var t: float = tueren[j]
+			# kommt die Mauer schräg an, reicht die Tür vom Austritt außen bis zum Eintritt innen
+			var spr := angle_difference(t, float(innen_w[j]))
+			var t0 := minf(0.0, spr) - hw
+			var t1 := maxf(0.0, spr) + hw
 			var tm := wm + angle_difference(wm, t)
-			if tm + hw > w0 and tm - hw < w1:
-				tuer = Vector2(maxf(w0, tm - hw), minf(w1, tm + hw))
-				if tm - hw > w0:
-					_viereck(stein, p3.call(ri, tm - hw, fb), p3.call(r, tm - hw, fb), p3.call(r, tm - hw, fb + th), p3.call(ri, tm - hw, fb + th),
-						Vector3(-sin(tm - hw), 0, cos(tm - hw)))
-				if tm + hw < w1:
-					_viereck(stein, p3.call(ri, tm + hw, fb), p3.call(r, tm + hw, fb), p3.call(r, tm + hw, fb + th), p3.call(ri, tm + hw, fb + th),
-						-Vector3(-sin(tm + hw), 0, cos(tm + hw)))
-			if absf(angle_difference(wm, t)) < seg * 1.6:
+			if tm + t1 > w0 and tm + t0 < w1:
+				tuer = Vector2(maxf(w0, tm + t0), minf(w1, tm + t1))
+				schwelle = float(stufen_[j]) + 0.06
+				if tm + t0 > w0:
+					var wa := tm + t0
+					_viereck(stein, p3.call(ri, wa, fb), p3.call(r, wa, fb), p3.call(r, wa, fb + th), p3.call(ri, wa, fb + th),
+						Vector3(-sin(wa), 0, cos(wa)))
+				if tm + t1 < w1:
+					var wb := tm + t1
+					_viereck(stein, p3.call(ri, wb, fb), p3.call(r, wb, fb), p3.call(r, wb, fb + th), p3.call(ri, wb, fb + th),
+						-Vector3(-sin(wb), 0, cos(wb)))
+			if absf(angle_difference(wm, t)) < seg * 1.6 + absf(spr):
 				nahe_tuer = true
 		if tuer.x < tuer.y:
 			for teil: Vector2 in [Vector2(w0, tuer.x), Vector2(tuer.y, w1)]:
@@ -911,9 +983,11 @@ func _rundturm_hohl(c: Vector2, unten: float, oben: float, r: float, dach: int, 
 				_bogenwand(st, c, ri, teil.x, teil.y, fb, decke, true)
 			_bogenwand(st, c, r, tuer.x, tuer.y, fb + th, oben, false)
 			_bogenwand(st, c, ri, tuer.x, tuer.y, fb + th, decke, true)
-			# Sturz und Schwelle
+			# Sturz; die Schwelle liegt auf der Höhe des Wehrgangs (darunter außen eine Stufe aus Stein)
 			_viereck(stein, p3.call(ri, tuer.x, fb + th), p3.call(r, tuer.x, fb + th), p3.call(r, tuer.y, fb + th), p3.call(ri, tuer.y, fb + th), Vector3.DOWN)
-			_viereck("boden", p3.call(ri, tuer.x, fb), p3.call(r, tuer.x, fb), p3.call(r, tuer.y, fb), p3.call(ri, tuer.y, fb), Vector3.UP)
+			_viereck("boden", p3.call(ri, tuer.x, schwelle), p3.call(r, tuer.x, schwelle), p3.call(r, tuer.y, schwelle), p3.call(ri, tuer.y, schwelle), Vector3.UP)
+			if schwelle > fb + 0.02:
+				_bogenwand(st, c, r, tuer.x, tuer.y, fb, schwelle, false)
 		elif k % 3 == 1 and not nahe_tuer and s1 < decke - 0.3:
 			# echte Scharte: außen schmal, innen eine breite Nische
 			var ha := 0.065 / r
@@ -968,7 +1042,7 @@ func _rundturm_hohl(c: Vector2, unten: float, oben: float, r: float, dach: int, 
 	for j in tueren.size():
 		var stufe: float = float(stufen_[j]) + 0.06 - fb
 		if stufe > 0.03:
-			var t: float = tueren[j]
+			var t: float = innen_w[j]
 			var rad := Vector2(cos(t), sin(t))
 			_keil("holz", c, rad.orthogonal(), rad, -0.75, 0.75, ri - maxf(1.0, stufe * 2.6), ri + 0.05, fb, fb, fb + stufe)
 	# Licht in der Kammer (die Scharten lassen wenig herein)
@@ -2387,7 +2461,7 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 		_setze(tuer, c - n * (t - HOHL_WAND + 0.1), hohl_boden, u, n)
 	elif not kammer.is_empty():
 		_klotz(stein, c, u, n, -b, b, -t, t, unten, float(kammer["boden"]))
-		_torturm_kammer(c, u, n, b, t, float(kammer["boden"]), oben, kammer["seiten"], kammer["stufen"])
+		_torturm_kammer(c, u, n, b, t, float(kammer["boden"]), oben, kammer["seiten"], kammer["stufen"], kammer["mitten"])
 	else:
 		_klotz(stein, c, u, n, -b, b, -t, t, unten, oben)
 	# Anlauf rundum
@@ -2461,7 +2535,8 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 ## Kammer eines hohlen Torturms von fb bis oben: vier Wände (Stärke TORTURM_WAND) mit Türen auf den Seiten mit
 ## Wehrgang (seiten: lokale Richtungen, x entlang u, y entlang n) und echten Scharten (außen schmal, innen eine
 ## Nische) auf den übrigen Seiten, eine Balkendecke (bei hoher Kammer 4,5 m über dem Boden) und ein Licht.
-func _torturm_kammer(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, fb: float, oben: float, seiten: Array, stufen: Array) -> void:
+func _torturm_kammer(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, fb: float, oben: float, seiten: Array, stufen: Array,
+		mitten: Array) -> void:
 	var dw := TORTURM_WAND
 	var bi := b - dw
 	var ti := t - dw
@@ -2482,7 +2557,7 @@ func _torturm_kammer(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, fb:
 		var loecher_aussen: Array = []
 		var loecher_innen: Array = []
 		if seite in seiten:
-			var tuer := Rect2(-0.75, fb - 0.01, 1.5, th + 0.01)
+			var tuer := Rect2(float(mitten[seiten.find(seite)]) - 0.75, fb - 0.01, 1.5, th + 0.01)
 			loecher_aussen.append(tuer)
 			loecher_innen.append(tuer)
 		else:
@@ -2501,8 +2576,11 @@ func _torturm_kammer(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, fb:
 				_scharte_rahmen(c + achse * e_ + quer * tiefe, achse, quer, s0, s1)
 		else:
 			var stufe: float = float(stufen[seiten.find(seite)]) + 0.06 - fb
+			var mi: float = mitten[seiten.find(seite)]
 			if stufe > 0.03:
-				_keil("holz", c, achse, quer, -0.75, 0.75, tiefe - dw - maxf(1.0, stufe * 2.6), tiefe - dw + 0.02, fb, fb, fb + stufe)
+				_keil("holz", c, achse, quer, mi - 0.75, mi + 0.75, tiefe - dw - maxf(1.0, stufe * 2.6), tiefe - dw + 0.02, fb, fb, fb + stufe)
+				# Schwelle auf der Höhe des Wehrgangs
+				_klotz("boden", c, achse, quer, mi - 0.75, mi + 0.75, tiefe - dw, tiefe, fb, fb + stufe)
 	# Decke mit zwei Balken
 	_klotz("holz", c, u, n, -bi, bi, -ti, ti, decke - 0.2, decke, true)
 	for e_: float in [-bi * 0.45, bi * 0.45]:

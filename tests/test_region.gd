@@ -173,8 +173,9 @@ func _initialize() -> void:
 		else:
 			print("       Treppe %d nicht hinauf (stehe bei %s, Wehrgang %.1f)" % [k / 7, spieler().global_position.snapped(Vector3.ONE * 0.1), tr[k + 5] - 0.62])
 	pruefe(tr.size() >= 70 and treppen_ok * 7 == tr.size(), "Treppen auf die Wehrgänge: %d von %d hinauf" % [treppen_ok, tr.size() / 7])
-	# Hohle Rundtürme: vom Wehrgang durch die eine Tür in die Kammer und zur anderen Tür wieder hinaus (je 1 m vor die
-	# Tür: weiter hinaus folgt der Wehrgang der Mauer, deren Stücke verschieden hoch sein können)
+	# Hohle Rundtürme: vom Wehrgang (1 m vor der Tür, auf der Mauerachse) durch die Tür in die Kammer und zur anderen
+	# Tür wieder hinaus; die Wege rechnet burgbau.gd aus (_turm_zugang). Weiter hinaus folgt der Wehrgang der Mauer, deren
+	# Stücke verschieden hoch sein können.
 	var turm_ok := 0
 	var turm_alle := 0
 	var tor_ok := 0
@@ -189,31 +190,40 @@ func _initialize() -> void:
 			var z: Dictionary = bau._turm_zugang(c, tu[i + 4], tu[i + 3]) if int(tu[i + 5]) != 2 else {}
 			if not z.is_empty() and z["tueren"].size() >= 2:
 				turm_alle += 1
-				var r: float = tu[i + 4]
-				var d0 := Vector2(cos(z["tueren"][0]), sin(z["tueren"][0]))
-				var d1 := Vector2(cos(z["tueren"][1]), sin(z["tueren"][1]))
-				await setze(Vector3(c.x + d0.x * (r + 1.2), float(z["stufen"][0]) + 0.5, c.y + d0.y * (r + 1.2)))
-				if await gehe_ueber([c + d0 * (r - 1.6), c, c + d1 * (r - 1.6), c + d1 * (r + 1.0)], 12.0, 0.6):
+				var w0: Array = z["wege"][0]
+				var w1: Array = z["wege"][1]
+				await setze(Vector3(w0[0].x, float(z["stufen"][0]) + 0.5, w0[0].y))
+				if await gehe_ueber([w0[1], c, w1[1], w1[0]], 12.0, 0.6):
 					turm_ok += 1
 				else:
 					print("       Turm nicht durchquert: %s bei %s (stehe bei %s)" % [bau.name, c, spieler().global_position.snapped(Vector3.ONE * 0.1)])
 			i += 7
-		# Tore mit hohlen Tortürmen: auf den Weg über dem Bogen, in beide Tortürme und durch ihre andere Tür hinaus
+		# Tore mit hohlen Tortürmen: auf den Weg über dem Bogen, in beide Tortürme und durch ihre anderen Türen hinaus
 		var to: PackedFloat32Array = bau.tore
+		var tb: PackedFloat32Array = bau.torbauten
 		i = 0
 		while i + 7 < to.size():
 			var gm := Vector2(to[i], to[i + 1])
-			var ug := Vector2(to[i + 2], to[i + 3]).normalized()
-			var ab: float = to[i + 5] / 2.0 + 2.6
-			var hohl := 0
-			for t in bau._hohle_eckig:
-				if (t[0] as Vector2).distance_to(gm + ug * ab) < 0.8 or (t[0] as Vector2).distance_to(gm - ug * ab) < 0.8:
-					hohl += 1
-			if hohl == 2:
+			var weg_y := maxf(to[i + 6], to[i + 4] + 3.4 + to[i + 5] / 2.0 + 1.0)
+			var punkte := []
+			var k := 0
+			while k + 9 < tb.size():
+				var tc := Vector2(tb[k], tb[k + 1])
+				var tuv := Vector2(tb[k + 2], tb[k + 3]).normalized()
+				var tnv := Vector2(-tuv.y, tuv.x) * signf(tb[k + 8] if tb[k + 8] != 0.0 else 1.0)
+				if tb[k + 9] >= 1.0 and absf(tc.distance_to(gm) - (to[i + 5] / 2.0 + 2.6)) < 0.8:
+					var zt: Dictionary = bau._torturm_zugang(tc, tuv, tnv, tb[k + 6] / 2.0, tb[k + 7] / 2.0, tb[k + 5], to)
+					if not zt.is_empty():
+						punkte.append(tc)
+						for w in zt["wege"]:
+							if (w as Vector2).distance_to(gm) > 1.0:
+								punkte += [w, tc]
+						punkte.append(gm)
+				k += 10
+			if punkte.count(gm) == 2:
 				tor_alle += 1
-				var weg_y := maxf(to[i + 6], to[i + 4] + 3.4 + to[i + 5] / 2.0 + 1.0)
 				await setze(Vector3(gm.x, weg_y + 0.5, gm.y))
-				if await gehe_ueber([gm + ug * ab, gm + ug * (ab + 3.5), gm + ug * ab, gm, gm - ug * ab, gm - ug * (ab + 3.5)], 12.0, 0.6):
+				if await gehe_ueber(punkte, 12.0, 0.6):
 					tor_ok += 1
 				else:
 					print("       Tor nicht überquert: %s bei %s (stehe bei %s)" % [bau.name, gm, spieler().global_position.snapped(Vector3.ONE * 0.1)])
