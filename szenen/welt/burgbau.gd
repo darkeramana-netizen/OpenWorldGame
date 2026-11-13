@@ -522,13 +522,15 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 		var tc: Vector2 = t[0]
 		if oben + 2.7 <= float(t[3]):
 			continue                      # die Mauer bleibt unter dem Boden der Kammer
+		# nur Enden, die wirklich im Turm liegen (ein Stück, das knapp davor endet, bleibt, wo es ist)
 		var weg := float(t[2]) + 0.05 + dicke * 0.5
-		var ra := float(t[1]) + 0.6
-		if a.distance_to(tc) < ra and b.distance_to(tc) < ra:
+		var in_a := a.distance_to(tc) < weg - 0.01
+		var in_b := b.distance_to(tc) < weg - 0.01
+		if in_a and in_b:
 			return                        # ganz im Turm
-		if a.distance_to(tc) < ra and b.distance_to(tc) > weg + 0.5:
+		if in_a:
 			a = _auf_kreis(a, b, tc, weg)
-		if b.distance_to(tc) < ra and a.distance_to(tc) > weg + 0.5:
+		if in_b:
 			b = _auf_kreis(b, a, tc, weg)
 	for t: Array in _hohle_eckig:
 		if oben + 2.7 <= float(t[5]):
