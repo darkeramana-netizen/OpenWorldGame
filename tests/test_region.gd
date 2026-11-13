@@ -261,7 +261,7 @@ func _initialize() -> void:
 					var A: Array = stuecke[ia]
 					var B: Array = stuecke[ib]
 					var fuge: Vector2 = A[ea]
-					if fuge.distance_to(B[eb]) > 0.05 or absf(float(A[2]) - float(B[2])) > 3.0:
+					if fuge.distance_to(B[eb]) > 0.05 or absf(float(A[2]) - float(B[2])) > 12.0:
 						continue
 					if hindernisse.any(func(h): return fuge.distance_to(h[0]) < float(h[1])):
 						continue
@@ -272,7 +272,11 @@ func _initialize() -> void:
 					var db: Vector2 = ((B[1 - eb] as Vector2) - fuge).normalized()
 					var na := da.orthogonal() * signf(da.orthogonal().dot(A[3]))
 					var nb := db.orthogonal() * signf(db.orthogonal().dot(B[3]))
-					var pa: Vector2 = fuge + da * minf(3.0, (A[0] as Vector2).distance_to(A[1]) * 0.5) - na * 0.125
+					# vor dem Fuß einer Treppe beginnen (32°, eine halbe Dicke Abstand zur Fuge), nicht in ihren Stufen
+					var steig: float = float(B[2]) - float(A[2])
+					var la: float = minf(3.0, (A[0] as Vector2).distance_to(A[1]) * 0.5) if steig <= 1.0 \
+						else minf(steig * 1.6 + 2.0, (A[0] as Vector2).distance_to(A[1]) * 0.95)
+					var pa: Vector2 = fuge + da * la - na * 0.125
 					var pb: Vector2 = fuge + db * minf(3.0, (B[0] as Vector2).distance_to(B[1]) * 0.5) - nb * 0.125
 					var ecke: Vector2 = fuge - na * 0.125
 					var nenner := da.x * db.y - da.y * db.x
@@ -281,7 +285,7 @@ func _initialize() -> void:
 						ecke += da * ((w0.x * db.y - w0.y * db.x) / nenner)
 					fugen_alle += 1
 					await setze(Vector3(pa.x, float(A[2]) + 0.6, pa.y))
-					if await gehe_ueber([ecke, pb], 8.0, 0.6) and spieler().global_position.y > minf(A[2], B[2]) - 0.5:
+					if await gehe_ueber([ecke, pb], 14.0, 0.6) and spieler().global_position.y > minf(A[2], B[2]) - 0.5:
 						fugen_ok += 1
 					else:
 						print("       Fuge nicht überquert: %s (%.2f -> %.2f), stehe bei %s" % [fuge, A[2], B[2], spieler().global_position.snapped(Vector3.ONE * 0.1)])
