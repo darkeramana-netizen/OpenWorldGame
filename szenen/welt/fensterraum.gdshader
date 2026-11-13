@@ -25,8 +25,9 @@ float zufall(float x) {
 void fragment() {
 	float id = floor(UV.x) + haus * 17.0;
 	vec2 f = vec2(fract(UV.x), UV.y);
-	// Blick im Raum der Scheibe: x nach rechts, y nach unten, z aus der Scheibe heraus
-	vec3 sicht = vec3(dot(VIEW, TANGENT), dot(VIEW, BINORMAL), dot(VIEW, NORMAL));
+	// Blick im Raum der Scheibe: x nach rechts, y nach unten, z aus der Scheibe heraus. TANGENT zeigt zu wachsendem
+	// UV.x; BINORMAL zeigt in Godot zu fallendem UV.y (nach oben), daher das Minus.
+	vec3 sicht = vec3(dot(VIEW, TANGENT), -dot(VIEW, BINORMAL), dot(VIEW, NORMAL));
 	vec3 d = -normalize(sicht);
 	d.z = min(d.z, -0.05);
 	// Raum: x 0..1, y von -(hoehe-1)/2 bis 1+(hoehe-1)/2, z von -tiefe bis 0
