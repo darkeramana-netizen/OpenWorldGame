@@ -396,13 +396,16 @@ func _kegel(mat: String, c: Vector2, r: float, y: float, h: float, teile: int) -
 # ---------- Bauteile ----------
 
 ## Zinnen mit Schießscharten entlang einer Linie (außen ist die Feldseite).
-func _zinnen(m: Vector2, u: Vector2, n: Vector2, laenge: float, n0: float, n1: float, y: float) -> void:
+## Zinnen entlang u; von..bis begrenzen sie (an Ecken auf Gehrung geschnittene Brüstung, Rampen)
+func _zinnen(m: Vector2, u: Vector2, n: Vector2, laenge: float, n0: float, n1: float, y: float, von := -INF, bis := INF) -> void:
 	var anzahl := int(laenge / ZINNE_ABSTAND)
 	if anzahl < 1:
 		return
 	var rest := (laenge - anzahl * ZINNE_ABSTAND) / 2.0
 	for k in anzahl:
 		var mitte := -laenge / 2.0 + rest + (k + 0.5) * ZINNE_ABSTAND
+		if mitte - ZINNE_BREITE / 2 < von or mitte + ZINNE_BREITE / 2 > bis:
+			continue
 		_zinne(m, u, n, mitte - ZINNE_BREITE / 2, mitte + ZINNE_BREITE / 2, n0, n1, y, ZINNE_HOEHE)
 
 
@@ -518,6 +521,11 @@ func _balken(mat: String, a: Vector3, b: Vector3, breite: float, hoehe: float, h
 
 
 func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: float, aussen: Vector2, zinnen: bool) -> void:
+	# Nachbarn an den Enden (für Rampen zu höheren Wehrgängen und Ecken), solange die Enden noch die Planpunkte sind
+	var nb_a := _nachbar_an(a, b) if zinnen else []
+	var nb_b := _nachbar_an(b, a) if zinnen else []
+	var a_plan := a
+	var b_plan := b
 	# An einem hohlen Turm endet die Mauer in seiner Wand (samt Überlappung und Breite), nicht in seiner Kammer; ein
 	# Stück, das knapp vor dem Turm endet, überlappt nicht in seine Wand hinein
 	var ueber_a := dicke * 0.5
@@ -562,6 +570,10 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 	# an Ecken überlappen, damit keine Lücken klaffen (vor hohlen Türmen weniger)
 	var m := (a + b) / 2.0 + u * (ueber_b - ueber_a) / 2.0
 	var l := laenge / 2.0 + (ueber_a + ueber_b) / 2.0
+	if a != a_plan:
+		nb_a = []                         # das Ende liegt jetzt in einem Turm
+	if b != b_plan:
+		nb_b = []
 	var h := oben - unten
 	var d := dicke / 2.0
 	# Mauerkörper
@@ -609,12 +621,69 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 	_klotz(stein, m, u, n, -l, l, d - 0.1, d + 0.22, oben - 0.5, oben - 0.2, true)
 	# Wehrgang mit Plattenbelag
 	_klotz("boden", m, u, n, -l, l, -d + 0.05, d - BRUSTWEHR_DICKE, oben, oben + 0.06)
+	# An Ecken: Brustwehr und Hofmauer auf Gehrung, damit keine den Wehrgang des Nachbarn kreuzt
+	var aussen0 := -l
+	var aussen1 := l
+	var innen0 := -l
+	var innen1 := l
+	var sa := (a_plan - m).dot(u)
+	var sb := (b_plan - m).dot(u)
+	for ende: Array in [[nb_a, a_plan, -1.0], [nb_b, b_plan, 1.0]]:
+		var nb: Array = ende[0]
+		if nb.is_empty() or absf((nb[0] as Vector2).dot(u)) > 0.985:
+			continue
+		var dn: Vector2 = nb[0]
+		var nn := Vector2(-dn.y, dn.x)
+		if nn.dot(nb[4]) < 0.0:
+			nn = -nn
+		var nd: float = float(nb[2]) * 0.5
+		var s_aus := _gehrung(m + n * (d - BRUSTWEHR_DICKE * 0.5), u, ende[1] + nn * (nd - BRUSTWEHR_DICKE * 0.5), dn)
+		var s_in := _gehrung(m + n * (-d + 0.175), u, ende[1] + nn * (-nd + 0.175), dn)
+		var s_ende: float = sb if ende[2] > 0.0 else sa
+		if ende[2] > 0.0:
+			if not is_inf(s_aus):
+				aussen1 = clampf(s_aus + BRUSTWEHR_DICKE * 0.5, s_ende - 3.0, s_ende + 2.0)
+			if not is_inf(s_in):
+				innen1 = clampf(s_in + 0.175, s_ende - 3.0, s_ende + 2.0)
+		else:
+			if not is_inf(s_aus):
+				aussen0 = clampf(s_aus - BRUSTWEHR_DICKE * 0.5, s_ende - 2.0, s_ende + 3.0)
+			if not is_inf(s_in):
+				innen0 = clampf(s_in - 0.175, s_ende - 2.0, s_ende + 3.0)
 	# Brustwehr und Zinnen auf der Feldseite, eine niedrige Mauer auf der Hofseite
-	_klotz(stein, m, u, n, -l, l, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
-	_klotz("hell", m, u, n, -l, l, d - BRUSTWEHR_DICKE - 0.05, d + 0.06, oben + BRUSTWEHR - 0.1, oben + BRUSTWEHR + 0.02, true)
-	_klotz(stein, m, u, n, -l, l, -d, -d + 0.35, oben, oben + 0.6)
-	_klotz("hell", m, u, n, -l, l, -d - 0.04, -d + 0.39, oben + 0.52, oben + 0.62, true)
-	_zinnen(m, u, n, laenge, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR)
+	_klotz(stein, m, u, n, aussen0, aussen1, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
+	_klotz("hell", m, u, n, aussen0, aussen1, d - BRUSTWEHR_DICKE - 0.05, d + 0.06, oben + BRUSTWEHR - 0.1, oben + BRUSTWEHR + 0.02, true)
+	_klotz(stein, m, u, n, innen0, innen1, -d, -d + 0.35, oben, oben + 0.6)
+	_klotz("hell", m, u, n, innen0, innen1, -d - 0.04, -d + 0.39, oben + 0.52, oben + 0.62, true)
+	# Rampen zu höheren Nachbarn (auch zum Weg über einem Torbogen); die Zinnen enden vor einer hohen Rampe
+	var zinnen0 := aussen0
+	var zinnen1 := aussen1
+	for ende: Array in [[nb_a, -1.0], [nb_b, 1.0]]:
+		var nb: Array = ende[0]
+		if nb.is_empty():
+			continue
+		var hoeher: float = float(nb[1]) - oben
+		if hoeher < 0.03 or hoeher > 3.0:
+			continue
+		var richtung: float = ende[1]
+		var s_fuge: float = sb if richtung > 0.0 else sa
+		var s1 := s_fuge - richtung * (float(nb[2]) * 0.5 - 0.02)   # dort beginnt der Körper des Nachbarn
+		var lang := clampf(hoeher * 2.6, 0.8, 7.8)
+		var anfang := s1 - richtung * lang
+		var rest := (anfang - ((a - m).dot(u) if richtung > 0.0 else (b - m).dot(u))) * richtung
+		if rest < 0.0:
+			lang += rest                   # das Stück ist kürzer: steiler
+			anfang = s1 - richtung * lang
+		if lang < hoeher * 1.1:
+			continue                       # steiler als 42°: nicht begehbar
+		_wehrgang_rampe(m, u, n, d, oben + 0.06, anfang, s1, s_fuge + richtung * d, float(nb[1]) + 0.06)
+		if hoeher > 0.6:
+			if richtung > 0.0:
+				zinnen1 = minf(zinnen1, anfang + lang * 0.4)
+			else:
+				zinnen0 = maxf(zinnen0, anfang - lang * 0.4)
+	var zm := ((a + b) / 2.0 - m).dot(u)
+	_zinnen(m + u * zm, u, n, laenge, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR, zinnen0 - zm, zinnen1 - zm)
 
 
 ## Wetterfahne auf einer Turmspitze: Stange mit Kugel, Fahnenblech mit Zacken, Windrose darunter.
@@ -692,6 +761,56 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 			_zinne(c + d * (ri + ra) / 2.0, Vector2(-d.y, d.x), d, -0.65, 0.65, -0.3, 0.3, oben + BRUSTWEHR, ZINNE_HOEHE)
 
 
+## Nachbar an einem Mauerende p (ein anderes Stück mit demselben Endpunkt, sonst der Weg über einem Torbogen dieses
+## Baus): [Richtung vom Ende ins Nachbarstück, Krone, Dicke (bis zu deren Körper reicht die Stufe), anderes Ende,
+## Feldseite]; leer, wenn keiner da ist.
+func _nachbar_an(p: Vector2, anderes: Vector2) -> Array:
+	for m: Array in _nachbarn_mauern:
+		for e in 2:
+			var q: Vector2 = m[1 - e]
+			if (m[e] as Vector2).distance_to(p) < 0.05 and q.distance_to(anderes) > 0.05:
+				return [(q - p).normalized(), m[2], m[3], q, m[4]]
+	var i := 0
+	while i + 7 < tore.size():
+		var g := Vector2(tore[i], tore[i + 1])
+		if p.distance_to(g) < tore[i + 5] / 2.0 + tore[i + 7] * 0.5 + 0.6:
+			var weg_y := maxf(tore[i + 6], tore[i + 4] + KAEMPFER + tore[i + 5] / 2.0 + 1.0)
+			# der Torweg endet 0,4 m vor dem Planende der Mauer (w + 1,1 statt w + Dicke/2)
+			var dicke_weg := 2.0 * (p.distance_to(g) - tore[i + 5] / 2.0 - 1.1)
+			return [(g - p).normalized(), weg_y, maxf(dicke_weg, 0.0), g, Vector2.ZERO]
+		i += 8
+	return []
+
+
+## Schnitt der Linie p + u·s mit der Linie q + v·t: gibt s zurück (INF, wenn fast parallel)
+func _gehrung(p: Vector2, u: Vector2, q: Vector2, v: Vector2) -> float:
+	var nenner := u.x * v.y - u.y * v.x
+	if absf(nenner) < 0.17:
+		return INF
+	var w := q - p
+	return (w.x * v.y - w.y * v.x) / nenner
+
+
+## Rampe auf dem Wehrgang zwischen Hofmauer und Brustwehr: von s0 (Höhe y0) bis s1 (Höhe y1), danach eben bis s2;
+## Hofmauer und Brustwehr steigen in Stufen mit
+func _wehrgang_rampe(m: Vector2, u: Vector2, n: Vector2, d: float, y0: float, s0: float, s1: float, s2: float, y1: float) -> void:
+	var richtung := signf(s1 - s0)
+	_keil("boden", m, n, u * richtung, -d + 0.35, d - BRUSTWEHR_DICKE, s0 * richtung, s1 * richtung, y0 - 0.06, y0, y1)
+	_klotz("boden", m, u, n, minf(s1, s2), maxf(s1, s2), -d + 0.35, d - BRUSTWEHR_DICKE, y0 - 0.06, y1, true)
+	var x := s0
+	var schritt := 0.5 * richtung
+	while (s2 - x) * richtung > 0.001:
+		var x2 := x + schritt
+		if (x2 - s2) * richtung > 0.0:
+			x2 = s2
+		var t := clampf((x2 - s0) / (s1 - s0), 0.0, 1.0) if absf(s1 - s0) > 0.001 else 1.0
+		var y := lerpf(y0, y1, t)
+		if y > y0 + 0.05:
+			_klotz(stein, m, u, n, minf(x, x2), maxf(x, x2), -d, -d + 0.35, y0 + 0.5, y + 0.55)
+			_klotz(stein, m, u, n, minf(x, x2), maxf(x, x2), d - BRUSTWEHR_DICKE, d, y0 + 1.0, y + BRUSTWEHR - 0.05)
+		x = x2
+
+
 ## Wie weit ein Mauerende außerhalb eines hohlen Torturms über seine Wand hinaus überlappen darf (sonst halbe Dicke)
 func _vor_turm(p: Vector2, t: Array) -> float:
 	var l: Vector2 = p - (t[0] as Vector2)
@@ -766,7 +885,7 @@ func _sammle_nachbarn() -> void:
 		var i := 0
 		while i + 9 < m.size():
 			if m[i + 9] > 0.5:            # nur Mauern mit Wehrgang und Zinnen
-				_nachbarn_mauern.append([Vector2(m[i], m[i + 1]), Vector2(m[i + 2], m[i + 3]), m[i + 5], m[i + 6]])
+				_nachbarn_mauern.append([Vector2(m[i], m[i + 1]), Vector2(m[i + 2], m[i + 3]), m[i + 5], m[i + 6], Vector2(m[i + 7], m[i + 8])])
 			i += 10
 	for k: Node in knoten:
 		if not ("mauern" in k and "tuerme" in k):
@@ -2412,6 +2531,24 @@ func _tor(c: Vector2, u: Vector2, boden: float, breite: float, oben: float, dick
 	# Wehrgang über dem Bogen (zwischen den Tortürmen), zur Hofseite eine niedrige Brüstung
 	_klotz("boden", c, u, n, -w - 1.1, w + 1.1, -d, d - BRUSTWEHR_DICKE, oben - 0.3, oben + 0.06, true)
 	_klotz(stein, c, u, n, -w - 0.8, w + 0.8, -d, -d + 0.35, oben + 0.06, oben + 0.6)
+	# Liegt der Wehrgang der Mauer daneben höher (ohne Torturm dazwischen), führt eine Rampe hinauf: der Körper der
+	# Mauer reicht bis w über den Torweg
+	for sg: float in [-1.0, 1.0]:
+		var ende_plan := c + u * sg * (w + dicke * 0.5)
+		for mm: Array in _nachbarn_mauern:
+			for e in 2:
+				var pe: Vector2 = mm[e]
+				if pe.distance_to(ende_plan) > 0.8:
+					continue
+				var im_turm := false
+				for t: Array in _hohle_eckig:
+					if _im_turm(pe, t):
+						im_turm = true
+				var hoeher: float = float(mm[2]) - oben
+				var lang := clampf(hoeher * 2.6, 0.8, w * 0.95)
+				if im_turm or hoeher < 0.03 or hoeher > 3.0 or lang < hoeher * 1.1:
+					continue
+				_wehrgang_rampe(c, u, n, d, oben + 0.06, sg * (w - lang), sg * w, sg * (w + 1.1), float(mm[2]) + 0.06)
 	# Brustwehr und Zinnen auf dem Bogen
 	_klotz(stein, c, u, n, -w - 0.8, w + 0.8, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
 	_zinnen(c, u, n, breite + 1.6, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR)
