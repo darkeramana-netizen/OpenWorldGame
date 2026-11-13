@@ -230,9 +230,9 @@ gebaeude = PackedFloat32Array({_zahlen([round(_sx, 2), round(_sz, 2), round(_s_g
 mauerring("DurchgangNord", BG, WL(PD.DURCHGANG_NORD), 6.0, dicke=2.5, mitte=W(PD.TORE["Tor der Oberburg"]))
 mauerring("DurchgangSued", BG, WL(PD.DURCHGANG_SUED), 6.0, dicke=2.5, mitte=W(PD.TORE["Tor der Oberburg"]))
 # Vortor: gebogene, niedrige Mauer um den Platz vor dem Südtor, nach Osten offen
-mauerring("Vortor", BG, WL(PD.VORTOR), 3.5, dicke=2.0, mitte=W(PD.TORE["Südtor der Oberburg"]))
+mauerring("Vortor", BG, WL(PD.VORTOR), 3.5, dicke=2.5, mitte=W(PD.TORE["Südtor der Oberburg"]))
 # Im engen Zwinger des Palas: Mauer zwischen dem Weg vom Zwingertor zum Palastor und dem Weg um den Palas
-mauerring("PalaszwingerQuer", BG, WL(PD.PALASZWINGER_QUER), 5.0, dicke=2.0, mitte=W(PD.TORE["Palastor"]))
+mauerring("PalaszwingerQuer", BG, WL(PD.PALASZWINGER_QUER), 5.0, dicke=2.5, mitte=W(PD.TORE["Palastor"]))
 _ot = []
 for (gp, gr) in PD.G3.OBERBURG_TUERME:
     r = round(max(2.5, gr * G3M), 1)
