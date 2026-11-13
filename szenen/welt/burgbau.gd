@@ -700,6 +700,10 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 		var s_aus := _gehrung(m + n * (d - BRUSTWEHR_DICKE), u, ende[1] + nn * (nd - BRUSTWEHR_DICKE), dn)
 		var s_in := _gehrung(m + n * (-d + 0.35), u, ende[1] + nn * (-nd + 0.35), dn)
 		var s_ende: float = sb if ende[2] > 0.0 else sa
+		# knickt die Mauer zur Hofseite ab, treffen sich die beiden Hofmauern in einer Innenecke, in der man hängen
+		# bleibt: dort enden sie um ihre Dicke früher
+		if not is_inf(s_in) and dn.dot(n) < -0.2:
+			s_in -= ende[2] * 0.4
 		if ende[2] > 0.0:
 			if not is_inf(s_aus):
 				aussen1 = clampf(s_aus, s_ende - 3.0, s_ende + 2.0)
