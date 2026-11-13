@@ -546,7 +546,10 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			var tiefer: float = oben - float(nb_[1])
 			var laenge_ := pe.distance_to(po)
 			# die Treppe beginnt an der Flanke der durchgehenden Mauer und endet eine halbe Dicke vor dem Knick
-			var flanke := _halbe_dicke_an(pe, po) + 0.15
+			# schräg angesetzt liegt die Flanke entlang des Abzweigs weiter weg, die vordere Kante noch weiter
+			var sin_ := maxf(absf((nb_[0] as Vector2).cross((po - pe).normalized())), 0.35)
+			var cos_ := sqrt(1.0 - sin_ * sin_)
+			var flanke := _halbe_dicke_an(pe, po) / sin_ + dicke * 0.5 * cos_ / sin_ + 0.15
 			var lauf := flanke + tiefer * (2.6 if tiefer <= 1.0 else 1.6) + dicke * 0.5 + 0.1
 			if tiefer < 0.03 or lauf > laenge_ - 2.0:
 				continue
@@ -708,11 +711,13 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			if not is_inf(s_in):
 				innen0 = clampf(s_in, s_ende - 2.0, s_ende + 3.0)
 	if stoss_a >= 2:
-		aussen0 = maxf(aussen0, sa + 2.0)
-		innen0 = maxf(innen0, sa + 2.0)
+		var t_ := _stoss_abstand(a_plan, b_plan, d)
+		aussen0 = maxf(aussen0, sa + t_)
+		innen0 = maxf(innen0, sa + t_)
 	if stoss_b >= 2:
-		aussen1 = minf(aussen1, sb - 2.0)
-		innen1 = minf(innen1, sb - 2.0)
+		var t_ := _stoss_abstand(b_plan, a_plan, d)
+		aussen1 = minf(aussen1, sb - t_)
+		innen1 = minf(innen1, sb - t_)
 	# Brustwehr und Zinnen auf der Feldseite, eine niedrige Mauer auf der Hofseite
 	_klotz(stein, m, u, n, aussen0, aussen1, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
 	_klotz("hell", m, u, n, aussen0, aussen1, d - BRUSTWEHR_DICKE - 0.05, d + 0.06, oben + BRUSTWEHR - 0.1, oben + BRUSTWEHR + 0.02, true)
@@ -882,6 +887,29 @@ func _ist_abzweig(p: Vector2, anderes: Vector2) -> bool:
 			if (andere[i] as Vector2).dot(andere[j]) < -0.95:
 				return true
 	return false
+
+
+## Wie weit vor einem Stoß dreier Mauern die Brüstungen dieses Stücks enden: 2 m, bei einem schräg angesetzten Abzweig
+## bis hinter die Flanke der durchgehenden Mauer, damit sie nicht in deren Wehrgang stehen
+func _stoss_abstand(p: Vector2, anderes: Vector2, d: float) -> float:
+	if not _ist_abzweig(p, anderes):
+		# durchgehende Mauer: die Öffnung muss so breit sein wie der schräge Abzweig auf ihrer Flanke
+		var eigen := (anderes - p).normalized()
+		var weit := 2.0
+		for m: Array in _nachbarn_mauern:
+			for e in 2:
+				if (m[e] as Vector2).distance_to(p) < 0.05 and not _gleiche_flucht(p, m[1 - e], anderes):
+					var r: Vector2 = ((m[1 - e] as Vector2) - p).normalized()
+					if absf(r.dot(eigen)) > 0.95:
+						continue          # die Fortsetzung, nicht der Abzweig
+					var sn := maxf(absf(r.cross(eigen)), 0.35)
+					var cs := r.dot(eigen)  # > 0: der Abzweig läuft schräg über dieses Stück
+					weit = maxf(weit, (float(m[3]) * 0.5 + d * absf(cs)) / sn + 0.3)
+		return weit
+	var nb := _nachbar_an(p, anderes)
+	var sin_ := maxf(absf((nb[0] as Vector2).cross((anderes - p).normalized())), 0.35)
+	var cos_ := sqrt(1.0 - sin_ * sin_)
+	return maxf(2.0, _halbe_dicke_an(p, anderes) / sin_ + d * cos_ / sin_ + 0.1)
 
 
 ## Größte halbe Dicke der anderen Stücke am Stoß p
