@@ -208,3 +208,70 @@ def steinbau(name, eltern, x, z, laenge, breite, hoehe, gier=0.0, mat="Material_
     N(name, "Node3D", eltern, f"""script = ExtResource("28_burgbau")
 gebaeude = PackedFloat32Array({_zahlen(werte)})""")
     return b0 + hoehe
+
+
+def mauern_verbinden(fang=3.0):
+    """Ein freies Mauerende (an dem kein anderes Stück endet), das knapp neben der Ecke eines anderen Mauerrings
+    aufhört, wird an diese Ecke gezogen: so stoßen die Wehrgänge aneinander, statt sich halb zu überlappen oder eine
+    Engstelle zu lassen. Ändert die Knoten mit "mauern" (und einen Turm genau am alten Ende) nach dem Bau aller Ringe."""
+    stuecke = []   # [Knotenindex, Stückindex, werte]
+    werte_je = {}
+    for k, text in enumerate(knoten):
+        m = re.search(r'\nmauern = PackedFloat32Array\(([^)]*)\)', text)
+        if not m:
+            continue
+        w = [float(x) for x in m.group(1).split(",") if x.strip()]
+        werte_je[k] = w
+        for i in range(0, len(w) - 9, 10):
+            if w[i + 9] > 0.5:
+                stuecke.append((k, i))
+
+    def ende(k, i, e):
+        w = werte_je[k]
+        return (w[i + 2 * e], w[i + 2 * e + 1])
+
+    def stoesse(p, ausser):
+        return sum(1 for (k, i) in stuecke for e in (0, 1) if (k, i) != ausser and math.dist(ende(k, i, e), p) < 0.05)
+
+    verschoben = []
+    for (k, i) in stuecke:
+        for e in (0, 1):
+            p = ende(k, i, e)
+            if stoesse(p, (k, i)) > 0:
+                continue
+            bestes = None
+            for (k2, i2) in stuecke:
+                if k2 == k:
+                    continue
+                for e2 in (0, 1):
+                    q = ende(k2, i2, e2)
+                    d = math.dist(p, q)
+                    if 0.05 < d < fang and stoesse(q, (k2, i2)) > 0 and (bestes is None or d < bestes[0]):
+                        bestes = (d, q)
+            if bestes:
+                verschoben.append((k, i, e, p, bestes[1]))
+    for (k, i, e, p, q) in verschoben:
+        w = werte_je[k]
+        w[i + 2 * e], w[i + 2 * e + 1] = q
+        for j, m_ in enumerate(MAUERSTUECKE):
+            if math.dist(m_[1:3], p) < 0.01 or math.dist(m_[3:5], p) < 0.01:
+                m_ = list(m_)
+                if math.dist(m_[1:3], p) < 0.01:
+                    m_[1:3] = q
+                else:
+                    m_[3:5] = q
+                MAUERSTUECKE[j] = tuple(m_)
+    for k, w in werte_je.items():
+        text = re.sub(r'\nmauern = PackedFloat32Array\([^)]*\)', "\nmauern = PackedFloat32Array(%s)" % _zahlen(w), knoten[k])
+        for (k_, i, e, p, q) in verschoben:
+            if k_ != k:
+                continue
+            m = re.search(r'\ntuerme = PackedFloat32Array\(([^)]*)\)', text)
+            if m:
+                t = [float(x) for x in m.group(1).split(",") if x.strip()]
+                for j in range(0, len(t) - 6, 7):
+                    if math.dist((t[j], t[j + 1]), p) < 0.05:
+                        t[j], t[j + 1] = q
+                text = text.replace(m.group(0), "\ntuerme = PackedFloat32Array(%s)" % _zahlen(t))
+        knoten[k] = text
+    return verschoben

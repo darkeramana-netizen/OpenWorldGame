@@ -2,7 +2,7 @@
 
 Jedes Regionsskript führt diese Datei mit exec() aus und schreibt am Ende mit schreibe() die Szene.
 """
-import json, math, os, random
+import json, math, os, random, re
 from pathlib import Path
 import numpy as np
 

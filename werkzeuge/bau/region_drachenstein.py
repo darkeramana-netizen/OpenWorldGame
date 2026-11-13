@@ -191,5 +191,8 @@ uebergang("ZumKuestenweg", (161, H(161, 700) + 2, 700), (30, 40, 20), "kuestenwe
           (152, round(H(152, 640) + 0.5, 2), 640))
 spieler_und_oberflaeche(*(lambda q: (q[0], H_VW, q[1]))(VW(0, 46)))
 
+# Freie Mauerenden an die Ecken benachbarter Ringe ziehen (durchgehende Wehrgänge)
+for _v in mauern_verbinden():
+    print("Mauerende verbunden: %s -> %s" % (tuple(round(x, 2) for x in _v[3]), tuple(round(x, 2) for x in _v[4])))
 # Person "kordel": person.tscn nutzt KEINE=0, SCHWARZ=1, GRAU=2, GOLDEN=3
 schreibe("region_drachenstein.tscn")
