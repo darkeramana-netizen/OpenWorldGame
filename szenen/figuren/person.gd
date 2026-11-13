@@ -48,6 +48,7 @@ var _halte := {}                   # Wegpunkt (gerundet) → [Haltung, Sekunden]
 var _rast := 0.0
 var _ausweichen := Vector3.ZERO
 var _ausweich_takt := 0.0
+var _gewartet := 0.0              # wie lange schon jemand direkt im Weg steht
 var _gespraech_bis := 0.0
 var _gespraech_takt := 0.0
 var _partner: Node3D = null
@@ -192,7 +193,20 @@ func _physics_process(delta: float) -> void:
 		_ausweich_takt = 0.2
 		_ausweichen = _ausweich_richtung(weg)
 	if _ausweichen == Vector3.INF:
-		return                          # jemand steht direkt im Weg: kurz warten
+		# Jemand steht direkt im Weg: kurz warten. Wartet der andere auf einen selbst (zwei stehen sich gegenüber),
+		# löste sich das nie: nach 0,8 s geht man langsam rechts vorbei; Entgegenkommende weichen so beide nach
+		# ihrer rechten Seite aus und kommen aneinander vorbei.
+		_gewartet += delta
+		if _gewartet < 0.8 or weg.length() < 0.01:
+			return
+		var vorn := weg.normalized()
+		var rechts := Vector3(-vorn.z, 0.0, vorn.x)
+		var neben := (rechts * 0.85 + vorn * 0.35).normalized()
+		global_position += neben * schritt * 0.6
+		_schaue_zu(global_position + neben)
+		global_position.y = _boden(ziel.y)
+		return
+	_gewartet = 0.0
 	if weg.length() <= schritt:
 		global_position = Vector3(ziel.x, global_position.y, ziel.z)
 		_route.pop_front()
