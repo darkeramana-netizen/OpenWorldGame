@@ -78,9 +78,10 @@ void fragment() {
 	}
 	// leichte Spiegelung der Scheibe
 	float fresnel = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0);
+	// wenig Spiegelung, damit man den Raum auch von unten und im Schatten sieht
 	ALBEDO = farbe * licht;
-	EMISSION = farbe * 0.12;
-	ROUGHNESS = 0.08;
-	SPECULAR = 0.6 + fresnel * 0.4;
-	METALLIC = 0.1;
+	EMISSION = farbe * 0.22;
+	ROUGHNESS = 0.14;
+	SPECULAR = 0.25 + fresnel * 0.45;
+	METALLIC = 0.0;
 }
