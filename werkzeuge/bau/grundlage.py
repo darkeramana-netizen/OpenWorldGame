@@ -76,7 +76,7 @@ def person(name, parent, x, y, z, anzeige, dialog, kordel, tracht, gier=0.0, sic
     if ablauf:
         zeilen = []
         for abschnitt, (punkte, extra) in ablauf.items():
-            teile = ["; ".join(",".join(f"{v:.5g}" for v in p) for p in punkte)] + list(extra)
+            teile = ["; ".join(",".join(v if isinstance(v, str) else f"{v:.5g}" for v in p) for p in punkte)] + list(extra)
             zeilen.append(f'"{abschnitt}: ' + " | ".join(teile) + '"')
         zusatz += "\ntagesablauf = PackedStringArray(" + ", ".join(zeilen) + ")"
     if tempo:

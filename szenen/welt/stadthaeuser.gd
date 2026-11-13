@@ -428,11 +428,15 @@ func _fenster(flaechen: Dictionary, mitte: Vector3, seite: int, hoehe: float, la
 	var z := mitte.z + 0.02 * seite
 	var a := Vector3(mitte.x - w / 2, mitte.y, z)
 	var b := Vector3(mitte.x + w / 2, mitte.y, z)
-	var st := _st(flaechen, "glas")
+	# hinter der Scheibe ein gedachter Raum (szenen/welt/fensterraum.gdshader), je Fenster anders
+	var st := _st(flaechen, "fensterraum")
+	var idf := float(absi(int(mitte.x * 13.0 + mitte.y * 7.0 + mitte.z * 3.0)) % 50)
+	var uv := [Vector2(idf, 1.0), Vector2(idf + 1.0, 1.0), Vector2(idf + 1.0, 0.0), Vector2(idf, 0.0)]
+	var oben := Vector3(0, hoehe, 0)
 	if seite == 1:
-		_viereck(st, a, b, b + Vector3(0, hoehe, 0), a + Vector3(0, hoehe, 0))
+		_viereck_uv(st, [a, b, b + oben, a + oben], uv)
 	else:
-		_viereck(st, b, a, a + Vector3(0, hoehe, 0), b + Vector3(0, hoehe, 0))
+		_viereck_uv(st, [b, a, a + oben, b + oben], uv)
 	# Bleiruten in Rauten
 	var blei := _st(flaechen, "metall")
 	var zb := z + 0.012 * seite
@@ -642,6 +646,11 @@ const PARALLAX := {"quader": 1.6, "bruchstein": 2.4, "dach": 3.0, "schiefer": 2.
 func _material(name_: String) -> Material:
 	if _mat_cache.has(name_):
 		return _mat_cache[name_]
+	if name_ == "fensterraum":
+		var fr := ShaderMaterial.new()
+		fr.shader = load("res://szenen/welt/fensterraum.gdshader")
+		_mat_cache[name_] = fr
+		return fr
 	var m := StandardMaterial3D.new()
 	# Textur und Meter je Kachel (Fotoscans, echte Größe siehe texturen/groessen.json)
 	var tex := {"quader": ["quader", 2.5], "bruchstein": ["bruchstein", 2.0], "dach0": ["dach", 2.0],

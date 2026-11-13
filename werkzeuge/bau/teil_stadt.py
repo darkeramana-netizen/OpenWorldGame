@@ -424,25 +424,39 @@ for x, z in STAENDE_MEHR:
     for seite in (-1, 1):
         px_, pz_ = x + random.uniform(-0.6, 0.6), z + seite * random.uniform(2.4, 2.8)
         AUSSTATTUNG.append((random.choice((0, 1, 2)), px_, H(px_, pz_), pz_, random.uniform(0, 360)))
-# Leben zwischen den Ständen (ohne Kollision): Tauben picken auf dem Pflaster, Pfützen, Katzen und Hunde
+# Leben zwischen den Ständen: Taubenschwärme picken auf dem Pflaster, Pfützen am Rand, Katzen und Hunde streifen
+# in einem Revier um die Stände (szenen/figuren/tauben.gd und tier.gd)
 _stadt_klein = {}
+TAUBEN_STADT, TIERE_STADT = [], []
 for x, z in STAENDE + STAENDE_MEHR:
     w_ = random.uniform(0, math.tau)
     if random.random() < 0.45:
-        for k in range(random.randint(2, 5)):
-            px_, pz_ = x + math.cos(w_) * 3.5 + random.uniform(-0.8, 0.8), z + math.sin(w_) * 3.5 + random.uniform(-0.8, 0.8)
-            AUSSTATTUNG.append((31, px_, H(px_, pz_), pz_, random.uniform(0, 360)))
-            _stadt_klein[31] = _stadt_klein.get(31, 0) + 1
+        px_, pz_ = x + math.cos(w_) * 4.0, z + math.sin(w_) * 4.0
+        TAUBEN_STADT.append((px_, H(px_, pz_), pz_, random.randint(4, 7)))
     if random.random() < 0.3:
         px_, pz_ = x + math.cos(w_ + 2.0) * 4.0, z + math.sin(w_ + 2.0) * 4.0
         AUSSTATTUNG.append((30, px_, H(px_, pz_), pz_, random.uniform(0, 360)))
         _stadt_klein[30] = _stadt_klein.get(30, 0) + 1
     if random.random() < 0.25:
-        art_ = 23 if random.random() < 0.6 else 22
+        art_ = 5 if random.random() < 0.6 else 4
         px_, pz_ = x + math.cos(w_ - 2.0) * 2.8, z + math.sin(w_ - 2.0) * 2.8
-        AUSSTATTUNG.append((art_, px_, H(px_, pz_), pz_, random.uniform(0, 360)))
-        _stadt_klein[art_] = _stadt_klein.get(art_, 0) + 1
-print("Stadt: Tauben, Pfützen, Katzen, Hunde:", _stadt_klein)
+        rev_ = [(px_ - 6, pz_ - 6), (px_ + 6, pz_ - 6), (px_ + 6, pz_ + 6), (px_ - 6, pz_ + 6)]
+        TIERE_STADT.append((art_, px_, H(px_, pz_), pz_, random.uniform(0, 360), rev_))
+E("Script", "res://szenen/figuren/tauben.gd", "42_tauben")
+E("Script", "res://szenen/figuren/tier.gd", "41_tier")
+N("Tauben", "Node3D", ST)
+for k_, (x_, y_, z_, n_) in enumerate(TAUBEN_STADT):
+    N(f"Schwarm{k_}", "Node3D", ST + "/Tauben", f"""{T(x_, y_, z_)}
+script = ExtResource("42_tauben")
+anzahl = {n_}
+weite = 2.2""")
+N("Tiere", "Node3D", ST)
+for k_, (art_, x_, y_, z_, g_, rev_) in enumerate(TIERE_STADT):
+    N(f"Tier{k_}", "Node3D", ST + "/Tiere", f"""{T(x_, y_, z_, g_)}
+script = ExtResource("41_tier")
+art = {art_}
+revier = PackedVector2Array({", ".join(f"{a:.5g}, {b:.5g}" for a, b in rev_)})""")
+print("Stadt: Taubenschwärme", len(TAUBEN_STADT), "Tiere", len(TIERE_STADT), "Pfützen", _stadt_klein.get(30, 0))
 N("Ausstattung", "Node3D", ST, "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
   + ", ".join(f"{v:.5g}" for st_ in AUSSTATTUNG for v in st_) + ")")
 

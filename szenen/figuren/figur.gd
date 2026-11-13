@@ -60,8 +60,19 @@ extends Node3D
 		if _modell != null:
 			_setze_handding()
 @export var bart: bool = false
+## Beruf für Kleidung und Zubehör: "schmied", "koch", "magd", "wache", "ritter", "geistlich", "fischer", "knecht",
+## "haendler", "kind" oder "" (dann nach dem Namen gemischt)
+@export var beruf: String = "":
+	set(wert):
+		beruf = wert
+		if is_inside_tree():
+			_plane_bau()
 
 const MODELLE := "res://modelle/figuren/"
+## Farben für Hosen und Schuhe (Hemd und Rock kommen aus der Tracht)
+const HOSEN := [Color(0.3, 0.25, 0.2), Color(0.22, 0.22, 0.24), Color(0.38, 0.3, 0.2), Color(0.25, 0.28, 0.22),
+	Color(0.42, 0.36, 0.3), Color(0.2, 0.17, 0.14)]
+const SCHUHE := [Color(0.22, 0.15, 0.1), Color(0.15, 0.11, 0.08), Color(0.3, 0.2, 0.12)]
 ## Schleifen-Animationen (die Bibliothek setzt sie beim Import nicht alle auf Wiederholen)
 const SCHLEIFEN := ["Idle", "Idle_Talking", "Idle_Torch", "Walk", "Walk_Formal", "Jog_Fwd", "Sprint", "Sitting_Idle",
 	"Sitting_Talking", "Crouch_Idle", "Crouch_Fwd", "Sword_Idle", "Fixing_Kneeling", "Swim_Idle", "Swim_Fwd", "Push",
@@ -80,6 +91,8 @@ var _name_text := ""
 var _bau_geplant := false
 var _einmal := ""        # laufende einmalige Animation (aktion)
 var _gehalten: Array[Node3D] = []   # Waffen in der rechten Hand (halte)
+var _blick: LookAtModifier3D
+var _blickziel: Marker3D
 
 const HUEFTE := 0.93
 const SCHULTER := 1.43
@@ -117,6 +130,7 @@ func _baue() -> void:
 	_teile.clear()
 	_modell = null
 	_anim = null
+	_blick = null
 	if not einfach and not Engine.is_editor_hint() and _baue_modell():
 		_faerben()
 		return
@@ -431,7 +445,8 @@ func _baue_modell() -> bool:
 			_haenge_an(skelett, MODELLE + g + "Ranger.gltf", "Hood")
 	# Haare unter der Gugel weglassen; die Glatze hat keine
 	var haare := ""
-	match frisur:
+	var bedeckt := _kopfbedeckung(w) != ""
+	match (4 if bedeckt and frisur == 1 else frisur):
 		0: haare = "Hair_Buns" if w else "Hair_SimpleParted"
 		1: haare = "Hair_Long"
 		3: haare = "Hair_BuzzedFemale" if w else "Hair_Buzzed"
@@ -439,8 +454,10 @@ func _baue_modell() -> bool:
 		_haenge_an(skelett, MODELLE + "haare/" + haare + ".gltf")
 	if bart and not w:
 		_haenge_an(skelett, MODELLE + "haare/Hair_Beard.gltf")
-	if frisur == 3:
+	if frisur == 3 and beruf in ["", "haendler"]:
 		_hut(skelett)
+	_zubehoer(skelett, w)
+	_blick_einrichten(skelett)
 	_setze_handding()
 	_halte_alle()
 	_anim = AnimationPlayer.new()
@@ -569,6 +586,160 @@ func _in_hand(skelett: Skeleton3D, was: String) -> void:
 		halter.add_child(m)
 
 
+## Welche Kopfbedeckung der Beruf mit sich bringt ("" keine)
+func _kopfbedeckung(w: bool) -> String:
+	match beruf:
+		"magd":
+			return "kopftuch" if w else ""
+		"koch":
+			return "muetze"
+		"wache":
+			return "eisenhut"
+		"fischer", "knecht":
+			return "strohhut"
+		"haendler":
+			return "haube" if w else ""
+	return ""
+
+
+func _kopftuch_farbe() -> Color:
+	var farben := [Color(0.82, 0.78, 0.68), Color(0.55, 0.2, 0.15), Color(0.3, 0.38, 0.5), Color(0.6, 0.55, 0.3)]
+	return farben[absi(hash(_name_text + "t")) % farben.size()]
+
+
+## Ein Teil am Knochen befestigen; ort und dreh sind im Raum des Skeletts gemeint (Blick nach +z), der Halter
+## rechnet sie in den Raum des Knochens um, damit das Teil der Bewegung folgt.
+func _anhaengen(skelett: Skeleton3D, knochen: String, mesh: Mesh, stoff: String, ort: Vector3, dreh := Basis()) -> void:
+	var i := skelett.find_bone(knochen)
+	if i < 0:
+		return
+	var halter := skelett.get_node_or_null("Zubehoer_" + knochen) as BoneAttachment3D
+	if halter == null:
+		halter = BoneAttachment3D.new()
+		halter.name = "Zubehoer_" + knochen
+		halter.bone_name = knochen
+		skelett.add_child(halter)
+	var m := MeshInstance3D.new()
+	m.mesh = mesh
+	m.set_meta("stoff", stoff)
+	m.transform = skelett.get_bone_global_rest(i).affine_inverse() * Transform3D(dreh, ort)
+	m.visibility_range_end = 120.0
+	halter.add_child(m)
+
+
+func _knochen_ort(skelett: Skeleton3D, knochen: String) -> Vector3:
+	var i := skelett.find_bone(knochen)
+	return skelett.get_bone_global_rest(i).origin if i >= 0 else Vector3.ZERO
+
+
+## Kleidung und Zubehör nach Beruf: Schürzen, Kopftuch, Helm, Hüte, Wappenrock, Talar, Gürteltasche
+func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
+	var becken := _knochen_ort(skelett, "pelvis")
+	var brust := _knochen_ort(skelett, "spine_03")
+	var kopf := _knochen_ort(skelett, "Head")
+	var h := absi(hash(_name_text))
+	var kasten := func(groesse_: Vector3) -> BoxMesh:
+		var b := BoxMesh.new()
+		b.size = groesse_
+		return b
+	match beruf:
+		"schmied", "zeugwart":
+			_anhaengen(skelett, "spine_02", kasten.call(Vector3(0.4, 0.95, 0.02)), "leder", Vector3(0, brust.y - 0.42, 0.16))
+			_anhaengen(skelett, "spine_03", kasten.call(Vector3(0.36, 0.02, 0.02)), "leder", Vector3(0, brust.y + 0.05, 0.15))
+		"koch", "magd":
+			_anhaengen(skelett, "pelvis", kasten.call(Vector3(0.38, 0.6, 0.015)), "leinen", Vector3(0, becken.y - 0.26, 0.14))
+		"wache", "ritter":
+			for seite: float in [1.0, -1.0]:
+				_anhaengen(skelett, "spine_02", kasten.call(Vector3(0.42, 0.85, 0.02)), "wappen",
+					Vector3(0, brust.y - 0.3, 0.155 * seite))
+			_anhaengen(skelett, "spine_02", kasten.call(Vector3(0.12, 0.16, 0.012)), "zeichen", Vector3(0, brust.y - 0.05, 0.168))
+		"geistlich":
+			var talar := CylinderMesh.new()
+			talar.top_radius = 0.2
+			talar.bottom_radius = 0.34
+			talar.height = becken.y - 0.05
+			talar.radial_segments = 14
+			_anhaengen(skelett, "pelvis", talar, "talar", Vector3(0, becken.y / 2.0 + 0.02, 0))
+		"haendler":
+			_anhaengen(skelett, "pelvis", kasten.call(Vector3(0.13, 0.16, 0.06)), "leder", Vector3(0.2, becken.y - 0.05, 0.06))
+	# Gürteltasche bei manchen anderen auch
+	if beruf in ["", "knecht", "fischer"] and h % 3 == 0:
+		_anhaengen(skelett, "pelvis", kasten.call(Vector3(0.12, 0.14, 0.06)), "leder", Vector3(-0.2, becken.y - 0.05, 0.05))
+	var oben := kopf.y + 0.12
+	match _kopfbedeckung(w):
+		"kopftuch":
+			var tuch := SphereMesh.new()
+			tuch.radius = 0.125
+			tuch.height = 0.2
+			_anhaengen(skelett, "Head", tuch, "kopftuch", Vector3(0, oben, -0.015))
+			_anhaengen(skelett, "Head", kasten.call(Vector3(0.18, 0.22, 0.02)), "kopftuch", Vector3(0, oben - 0.12, -0.1))
+		"muetze":
+			var m := CylinderMesh.new()
+			m.top_radius = 0.12
+			m.bottom_radius = 0.105
+			m.height = 0.16
+			_anhaengen(skelett, "Head", m, "leinen", Vector3(0, oben + 0.04, -0.01))
+		"eisenhut":
+			var krone := SphereMesh.new()
+			krone.radius = 0.13
+			krone.height = 0.17
+			_anhaengen(skelett, "Head", krone, "eisen", Vector3(0, oben + 0.01, -0.01))
+			var krempe := CylinderMesh.new()
+			krempe.top_radius = 0.24
+			krempe.bottom_radius = 0.25
+			krempe.height = 0.02
+			_anhaengen(skelett, "Head", krempe, "eisen", Vector3(0, oben - 0.04, -0.01))
+		"strohhut":
+			var krempe2 := CylinderMesh.new()
+			krempe2.top_radius = 0.26
+			krempe2.bottom_radius = 0.28
+			krempe2.height = 0.025
+			_anhaengen(skelett, "Head", krempe2, "stroh", Vector3(0, oben - 0.02, -0.01))
+			var kegel := CylinderMesh.new()
+			kegel.top_radius = 0.05
+			kegel.bottom_radius = 0.12
+			kegel.height = 0.12
+			_anhaengen(skelett, "Head", kegel, "stroh", Vector3(0, oben + 0.05, -0.01))
+		"haube":
+			var haube := SphereMesh.new()
+			haube.radius = 0.13
+			haube.height = 0.19
+			_anhaengen(skelett, "Head", haube, "leinen", Vector3(0, oben - 0.01, -0.02))
+
+
+## Kopf dreht sich zu einem Ziel (schaue_auf), weich und innerhalb natürlicher Grenzen
+func _blick_einrichten(skelett: Skeleton3D) -> void:
+	var ziel := get_node_or_null("Blickziel") as Marker3D
+	if ziel == null:
+		ziel = Marker3D.new()
+		ziel.name = "Blickziel"
+		add_child(ziel)
+	var blick := LookAtModifier3D.new()
+	blick.name = "Blick"
+	blick.bone_name = "Head"
+	blick.forward_axis = SkeletonModifier3D.BONE_AXIS_PLUS_Z
+	blick.primary_rotation_axis = Vector3.AXIS_Y
+	blick.use_angle_limitation = true
+	blick.symmetry_limitation = true
+	blick.primary_limit_angle = deg_to_rad(140.0)
+	blick.secondary_limit_angle = deg_to_rad(50.0)
+	blick.duration = 0.5
+	blick.influence = 0.0
+	skelett.add_child(blick)
+	blick.target_node = blick.get_path_to(ziel)
+	_blick = blick
+	_blickziel = ziel
+
+
+## Den Kopf zu einem Punkt drehen (staerke 0 bis 1; 0: geradeaus)
+func schaue_auf(punkt: Vector3, staerke: float, delta: float) -> void:
+	if _blick == null or not is_instance_valid(_blick):
+		return
+	if staerke > 0.0:
+		_blickziel.global_position = punkt
+	_blick.influence = move_toward(_blick.influence, staerke, delta * 2.0)
+
+
 ## Breitkrempiger Filzhut am Kopfknochen
 func _hut(skelett: Skeleton3D) -> void:
 	var halter := BoneAttachment3D.new()
@@ -590,7 +761,10 @@ func _faerbe_modell() -> void:
 		if m.has_meta("stoff"):
 			var st: String = m.get_meta("stoff")
 			var farbe := {"hut": tracht.darkened(0.3), "holz": Color(0.35, 0.24, 0.14), "griff": Color(0.25, 0.16, 0.1),
-				"eisen": Color(0.62, 0.63, 0.66), "glut": Color(1.0, 0.6, 0.25)}.get(st, tracht) as Color
+				"eisen": Color(0.62, 0.63, 0.66), "glut": Color(1.0, 0.6, 0.25), "leder": Color(0.3, 0.19, 0.11),
+				"leinen": Color(0.86, 0.83, 0.75), "stroh": Color(0.8, 0.68, 0.38), "kopftuch": _kopftuch_farbe(),
+				"wappen": Color(0.55, 0.08, 0.06), "zeichen": Color(0.85, 0.65, 0.2),
+				"talar": tracht.darkened(0.2)}.get(st, tracht) as Color
 			m.material_override = _material(farbe, st)
 			continue
 		var name_ := String(m.name)
@@ -607,7 +781,13 @@ func _faerbe_modell() -> void:
 			elif "Belt" in name_ and kordel_farbe.a > 0.0:
 				ton = klar.call(kordel_farbe, 1.6)
 			elif "Peasant" in mat_name or "Ranger" in mat_name:
-				ton = tracht_ton
+				var h := absi(hash(_name_text))
+				if "Legs" in name_:
+					ton = klar.call(HOSEN[(h / 3) % HOSEN.size()], 2.3)
+				elif "Feet" in name_:
+					ton = klar.call(SCHUHE[(h / 5) % SCHUHE.size()], 2.3)
+				else:
+					ton = tracht_ton
 			elif "Eye" in mat_name:
 				continue
 			var schluessel := "%d|%s" % [basis.get_instance_id(), ton.to_html()]

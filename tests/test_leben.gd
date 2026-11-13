@@ -241,6 +241,56 @@ func _initialize() -> void:
 			"Leben in der Burg: %d Personen, %d von %d Wachen oben auf den Wehrgängen" % [burg.get_child_count(), auf_mauer, wachen])
 	pruefe(mit_ablauf >= 25, "Mindestens 25 davon mit Tagesablauf (sind %d)" % mit_ablauf)
 
+	# --- Tiere ziehen in ihren Revieren umher, Gesinde rastet am Brunnen, Tauben fliegen auf ---
+	await setze_zeit(10.0)
+	var gesinde: Node3D = burg.get_node("Gesinde0")
+	var brunnen_punkt := Vector3.INF
+	for zeile in gesinde.tagesablauf:
+		for teil in zeile.split(":", true, 1)[1].split("|")[0].split(";"):
+			var z := teil.split(",")
+			if z.size() >= 5 and z[3].strip_edges() == "arbeiten" and int(z[4]) >= 7:
+				brunnen_punkt = Vector3(z[0].to_float(), z[1].to_float(), z[2].to_float())
+	pruefe(brunnen_punkt != Vector3.INF, "Das Gesinde hat einen Arbeitsgang mit Rast am Brunnen")
+	if brunnen_punkt != Vector3.INF:
+		await setze(brunnen_punkt + Vector3(2.5, 1.0, 0.0))
+		var start := {}
+		for t: Node3D in get_tree().get_nodes_in_group("tiere"):
+			if t.revier.size() >= 3 and t.global_position.distance_to(spieler().global_position) < 60.0:
+				start[t] = t.global_position
+		var rastend := false
+		for i in 28:
+			await warte(1.0)
+			for p in burg.get_children():
+				if String(p.name).begins_with("Gesinde") and p.visible and p.get_node("Figur").haltung == "arbeiten":
+					rastend = true
+		var bewegt := 0
+		var drin := true
+		for t: Node3D in start:
+			if is_instance_valid(t):
+				if t.global_position.distance_to(start[t]) > 1.0:
+					bewegt += 1
+				var q := Vector2(t.global_position.x, t.global_position.z)
+				if not Geometry2D.is_point_in_polygon(q, t.revier):
+					var nah := false
+					for k in t.revier.size():
+						if Geometry2D.get_closest_point_to_segment(q, t.revier[k], t.revier[(k + 1) % t.revier.size()]).distance_to(q) < 1.0:
+							nah = true
+					drin = drin and nah
+		pruefe(start.size() >= 3 and bewegt >= 1 and drin,
+				"Tiere ziehen umher und bleiben in ihrem Revier (%d von %d bewegt)" % [bewegt, start.size()])
+		pruefe(rastend, "Gesinde rastet unterwegs in Arbeitshaltung (Wasser schöpfen, abliefern)")
+	var schwaerme := current_scene.find_children("Schwarm*", "Node3D", true, false).filter(func(n): return not n.sitzend)
+	pruefe(schwaerme.size() >= 3, "Taubenschwärme am Boden in Burg und Stadt (%d)" % schwaerme.size())
+	if not schwaerme.is_empty():
+		var schwarm: Node3D = schwaerme[0]
+		await setze(schwarm.global_position + Vector3(0.8, 1.0, 0.0))
+		await warte(2.5)
+		var hoch := 0
+		for k in schwarm.get_children():
+			if (k as Node3D).position.y > 0.6:
+				hoch += 1
+		pruefe(hoch >= 2, "Kommt man nahe, fliegen die Tauben auf (%d in der Luft)" % hoch)
+
 	# --- Vormittag: Bürger auf dem Markt, Händler am Stand, Kinder um den Brunnen ---
 	var hedda := stadt("BuergerHedda")
 	var marit := stadt("Fischhaendlerin")

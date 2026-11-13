@@ -398,18 +398,73 @@ func _h01(p: Vector2) -> float:
 
 ## Eine Zinne (Mauerzahn) von a0 bis a1 entlang u, n0 bis n1 quer (n1 ist die Feldseite): Mauerwerk, darauf eine
 ## vorstehende Abdeckplatte aus hellem Stein; Höhe leicht verschieden wie bei echt gesetzten Steinen. Breite Zinnen
-## haben auf der Feldseite eine Kreuzscharte mit Rundloch und Gewände, auf der Hofseite eine dunkle Nische.
+## haben eine echte Kreuzscharte, durch die man hindurchsieht: außen ein schmaler Schlitz mit Querschlitz, innen eine
+## breitere Nische, in der der Schütze steht.
 func _zinne(m: Vector2, u: Vector2, n: Vector2, a0: float, a1: float, n0: float, n1: float, y: float, h: float) -> void:
 	var z := _h01(m + u * (a0 + a1) + n * 3.1)
 	var hh := h - 0.06 + z * 0.12
-	_klotz(stein, m, u, n, a0, a1, n0, n1, y, y + hh - 0.14)
-	_klotz("hell", m, u, n, a0 - 0.05, a1 + 0.05, n0 - 0.06, n1 + 0.07, y + hh - 0.14, y + hh, true)
-	_klotz("hell", m, u, n, a0 + 0.08, a1 - 0.08, n0 + 0.04, n1 - 0.04, y + hh, y + hh + 0.05)   # Grat der Platte
+	var oben := y + hh - 0.14
 	if a1 - a0 < 1.0 or hh < 1.2:
-		return
-	var mc := (a0 + a1) / 2.0
-	_scharte(m + u * mc + n * n1, u, n, y + hh * 0.5, hh * 0.5 - 0.42)
-	_klotz("dunkel", m, u, n, mc - 0.2, mc + 0.2, n0 - 0.012, n0 + 0.02, y + 0.2, y + hh - 0.5)
+		_klotz(stein, m, u, n, a0, a1, n0, n1, y, oben)
+	else:
+		var mc := (a0 + a1) / 2.0
+		var s0 := y + 0.3
+		var s1 := oben - 0.32
+		var sm := (s0 + s1) / 2.0
+		var nm := n0 + (n1 - n0) * 0.45
+		# außen: Schlitz, Querschlitz und Rundloch unten
+		_klotz_mit_loechern(stein, m, u, n, a0, a1, nm, n1, y, oben, [
+			Rect2(mc - 0.055, s0 + 0.08, 0.11, s1 - s0 - 0.08), Rect2(mc - 0.21, sm - 0.04, 0.42, 0.08),
+			Rect2(mc - 0.1, s0, 0.2, 0.17)])
+		# innen: Nische, breiter und höher
+		_klotz_mit_loechern(stein, m, u, n, a0, a1, n0, nm, y, oben, [Rect2(mc - 0.27, s0 - 0.05, 0.54, s1 - s0 + 0.15)])
+		_scharte_rahmen(m + u * mc + n * n1, u, n, s0, s1)
+	_klotz("hell", m, u, n, a0 - 0.05, a1 + 0.05, n0 - 0.06, n1 + 0.07, oben, y + hh, true)
+	_klotz("hell", m, u, n, a0 + 0.08, a1 - 0.08, n0 + 0.04, n1 - 0.04, y + hh, y + hh + 0.05)   # Grat der Platte
+
+
+## Klotz mit rechteckigen Durchbrüchen: loecher als Rect2 in (u, y), quer durch die ganze Tiefe n0..n1. Der Klotz
+## wird in waagrechte Bänder zerlegt, in jedem Band bleiben die Stücke zwischen den Löchern stehen; so bekommen die
+## Durchbrüche echte Laibungen, Stürze und Sohlen (Unterseiten werden mitgebaut).
+func _klotz_mit_loechern(mat: String, m: Vector2, u: Vector2, n: Vector2, u0: float, u1: float, n0: float, n1: float,
+		y0: float, y1: float, loecher: Array) -> void:
+	var grenzen: Array[float] = [y0, y1]
+	for r: Rect2 in loecher:
+		for yy: float in [r.position.y, r.end.y]:
+			if yy > y0 and yy < y1 and not yy in grenzen:
+				grenzen.append(yy)
+	grenzen.sort()
+	for i in grenzen.size() - 1:
+		var b0 := grenzen[i]
+		var b1 := grenzen[i + 1]
+		if b1 - b0 < 0.001:
+			continue
+		var frei: Array[Vector2] = [Vector2(u0, u1)]
+		for r: Rect2 in loecher:
+			if r.position.y < b1 - 0.0005 and r.end.y > b0 + 0.0005:
+				var neu: Array[Vector2] = []
+				for f: Vector2 in frei:
+					if r.end.x <= f.x or r.position.x >= f.y:
+						neu.append(f)
+						continue
+					if r.position.x > f.x:
+						neu.append(Vector2(f.x, r.position.x))
+					if r.end.x < f.y:
+						neu.append(Vector2(r.end.x, f.y))
+				frei = neu
+		for f: Vector2 in frei:
+			if f.y - f.x > 0.001:
+				_klotz(mat, m, u, n, f.x, f.y, n0, n1, b0, b1, true)
+
+
+## Helles Gewände rund um eine Scharte auf der Feldseite (Pfosten, Sturz, Sohlbank), m auf der Fläche
+func _scharte_rahmen(m: Vector2, u: Vector2, n: Vector2, s0: float, s1: float) -> void:
+	for s_: float in [-1.0, 1.0]:
+		var j0 := s_ * 0.055
+		var j1 := s_ * 0.15
+		_klotz("zier_hell", m, u, n, minf(j0, j1), maxf(j0, j1), -0.01, 0.04, s0 - 0.02, s1 + 0.02)
+	_klotz("zier_hell", m, u, n, -0.2, 0.2, -0.01, 0.05, s1, s1 + 0.1, true)
+	_klotz("zier_hell", m, u, n, -0.2, 0.2, -0.01, 0.06, s0 - 0.1, s0, true)
 
 
 ## Schießscharte in einer Wandfläche (m auf der Fläche, n nach außen): senkrechter Schlitz mit Querschlitz und
@@ -609,7 +664,41 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 		# außen mit Anlauf unten, innen senkrecht
 		var g0 := (d0 + Vector3(0, 0.6 / anlauf, 0)).normalized()
 		var g1 := (d1 + Vector3(0, 0.6 / anlauf, 0)).normalized()
-		for lage: Array in [[unten, unten + anlauf, r + 0.6, r, g0, g1], [unten + anlauf, oben, r, r, d0, d1]]:
+		var scharte := k in [2, 6, 10]
+		var yb_ := oben - 2.5
+		var s0 := yb_ + 0.35
+		var s1 := yb_ + 1.65
+		if scharte:
+			# echte Scharte durch die Schale: außen schmal, innen eine breite Nische mit schrägen Laibungen
+			var wm := (w0 + w1) / 2.0
+			var ha := 0.065 / r
+			var hi := 0.34 / ri
+			_bogenwand(st_aussen, c, r, w0, w1, unten + anlauf, s0, false)
+			_bogenwand(st_aussen, c, r, w0, w1, s1, oben, false)
+			_bogenwand(st_aussen, c, r, w0, wm - ha, s0, s1, false)
+			_bogenwand(st_aussen, c, r, wm + ha, w1, s0, s1, false)
+			_bogenwand(st_aussen, c, ri, w0, w1, unten, s0 - 0.05, true)
+			_bogenwand(st_aussen, c, ri, w0, w1, s1 + 0.1, oben, true)
+			_bogenwand(st_aussen, c, ri, w0, wm - hi, s0 - 0.05, s1 + 0.1, true)
+			_bogenwand(st_aussen, c, ri, wm + hi, w1, s0 - 0.05, s1 + 0.1, true)
+			var p := func(rad: float, w: float, y: float) -> Vector3:
+				return Vector3(c.x + cos(w) * rad, y, c.y + sin(w) * rad)
+			var tang := Vector3(-sin(wm), 0, cos(wm))
+			# Laibungen links und rechts (von der schmalen Außenkante zur breiten Innenkante)
+			_viereck(stein, p.call(r, wm - ha, s0), p.call(ri, wm - hi, s0 - 0.05), p.call(ri, wm - hi, s1 + 0.1), p.call(r, wm - ha, s1), tang)
+			_viereck(stein, p.call(r, wm + ha, s0), p.call(ri, wm + hi, s0 - 0.05), p.call(ri, wm + hi, s1 + 0.1), p.call(r, wm + ha, s1), -tang)
+			# Sturz und Sohle (schräg, der Schütze sieht nach unten hinaus)
+			_viereck(stein, p.call(r, wm - ha, s1), p.call(r, wm + ha, s1), p.call(ri, wm + hi, s1 + 0.1), p.call(ri, wm - hi, s1 + 0.1), Vector3.DOWN)
+			_viereck(stein, p.call(r, wm - ha, s0), p.call(r, wm + ha, s0), p.call(ri, wm + hi, s0 - 0.05), p.call(ri, wm - hi, s0 - 0.05), Vector3.UP)
+			# Anlauf unten wie sonst
+			var a_ := Vector3(c.x, unten, c.y) + d0 * (r + 0.6)
+			var b_ := Vector3(c.x, unten, c.y) + d1 * (r + 0.6)
+			var e_ := Vector3(c.x, unten + anlauf, c.y) + d1 * r
+			var f_ := Vector3(c.x, unten + anlauf, c.y) + d0 * r
+			for v: Array in [[a_, g0], [b_, g1], [e_, g1], [a_, g0], [e_, g1], [f_, g0]]:
+				st_aussen.set_normal(v[1])
+				st_aussen.add_vertex(v[0])
+		for lage: Array in ([] if scharte else [[unten, unten + anlauf, r + 0.6, r, g0, g1], [unten + anlauf, oben, r, r, d0, d1]]):
 			var y0: float = lage[0]
 			var y1: float = lage[1]
 			var a := Vector3(c.x, y0, c.y) + d0 * float(lage[2])
@@ -621,13 +710,14 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 			for v: Array in [[a, na], [b, nb], [e, nb], [a, na], [e, nb], [f, na]]:
 				st_aussen.set_normal(v[1])
 				st_aussen.add_vertex(v[0])
-		var ia := Vector3(c.x, unten, c.y) + d0 * ri
-		var ib := Vector3(c.x, unten, c.y) + d1 * ri
-		var ie := Vector3(c.x, oben, c.y) + d1 * ri
-		var iff := Vector3(c.x, oben, c.y) + d0 * ri
-		for v: Array in [[ia, -d0], [ie, -d1], [ib, -d1], [ia, -d0], [iff, -d0], [ie, -d1]]:
-			st_aussen.set_normal(v[1])
-			st_aussen.add_vertex(v[0])
+		if not scharte:
+			var ia := Vector3(c.x, unten, c.y) + d0 * ri
+			var ib := Vector3(c.x, unten, c.y) + d1 * ri
+			var ie := Vector3(c.x, oben, c.y) + d1 * ri
+			var iff := Vector3(c.x, oben, c.y) + d0 * ri
+			for v: Array in [[ia, -d0], [ie, -d1], [ib, -d1], [ia, -d0], [iff, -d0], [ie, -d1]]:
+				st_aussen.set_normal(v[1])
+				st_aussen.add_vertex(v[0])
 		# Mauerkrone der Schale
 		_viereck(stein, Vector3(c.x, oben, c.y) + d0 * ri, Vector3(c.x, oben, c.y) + d1 * ri,
 			Vector3(c.x, oben, c.y) + d1 * r, Vector3(c.x, oben, c.y) + d0 * r, Vector3.UP)
@@ -660,7 +750,26 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 	for k: int in [2, 6, 10]:
 		var w: float = w_start + PI * (k + 0.5) / schritte
 		var d := Vector2(cos(w), sin(w))
-		_scharte(c + d * r, Vector2(-d.y, d.x), d, yb + 1.0, 0.55)
+		_scharte_rahmen(c + d * r, Vector2(-d.y, d.x), d, yb + 0.35, yb + 1.65)
+
+
+## Gewölbtes Wandstück (Zylinderfläche) mit Radius rad zwischen den Winkeln wa und wb und den Höhen ya und yb;
+## innen: die Fläche zeigt zur Mitte.
+func _bogenwand(st: SurfaceTool, c: Vector2, rad: float, wa: float, wb: float, ya: float, yb: float, innen: bool) -> void:
+	if wb - wa < 0.0001 or yb - ya < 0.0001:
+		return
+	var da := Vector3(cos(wa), 0, sin(wa))
+	var db := Vector3(cos(wb), 0, sin(wb))
+	var a := Vector3(c.x, ya, c.y) + da * rad
+	var b := Vector3(c.x, ya, c.y) + db * rad
+	var e := Vector3(c.x, yb, c.y) + db * rad
+	var f := Vector3(c.x, yb, c.y) + da * rad
+	var na := -da if innen else da
+	var nb := -db if innen else db
+	var reihe := [[a, na], [e, nb], [b, nb], [a, na], [f, na], [e, nb]] if innen else [[a, na], [b, nb], [e, nb], [a, na], [e, nb], [f, na]]
+	for v: Array in reihe:
+		st.set_normal(v[1])
+		st.add_vertex(v[0])
 
 
 ## Erkertürmchen: rund, unten auf einem kegelförmigen Kragstein, Schießscharten, Gesims und spitzes Kegeldach.
@@ -862,28 +971,19 @@ func _gesims(mat: String, c: Vector2, uz: Vector2, nx: Vector2, B: float, L: flo
 ## Begehbares Gebäude: Mauern als Schale mit offener Tür, Geschossdecken auf Balken, Treppen (abwechselnd an den
 ## Längswänden, mit einer unsichtbaren Rampe als Lauffläche), Licht und Einrichtung je nach Art.
 func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden: float, unten: float, traufe: float,
-		geschosse: int, gh: float, wand: String, art: int, zweck := 0) -> void:
+		geschosse: int, gh: float, wand: String, art: int, zweck := 0, loecher := {}) -> void:
 	var t := 0.6                                  # Mauerstärke
 	var fb := boden + 0.03                        # Fußboden im Erdgeschoss: ebenerdig, ohne Stufe an der Tür
 	var tb := 2.4 if art == 1 else 1.6            # Türbreite
 	var th := 4.0 if art == 1 else 2.7
 	var iL := L - t
 	var iB := B - t
-	# Mauern: Längsseite -B, Giebel; die Türseite (+B, bei der Kirche der Giebel +L) mit Öffnung
-	if art == 1:
-		_klotz(wand, c, uz, nx, -L, L, -B, -iB, unten, traufe)
-		_klotz(wand, c, uz, nx, -L, L, iB, B, unten, traufe)
-		_klotz(wand, c, uz, nx, -L, -iL, -iB, iB, unten, traufe)
-		_klotz(wand, c, uz, nx, iL, L, -iB, -tb / 2.0, unten, traufe)
-		_klotz(wand, c, uz, nx, iL, L, tb / 2.0, iB, unten, traufe)
-		_klotz(wand, c, uz, nx, iL, L, -tb / 2.0, tb / 2.0, fb + th, traufe)
-	else:
-		_klotz(wand, c, uz, nx, -L, L, -B, -iB, unten, traufe)
-		_klotz(wand, c, uz, nx, -L, -iL, -iB, iB, unten, traufe)
-		_klotz(wand, c, uz, nx, iL, L, -iB, iB, unten, traufe)
-		_klotz(wand, c, uz, nx, -L, -tb / 2.0, iB, B, unten, traufe)
-		_klotz(wand, c, uz, nx, tb / 2.0, L, iB, B, unten, traufe)
-		_klotz(wand, c, uz, nx, -tb / 2.0, tb / 2.0, iB, B, fb + th, traufe)
+	# Mauern mit echten Fensterlöchern; die Türseite (+B, bei der Kirche der Giebel +L) mit der Türöffnung
+	var tuer := [Rect2(-tb / 2.0, unten - 0.01, tb, fb + th - unten + 0.01)]
+	_klotz_mit_loechern(wand, c, uz, nx, -L, L, -B, -iB, unten, traufe, loecher.get("-B", []))
+	_klotz_mit_loechern(wand, c, uz, nx, -L, L, iB, B, unten, traufe, loecher.get("+B", []) + ([] if art == 1 else tuer))
+	_klotz_mit_loechern(wand, c, nx, uz, -iB, iB, -L, -iL, unten, traufe, loecher.get("-L", []))
+	_klotz_mit_loechern(wand, c, nx, uz, -iB, iB, iL, L, unten, traufe, loecher.get("+L", []) + (tuer if art == 1 else []))
 	# Sockel außen nur bis Fußbodenhöhe (sonst stolpert man an der Tür), innen der Fußboden
 	_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, boden + 0.01)
 	_klotz("boden", c, uz, nx, -iL, iL, -iB, iB, boden + 0.01, fb)
@@ -1676,14 +1776,16 @@ func _leuchter(m: Vector2, uz: Vector2, nx: Vector2, y: float) -> void:
 
 ## Fenster von innen: helle Scheibe (Tageslicht) mit Bleiruten, tiefe Nische mit Gewände, Sitzbank und Sturz.
 ## seite zeigt in den Raum.
-func _fenster_innen(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, ym: float, fb: float, fh: float) -> void:
+func _fenster_innen(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, ym: float, fb: float, fh: float,
+		durch := true) -> void:
 	var nn := n * signf(seite)
 	var m := c + u * pos + n * abstand
 	var b := fb / 2.0
 	var y0 := ym - fh / 2.0
 	var y1 := ym + fh / 2.0
-	_klotz("fensterlicht", m, u, nn, -b, b, 0.005, 0.025, y0, y1)
-	_bleiglas(m, u, nn, -b, b, y0, y1, 0.03, "metall")
+	if not durch:
+		_klotz("fensterlicht", m, u, nn, -b, b, 0.005, 0.025, y0, y1)
+		_bleiglas(m, u, nn, -b, b, y0, y1, 0.03, "metall")
 	_klotz("zier_hell", m, u, nn, -b - 0.2, b + 0.2, 0.0, 0.3, y0 - 0.1, y0, true)
 	_klotz("zier_hell", m, u, nn, -b - 0.2, -b, 0.0, 0.22, y0, y1)
 	_klotz("zier_hell", m, u, nn, b, b + 0.2, 0.0, 0.22, y0, y1)
@@ -2010,6 +2112,47 @@ func _treppe(a: Vector3, b: Vector3, breite: float) -> void:
 				y_unten, y_oben)
 
 
+## Wo die Fenster eines Baus sitzen (dieselbe Rechnung wie beim Zeichnen): je Wand "+B", "-B" (Längsseiten, Lage
+## entlang uz) und "+L", "-L" (Giebel, Lage entlang nx) eine Liste von Rect2 (Lage, Höhe). Begehbare Bauten haben
+## dort echte Löcher in der Mauer.
+func _fensterliste(art: int, B: float, L: float, boden: float, gh: float, geschosse: int) -> Dictionary:
+	var aus := {"+B": [], "-B": [], "+L": [], "-L": []}
+	if art == 3:
+		var achsen := maxi(5, int((2.0 * L - 2.0) / 4.4))
+		var abst := (2.0 * L - 2.0) / achsen
+		for f in achsen:
+			var pos := -L + 1.0 + (f + 0.5) * abst
+			for k in range(1, geschosse):
+				var fu := boden + k * gh + gh * 0.18
+				for e: float in [-1.0, 1.0]:
+					aus["+B"].append(Rect2(pos + e * 0.52 - 0.4, fu, 0.8, gh * 0.62))
+				aus["-B"].append(Rect2(pos - 0.45, boden + k * gh + gh * 0.3, 0.9, gh * 0.38))
+		for seite: float in [-1.0, 1.0]:
+			for f in 3:
+				aus["+L" if seite > 0 else "-L"].append(Rect2((f - 1) * B * 0.55 - 0.45, boden + gh + gh * 0.3, 0.9, gh * 0.38))
+		return aus
+	for k in geschosse:
+		if art == 2 and k > 0:
+			break
+		var fh := gh * 0.62 if art == 1 else minf(1.7, gh * 0.48)
+		var fb := 1.3 if art == 1 else 1.0
+		var ym := boden + k * gh + gh * (0.5 if art == 1 else 0.55)
+		for seite: float in [-1.0, 1.0]:
+			var anzahl := int((2.0 * L - 2.0) / (4.5 if art == 1 else 3.4))
+			for f in anzahl:
+				var pos := -L + 1.0 + (f + 0.5) * (2.0 * L - 2.0) / anzahl
+				if k == 0 and seite > 0 and absf(pos) < 1.8 and art != 1:
+					continue
+				aus["+B" if seite > 0 else "-B"].append(Rect2(pos - fb / 2.0, ym - fh / 2.0, fb, fh))
+			var quer := int((2.0 * B - 1.5) / 3.4)
+			for f in quer:
+				var pos := -B + 0.75 + (f + 0.5) * (2.0 * B - 1.5) / quer
+				if art == 1 and seite > 0 and k == 0 and absf(pos) < 2.0:
+					continue
+				aus["+L" if seite > 0 else "-L"].append(Rect2(pos - fb / 2.0, ym - fh / 2.0, fb, fh))
+	return aus
+
+
 ## Gebäude mit Sockel, Stockwerksgesimsen, Fenstern mit Steinrahmen, Tür, Traufgesims und Satteldach mit Überstand,
 ## Firstziegeln und Schornstein.
 func _gebaeude(w: PackedFloat32Array) -> void:
@@ -2036,7 +2179,8 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 	var gh := w[7] / geschosse
 	# Körper und Sockel
 	if begehbar:
-		_innenraum(c, uz, nx, B, L, boden, unten, traufe, geschosse, gh, wand, art, zweck)
+		_innenraum(c, uz, nx, B, L, boden, unten, traufe, geschosse, gh, wand, art, zweck,
+			_fensterliste(art, B, L, boden, gh, geschosse))
 	else:
 		_klotz(wand, c, uz, nx, -L, L, -B, B, unten, traufe)
 		_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, boden + 0.7)
@@ -2060,7 +2204,7 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 				var pos := -L + 1.0 + (f + 0.5) * (2.0 * L - 2.0) / anzahl
 				if k == 0 and seite > 0 and absf(pos) < 1.8 and art != 1:
 					continue   # dort ist die Tür
-				_fenster(c, uz, nx, pos, B * seite, seite, ym, fb, fh, art == 1)
+				_fenster(c, uz, nx, pos, B * seite, seite, ym, fb, fh, art == 1, begehbar)
 				if begehbar:
 					_fenster_innen(c, uz, nx, pos, (B - 0.6) * seite, -seite, ym, fb, fh)
 			# Giebelseiten
@@ -2069,7 +2213,7 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 				var pos := -B + 0.75 + (f + 0.5) * (2.0 * B - 1.5) / quer
 				if art == 1 and seite > 0 and k == 0 and absf(pos) < 2.0:
 					continue
-				_fenster(c, nx, -uz, pos, -L * seite, -seite, ym, fb, fh, art == 1)
+				_fenster(c, nx, -uz, pos, -L * seite, -seite, ym, fb, fh, art == 1, begehbar)
 				if begehbar:
 					_fenster_innen(c, nx, -uz, pos, -(L - 0.6) * seite, seite, ym, fb, fh)
 	# Tür: bei Kirchen in der Giebelseite, sonst mitten in der Längsseite
@@ -2203,7 +2347,7 @@ func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, bo
 			var fu := boden + k * gh + gh * 0.18
 			var fh := gh * 0.62
 			for e: float in [-1.0, 1.0]:
-				_rundbogen(m + uz * e * 0.52, uz, nx, fu, 0.8, fh, 0.2)
+				_rundbogen(m + uz * e * 0.52, uz, nx, fu, 0.8, fh, 0.2, begehbar)
 			_klotz("hell", m, uz, nx, -0.09, 0.09, -0.04, 0.1, fu, fu + fh - 0.45)
 			_klotz("hell", m, uz, nx, -0.16, 0.16, -0.04, 0.14, fu + fh - 0.45, fu + fh - 0.32)
 			_klotz("hell", m, uz, nx, -1.15, 1.15, -0.02, 0.18, fu - 0.16, fu)
@@ -2215,7 +2359,7 @@ func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, bo
 					_fenster_innen(c, uz, nx, pos + e * 0.52, B - 0.6, -1.0, fu + (fh - 0.4) / 2.0, 0.8, fh - 0.4)
 		# Rückseite und Giebel: kleinere Fenster
 		for k in range(1, geschosse):
-			_rundbogen(c + uz * pos - nx * B, uz, -nx, boden + k * gh + gh * 0.3, 0.9, gh * 0.38, 0.2)
+			_rundbogen(c + uz * pos - nx * B, uz, -nx, boden + k * gh + gh * 0.3, 0.9, gh * 0.38, 0.2, begehbar)
 			if begehbar:
 				_fenster_innen(c, uz, nx, pos, -(B - 0.6), 1.0, boden + k * gh + gh * 0.3 + (gh * 0.38 - 0.45) / 2.0, 0.9,
 					gh * 0.38 - 0.45)
@@ -2234,7 +2378,7 @@ func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, bo
 	for seite: float in [-1.0, 1.0]:
 		for f in 3:
 			var pos := (f - 1) * B * 0.55
-			_rundbogen(c + uz * L * seite + nx * pos, nx, uz * seite, boden + gh + gh * 0.3, 0.9, gh * 0.38, 0.2)
+			_rundbogen(c + uz * L * seite + nx * pos, nx, uz * seite, boden + gh + gh * 0.3, 0.9, gh * 0.38, 0.2, begehbar)
 	# Gauben auf der Hofseite des Daches (wie im Referenzbild zwei kräftige Steingauben mit Rundbogenfenster und
 	# eigenem Satteldach)
 	var neig := dh / B
@@ -2270,24 +2414,34 @@ func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, bo
 
 ## Rundbogenöffnung in einer Wand (Mitte m auf der Außenfläche, n nach außen): dunkle Fläche mit Halbkreis oben,
 ## Gewände und Bogensteine in hellem Stein.
-func _rundbogen(m: Vector2, u: Vector2, n: Vector2, unten: float, breite: float, hoehe: float, rahmen: float) -> void:
+func _rundbogen(m: Vector2, u: Vector2, n: Vector2, unten: float, breite: float, hoehe: float, rahmen: float, durch := false) -> void:
 	var b := breite / 2.0
 	var kaempfer := unten + hoehe - b
 	var glas := rahmen < 0.3      # schmale Rahmen: Fenster mit Bleiglas, breite: dunkle Arkade
 	var fuell := "zier_glas" if glas else "dunkel"
-	_klotz(fuell, m, u, n, -b, b, -0.06, 0.02, unten, kaempfer)
-	if glas:
+	var glas_n := 0.02            # Lage der Glasfläche vor der Mauer
+	if durch:
+		# echtes Loch (begehbarer Bau): klares Glas mitten in der Mauer, Zwickel über dem Bogen gemauert
+		fuell = "glas_klar"
+		glas_n = -0.3
+		_klotz(fuell, m, u, n, -b, b, -0.31, -0.29, unten, kaempfer)
+		_bleiglas(m, u, n, -b, b, unten, kaempfer, -0.285, "metall")
+		_bleiglas(m, u, -n, -b, b, unten, kaempfer, 0.315, "metall")
+		_zwickel(m, u, n, b, kaempfer, 0.6)
+	else:
+		_klotz(fuell, m, u, n, -b, b, -0.06, 0.02, unten, kaempfer)
+	if glas and not durch:
 		_bleiglas(m, u, n, -b, b, unten, kaempfer, 0.03, "metall")
 		# tiefe Laibung: das Gewände steht weit vor
 		_klotz("zier_hell", m, u, n, -b - rahmen, -b, 0.1, 0.24, unten, kaempfer)
 		_klotz("zier_hell", m, u, n, b, b + rahmen, 0.1, 0.24, unten, kaempfer)
 	var N3 := Vector3(n.x, 0, n.y)
-	var mitte := Vector3(m.x + n.x * 0.02, kaempfer, m.y + n.y * 0.02)
+	var mitte := Vector3(m.x + n.x * glas_n, kaempfer, m.y + n.y * glas_n)
 	for k in 8:
 		var w0 := PI * k / 8.0
 		var w1 := PI * (k + 1) / 8.0
-		var p0 := m + u * (b * cos(w0)) + n * 0.02
-		var p1 := m + u * (b * cos(w1)) + n * 0.02
+		var p0 := m + u * (b * cos(w0)) + n * glas_n
+		var p1 := m + u * (b * cos(w1)) + n * glas_n
 		_dreieck(fuell, mitte, Vector3(p0.x, kaempfer + b * sin(w0), p0.y), Vector3(p1.x, kaempfer + b * sin(w1), p1.y), N3)
 		var wm := PI * (k + 0.5) / 8.0
 		var q := m + u * ((b + rahmen * 0.5) * cos(wm))
@@ -2295,6 +2449,30 @@ func _rundbogen(m: Vector2, u: Vector2, n: Vector2, unten: float, breite: float,
 			kaempfer + (b + rahmen * 0.5) * sin(wm) + rahmen * 0.5)
 	_klotz("hell", m, u, n, -b - rahmen, -b, -0.02, 0.1, unten, kaempfer)
 	_klotz("hell", m, u, n, b, b + rahmen, -0.02, 0.1, unten, kaempfer)
+
+
+## Zwickel über einem Rundbogen, durch die ganze Mauer (Tiefe dicke hinter der Fläche): füllt die Ecken zwischen Bogen
+## und rechteckigem Mauerloch, mit Leibung (Bogenunterseite) zum Loch hin.
+func _zwickel(m: Vector2, u: Vector2, n: Vector2, b: float, kaempfer: float, dicke: float) -> void:
+	var N3 := Vector3(n.x, 0, n.y)
+	var p := func(uu: float, y: float, nn: float) -> Vector3:
+		var q := m + u * uu + n * nn
+		return Vector3(q.x, y, q.y)
+	for s_: float in [-1.0, 1.0]:
+		var ecke_v: Vector3 = p.call(s_ * b, kaempfer + b, 0.0)
+		var ecke_h: Vector3 = p.call(s_ * b, kaempfer + b, -dicke)
+		for k in 4:
+			var w0 := PI / 2.0 * k / 4.0
+			var w1 := PI / 2.0 * (k + 1) / 4.0
+			var a0: Vector3 = p.call(s_ * b * cos(w0), kaempfer + b * sin(w0), 0.0)
+			var a1: Vector3 = p.call(s_ * b * cos(w1), kaempfer + b * sin(w1), 0.0)
+			var h0: Vector3 = p.call(s_ * b * cos(w0), kaempfer + b * sin(w0), -dicke)
+			var h1: Vector3 = p.call(s_ * b * cos(w1), kaempfer + b * sin(w1), -dicke)
+			_dreieck("hell", ecke_v, a0, a1, N3)
+			_dreieck("hell", ecke_h, h0, h1, -N3)
+			var wm := (w0 + w1) / 2.0
+			var zur_mitte := -(Vector3(u.x, 0, u.y) * s_ * cos(wm) + Vector3.UP * sin(wm))
+			_viereck("hell", a0, a1, h1, h0, zur_mitte)
 
 
 ## Fenster des Palas: unten kleine Rechteckfenster, darüber gotische Doppelfenster (zwei Spitzbögen unter einem
@@ -2356,15 +2534,27 @@ func _doppelfenster(m: Vector2, u: Vector2, n: Vector2, ym: float, fh: float) ->
 ## Sturz mit Verdachung und Endsteinen, dazu aufgeklappte Bretterläden mit Eisenbändern. "hoch" (Kirchen):
 ## Spitzbogen aus gestuften Steinen statt Läden. Zierteile ohne Kollision (Präfix "zier_").
 func _fenster(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, ym: float, fb: float,
-		fh: float, hoch: bool) -> void:
+		fh: float, hoch: bool, durch := false) -> void:
 	var nn := n * signf(seite)
 	var m := c + u * pos + n * abstand
 	var b := fb / 2.0
 	var y0 := ym - fh / 2.0
 	var y1 := ym + fh / 2.0
 	var T := 0.3   # Tiefe des Gewändes
-	_klotz("zier_glas", m, u, nn, -b, b, -0.04, 0.01, y0, y1)
-	_bleiglas(m, u, nn, -b, b, y0, y1, 0.015, "metall")
+	if durch:
+		# echtes Loch in der Mauer (begehbarer Bau): klares Glas in der Mitte der Mauer, Bleiruten auf beiden Seiten
+		_klotz("glas_klar", m, u, nn, -b, b, -0.31, -0.29, y0, y1)
+		_bleiglas(m, u, nn, -b, b, y0, y1, -0.285, "metall")
+		_bleiglas(m, u, -nn, -b, b, y0, y1, 0.315, "metall")
+	else:
+		# geschlossener Bau: hinter der Scheibe ein gedachter Raum (szenen/welt/fensterraum.gdshader)
+		var idf := floorf(_h01(m + Vector2(ym, 0.0)) * 97.0)
+		var pq := func(uu: float, yy: float) -> Vector3:
+			var q := m + u * uu + nn * 0.012
+			return Vector3(q.x, yy, q.y)
+		_viereck_uv("fensterraum", [pq.call(-b, y0), pq.call(b, y0), pq.call(b, y1), pq.call(-b, y1)],
+			[Vector2(idf, 1.0), Vector2(idf + 1.0, 1.0), Vector2(idf + 1.0, 0.0), Vector2(idf, 0.0)], Vector3(nn.x, 0, nn.y))
+		_bleiglas(m, u, nn, -b, b, y0, y1, 0.018, "metall")
 	# Gewände: Quader im Wechsel lang und kurz, mit Fugen; innen eine Stufe (Fase)
 	var y := y0
 	var lang := true
@@ -2516,6 +2706,11 @@ static var _materialien := {}
 func _material(name_: String) -> Material:
 	if _materialien.has(name_):
 		return _materialien[name_]
+	if name_ == "fensterraum_uv":
+		var fr := ShaderMaterial.new()
+		fr.shader = load("res://szenen/welt/fensterraum.gdshader")
+		_materialien[name_] = fr
+		return fr
 	if name_.begins_with("zier_"):
 		_materialien[name_] = _material(name_.trim_prefix("zier_"))   # gleiche Optik, aber ohne Kollision
 		return _materialien[name_]
@@ -2571,6 +2766,14 @@ func _material(name_: String) -> Material:
 		le.albedo_color = Color(0.33, 0.2, 0.11)
 		le.roughness = 0.7
 		m = le
+	elif name_ == "glas_klar":
+		var gk := StandardMaterial3D.new()
+		gk.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		gk.albedo_color = Color(0.78, 0.85, 0.82, 0.16)
+		gk.roughness = 0.04
+		gk.metallic_specular = 0.8
+		gk.cull_mode = BaseMaterial3D.CULL_DISABLED
+		m = gk
 	elif name_ == "glas":
 		var gl := StandardMaterial3D.new()
 		gl.albedo_color = Color(0.1, 0.13, 0.13)

@@ -11,7 +11,9 @@ extends Node3D
 ## 15 Amboss auf dem Klotz, 16 Esse mit Rauchfang, 17 Unterstand (offen nach lokal +z), 18 Heuhaufen, 19 Pferd (Kopf nach
 ## lokal +z; als lebendes Tier), 20 Wandlaterne (an einer Wand, die lokal bei z = 0 steht; ohne Kollision),
 ## 22 Hund, 23 Katze, 24 Schwein, 25 Schaf, 26 Kuh (lebende Tiere, tier.gd), 27 Leiter (lehnt nach lokal -z an einer
-## Wand), 28 Wäscheleine mit Wäsche, 29 Stroh am Boden, 30 Pfütze, 31 Taube (27 bis 31 ohne Kollision), 21 Schmiede (gemauerte
+## Wand), 28 Wäscheleine mit Wäsche, 29 Stroh am Boden, 30 Pfütze, 31 Taube (27 bis 31 ohne Kollision), 32 Zaunfeld
+## (3 m), 33 Anbindebalken, 34 Bretterwand eines Schweinekobens (2 m), 35 Gatter (1,5 m, am Pfosten bei x = 0
+## angeschlagen), 36 Schlamm, 21 Schmiede (gemauerte
 ## Werkstatt mit Pultdach, Rücken an der Hofmauer bei lokal -z, offen nach +z; innen Esse, Amboss, Werkbank)
 @export var stuecke := PackedFloat32Array():
 	set(w):
@@ -25,7 +27,8 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(2.1, 2.2, 6.2), Vector3(1.25, 3.4, 1.25), Vector3(1.1, 1.1, 0.7), Vector3(1.2, 0.8, 0.45), Vector3(0.9, 2.3, 0.3),
 	Vector3(0.3, 2.3, 0.3), Vector3(0.4, 0.95, 0.35), Vector3(0.9, 1.2, 0.7), Vector3(2.2, 2.9, 1.6), Vector3(0.95, 1.1, 0.95),
 	Vector3(0.35, 1.7, 1.2), Vector3.ZERO, Vector3.ONE, Vector3.ZERO, Vector3.ZERO, Vector3(0.35, 0.9, 0.7),
-	Vector3(0.35, 1.0, 0.65), Vector3(0.45, 1.5, 1.1), Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO]
+	Vector3(0.35, 1.0, 0.65), Vector3(0.45, 1.5, 1.1), Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO,
+	Vector3(1.5, 1.15, 0.08), Vector3(1.3, 1.15, 0.08), Vector3(1.0, 0.9, 0.06), Vector3(0.75, 1.15, 0.05), Vector3.ZERO]
 ## Arten, die als lebende Tiere (szenen/figuren/tier.gd) statt als MultiMesh entstehen: Art → Tierart
 const TIERE := {19: 0, 22: 4, 23: 5, 24: 3, 25: 2, 26: 1}
 ## Arten mit mehreren Kollisionskästen (begehbar): je Kasten die Ecken unten und oben (lokal)
@@ -363,6 +366,40 @@ func _mesh(art: int) -> ArrayMesh:
 			for i in 3:
 				var m := Vector3((i - 1) * 0.45, 0.012 + i * 0.002, (i % 2) * 0.3 - 0.15)
 				_zylinder("wasser", m, 0.35 + i * 0.12, 0.35 + i * 0.12, 0.004, 14)
+		32:  # Zaunfeld: drei Pfosten, zwei Riegel
+			for x: float in [-1.5, 0.0, 1.5]:
+				_klotz("holz_dunkel", Vector3(x - 0.06, -0.15, -0.06), Vector3(x + 0.06, 1.18, 0.06), 0.1 * x)
+			for y: float in [0.45, 0.95]:
+				_klotz("holz", Vector3(-1.55, y, 0.06), Vector3(1.55, y + 0.09, 0.11), 0.0)
+		33:  # Anbindebalken: zwei Pfosten, Balken mit Eisenringen und herabhängenden Stricken
+			for x: float in [-1.2, 1.2]:
+				_klotz("holz_dunkel", Vector3(x - 0.08, -0.15, -0.08), Vector3(x + 0.08, 1.2, 0.08))
+			_klotz("holz", Vector3(-1.35, 1.04, -0.07), Vector3(1.35, 1.18, 0.07))
+			for x: float in [-0.6, 0.6]:
+				_klotz("metall", Vector3(x - 0.05, 0.96, -0.09), Vector3(x + 0.05, 1.04, -0.07))
+				_seil("seil", Vector3(x, 0.98, -0.09), Vector3(x + 0.05, 0.62, -0.18), 0.012)
+		34:  # Bretterwand eines Kobens: senkrechte Bretter mit Fugen, zwei Querleisten, Pfosten an den Enden
+			for k in 8:
+				var x := -1.0 + 0.25 * k
+				_klotz("holz", Vector3(x + 0.006, 0.0, -0.025), Vector3(x + 0.244, 0.82 + 0.03 * (k % 3), 0.025))
+			for y: float in [0.15, 0.62]:
+				_klotz("holz_dunkel", Vector3(-1.0, y, 0.025), Vector3(1.0, y + 0.09, 0.06))
+			for x: float in [-1.0, 1.0]:
+				_klotz("holz_dunkel", Vector3(x - 0.06, -0.15, -0.06), Vector3(x + 0.06, 1.0, 0.06))
+		35:  # Gatter: Rahmen mit Strebe, am Pfosten bei x = 0 angeschlagen
+			_klotz("holz_dunkel", Vector3(-0.08, -0.15, -0.08), Vector3(0.08, 1.25, 0.08))
+			for y: float in [0.2, 1.0]:
+				_klotz("holz", Vector3(0.05, y, -0.03), Vector3(1.45, y + 0.09, 0.03))
+			for x: float in [0.1, 1.4]:
+				_klotz("holz", Vector3(x - 0.04, 0.15, -0.03), Vector3(x + 0.04, 1.1, 0.03))
+			_seil("holz", Vector3(0.12, 0.25, 0.0), Vector3(1.38, 1.02, 0.0), 0.03)
+			_klotz("metall", Vector3(0.04, 0.95, -0.04), Vector3(0.2, 1.0, 0.04))
+			_klotz("metall", Vector3(0.04, 0.25, -0.04), Vector3(0.2, 0.3, 0.04))
+		36:  # Schlamm im Koben: dunkle, feuchte Flecken
+			for i in 4:
+				var m := Vector3((i % 2 - 0.5) * 1.4, 0.01 + i * 0.002, (int(i / 2.0) - 0.5) * 1.2)
+				_zylinder("schlamm", m, 0.7 + 0.15 * i, 0.7 + 0.15 * i, 0.006, 12)
+			_zylinder("wasser", Vector3(0.3, 0.022, -0.2), 0.35, 0.35, 0.004, 10)
 		31:  # Taube: Rumpf, Brust, Kopf mit Schnabel, Schwanz
 			_klotz("taube", Vector3(-0.055, 0.05, -0.1), Vector3(0.055, 0.15, 0.1))
 			_klotz("taube_hals", Vector3(-0.045, 0.1, -0.13), Vector3(0.045, 0.19, -0.07))
@@ -754,7 +791,7 @@ func _material(name_: String) -> Material:
 				s.albedo_texture = load("res://texturen/klippe_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(0.5, 0.5, 0.5)
-			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder", "ruß"]:
+			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder", "ruß", "schlamm"]:
 				pass
 			elif name_ in ["fell", "haar", "taube", "taube_hals", "taube_dunkel"]:
 				pass
@@ -782,7 +819,7 @@ func _material(name_: String) -> Material:
 				"ware_tuch": STOFFE[2], "ware_tuch2": STOFFE[3], "seil": Color(0.5, 0.42, 0.3),
 				"wimpel": Color(0.65, 0.08, 0.06), "glas": Color(0.1, 0.13, 0.13), "kohle": Color(0.05, 0.05, 0.05),
 				"lehm": Color(0.32, 0.27, 0.22), "stoff_leder": Color(0.35, 0.22, 0.12),
-				"taube": Color(0.55, 0.57, 0.62), "taube_hals": Color(0.35, 0.45, 0.42), "taube_dunkel": Color(0.32, 0.33, 0.37),
+				"schlamm": Color(0.2, 0.15, 0.1), "taube": Color(0.55, 0.57, 0.62), "taube_hals": Color(0.35, 0.45, 0.42), "taube_dunkel": Color(0.32, 0.33, 0.37),
 				"ruß": Color(0.07, 0.06, 0.055)}.get(name_, Color(0.6, 0.6, 0.6))
 			if name_.begins_with("markise") or name_ in ["segel", "wimpel"]:
 				s.cull_mode = BaseMaterial3D.CULL_DISABLED

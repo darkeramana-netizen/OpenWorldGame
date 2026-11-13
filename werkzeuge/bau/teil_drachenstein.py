@@ -494,6 +494,63 @@ for name_, hof_, anzahl_ in [("Vorburg", PD.VORBURG, 2), ("Mittelburg", PD.MITTE
         _weg_haeuser.update(stoert_)
     print(f"Mauertreppen {name_}: {len(gewaehlt_)} (Kandidaten {len(kandidaten_)}, weichende Häuser {sum(g_[0] for g_ in gewaehlt_)})")
 HOFHAEUSER = [h_ for i_, h_ in enumerate(HOFHAEUSER) if i_ not in _weg_haeuser]
+# --- Wirtschaftshof der Vorburg: Pferch und Schweinekoben (zusammen 15 × 6,6 m) an der Hofmauer nahe der Stalltür. Wie
+# bei den Mauertreppen weichen dort Häuser der Reihe; gewählt wird die Stelle, an der am wenigsten Häuser weichen und
+# die der Stalltür am nächsten ist.
+def _rechteck_ab(x, z, b, t, gier):
+    a_ = math.radians(gier)
+    ux_, uz_, vx_, vz_ = math.cos(a_), -math.sin(a_), math.sin(a_), math.cos(a_)
+    return [(x + ux_ * sx * b / 2 + vx_ * sz * t / 2, z + uz_ * sx * b / 2 + vz_ * sz * t / 2) for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+
+
+(_spp, _sl, _sbr, _sdr) = PD.VORBURG_BAUTEN[6]
+_sa = math.radians(-_sdr)
+_stall_tuer = (W(_spp)[0] + math.cos(_sa) * (_sbr * M / 2 + 2.0), W(_spp)[1] - math.sin(_sa) * (_sbr * M / 2 + 2.0))
+_hof_vb_ = WL(PD.VORBURG)
+_treppen_tmp = []
+for k_ in range(0, len(TREPPEN), 7):
+    fx_, fz_, _, tx_, tz_, _, _ = TREPPEN[k_:k_ + 7]
+    _treppen_tmp.append(_rechteck_ab((fx_ + tx_) / 2, (fz_ + tz_) / 2, 6.0, math.dist((fx_, fz_), (tx_, tz_)) + 4.0,
+                                     math.degrees(math.atan2(-(tz_ - fz_), tx_ - fx_)) + 90))
+_hofstellen = []
+for _laenge in (15.0, 9.6):
+  for a_, b_ in zip(_hof_vb_, _hof_vb_[1:] + _hof_vb_[:1]):
+      l_ = math.dist(a_, b_)
+      if l_ < _laenge + 1.0:
+          continue
+      ux_, uz_ = (b_[0] - a_[0]) / l_, (b_[1] - a_[1]) / l_
+      nx_, nz_ = -uz_, ux_
+      mx_, mz_ = sum(q[0] for q in _hof_vb_) / len(_hof_vb_), sum(q[1] for q in _hof_vb_) / len(_hof_vb_)
+      if nx_ * (mx_ - a_[0]) + nz_ * (mz_ - a_[1]) < 0:
+          nx_, nz_ = -nx_, -nz_
+      g_ = math.degrees(math.atan2(-uz_, ux_))           # lokal x entlang der Mauer
+      t_ = _laenge / 2 + 1.0
+      while t_ < l_ - _laenge / 2 - 1.0:
+          x_, z_ = a_[0] + ux_ * t_ + nx_ * 5.3, a_[1] + uz_ * t_ + nz_ * 5.3
+          r_ = _rechteck_ab(x_, z_, _laenge, 6.6, g_)
+          t_ += 1.0
+          if not all(_im_poly(q_, _hof_vb_) for q_ in r_):
+              continue
+          if any(_ueberlappen_plan(r_, f_) for f_ in _feste_w + _treppen_tmp):
+              continue
+          if any(math.dist(q_, t2_) < 9.0 for q_ in r_ for t2_ in _tore_w):
+              continue
+          if any(math.dist((x_, z_), (rx_, rz_)) < rr_ + 8.0 for rx_, rz_, rr_ in _runde_w):
+              continue
+          rand_ = [(r_[i_][0] + (r_[(i_ + 1) % 4][0] - r_[i_][0]) * f_ / 5, r_[i_][1] + (r_[(i_ + 1) % 4][1] - r_[i_][1]) * f_ / 5)
+                   for i_ in range(4) for f_ in range(5)]
+          if any(abstand_linie(w_, *q_) < 1.6 for w_ in _wege_w for q_ in rand_):
+              continue
+          weg_ = [i_ for i_, h_ in enumerate(HOFHAEUSER) if _ueberlappen_plan(r_, _haus_rechteck(h_, 0.4))]
+          _hofstellen.append((len(weg_) * 8.0 + math.dist((x_, z_), _stall_tuer) + (0.0 if _laenge > 10 else 6.0), x_, z_, g_, weg_, _laenge))
+PFERCH_RESERVE = None
+if _hofstellen:
+    _hofstellen.sort(key=lambda h_: h_[0])
+    _, x_, z_, g_, weg_, laenge_ = _hofstellen[0]
+    PFERCH_RESERVE = (x_, z_, g_, laenge_)
+    _feste_w.append(_rechteck_ab(x_, z_, laenge_ + (0.0 if laenge_ > 10 else 6.0) + 1.0, 7.6, g_))   # für nichts anderes
+    HOFHAEUSER = [h_ for i_, h_ in enumerate(HOFHAEUSER) if i_ not in set(weg_)]
+    print(f"Wirtschaftshof an der Vorburgmauer: {math.dist((x_, z_), _stall_tuer):.1f} m von der Stalltür, {len(weg_)} Häuser weichen")
 N("Mauertreppen", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 treppen = PackedFloat32Array({_zahlen(TREPPEN)})""")
 # --- Ausstattung der Höfe (szenen/welt/ausstattung.gd): Ziehbrunnen in der Mitte, Fässer, Kisten und Säcke vor den
@@ -531,6 +588,17 @@ def _rechteck_w(x, z, b, t, gier):
     return [(x + ux_ * sx * b / 2 + vx_ * sz * t / 2, z + uz_ * sx * b / 2 + vz_ * sz * t / 2) for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
 
 
+# Vorplätze: vor jeder Haustür der Hofhäuser bleibt eine Fläche frei (später kommen die offene Front der Schmiede und
+# der Platz um jeden Brunnen dazu). Nur Fässer, Kisten, Säcke, Feuerkörbe und Laternen dürfen neben der Tür stehen.
+_vorplaetze_w = []
+for x_, y_, z_, g_, f_ in HOFHAEUSER:
+    b_, t_ = _FORMEN[f_]
+    a_ = math.radians(g_)
+    vor_ = (t_ + 0.7) / 2 + 1.4
+    _vorplaetze_w.append(_rechteck_w(x_ + math.sin(a_) * vor_, z_ + math.cos(a_) * vor_, 2.4, 2.8, g_))
+VORPLATZ_ERLAUBT = {0, 1, 2, 14, 20}
+
+
 def _abstand_rand(q, poly):
     return min(abstand_linie([a_, b_], *q) for a_, b_ in zip(poly, poly[1:] + poly[:1]))
 
@@ -542,7 +610,10 @@ def stelle(art, x, z, gier, hof_w, boden, wegabstand=3.2, licht=False, probe=Fal
     if not all(_im_poly(q_, hof_w) for q_ in r_) or min(_abstand_rand(q_, hof_w) for q_ in r_) < 2.2:
         _GRUND["rand"] = _GRUND.get("rand", 0) + 1
         return False
-    for n_, l_ in (("haus", _haeuser_w), ("bau", _feste_w), ("treppe", _treppen_w), ("tuer", _tueren_w), ("stueck", BURG_SPERREN)):
+    pruefen_ = [("haus", _haeuser_w), ("bau", _feste_w), ("treppe", _treppen_w), ("tuer", _tueren_w), ("stueck", BURG_SPERREN)]
+    if art not in VORPLATZ_ERLAUBT:
+        pruefen_.append(("vorplatz", _vorplaetze_w))
+    for n_, l_ in pruefen_:
         if any(_ueberlappen_plan(r_, f_) for f_ in l_):
             _GRUND[n_] = _GRUND.get(n_, 0) + 1
             return False
@@ -621,6 +692,7 @@ for name_, hof_, boden_ in _hoefe:
         x_, z_ = mx_ + r_ * math.cos(w_), mz_ + r_ * math.sin(w_)
         if stelle(10, x_, z_, random.uniform(0, 90), hof_w_, boden_, wegabstand=4.0):
             BURG_BRUNNEN[name_] = (x_, z_)
+            _vorplaetze_w.append(_rechteck_w(x_, z_, 5.4, 5.4, 0.0))   # rund um den Brunnen bleibt Platz zum Wasserholen
             break
     # Werkplätze: Schmiede, Holzplatz und ein Unterstand für Karren in der Vorburg, Holzplatz und Unterstand in der
     # Mittelburg (die Stücke stehen mit dem Rücken zur Hofmauer)
@@ -631,6 +703,7 @@ for name_, hof_, boden_ in _hoefe:
                                       (11, 6.2, 0.8, 90)], hof_w_, boden_, tiefe=2.0):
                 px_, pz_, (ux_, uz_), (nx_, nz_), _ = WERKPLAETZE["Schmiede"]
                 lx_, lz_ = nz_, -nx_                     # lokal x der Schmiede
+                _vorplaetze_w.append(_rechteck_w(px_ + nx_ * 4.6, pz_ + nz_ * 4.6, 6.8, 3.8, math.degrees(math.atan2(nx_, nz_))))
                 BURG_LICHTER.append((round(px_ + lx_ * -2.2 + nx_ * -1.6, 2), round(boden_ + 1.6, 2),
                                      round(pz_ + lz_ * -2.2 + nz_ * -1.6, 2)))
                 print("Schmiede:", round(px_, 1), round(boden_, 1), round(pz_, 1), "nach innen", round(nx_, 2), round(nz_, 2))
@@ -734,7 +807,12 @@ for q_ in (-0.42, -0.3, 0.3, 0.42, -0.18, 0.18):
         if abs(q_) < 0.25 and vor_ < 12:
             continue                                     # vor der Tür frei lassen
         art_ = 19 if _pferde < 3 else 18
-        if stelle(art_, x_, z_, -dr_ + 180 + random.uniform(-15, 15), WL(PD.VORBURG), PD.H_VORBURG, wegabstand=2.6):
+        g_ = -dr_ + 180 + random.uniform(-8, 8)
+        if stelle(art_, x_, z_, g_, WL(PD.VORBURG), PD.H_VORBURG, wegabstand=2.6):
+            if art_ == 19:
+                # Anbindebalken vor dem Kopf des Pferdes
+                w_ = math.radians(g_)
+                BURG_AUSSTATTUNG.append((33, round(x_ + math.sin(w_) * 1.55, 2), PD.H_VORBURG, round(z_ + math.cos(w_) * 1.55, 2), round(g_, 1)))
             _pferde += 1
             break
 _tueren_w.extend(_tue)
@@ -742,79 +820,226 @@ if "Unterstand Mittelburg" in WERKPLAETZE:
     px_, pz_, (ux_, uz_), (nx_, nz_), boden_ = WERKPLAETZE["Unterstand Mittelburg"]
     for e_ in (-4.0, -5.5):
         stelle(19, px_ + ux_ * e_ + nx_ * 1.2, pz_ + uz_ * e_ + nz_ * 1.2, math.degrees(math.atan2(-nx_, -nz_)), WL(PD.MITTELBURG), boden_, wegabstand=2.6)
-# Tiere in den Höfen (szenen/figuren/tier.gd über ausstattung.gd): je Hof ein Hund und zwei Katzen, in der Vorburg
-# beim Stall dazu Schweine, Schafe und eine Kuh
-_tiere = {}
+# ---------- Hofleben mit Sinn: Vieh im Pferch, Wäsche am Hofrand, Stroh am Stall, Pfützen am Brunnen ----------
+# Tiere werden eigene Knoten (szenen/figuren/tier.gd) mit einem Revier, in dem sie umherziehen.
+TIERE_BURG = []        # (Tierart, x, y, z, Gier, Revier [(x, z), ...] oder [])
+TIERART = {"pferd": 0, "kuh": 1, "schaf": 2, "schwein": 3, "hund": 4, "katze": 5}
+
+
+def _flaeche_frei(r_, hof_w, rand=1.6, wegabstand=1.8):
+    """Ist das Rechteck (Welt) im Hof frei von Häusern, Bauten, Treppen, Türen, Vorplätzen, Stücken und Wegen?"""
+    if not all(_im_poly(q_, hof_w) for q_ in r_) or min(_abstand_rand(q_, hof_w) for q_ in r_) < rand:
+        return False
+    for l_ in (_haeuser_w, _feste_w, _treppen_w, _tueren_w, _vorplaetze_w, BURG_SPERREN):
+        if any(_ueberlappen_plan(r_, f_) for f_ in l_):
+            return False
+    kante_ = []
+    for a_, b_ in zip(r_, r_[1:] + r_[:1]):
+        kante_ += [(a_[0] + (b_[0] - a_[0]) * t_ / 6, a_[1] + (b_[1] - a_[1]) * t_ / 6) for t_ in range(6)]
+    if any(abstand_linie(w_, *q_) < wegabstand for w_ in _alle_wege_w for q_ in kante_):
+        return False
+    mx_, mz_ = sum(q[0] for q in r_) / 4, sum(q[1] for q in r_) / 4
+    if any(math.dist((mx_, mz_), t_) < 9.0 for t_ in _tore_w):
+        return False
+    return True
+
+
+def _rahmen(x, z, gier):
+    """Achsen eines um gier gedrehten Rahmens: lokal x und lokal z (Welt)."""
+    a_ = math.radians(gier)
+    return (math.cos(a_), -math.sin(a_)), (math.sin(a_), math.cos(a_))
+
+
+def _umzaeunen(x, z, breite, tiefe, gier, boden, art_zaun, feld, tor_seite):
+    """Zaun um ein Rechteck aus Feldern der Länge feld; in der Mitte der Seite tor_seite (0 vorn +z, 1 hinten, 2 links,
+    3 rechts) bleibt ein Feld offen, dort steht das Gatter aufgeklappt."""
+    (lx_, lz_), (vx_, vz_) = _rahmen(x, z, gier)
+    seiten_ = [((0, tiefe / 2), breite, 0.0), ((0, -tiefe / 2), breite, 0.0), ((-breite / 2, 0), tiefe, 90.0), ((breite / 2, 0), tiefe, 90.0)]
+    for i_, ((ox_, oz_), lang_, dreh_) in enumerate(seiten_):
+        n_ = max(1, round(lang_ / feld))
+        for k_ in range(n_):
+            t_ = -lang_ / 2 + (k_ + 0.5) * lang_ / n_
+            ex_, ez_ = (t_, 0) if dreh_ == 0 else (0, t_)
+            px_, pz_ = ox_ + ex_, oz_ + ez_
+            wx_, wz_ = x + lx_ * px_ + vx_ * pz_, z + lz_ * px_ + vz_ * pz_
+            if i_ == tor_seite and k_ == n_ // 2:
+                # Gatter: am Pfosten angeschlagen, nach außen aufgeklappt
+                hx_, hz_ = (px_ - lang_ / n_ / 2, pz_) if dreh_ == 0 else (px_, pz_ - lang_ / n_ / 2)
+                BURG_AUSSTATTUNG.append((35, round(x + lx_ * hx_ + vx_ * hz_, 2), round(boden, 2), round(z + lz_ * hx_ + vz_ * hz_, 2),
+                                         round(gier + dreh_ + (-70 if i_ in (0, 3) else 70), 1)))
+                continue
+            BURG_AUSSTATTUNG.append((art_zaun, round(wx_, 2), round(boden, 2), round(wz_, 2), round(gier + dreh_, 1)))
+    BURG_SPERREN.append(_rechteck_w(x, z, breite + 0.3, tiefe + 0.3, gier))
+
+
+def _revier(x, z, breite, tiefe, gier, rand=0.7):
+    (lx_, lz_), (vx_, vz_) = _rahmen(x, z, gier)
+    b_, t_ = breite / 2 - rand, tiefe / 2 - rand
+    return [(round(x + lx_ * sx * b_ + vx_ * sz * t_, 2), round(z + lz_ * sx * b_ + vz_ * sz * t_, 2))
+            for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+
+
+def _hof_revier(hof_w, einzug=3.5):
+    """Hof-Vieleck, zum Schwerpunkt hin eingezogen: dort streifen Hunde und Katzen umher."""
+    mx_, mz_ = sum(q[0] for q in hof_w) / len(hof_w), sum(q[1] for q in hof_w) / len(hof_w)
+    aus_ = []
+    for x_, z_ in hof_w:
+        d_ = math.dist((x_, z_), (mx_, mz_))
+        f_ = max(0.0, (d_ - einzug) / max(d_, 0.01))
+        aus_.append((round(mx_ + (x_ - mx_) * f_, 2), round(mz_ + (z_ - mz_) * f_, 2)))
+    return aus_
+
+
+# Pferch (Kuh, Schafe) und Schweinekoben neben dem Stall der Vorburg, nicht vor seiner Tür
+(pp_, l_, br_, dr_) = PD.VORBURG_BAUTEN[6]
+_stall_x, _stall_z = W(pp_)
+_gier_stall = -dr_
+(_su_x, _su_z), (_sv_x, _sv_z) = _rahmen(_stall_x, _stall_z, _gier_stall)   # lokal x quer (Tür bei +x), lokal z entlang
+_stall_L, _stall_B = l_ * M / 2, br_ * M / 2
+_hof_vb = WL(PD.VORBURG)
+_pferch = None
+_tuer_stall = _stall_tuer
+if PFERCH_RESERVE:
+    rx_, rz_, rg_, rl_ = PFERCH_RESERVE
+    (lx_, lz_), _ = _rahmen(rx_, rz_, rg_)
+    # Pferch im einen Teil (9 m), der Koben im anderen (5 m) oder gleich daneben
+    _vers = 3.0 if rl_ > 10 else 0.0
+    _pferch = (rx_ - lx_ * _vers, rz_ - lz_ * _vers, rg_, 9.0, 6.6)
+    _koben_ort = (rx_ + lx_ * 5.0, rz_ + lz_ * 5.0) if rl_ > 10 else (rx_ + lx_ * 7.6, rz_ + lz_ * 7.6)
+if _pferch:
+    px_, pz_, g_, pb_, pt_ = _pferch
+    _umzaeunen(px_, pz_, pb_, pt_, g_, PD.H_VORBURG, 32, 3.0, 0)
+    (lx_, lz_), (vx_, vz_) = _rahmen(px_, pz_, g_)
+    rev_ = _revier(px_, pz_, pb_, pt_, g_)
+    for art_, ox_, oz_, dg_ in [(12, -2.6, -2.4, 0), (18, 3.2, -2.0, 0), (29, 2.0, 1.4, 30), (29, -1.0, 0.8, 80), (30, 0.6, -0.4, 0)]:
+        BURG_AUSSTATTUNG.append((art_, round(px_ + lx_ * ox_ + vx_ * oz_, 2), PD.H_VORBURG, round(pz_ + lz_ * ox_ + vz_ * oz_, 2), round(g_ + dg_, 1)))
+    for k_, (art_, ox_, oz_) in enumerate([("kuh", -1.5, 0.6), ("schaf", 1.6, 1.2), ("schaf", 2.6, -0.2), ("schaf", 0.6, 1.8)]):
+        TIERE_BURG.append((TIERART[art_], round(px_ + lx_ * ox_ + vx_ * oz_, 2), PD.H_VORBURG, round(pz_ + lz_ * ox_ + vz_ * oz_, 2),
+                           round(random.uniform(0, 360), 1), rev_))
+    # Schweinekoben gleich daneben, aus Brettern, mit Schlamm
+    _orte_koben = [_koben_ort] if PFERCH_RESERVE else []
+    for seite_ in (1, -1):
+        for weiter_ in (3.0, 3.6, 4.4):
+            _orte_koben.append((px_ + lx_ * seite_ * (pb_ / 2 + weiter_), pz_ + lz_ * seite_ * (pb_ / 2 + weiter_)))
+            _orte_koben.append((px_ + vx_ * seite_ * (pt_ / 2 + weiter_ - 0.5), pz_ + vz_ * seite_ * (pt_ / 2 + weiter_ - 0.5)))
+    for kx_, kz_ in _orte_koben:
+        r_ = _rechteck_w(kx_, kz_, 5.0, 4.2, g_)
+        if (PFERCH_RESERVE and (kx_, kz_) == _koben_ort) or _flaeche_frei(r_, _hof_vb, rand=1.7, wegabstand=1.4):
+            _umzaeunen(kx_, kz_, 5.0, 4.2, g_, PD.H_VORBURG, 34, 2.0, 0)
+            BURG_AUSSTATTUNG.append((36, round(kx_, 2), PD.H_VORBURG, round(kz_, 2), round(g_, 1)))
+            BURG_AUSSTATTUNG.append((12, round(kx_ - vx_ * 1.4, 2), PD.H_VORBURG, round(kz_ - vz_ * 1.4, 2), round(g_, 1)))
+            rk_ = _revier(kx_, kz_, 5.0, 4.2, g_, 0.6)
+            for k_ in range(2):
+                TIERE_BURG.append((TIERART["schwein"], round(kx_ + lx_ * (k_ - 0.5) * 1.6, 2), PD.H_VORBURG,
+                                   round(kz_ + lz_ * (k_ - 0.5) * 1.6, 2), round(random.uniform(0, 360), 1), rk_))
+            break
+print("Pferch beim Stall:", f"{math.dist(_pferch[:2], _tuer_stall):.1f} m von der Stalltür, {_abstand_rand(_pferch[:2], _hof_vb):.1f} m von der Hofmauer, bei {_pferch[0]:.1f}, {_pferch[1]:.1f}" if _pferch else "kein Platz",
+      "Schweine:", sum(1 for t_ in TIERE_BURG if t_[0] == 3))
+
+# Hunde und Katzen streifen durch die Höfe: der Hund liegt gern beim Stall oder Tor, Katzen bei Küche und Lager
 for name_, hof_, boden_ in _hoefe:
     hof_w_ = WL(hof_)
-    xs_, zs_ = [q[0] for q in hof_w_], [q[1] for q in hof_w_]
-    wunsch_ = [(22, 1), (23, 2)] + ([(24, 2), (25, 3), (26, 1)] if name_ == "Vorburg" else [])
-    for art_, anzahl_ in wunsch_:
-        gesetzt_ = 0
-        for _ in range(300):
-            if gesetzt_ >= anzahl_:
-                break
-            x_, z_ = random.uniform(min(xs_), max(xs_)), random.uniform(min(zs_), max(zs_))
-            if stelle(art_, x_, z_, random.uniform(0, 360), hof_w_, boden_, wegabstand=2.2):
-                gesetzt_ += 1
-        _tiere[art_] = _tiere.get(art_, 0) + gesetzt_
-print("Tiere in den Höfen (Art: Anzahl):", _tiere)
-# Kleinteile: Leitern an den Hofmauern, Wäscheleinen, Stroh, Pfützen; Tauben auf den Kappen der Hofseiten-Brustwehr
+    rev_ = _hof_revier(hof_w_)
+    for art_, anzahl_ in (("hund", 1), ("katze", 2)):
+        for _ in range(anzahl_):
+            for versuch_ in range(80):
+                x_ = random.uniform(min(q[0] for q in rev_), max(q[0] for q in rev_))
+                z_ = random.uniform(min(q[1] for q in rev_), max(q[1] for q in rev_))
+                if _im_poly((x_, z_), rev_) and not any(_im_poly((x_, z_), f_) for f_ in _haeuser_w + _feste_w + BURG_SPERREN):
+                    TIERE_BURG.append((TIERART[art_], round(x_, 2), boden_, round(z_, 2), round(random.uniform(0, 360), 1), rev_))
+                    break
+
 _klein = {}
 for name_, hof_, boden_ in _hoefe:
     hof_w_ = WL(hof_)
-    xs_, zs_ = [q[0] for q in hof_w_], [q[1] for q in hof_w_]
-    mx_, mz_ = sum(xs_) / len(xs_), sum(zs_) / len(zs_)
+    mx_, mz_ = sum(q[0] for q in hof_w_) / len(hof_w_), sum(q[1] for q in hof_w_) / len(hof_w_)
+    # Wäscheleinen parallel zur Hofmauer, nahe den Wohnhäusern, nie vor Türen oder auf Wegen
+    wohnen_ = [(h_[0], h_[2]) for h_ in HOFHAEUSER if _im_poly((h_[0], h_[2]), hof_w_)]
+    for b_ in _BEGEHBAR:
+        bx_, bz_ = W(b_[0])
+        if _im_poly((bx_, bz_), hof_w_):
+            wohnen_.append((bx_, bz_))
     kanten_ = []
     for a_, b_ in zip(hof_w_, hof_w_[1:] + hof_w_[:1]):
         l_ = math.dist(a_, b_)
-        if l_ < 6.0:
+        if l_ < 7.0:
             continue
         ux_, uz_ = (b_[0] - a_[0]) / l_, (b_[1] - a_[1]) / l_
         nx_, nz_ = -uz_, ux_
         if nx_ * (mx_ - a_[0]) + nz_ * (mz_ - a_[1]) < 0:
             nx_, nz_ = -nx_, -nz_
         kanten_.append((a_, l_, ux_, uz_, nx_, nz_))
-    def an_der_mauer(art_, anzahl_, innen_, wegabstand_=1.6):
-        gesetzt_ = 0
-        for _ in range(200):
-            if gesetzt_ >= anzahl_ or not kanten_:
+    wunsch_ = {"Vorburg": 2, "Mittelburg": 2, "Oberburg": 1}.get(name_, 0)
+    gesetzt_ = 0
+    for _ in range(400):
+        if gesetzt_ >= wunsch_ or not kanten_ or not wohnen_:
+            break
+        a_, l_, ux_, uz_, nx_, nz_ = random.choice(kanten_)
+        t_ = random.uniform(3.0, l_ - 3.0)
+        x_, z_ = a_[0] + ux_ * t_ + nx_ * 3.3, a_[1] + uz_ * t_ + nz_ * 3.3
+        if min(math.dist((x_, z_), w_) for w_ in wohnen_) > 16.0:
+            continue
+        if stelle(28, x_, z_, math.degrees(math.atan2(nx_, nz_)), hof_w_, boden_, wegabstand=2.0):
+            gesetzt_ += 1
+    _klein[28] = _klein.get(28, 0) + gesetzt_
+    # Pfützen: verschüttetes Wasser am Brunnen und an der Tränke
+    if name_ in BURG_BRUNNEN:
+        bx_, bz_ = BURG_BRUNNEN[name_]
+        for _ in range(30):
+            w_ = random.uniform(0, math.tau)
+            x_, z_ = bx_ + math.cos(w_) * 2.9, bz_ + math.sin(w_) * 2.9
+            _alt_vp = list(_vorplaetze_w)
+            _vorplaetze_w.clear()
+            ok_ = stelle(30, x_, z_, random.uniform(0, 360), hof_w_, boden_, wegabstand=0.0)
+            _vorplaetze_w.extend(_alt_vp)
+            if ok_:
+                _klein[30] = _klein.get(30, 0) + 1
                 break
-            a_, l_, ux_, uz_, nx_, nz_ = random.choice(kanten_)
-            t_ = random.uniform(2.0, l_ - 2.0)
-            x_, z_ = a_[0] + ux_ * t_ + nx_ * innen_, a_[1] + uz_ * t_ + nz_ * innen_
-            if stelle(art_, x_, z_, math.degrees(math.atan2(nx_, nz_)), hof_w_, boden_, wegabstand=wegabstand_):
-                gesetzt_ += 1
-        _klein[art_] = _klein.get(art_, 0) + gesetzt_
-    def irgendwo(art_, anzahl_, wegabstand_):
-        gesetzt_ = 0
-        for _ in range(250):
-            if gesetzt_ >= anzahl_:
-                break
-            x_, z_ = random.uniform(min(xs_), max(xs_)), random.uniform(min(zs_), max(zs_))
-            if stelle(art_, x_, z_, random.uniform(0, 360), hof_w_, boden_, wegabstand=wegabstand_):
-                gesetzt_ += 1
-        _klein[art_] = _klein.get(art_, 0) + gesetzt_
-    an_der_mauer(27, 2, 3.05)
-    an_der_mauer(29, 4, 3.1, 1.2)
-    if name_ in ("Vorburg", "Mittelburg"):
-        irgendwo(28, 2, 2.2)
-    irgendwo(30, 4, 0.0)            # Pfützen liegen auch auf den Wegen
-# Tauben auf der niedrigen Mauer zur Hofseite (Kappe in 0,62 m Höhe über dem Wehrgang)
-_tauben = 0
-for m_ in random.sample(MAUERSTUECKE, min(45, len(MAUERSTUECKE))):
+for art_, x_, y_, z_, g_ in [a_ for a_ in BURG_AUSSTATTUNG if a_[0] == 12]:
+    w_ = math.radians(g_)
+    for d_ in (2.0, -2.0):
+        if stelle(30, x_ + math.sin(w_) * d_, z_ + math.cos(w_) * d_, random.uniform(0, 360), WL(PD.VORBURG) if y_ == PD.H_VORBURG else
+                  WL(PD.PALAS_HOF), y_, wegabstand=0.0):
+            _klein[30] = _klein.get(30, 0) + 1
+            break
+# Stroh neben der Stalltür (nicht davor) und am Unterstand
+for seite_ in (1, -1):
+    for q_ in (4.8, 5.6, 6.4, 7.2):
+        x_ = _stall_x + _su_x * (_stall_B + 2.6) + _sv_x * seite_ * q_
+        z_ = _stall_z + _su_z * (_stall_B + 2.6) + _sv_z * seite_ * q_
+        if stelle(29, x_, z_, random.uniform(0, 360), _hof_vb, PD.H_VORBURG, wegabstand=0.6):
+            _klein[29] = _klein.get(29, 0) + 1
+            break
+# Leitern dort, wo gearbeitet wird: neben Holzplatz und Unterstand an der Hofmauer
+for wp_, (px_, pz_, (ux_, uz_), (nx_, nz_), boden_) in WERKPLAETZE.items():
+    if not (wp_.startswith("Holzplatz") or wp_.startswith("Unterstand")):
+        continue
+    hof_ = PD.VORBURG if wp_.endswith("Vorburg") else PD.MITTELBURG
+    tiefe_ = 1.6 if wp_.startswith("Unterstand") else 1.0
+    for e_ in (4.0, -4.0, 5.5, -5.5):
+        x_, z_ = px_ + ux_ * e_ + nx_ * (3.05 - 3.2 - tiefe_), pz_ + uz_ * e_ + nz_ * (3.05 - 3.2 - tiefe_)
+        if stelle(27, x_, z_, math.degrees(math.atan2(nx_, nz_)), WL(hof_), boden_, wegabstand=1.4):
+            _klein[27] = _klein.get(27, 0) + 1
+            break
+print("Hofleben: Tiere", len(TIERE_BURG), "Kleinteile (Art: Anzahl):", _klein)
+# Taubenschwärme (szenen/figuren/tauben.gd): in Reihen auf der niedrigen Mauer zur Hofseite, am Boden nahe den Brunnen
+TAUBEN_BURG = []        # (x, y, z, Gier, Anzahl, Weite, sitzend)
+for m_ in random.sample(MAUERSTUECKE, min(22, len(MAUERSTUECKE))):
     _, ax_, az_, bx_, bz_, oben_, dicke_, aussen_ = m_
     l_ = math.dist((ax_, az_), (bx_, bz_))
-    if l_ < 3.0:
+    if l_ < 4.0:
         continue
-    t_ = random.uniform(0.15, 0.85)
-    for k_ in range(random.randint(1, 3)):
-        tt_ = t_ + k_ * 0.3 / l_
-        x_ = ax_ + (bx_ - ax_) * tt_ - aussen_[0] * (dicke_ / 2 - 0.17)
-        z_ = az_ + (bz_ - az_) * tt_ - aussen_[1] * (dicke_ / 2 - 0.17)
-        BURG_AUSSTATTUNG.append((31, round(x_, 2), round(oben_ + 0.62, 2), round(z_, 2), round(random.uniform(0, 360), 1)))
-        _tauben += 1
-print("Kleinteile in den Höfen (Art: Anzahl):", _klein, "Tauben:", _tauben)
+    t_ = random.uniform(0.2, 0.8)
+    ux_, uz_ = (bx_ - ax_) / l_, (bz_ - az_) / l_
+    x_ = ax_ + (bx_ - ax_) * t_ - aussen_[0] * (dicke_ / 2 - 0.17)
+    z_ = az_ + (bz_ - az_) * t_ - aussen_[1] * (dicke_ / 2 - 0.17)
+    n_ = random.randint(2, 4)
+    TAUBEN_BURG.append((round(x_, 2), round(oben_ + 0.62, 2), round(z_, 2), round(math.degrees(math.atan2(-uz_, ux_)), 1), n_, n_ * 0.32, True))
+for name_, (bx_, bz_) in BURG_BRUNNEN.items():
+    boden_ = {n_: b_ for n_, _, b_ in _hoefe}[name_]
+    w_ = random.uniform(0, math.tau)
+    TAUBEN_BURG.append((round(bx_ + math.cos(w_) * 4.5, 2), boden_, round(bz_ + math.sin(w_) * 4.5, 2), 0.0, random.randint(5, 8), 1.8, False))
+print("Kleinteile in den Höfen (Art: Anzahl):", _klein, "Taubenschwärme:", len(TAUBEN_BURG))
 # Laternen neben den Türen: an jedem Haus und jedem begehbaren Bau eine, an jeder zweiten brennt nachts ein Licht
 _laternen = 0
 for k_, (x_, y_, z_, g_, f_) in enumerate(HOFHAEUSER):
@@ -932,6 +1157,23 @@ kollision = false""")
 teil("teil_stadt.py")
 N("BurgAusstattung", "Node3D", BG, "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
   + ", ".join(f"{v:.5g}" for st_ in BURG_AUSSTATTUNG for v in st_) + ")")
+E("Script", "res://szenen/figuren/tauben.gd", "42_tauben")
+N("Tauben", "Node3D", BG)
+for k_, (x_, y_, z_, g_, n_, weite_, sitzend_) in enumerate(TAUBEN_BURG):
+    N(f"Schwarm{k_}", "Node3D", BG + "/Tauben", f"""{T(x_, y_, z_, g_)}
+script = ExtResource("42_tauben")
+anzahl = {n_}
+weite = {weite_:.3g}
+sitzend = {"true" if sitzend_ else "false"}""")
+# Tiere als eigene Knoten mit Revier (szenen/figuren/tier.gd)
+E("Script", "res://szenen/figuren/tier.gd", "41_tier")
+N("Tiere", "Node3D", BG)
+for k_, (art_, x_, y_, z_, g_, rev_) in enumerate(TIERE_BURG):
+    rev_txt_ = ", ".join(f"{a:.5g}, {b:.5g}" for a, b in rev_)
+    N(f"Tier{k_}", "Node3D", BG + "/Tiere", f"""{T(x_, y_, z_, g_)}
+script = ExtResource("41_tier")
+art = {art_}
+revier = PackedVector2Array({rev_txt_})""")
 for k_, (x_, y_, z_) in enumerate(BURG_LICHTER):
     licht(f"BurgFeuer{k_}", BG, x_, y_, z_, 11.0)
 zinnen_schreiben(DS)

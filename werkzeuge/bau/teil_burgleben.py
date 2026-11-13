@@ -111,9 +111,14 @@ for name_, hof_, boden_ in _hoefe:
         if not strecke_frei(b1_, b2_):
             continue
         runde_ = [heim_, b1_, b2_, arbeit_, b2_, b1_, heim_]
+        # Arbeitsgang: am Brunnen Wasser schöpfen, an der anderen Tür abliefern, daheim kurz zu tun
+        punkte_ = p3(runde_, boden_)
+        punkte_[1] = punkte_[1] + ("arbeiten", 7)
+        punkte_[3] = punkte_[3] + ("arbeiten", 4)
+        punkte_[0] = punkte_[0] + ("arbeiten", 5)
         person(f"Gesinde{_gs}", BL, round(heim_[0], 2), boden_, round(heim_[1], 2), GESINDE_NAMEN[_gs % len(GESINDE_NAMEN)],
                "burggesinde", 0, GESINDE_TRACHTEN[_gs % 4], sichtbar_wenn="alarm<3",
-               ablauf={"morgengrauen": (p3(runde_, boden_), ["runde"]),
+               ablauf={"morgengrauen": (punkte_, ["runde"]),
                        "stille_stunde": (p3([heim_], boden_), ["weg"])})
         _gs += 1
 
