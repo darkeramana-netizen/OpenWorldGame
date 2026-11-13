@@ -535,6 +535,10 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 	# Nachbarn an den Enden (für Rampen zu höheren Wehrgängen und Ecken), solange die Enden noch die Planpunkte sind
 	var nb_a := _nachbar_an(a, b) if zinnen and not frei_a else []
 	var nb_b := _nachbar_an(b, a) if zinnen and not frei_b else []
+	# Stoßen hier noch zwei andere Mauern zusammen (diese endet an der Ecke eines anderen Rings), weicht diese mit
+	# Brustwehr, Hofmauer und Zinnen um die halbe Dicke der anderen zurück
+	var stoss_a := _anzahl_nachbarn(a, b) if zinnen and not frei_a else 0
+	var stoss_b := _anzahl_nachbarn(b, a) if zinnen and not frei_b else 0
 	var a_plan := a
 	var b_plan := b
 	# An einem hohlen Turm endet die Mauer in seiner Wand (samt Überlappung und Breite), nicht in seiner Kammer; ein
@@ -648,19 +652,26 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 		if nn.dot(nb[4]) < 0.0:
 			nn = -nn
 		var nd: float = float(nb[2]) * 0.5
-		var s_aus := _gehrung(m + n * (d - BRUSTWEHR_DICKE * 0.5), u, ende[1] + nn * (nd - BRUSTWEHR_DICKE * 0.5), dn)
-		var s_in := _gehrung(m + n * (-d + 0.175), u, ende[1] + nn * (-nd + 0.175), dn)
+		# geschnitten an den Seiten zum Wehrgang: dort endet jede Brüstung, wo die des Nachbarn beginnt
+		var s_aus := _gehrung(m + n * (d - BRUSTWEHR_DICKE), u, ende[1] + nn * (nd - BRUSTWEHR_DICKE), dn)
+		var s_in := _gehrung(m + n * (-d + 0.35), u, ende[1] + nn * (-nd + 0.35), dn)
 		var s_ende: float = sb if ende[2] > 0.0 else sa
 		if ende[2] > 0.0:
 			if not is_inf(s_aus):
-				aussen1 = clampf(s_aus + BRUSTWEHR_DICKE * 0.5, s_ende - 3.0, s_ende + 2.0)
+				aussen1 = clampf(s_aus, s_ende - 3.0, s_ende + 2.0)
 			if not is_inf(s_in):
-				innen1 = clampf(s_in + 0.175, s_ende - 3.0, s_ende + 2.0)
+				innen1 = clampf(s_in, s_ende - 3.0, s_ende + 2.0)
 		else:
 			if not is_inf(s_aus):
-				aussen0 = clampf(s_aus - BRUSTWEHR_DICKE * 0.5, s_ende - 2.0, s_ende + 3.0)
+				aussen0 = clampf(s_aus, s_ende - 2.0, s_ende + 3.0)
 			if not is_inf(s_in):
-				innen0 = clampf(s_in - 0.175, s_ende - 2.0, s_ende + 3.0)
+				innen0 = clampf(s_in, s_ende - 2.0, s_ende + 3.0)
+	if stoss_a >= 2:
+		aussen0 = maxf(aussen0, sa + 2.0)
+		innen0 = maxf(innen0, sa + 2.0)
+	if stoss_b >= 2:
+		aussen1 = minf(aussen1, sb - 2.0)
+		innen1 = minf(innen1, sb - 2.0)
 	# Brustwehr und Zinnen auf der Feldseite, eine niedrige Mauer auf der Hofseite
 	_klotz(stein, m, u, n, aussen0, aussen1, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
 	_klotz("hell", m, u, n, aussen0, aussen1, d - BRUSTWEHR_DICKE - 0.05, d + 0.06, oben + BRUSTWEHR - 0.1, oben + BRUSTWEHR + 0.02, true)
@@ -678,7 +689,8 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			continue
 		var richtung: float = ende[1]
 		var s_fuge: float = sb if richtung > 0.0 else sa
-		var s1 := s_fuge - richtung * (float(nb[2]) * 0.5 - 0.02)   # dort beginnt der Körper des Nachbarn
+		# dort tritt die Mitte des Wehrgangs in den Körper des Nachbarn (an einer Ecke weiter vor der Fuge)
+		var s1 := s_fuge - richtung * (_eintritt(b_plan if richtung > 0.0 else a_plan, -u * richtung, n, nb) - 0.02)
 		var lang := clampf(hoeher * 2.6, 0.8, 7.8)
 		var anfang := s1 - richtung * lang
 		var rest := (anfang - ((a - m).dot(u) if richtung > 0.0 else (b - m).dot(u))) * richtung
@@ -791,6 +803,33 @@ func _nachbar_an(p: Vector2, anderes: Vector2) -> Array:
 			return [(g - p).normalized(), weg_y, maxf(dicke_weg, 0.0), g, Vector2.ZERO]
 		i += 8
 	return []
+
+
+## Anzahl anderer Mauerstücke, die am Punkt p enden
+func _anzahl_nachbarn(p: Vector2, anderes: Vector2) -> int:
+	var k := 0
+	for m: Array in _nachbarn_mauern:
+		for e in 2:
+			if (m[e] as Vector2).distance_to(p) < 0.05 and (m[1 - e] as Vector2).distance_to(anderes) > 0.05:
+				k += 1
+	return k
+
+
+## Wie weit vor der Fuge (entlang zurück, von der Fuge ins eigene Stück) die Mitte des Wehrgangs (0,125 m zur Hofseite)
+## in den Körper des Nachbarn tritt: Rechteck von der Fuge zurück um seine halbe Dicke, quer ± halbe Dicke
+func _eintritt(fuge: Vector2, zurueck: Vector2, n: Vector2, nb: Array) -> float:
+	var dn: Vector2 = nb[0]
+	var nn := dn.orthogonal()
+	var halb := float(nb[2]) * 0.5
+	var start := fuge - n * 0.125
+	# größtes t, bei dem start + zurueck * t noch im Rechteck liegt
+	var t := 0.0
+	while t < 6.0:
+		var q := start + zurueck * (t + 0.05) - fuge
+		if q.dot(dn) < -halb or absf(q.dot(nn)) > halb:
+			break
+		t += 0.05
+	return maxf(t, 0.05)
 
 
 ## Schnitt der Linie p + u·s mit der Linie q + v·t: gibt s zurück (INF, wenn fast parallel)
