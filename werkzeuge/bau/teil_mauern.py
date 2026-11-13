@@ -296,7 +296,7 @@ def mauern_verbinden(fang=3.0):
                 (cx, cz) = ende(k2, i2, 0)
                 entlang = (p[0] - cx) * vx + (p[1] - cz) * vz
                 quer = abs((p[0] - cx) * -vz + (p[1] - cz) * vx)
-                if 2.0 < entlang < l2 - 2.0 and quer < w2[i2 + 6] / 2 + 1.0:
+                if 2.0 < entlang < l2 - 2.0 and quer < w2[i2 + 6] / 2 + 1.0 and abs(w2[i2 + 5] - werte_je[k][i + 5]) <= 3.0:
                     x = (cx + vx * entlang, cz + vz * entlang)
                     teilung.append((k2, i2, x))
                     verschoben.append((k, i, e, p, x))

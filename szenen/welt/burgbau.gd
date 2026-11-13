@@ -736,7 +736,11 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 		var richtung: float = ende[1]
 		var s_fuge: float = sb if richtung > 0.0 else sa
 		# dort tritt die Mitte des Wehrgangs in den Körper des Nachbarn (an einer Ecke weiter vor der Fuge)
-		var s1 := s_fuge - richtung * (_eintritt(b_plan if richtung > 0.0 else a_plan, -u * richtung, n, nb) - 0.02)
+		# an einem schrägen Stoß die Kante des Wehrgangs, die zuerst hineintritt
+		var tief_ := 0.0
+		for quer_: float in [-d + 0.4, -0.125, d - BRUSTWEHR_DICKE - 0.05]:
+			tief_ = maxf(tief_, _eintritt(b_plan if richtung > 0.0 else a_plan, -u * richtung, n, nb, quer_))
+		var s1 := s_fuge - richtung * (tief_ - 0.02)
 		# bis 1 m eine Rampe (gut 20°), darüber eine Treppe (32°, wenn das Stück kurz ist bis 41°)
 		var lang := clampf(hoeher * 2.6, 0.8, 7.8) if hoeher <= 1.0 else hoeher * 1.6
 		var anfang := s1 - richtung * lang
@@ -934,11 +938,11 @@ func _anzahl_nachbarn(p: Vector2, anderes: Vector2) -> int:
 
 ## Wie weit vor der Fuge (entlang zurück, von der Fuge ins eigene Stück) die Mitte des Wehrgangs (0,125 m zur Hofseite)
 ## in den Körper des Nachbarn tritt: Rechteck von der Fuge zurück um seine halbe Dicke, quer ± halbe Dicke
-func _eintritt(fuge: Vector2, zurueck: Vector2, n: Vector2, nb: Array) -> float:
+func _eintritt(fuge: Vector2, zurueck: Vector2, n: Vector2, nb: Array, quer := -0.125) -> float:
 	var dn: Vector2 = nb[0]
 	var nn := dn.orthogonal()
 	var halb := float(nb[2]) * 0.5
-	var start := fuge - n * 0.125
+	var start := fuge + n * quer
 	# größtes t, bei dem start + zurueck * t noch im Rechteck liegt
 	var t := 0.0
 	while t < 6.0:
