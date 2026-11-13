@@ -173,6 +173,52 @@ func _initialize() -> void:
 		else:
 			print("       Treppe %d nicht hinauf (stehe bei %s, Wehrgang %.1f)" % [k / 7, spieler().global_position.snapped(Vector3.ONE * 0.1), tr[k + 5] - 0.62])
 	pruefe(tr.size() >= 70 and treppen_ok * 7 == tr.size(), "Treppen auf die Wehrgänge: %d von %d hinauf" % [treppen_ok, tr.size() / 7])
+	# Hohle Rundtürme: auf dem Wehrgang durch die Tür in die Kammer und zur anderen Tür wieder hinaus
+	var turm_ok := 0
+	var turm_alle := 0
+	var tor_ok := 0
+	var tor_alle := 0
+	for bau in current_scene.find_children("*", "Node3D", true, false):
+		if not ("_hohle" in bau and "tuerme" in bau and "tore" in bau):
+			continue
+		var tu: PackedFloat32Array = bau.tuerme
+		var i := 0
+		while i + 6 < tu.size() and turm_alle < 6:
+			var c := Vector2(tu[i], tu[i + 1])
+			var z: Dictionary = bau._turm_zugang(c, tu[i + 4], tu[i + 3]) if int(tu[i + 5]) != 2 else {}
+			if not z.is_empty() and z["tueren"].size() >= 2:
+				turm_alle += 1
+				var r: float = tu[i + 4]
+				var d0 := Vector2(cos(z["tueren"][0]), sin(z["tueren"][0]))
+				var d1 := Vector2(cos(z["tueren"][1]), sin(z["tueren"][1]))
+				await setze(Vector3(c.x + d0.x * (r + 3.0), float(z["stufen"][0]) + 0.5, c.y + d0.y * (r + 3.0)))
+				if await gehe_ueber([c + d0 * (r - 1.6), c, c + d1 * (r - 1.6), c + d1 * (r + 3.0)], 12.0, 0.6):
+					turm_ok += 1
+				else:
+					print("       Turm nicht durchquert: %s bei %s (stehe bei %s)" % [bau.name, c, spieler().global_position.snapped(Vector3.ONE * 0.1)])
+			i += 7
+		# Tore mit hohlen Tortürmen: über den Torbogen hinweg durch beide Tortürme
+		var to: PackedFloat32Array = bau.tore
+		i = 0
+		while i + 7 < to.size():
+			var gm := Vector2(to[i], to[i + 1])
+			var ug := Vector2(to[i + 2], to[i + 3]).normalized()
+			var ab: float = to[i + 5] / 2.0 + 2.6
+			var hohl := 0
+			for t in bau._hohle_eckig:
+				if (t[0] as Vector2).distance_to(gm + ug * ab) < 0.8 or (t[0] as Vector2).distance_to(gm - ug * ab) < 0.8:
+					hohl += 1
+			if hohl == 2:
+				tor_alle += 1
+				var anfang := gm + ug * (ab + 5.0)
+				await setze(Vector3(anfang.x, to[i + 6] + 0.6, anfang.y))
+				if await gehe_ueber([gm + ug * ab, gm, gm - ug * ab, gm - ug * (ab + 5.0)], 12.0, 0.6) and spieler().global_position.y > to[i + 6] - 1.0:
+					tor_ok += 1
+				else:
+					print("       Tor nicht überquert: %s bei %s (stehe bei %s)" % [bau.name, gm, spieler().global_position.snapped(Vector3.ONE * 0.1)])
+			i += 8
+	pruefe(turm_alle >= 4 and turm_ok == turm_alle, "Hohle Rundtürme: %d von %d auf dem Wehrgang durchquert" % [turm_ok, turm_alle])
+	pruefe(tor_alle >= 3 and tor_ok == tor_alle, "Tore: %d von %d auf dem Wehrgang über den Bogen durch beide Tortürme überquert" % [tor_ok, tor_alle])
 	# Vom Marktplatz auf den Westkai und über den Kai bis an den Kanal vor dem Wassertor
 	await setze(Vector3(136, g.hoehe_bei(136, 86) + 0.3, 86))
 	var fels := await gehe_ueber([Vector2(145.69, 79.75), Vector2(149.85, 68.99), Vector2(142, 63.5), Vector2(121, 61.5), Vector2(106, 52.5), Vector2(100, 27.5), Vector2(100, -0.5)], 30.0)
