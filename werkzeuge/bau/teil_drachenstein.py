@@ -285,6 +285,12 @@ _bh = PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE - PD.H_KERNBURG
 _bstufe = _bh / 8
 _tuer_w = round(math.degrees(math.atan2(-_bu[1], -_bu[0])), 2)
 _innen = PD.BERGFRIED_SEITE / 2 - 2.5 + 0.3
+# Wendeltreppe in der hinteren linken Ecke (vom Eingang gesehen), eng und mit zwei Windungen je Geschoss: der Raum
+# bleibt frei. Das Treppenhaus ragt 0,4 m in die Mauern, seine Tür zeigt zur Mitte des Raums.
+_tr_r = 2.5
+_tr_ecke = _tuer_w + 135
+_tr_ab = (_innen - _tr_r + 0.4) * math.sqrt(2)
+_tr_mitte = (round(_tr_ab * math.cos(math.radians(_tr_ecke)), 3), round(_tr_ab * math.sin(math.radians(_tr_ecke)), 3))
 N("BergfriedInnen", "Node3D", BG, f"""transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, {bx}, {PD.H_KERNBURG}, {bz})
 script = ExtResource("14_turm")
 ebenen_nummern = PackedInt32Array(0, 1, 2, 3, 4, 5, 6, 7)
@@ -295,16 +301,22 @@ wandstaerken = PackedFloat32Array({", ".join(["0.5"] * 8)})
 ecken = 4
 ohne_mauer = true
 achteck_winkel = {_tuer_w}
-treppen_winkel = {_tuer_w}
-treppenhaus_radius = 4.2
-saeulen_radius = 1.1
+treppen_winkel = {round(_tr_ecke + 180, 2)}
+treppen_mitte = Vector2({_tr_mitte[0]}, {_tr_mitte[1]})
+windungen = 2
+treppenhaus_radius = {_tr_r}
+saeulen_radius = 0.35
 material_wand = ExtResource("Material_mauer")
 material_boden = ExtResource("Material_boden")
 material_rampe = ExtResource("Material_holz")""")
-# Einrichtung der Ebenen (in den vier Ecken des Raums um das Treppenhaus, die Tür zum Treppenhaus bleibt frei)
+# Einrichtung der Ebenen: in drei Ecken des Raums und an der Rückwand (in der vierten Ecke steht die Wendeltreppe)
 BI = BG + "/BergfriedInnen"
-_ecke = lambda k_, r_=7.4: (round(r_ * math.cos(math.radians(_tuer_w + 45 + 90 * k_)), 2), round(r_ * math.sin(math.radians(_tuer_w + 45 + 90 * k_)), 2))
-_drehung = lambda k_: round(-(_tuer_w + 45 + 90 * k_), 1)
+def _ecke(k_, r_=7.4):
+    if k_ == 1:     # die Ecke der Treppe: statt dessen mitten an der Rückwand
+        w_ = math.radians(_tuer_w + 180)
+        return (round((_innen - 1.3) * math.cos(w_), 2), round((_innen - 1.3) * math.sin(w_), 2))
+    return (round(r_ * math.cos(math.radians(_tuer_w + 45 + 90 * k_)), 2), round(r_ * math.sin(math.radians(_tuer_w + 45 + 90 * k_)), 2))
+_drehung = lambda k_: round(-(_tuer_w + 180) - 45, 1) if k_ == 1 else round(-(_tuer_w + 45 + 90 * k_), 1)
 for ebene_, teile_ in enumerate([
         [("Bank", 2.6, 0.45, 0.5, "Material_holz"), ("Bank", 2.6, 0.45, 0.5, "Material_holz"), ("Waffen", 1.6, 2.2, 0.4, "Material_metall"), ("Truhe", 1.2, 0.7, 0.8, "Material_holz")],
         [("Tisch", 2.2, 0.8, 1.1, "Material_holz"), ("Bank", 2.2, 0.45, 0.45, "Material_holz"), ("Fass", 0.8, 1.0, 0.8, "Material_holz"), ("Pritsche", 2.0, 0.5, 0.9, "Material_stoff")],

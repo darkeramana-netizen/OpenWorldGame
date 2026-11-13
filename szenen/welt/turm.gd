@@ -28,6 +28,11 @@ extends Node3D
 ## Baustein (z. B. der Bergfried in burgbau.gd)
 @export var ohne_mauer := false
 @export var treppen_winkel: float = 0.0
+## Mitte des Treppenhauses (x, z); ohne Angabe die Mitte des Turms. Steht es in einer Ecke, bleibt der Raum frei
+## (das Treppenhaus ragt dann ein Stück in die Mauern).
+@export var treppen_mitte := Vector2.ZERO
+## Volle Umdrehungen der Rampe je Ebene: 2 macht sie in einem engen Treppenhaus halb so steil
+@export var windungen: int = 1
 @export var treppenhaus_radius: float = 4.6
 @export var saeulen_radius: float = 1.2
 @export var zinnen_hoehe: float = 1.6
@@ -54,6 +59,7 @@ const SEGMENTE := 32
 var _st_wand := SurfaceTool.new()
 var _st_boden := SurfaceTool.new()
 var _st_rampe := SurfaceTool.new()
+var _versatz := Vector3.ZERO     # verschiebt _quader_tangential (Treppenhaus und Säule um treppen_mitte)
 
 
 func _ready() -> void:
@@ -184,7 +190,10 @@ func _baue_boden(i: int) -> void:
 	var hoehe := boden_hoehen[i]
 	var apothem := aussen_radien[i] * cos(deg_to_rad(_halb()))
 	var loch := 0.0 if i == 0 else treppenhaus_radius
-	_ring(_st_boden, hoehe, loch, apothem)
+	if treppen_mitte != Vector2.ZERO and loch > 0.0:
+		_boden_mit_loch(_st_boden, hoehe, apothem)
+	else:
+		_ring(_st_boden, hoehe, loch, apothem)
 
 
 func _baue_dach() -> void:
@@ -192,13 +201,16 @@ func _baue_dach() -> void:
 	var hoehe := dach_hoehe()
 	var r := aussen_radien[n - 1]
 	var apothem := r * cos(deg_to_rad(_halb()))
-	_ring(_st_boden, hoehe, treppenhaus_radius, apothem)
+	if treppen_mitte != Vector2.ZERO:
+		_boden_mit_loch(_st_boden, hoehe, apothem)
+	else:
+		_ring(_st_boden, hoehe, treppenhaus_radius, apothem)
 	# Absatz über dem Treppenhaus: Nur das letzte Viertel vor der Ankunft der Rampe bleibt
 	# offen, damit niemand auf dem Dach ins Treppenloch fällt.
 	# Er reicht nur so weit, wie darunter auf der Rampe noch Kopffreiheit bleibt.
-	var letzte_hoehe := hoehe - boden_hoehen[n - 1]
+	var letzte_hoehe := (hoehe - boden_hoehen[n - 1]) / maxi(windungen, 1)
 	var frei := clampf((letzte_hoehe - BODEN_STAERKE - 2.4) / letzte_hoehe * 360.0, 0.0, 300.0)
-	_scheibe(_st_boden, hoehe, treppenhaus_radius, treppen_winkel, treppen_winkel + frei)
+	_scheibe(_st_boden, hoehe, treppenhaus_radius, treppen_winkel, treppen_winkel + frei, Vector3(treppen_mitte.x, 0.0, treppen_mitte.y))
 	# Brüstung mit Zinnen.
 	var laenge := 2.0 * apothem * tan(deg_to_rad(_halb())) + 0.05
 	if ohne_mauer:
@@ -219,12 +231,21 @@ func _baue_treppenhaus(i: int) -> void:
 	var schritt := 360.0 / SEGMENTE
 	var laenge := 2.0 * treppenhaus_radius * tan(deg_to_rad(schritt / 2.0)) + 0.05
 	var halbe_tuer := rad_to_deg(TUER_TREPPE_BREITE / 2.0 / treppenhaus_radius)
+	var apothem := aussen_radien[i] * cos(deg_to_rad(_halb()))
+	_versatz = Vector3(treppen_mitte.x, 0.0, treppen_mitte.y)
 	for k in SEGMENTE:
 		var winkel := treppen_winkel + (k + 0.5) * schritt
+		if treppen_mitte != Vector2.ZERO:
+			# Stücke, die in der Außenmauer stecken, braucht es nicht
+			var q := treppen_mitte + Vector2(cos(deg_to_rad(winkel)), sin(deg_to_rad(winkel))) * r
+			var rand := _achteck_rand(atan2(q.y, q.x), apothem)
+			if q.length() > Vector2(rand.x, rand.z).length() - 0.35:
+				continue
 		if absf(rad_to_deg(angle_difference(deg_to_rad(winkel), deg_to_rad(treppen_winkel)))) < halbe_tuer + schritt / 2.0:
 			_quader_tangential(_st_wand, winkel, r, 0.0, laenge, unten + TUER_TREPPE_HOEHE, oben, TREPPENHAUS_WAND)
 		else:
 			_quader_tangential(_st_wand, winkel, r, 0.0, laenge, unten, oben, TREPPENHAUS_WAND)
+	_versatz = Vector3.ZERO
 
 
 ## Eine volle Umdrehung Rampe vom Boden dieser Ebene zum nächsten, als durchgehende
@@ -235,7 +256,8 @@ func _baue_rampe(i: int) -> void:
 	var oben := boden_hoehen[i + 1]
 	var innen := saeulen_radius + 0.15
 	var aussen := treppenhaus_radius - TREPPENHAUS_WAND - 0.05
-	var stuecke := int(360.0 / RAMPE_SCHRITT)
+	var stuecke := int(360.0 * maxi(windungen, 1) / RAMPE_SCHRITT)
+	var m := Vector3(treppen_mitte.x, 0.0, treppen_mitte.y)
 	for j in stuecke:
 		var wa := deg_to_rad(treppen_winkel + j * RAMPE_SCHRITT)
 		var wb := deg_to_rad(treppen_winkel + (j + 1) * RAMPE_SCHRITT)
@@ -243,10 +265,10 @@ func _baue_rampe(i: int) -> void:
 		var yb := lerpf(unten, oben, float(j + 1) / stuecke)
 		var ra := Vector3(cos(wa), 0.0, sin(wa))
 		var rb := Vector3(cos(wb), 0.0, sin(wb))
-		var ia := ra * innen + Vector3.UP * ya
-		var oa := ra * aussen + Vector3.UP * ya
-		var ib := rb * innen + Vector3.UP * yb
-		var ob := rb * aussen + Vector3.UP * yb
+		var ia := m + ra * innen + Vector3.UP * ya
+		var oa := m + ra * aussen + Vector3.UP * ya
+		var ib := m + rb * innen + Vector3.UP * yb
+		var ob := m + rb * aussen + Vector3.UP * yb
 		var tief := Vector3.DOWN * RAMPE_STAERKE
 		var oben_normale := (oa - ia).cross(ib - ia).normalized()
 		if oben_normale.y < 0.0:
@@ -262,8 +284,11 @@ func _baue_saeule() -> void:
 	var oben := dach_hoehe() + 2.5
 	var schritt := 360.0 / 16
 	var laenge := 2.0 * saeulen_radius * tan(deg_to_rad(schritt / 2.0)) + 0.02
+	_versatz = Vector3(treppen_mitte.x, 0.0, treppen_mitte.y)
+	var dicke := minf(0.6, saeulen_radius)
 	for k in 16:
-		_quader_tangential(_st_wand, k * schritt, saeulen_radius - 0.3, 0.0, laenge, unten, oben, 0.6)
+		_quader_tangential(_st_wand, k * schritt, saeulen_radius - dicke / 2.0, 0.0, laenge, unten, oben, dicke)
+	_versatz = Vector3.ZERO
 
 
 func _baue_licht_und_schild(i: int) -> void:
@@ -276,13 +301,15 @@ func _baue_licht_und_schild(i: int) -> void:
 		licht.name = "Licht_%d" % ebenen_nummern[i]
 		var abstand := (treppenhaus_radius + innen) / 2.0
 		licht.position = Vector3(cos(gegenueber) * abstand, unten + hoehe * 0.75, sin(gegenueber) * abstand)
+		if treppen_mitte != Vector2.ZERO:
+			licht.position = Vector3(-treppen_mitte.x * 0.3, unten + hoehe * 0.75, -treppen_mitte.y * 0.3)
 		licht.omni_range = innen * 2.6
 		licht.light_energy = 2.4 if ebenen_nummern[i] >= 0 else 1.6
 		licht.light_color = Color(1.0, 0.82, 0.6)
 		_neu(licht)
 		var treppenlicht := OmniLight3D.new()
 		treppenlicht.name = "Treppenlicht_%d" % ebenen_nummern[i]
-		treppenlicht.position = Vector3(0.0, unten + hoehe * 0.6, 0.0) + Vector3(cos(gegenueber), 0.0, sin(gegenueber)) * (treppenhaus_radius - 1.0)
+		treppenlicht.position = Vector3(treppen_mitte.x, unten + hoehe * 0.6, treppen_mitte.y) + Vector3(cos(gegenueber), 0.0, sin(gegenueber)) * (treppenhaus_radius - 1.0)
 		treppenlicht.omni_range = treppenhaus_radius * 2.5
 		treppenlicht.light_energy = 1.2
 		treppenlicht.light_color = Color(1.0, 0.8, 0.55)
@@ -291,7 +318,7 @@ func _baue_licht_und_schild(i: int) -> void:
 		var schild := Label3D.new()
 		schild.name = "Schild_%d" % ebenen_nummern[i]
 		var richtung := deg_to_rad(treppen_winkel)
-		schild.position = Vector3(cos(richtung), 0.0, sin(richtung)) * (treppenhaus_radius + 0.6) + Vector3.UP * (unten + 3.2)
+		schild.position = Vector3(treppen_mitte.x, 0.0, treppen_mitte.y) + Vector3(cos(richtung), 0.0, sin(richtung)) * (treppenhaus_radius + 0.6) + Vector3.UP * (unten + 3.2)
 		schild.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		schild.pixel_size = 0.006
 		schild.font_size = 48
@@ -311,7 +338,7 @@ func _quader_tangential(st: SurfaceTool, winkel: float, abstand: float, versatz:
 	var w := deg_to_rad(winkel)
 	var radial := Vector3(cos(w), 0.0, sin(w))
 	var tangente := Vector3(-sin(w), 0.0, cos(w))
-	var zentrum := radial * abstand + tangente * versatz + Vector3.UP * (unten + oben) / 2.0
+	var zentrum := _versatz + radial * abstand + tangente * versatz + Vector3.UP * (unten + oben) / 2.0
 	_quader(st, zentrum, Basis(tangente, Vector3.UP, radial), Vector3(laenge / 2.0, (oben - unten) / 2.0, staerke / 2.0))
 
 
@@ -349,16 +376,42 @@ func _ring(st: SurfaceTool, hoehe: float, innen: float, apothem: float) -> void:
 
 
 ## Kreisausschnitt als Boden, von Winkel bis Winkel (Grad).
-func _scheibe(st: SurfaceTool, hoehe: float, radius: float, von: float, bis: float) -> void:
+func _scheibe(st: SurfaceTool, hoehe: float, radius: float, von: float, bis: float, mitte := Vector3.ZERO) -> void:
 	var schritte := int((bis - von) / 10.0)
 	for k in schritte:
 		var w1 := deg_to_rad(von + (bis - von) * k / schritte)
 		var w2 := deg_to_rad(von + (bis - von) * (k + 1) / schritte)
-		var a1 := Vector3(cos(w1), 0.0, sin(w1)) * radius
-		var a2 := Vector3(cos(w2), 0.0, sin(w2)) * radius
+		var a1 := mitte + Vector3(cos(w1), 0.0, sin(w1)) * radius
+		var a2 := mitte + Vector3(cos(w2), 0.0, sin(w2)) * radius
 		for seite in [[hoehe, Vector3.UP], [hoehe - BODEN_STAERKE, Vector3.DOWN]]:
 			var y := Vector3.UP * float(seite[0])
-			_viereck(st, y, a1 + y, a2 + y, y, seite[1])
+			_viereck(st, mitte + y, a1 + y, a2 + y, mitte + y, seite[1])
+
+
+## Boden über die ganze Fläche mit einem runden Loch für das Treppenhaus bei treppen_mitte. Das Loch reicht über den
+## Rand hinaus (das Treppenhaus steht in einer Ecke), darum bleibt die Fläche ein einziges Vieleck ohne Loch.
+func _boden_mit_loch(st: SurfaceTool, hoehe: float, apothem: float) -> void:
+	var aussen := PackedVector2Array()
+	var r := apothem / cos(deg_to_rad(_halb()))
+	for k in ecken:
+		var w := deg_to_rad(achteck_winkel + (k + 0.5) * 360.0 / ecken)
+		aussen.append(Vector2(cos(w), sin(w)) * r)
+	var kreis := PackedVector2Array()
+	for k in SEGMENTE:
+		var w := TAU * k / SEGMENTE
+		kreis.append(treppen_mitte + Vector2(cos(w), sin(w)) * treppenhaus_radius)
+	for flaeche: PackedVector2Array in Geometry2D.clip_polygons(aussen, kreis):
+		var dreiecke := Geometry2D.triangulate_polygon(flaeche)
+		for t in range(0, dreiecke.size(), 3):
+			var a := flaeche[dreiecke[t]]
+			var b := flaeche[dreiecke[t + 1]]
+			var c := flaeche[dreiecke[t + 2]]
+			for seite in [[hoehe, Vector3.UP], [hoehe - BODEN_STAERKE, Vector3.DOWN]]:
+				var y := float(seite[0])
+				var pa := Vector3(a.x, y, a.y)
+				var pb := Vector3(b.x, y, b.y)
+				var pc := Vector3(c.x, y, c.y)
+				_viereck(st, pa, pb, pc, pa, seite[1])
 
 
 func _achteck_rand(w: float, apothem: float) -> Vector3:

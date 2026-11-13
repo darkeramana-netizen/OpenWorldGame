@@ -364,6 +364,9 @@ for k_ in range(0, len(TREPPEN) if "TREPPEN" in globals() else 0, 7):
     fx_, fz_, _, tx_, tz_, _, _ = TREPPEN[k_:k_ + 7]
     for t_ in [i_ / 6 for i_ in range(-2, 7)]:
         _frei_fels += [fx_ + (tx_ - fx_) * t_, fz_ + (tz_ - fz_) * t_, 4.0]
+# Im Bergfried (Erdgeschoss mit der Wendeltreppe in der Ecke) steht kein Fels
+_bfm = W(PD.BERGFRIED_KERNBURG)
+_frei_fels += [_bfm[0], _bfm[1], 9.6]
 N("Felsmassiv", "Node3D", DS, f"""script = ExtResource("33_felsmassiv")
 gelaende = NodePath("../../Gelaende")
 bereich = Rect2({min(_rx) - 2:.1f}, {min(_rz) - 2:.1f}, {max(_rx) - min(_rx) + 4:.1f}, {max(_rz) - min(_rz) + 4:.1f})

@@ -51,7 +51,7 @@ func gehe_ueber(punkte: Array, zeit_pro_punkt: float = 20.0) -> bool:
 
 ## Läuft im Treppenhaus eines Turms die Wendelrampe hinauf (richtung 1) oder hinunter (-1),
 ## bis die Zielhöhe erreicht ist.
-func wendel(mitte: Vector3, richtung: int, ziel_y: float, sekunden: float) -> float:
+func wendel(mitte: Vector3, richtung: int, ziel_y: float, sekunden: float, radius: float = 2.75) -> float:
 	Input.action_press("vor")
 	Input.action_press("rennen")
 	var ende := Time.get_ticks_msec() + int(sekunden * 1000)
@@ -62,7 +62,7 @@ func wendel(mitte: Vector3, richtung: int, ziel_y: float, sekunden: float) -> fl
 		var rel := Vector2(p.x - mitte.x, p.z - mitte.z)
 		var w := atan2(rel.y, rel.x)
 		var tangente := Vector2(-sin(w), cos(w)) * richtung
-		var zur_mitte := -rel.normalized() * (rel.length() - 2.75) * 0.6
+		var zur_mitte := -rel.normalized() * (rel.length() - radius) * 0.6
 		blicke(tangente + zur_mitte)
 		await physics_frame
 	Input.action_release("vor")
@@ -173,16 +173,21 @@ func _initialize() -> void:
 	var keller := await wendel(mitte, -1, mitte.y - 23.8, 60.0)
 	pruefe(keller <= mitte.y - 23.5, "Wendelrampe hinunter bis Ebene -4 (Höhe %.1f)" % (keller - mitte.y))
 
-	# --- Drachenstein: Bergfried hinter dem Palas, durch die Tür hinein und die Wendelrampe hinauf auf die Plattform ---
+	# --- Drachenstein: Bergfried hinter dem Palas, durch die Tür hinein, quer durch den freien Raum an die Wendeltreppe in
+	# der hinteren Ecke und auf ihr hinauf auf die Plattform ---
 	var bf_innen: Node3D = current_scene.get_node("Drachenstein/Burgen/BergfriedInnen")
 	var bf := bf_innen.global_position
-	var tw: float = bf_innen.treppen_winkel
-	await setze(polar(bf, 15.0, tw, bf.y + 0.4))
-	var bf_drin := await gehe_ueber([polar(bf, 8.5, tw, 0), polar(bf, 5.5, tw, 0), polar(bf, 3.0, tw, 0)])
-	pruefe(bf_drin and absf(spieler().global_position.y - bf.y) < 0.6, "Drachenstein: durch die Tür in den Bergfried bis ins Treppenhaus")
-	var bf_oben := await wendel(bf, 1, bf.y + bf_innen.dach_hoehe() - 0.3, 90.0)
-	pruefe(bf_oben >= bf.y + bf_innen.dach_hoehe() - 0.5, "Drachenstein: Wendelrampe im Bergfried hinauf bis auf die Plattform (%.1f m)" % (bf_oben - bf.y))
-	await gehe_ueber(ring(bf, 5.5, tw, tw + 180.0))
+	var dw: float = bf_innen.achteck_winkel                 # zur Tür des Bergfrieds
+	var tw: float = bf_innen.treppen_winkel                 # von der Treppe zur Mitte des Raums
+	var tm: Vector2 = bf_innen.treppen_mitte
+	var tmitte := bf + Vector3(tm.x, 0.0, tm.y)
+	pruefe(tm.length() > 5.0 and bf_innen.treppenhaus_radius < 3.0, "Drachenstein: Wendeltreppe des Bergfrieds in einer Ecke (%.1f m von der Mitte)" % tm.length())
+	await setze(polar(bf, 15.0, dw, bf.y + 0.4))
+	var bf_drin := await gehe_ueber([polar(bf, 8.5, dw, 0), polar(bf, 5.5, dw, 0), polar(bf, 1.0, dw, 0), polar(tmitte, 3.6, tw, 0), polar(tmitte, 1.3, tw, 0)])
+	pruefe(bf_drin and absf(spieler().global_position.y - bf.y) < 0.6, "Drachenstein: durch die Tür in den Bergfried und quer durch den Raum an die Treppe")
+	var bf_oben := await wendel(tmitte, 1, bf.y + bf_innen.dach_hoehe() - 0.3, 150.0, 1.3)
+	pruefe(bf_oben >= bf.y + bf_innen.dach_hoehe() - 0.5, "Drachenstein: Wendeltreppe im Bergfried hinauf bis auf die Plattform (%.1f m)" % (bf_oben - bf.y))
+	await gehe_ueber([polar(tmitte, 3.8, tw, 0)] + ring(bf, 3.0, tw + 180.0, tw + 360.0))
 	pruefe(spieler().global_position.y > bf.y + bf_innen.dach_hoehe() - 0.5, "Drachenstein: auf der Plattform des Bergfrieds bis zur anderen Seite")
 
 	# --- Gravecrest: Fallgatter, Torhaus, Donjon ---

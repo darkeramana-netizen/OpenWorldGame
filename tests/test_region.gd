@@ -119,6 +119,30 @@ func _initialize() -> void:
 	for p in current_scene.get_node("Personen/Stadtleben").get_children() + current_scene.get_node("Personen/Burgleben").get_children():
 		if p is CollisionObject3D:
 			p.collision_layer = 0
+	# Torflügel (szenen/welt/fluegel.gd): am Tag stehen Stadttore und Vorburgtor offen, die Tore weiter hinein bleiben zu.
+	# Ohne Eid lässt die Torwache niemanden durch und sagt warum; wer den Eid als Wächter geleistet hat, dem öffnet sie.
+	var fluegel := current_scene.find_children("*", "Node3D", true, false).filter(func(n): return n is Fluegel)
+	var tag_tore := fluegel.filter(func(n): return n.regel == "tag")
+	var zu_tore := fluegel.filter(func(n): return n.regel == "zu")
+	var tueren := fluegel.filter(func(n): return n.regel == "tuer")
+	pruefe(tag_tore.size() >= 3 and zu_tore.size() >= 8 and tueren.size() >= 10 and tag_tore.all(func(n): return n.ist_offen())
+			and zu_tore.all(func(n): return not n.ist_offen()) and tueren.all(func(n): return not n.ist_offen()),
+			"Torflügel und Türen: %d Tore tagsüber offen, %d Tore und %d Türen zu" % [tag_tore.size(), zu_tore.size(), tueren.size()])
+	var bei_osttor := func(a, b): return a if a.global_position.distance_to(Vector3(30.8, -8, 134)) < b.global_position.distance_to(Vector3(30.8, -8, 134)) else b
+	var osttor: Node3D = zu_tore.reduce(bei_osttor)
+	var feld: Vector3 = osttor.global_position - osttor.global_basis.z * 6.0
+	var hof := Vector2(osttor.global_position.x, osttor.global_position.z) + Vector2(osttor.global_basis.z.x, osttor.global_basis.z.z) * 4.0
+	await setze(Vector3(feld.x, g.hoehe_bei(feld.x, feld.z) + 0.4, feld.z))
+	var durch := await gehe_ueber([hof], 8.0)
+	pruefe(not durch and not osttor.ist_offen(), "Ohne Eid bleibt das Osttor der Vorburg zu (stehe %.1f m davor)" % Vector2(spieler().global_position.x - osttor.global_position.x, spieler().global_position.z - osttor.global_position.z).length())
+	meldungen.clear()
+	await druecke(KEY_E)
+	if D.aktiv:
+		D.beende()
+	pruefe(meldungen.any(func(t): return "Torwache" in t), "Die Torwache sagt, warum sie nicht öffnet (%s)" % [meldungen])
+	S.setze_flag("eid_waechter", true)
+	durch = await gehe_ueber([hof], 15.0)
+	pruefe(durch and osttor.global_position.distance_to(spieler().global_position) < 6.0, "Mit Eid öffnet die Torwache: durch das Osttor der Vorburg")
 	# Wege der Burgfeste nach dem Grundriss (docs/bilder/grundriss-drachenstein-3.webp, die Wege hat der Spieler
 	# eingezeichnet): vom Marktplatz durch die Stadt im Bogen um die Vorburg hinauf zum Vorburgtor, durch den Hof und das
 	# Osttor hinab in den Burgbezirk, an der Mauer zur Rampe, durch das Rampentor in die Mittelburg, gleich rechts durch
