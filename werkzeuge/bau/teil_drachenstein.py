@@ -1044,7 +1044,7 @@ for name_, (bx_, bz_) in BURG_BRUNNEN.items():
 print("Kleinteile in den Höfen (Art: Anzahl):", _klein, "Taubenschwärme:", len(TAUBEN_BURG))
 # Laternen neben den Türen: an jedem Haus und jedem begehbaren Bau eine, an jeder zweiten brennt nachts ein Licht.
 # Bei den begehbaren Bauten hängen sie auf dem Mauerpfeiler zwischen Tür (1,6 m breit) und erstem Fenster (ab 1,3 m
-# von der Mitte), also gut 1 m neben der Türmitte und nie vor einer Scheibe.
+# von der Mitte), also 1 m neben der Türmitte und nie vor einer Scheibe.
 _laternen = 0
 for k_, (x_, y_, z_, g_, f_) in enumerate(HOFHAEUSER):
     b_, t_ = _FORMEN[f_]
@@ -1064,10 +1064,13 @@ for bau_, boden_ in [(b_, PD.H_VORBURG) for b_ in (PD.VORBURG_BAUTEN[0], PD.VORB
     (pp_, l_, br_, dr_) = bau_
     a_ = math.radians(dr_)
     for s_ in (-1, 1):
-        q_ = (pp_[0] - math.sin(a_) * (br_ / 2 + 0.25) + math.cos(a_) * s_ * 2.1, pp_[1] + math.cos(a_) * (br_ / 2 + 0.25) + math.sin(a_) * s_ * 2.1)
-        lx_, lz_ = W(q_)
-        g_ = math.degrees(math.atan2(*(lambda d_: (d_[0], d_[1]))((W((q_[0] - math.sin(a_), q_[1] + math.cos(a_)))[0] - lx_,
-                                                              W((q_[0] - math.sin(a_), q_[1] + math.cos(a_)))[1] - lz_))))
+        # Türmitte vor der Front, dann 1,0 m (Welt) entlang der Front
+        q_ = (pp_[0] - math.sin(a_) * (br_ / 2 + 0.25), pp_[1] + math.cos(a_) * (br_ / 2 + 0.25))
+        t0_, t1_ = W(q_), W((q_[0] + math.cos(a_), q_[1] + math.sin(a_)))
+        e_ = math.dist(t0_, t1_)
+        lx_, lz_ = t0_[0] + (t1_[0] - t0_[0]) / e_ * s_ * 1.0, t0_[1] + (t1_[1] - t0_[1]) / e_ * s_ * 1.0
+        aus_ = W((q_[0] - math.sin(a_), q_[1] + math.cos(a_)))          # ein Schritt nach außen: Blickrichtung
+        g_ = math.degrees(math.atan2(aus_[0] - t0_[0], aus_[1] - t0_[1]))
         BURG_AUSSTATTUNG.append((20, round(lx_, 2), round(boden_, 2), round(lz_, 2), round(g_, 1)))
         if s_ > 0:
             BURG_LICHTER.append((round(lx_, 2), round(boden_ + 2.3, 2), round(lz_, 2)))
