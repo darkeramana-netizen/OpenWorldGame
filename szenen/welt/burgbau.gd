@@ -545,7 +545,9 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			var nb_ := _nachbar_an(pe, po)
 			var tiefer: float = oben - float(nb_[1])
 			var laenge_ := pe.distance_to(po)
-			var lauf := tiefer * (2.6 if tiefer <= 1.0 else 1.6) + 1.0
+			# die Treppe beginnt an der Flanke der durchgehenden Mauer und endet eine halbe Dicke vor dem Knick
+			var flanke := _halbe_dicke_an(pe, po) + 0.15
+			var lauf := flanke + tiefer * (2.6 if tiefer <= 1.0 else 1.6) + dicke * 0.5 + 0.1
 			if tiefer < 0.03 or lauf > laenge_ - 2.0:
 				continue
 			var knick := pe + (po - pe).normalized() * lauf
@@ -563,7 +565,7 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			var dz := dicke * 0.5
 			var mitte_ := (pe + knick) / 2.0
 			var halb := lauf / 2.0
-			_wehrgang_rampe(mitte_, u_, n_, dz, float(nb_[1]) + 0.06, -halb + 0.8, halb - dz + 0.02, halb + dz, oben + 0.06)
+			_wehrgang_rampe(mitte_, u_, n_, dz, float(nb_[1]) + 0.06, -halb + flanke, halb - dz + 0.02, halb + dz, oben + 0.06)
 			return
 	# Nachbarn an den Enden (für Rampen zu höheren Wehrgängen und Ecken), solange die Enden noch die Planpunkte sind
 	var nb_a := _nachbar_an(a, b) if zinnen and not frei_a else []
