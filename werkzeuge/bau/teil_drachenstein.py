@@ -851,8 +851,9 @@ def _rahmen(x, z, gier):
 
 
 def _umzaeunen(x, z, breite, tiefe, gier, boden, art_zaun, feld, tor_seite):
-    """Zaun um ein Rechteck aus Feldern der Länge feld; in der Mitte der Seite tor_seite (0 vorn +z, 1 hinten, 2 links,
-    3 rechts) bleibt ein Feld offen, dort steht das Gatter aufgeklappt."""
+    """Zaun um ein Rechteck aus Feldern der Länge feld (Breite und Tiefe sind Vielfache davon, sonst klaffen Lücken); in
+    der Mitte der Seite tor_seite (0 vorn +z, 1 hinten, 2 links, 3 rechts, -1 keins) steht statt eines Feldes ein
+    geschlossenes Doppelgatter: zwei Flügel, je an einem Pfosten angeschlagen, die sich in der Mitte treffen."""
     (lx_, lz_), (vx_, vz_) = _rahmen(x, z, gier)
     seiten_ = [((0, tiefe / 2), breite, 0.0), ((0, -tiefe / 2), breite, 0.0), ((-breite / 2, 0), tiefe, 90.0), ((breite / 2, 0), tiefe, 90.0)]
     for i_, ((ox_, oz_), lang_, dreh_) in enumerate(seiten_):
@@ -863,10 +864,11 @@ def _umzaeunen(x, z, breite, tiefe, gier, boden, art_zaun, feld, tor_seite):
             px_, pz_ = ox_ + ex_, oz_ + ez_
             wx_, wz_ = x + lx_ * px_ + vx_ * pz_, z + lz_ * px_ + vz_ * pz_
             if i_ == tor_seite and k_ == n_ // 2:
-                # Gatter: am Pfosten angeschlagen, nach außen aufgeklappt
-                hx_, hz_ = (px_ - lang_ / n_ / 2, pz_) if dreh_ == 0 else (px_, pz_ - lang_ / n_ / 2)
-                BURG_AUSSTATTUNG.append((35, round(x + lx_ * hx_ + vx_ * hz_, 2), round(boden, 2), round(z + lz_ * hx_ + vz_ * hz_, 2),
-                                         round(gier + dreh_ + (-70 if i_ in (0, 3) else 70), 1)))
+                # Ein Flügel reicht vom Angelpfosten 1,45 m in lokal +x; bei Gier+90 zeigt lokal +x nach -z des Rahmens
+                for s_ in (-1, 1):
+                    hx_, hz_ = (px_ + s_ * lang_ / n_ / 2, pz_) if dreh_ == 0 else (px_, pz_ + s_ * lang_ / n_ / 2)
+                    BURG_AUSSTATTUNG.append((35, round(x + lx_ * hx_ + vx_ * hz_, 2), round(boden, 2), round(z + lz_ * hx_ + vz_ * hz_, 2),
+                                             round(gier + dreh_ + (0 if (s_ < 0) == (dreh_ == 0) else 180), 1)))
                 continue
             BURG_AUSSTATTUNG.append((art_zaun, round(wx_, 2), round(boden, 2), round(wz_, 2), round(gier + dreh_, 1)))
     BURG_SPERREN.append(_rechteck_w(x, z, breite + 0.3, tiefe + 0.3, gier))
@@ -904,7 +906,7 @@ if PFERCH_RESERVE:
     (lx_, lz_), _ = _rahmen(rx_, rz_, rg_)
     # Pferch im einen Teil (9 m), der Koben im anderen (5 m) oder gleich daneben
     _vers = 3.0 if rl_ > 10 else 0.0
-    _pferch = (rx_ - lx_ * _vers, rz_ - lz_ * _vers, rg_, 9.0, 6.6)
+    _pferch = (rx_ - lx_ * _vers, rz_ - lz_ * _vers, rg_, 9.0, 6.0)   # drei mal zwei Zaunfelder zu 3 m
     _koben_ort = (rx_ + lx_ * 5.0, rz_ + lz_ * 5.0) if rl_ > 10 else (rx_ + lx_ * 7.6, rz_ + lz_ * 7.6)
 if _pferch:
     px_, pz_, g_, pb_, pt_ = _pferch
@@ -923,12 +925,12 @@ if _pferch:
             _orte_koben.append((px_ + lx_ * seite_ * (pb_ / 2 + weiter_), pz_ + lz_ * seite_ * (pb_ / 2 + weiter_)))
             _orte_koben.append((px_ + vx_ * seite_ * (pt_ / 2 + weiter_ - 0.5), pz_ + vz_ * seite_ * (pt_ / 2 + weiter_ - 0.5)))
     for kx_, kz_ in _orte_koben:
-        r_ = _rechteck_w(kx_, kz_, 5.0, 4.2, g_)
+        r_ = _rechteck_w(kx_, kz_, 4.0, 4.0, g_)
         if (PFERCH_RESERVE and (kx_, kz_) == _koben_ort) or _flaeche_frei(r_, _hof_vb, rand=1.7, wegabstand=1.4):
-            _umzaeunen(kx_, kz_, 5.0, 4.2, g_, PD.H_VORBURG, 34, 2.0, 0)
+            _umzaeunen(kx_, kz_, 4.0, 4.0, g_, PD.H_VORBURG, 34, 2.0, -1)   # Bretterwand ringsum, man steigt hinüber
             BURG_AUSSTATTUNG.append((36, round(kx_, 2), PD.H_VORBURG, round(kz_, 2), round(g_, 1)))
             BURG_AUSSTATTUNG.append((12, round(kx_ - vx_ * 1.4, 2), PD.H_VORBURG, round(kz_ - vz_ * 1.4, 2), round(g_, 1)))
-            rk_ = _revier(kx_, kz_, 5.0, 4.2, g_, 0.6)
+            rk_ = _revier(kx_, kz_, 4.0, 4.0, g_, 0.6)
             for k_ in range(2):
                 TIERE_BURG.append((TIERART["schwein"], round(kx_ + lx_ * (k_ - 0.5) * 1.6, 2), PD.H_VORBURG,
                                    round(kz_ + lz_ * (k_ - 0.5) * 1.6, 2), round(random.uniform(0, 360), 1), rk_))
