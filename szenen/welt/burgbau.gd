@@ -739,7 +739,8 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			anfang = s1 - richtung * lang
 		if lang < hoeher * (1.1 if hoeher <= 1.0 else 1.15):
 			continue                       # zu steil: nicht begehbar
-		_wehrgang_rampe(m, u, n, d, oben + 0.06, anfang, s1, s_fuge + richtung * d, float(nb[1]) + 0.06)
+		_wehrgang_rampe(m, u, n, d, oben + 0.06, anfang, s1, s_fuge + richtung * d, float(nb[1]) + 0.06,
+			aussen1 if richtung > 0.0 else -aussen0, innen1 if richtung > 0.0 else -innen0)
 		if hoeher > 0.6:
 			if richtung > 0.0:
 				zinnen1 = minf(zinnen1, anfang + lang * 0.4)
@@ -929,7 +930,8 @@ func _gehrung(p: Vector2, u: Vector2, q: Vector2, v: Vector2) -> float:
 
 ## Rampe auf dem Wehrgang zwischen Hofmauer und Brustwehr: von s0 (Höhe y0) bis s1 (Höhe y1), danach eben bis s2;
 ## Hofmauer und Brustwehr steigen in Stufen mit
-func _wehrgang_rampe(m: Vector2, u: Vector2, n: Vector2, d: float, y0: float, s0: float, s1: float, s2: float, y1: float) -> void:
+func _wehrgang_rampe(m: Vector2, u: Vector2, n: Vector2, d: float, y0: float, s0: float, s1: float, s2: float, y1: float,
+		bis_aussen := INF, bis_innen := INF) -> void:
 	var richtung := signf(s1 - s0)
 	if y1 - y0 <= 1.0:
 		_keil("boden", m, n, u * richtung, -d + 0.35, d - BRUSTWEHR_DICKE, s0 * richtung, s1 * richtung, y0 - 0.06, y0, y1)
@@ -962,8 +964,18 @@ func _wehrgang_rampe(m: Vector2, u: Vector2, n: Vector2, d: float, y0: float, s0
 		var t := clampf((x2 - s0) / (s1 - s0), 0.0, 1.0) if absf(s1 - s0) > 0.001 else 1.0
 		var y := lerpf(y0, y1, t)
 		if y > y0 + 0.05:
-			_klotz(stein, m, u, n, minf(x, x2), maxf(x, x2), -d, -d + 0.35, y0 + 0.5, y + 0.55)
-			_klotz(stein, m, u, n, minf(x, x2), maxf(x, x2), d - BRUSTWEHR_DICKE, d, y0 + 1.0, y + BRUSTWEHR - 0.05)
+			# Hofmauer und Brustwehr steigen mit, enden aber an der Gehrung zum Nachbarn (bis_…, gemessen wie s, in
+			# Richtung der Rampe): an einer Ecke stünden sie sonst quer in dessen Wehrgang
+			var e_in := minf(maxf(x, x2), bis_innen) if richtung > 0.0 else maxf(minf(x, x2), -bis_innen)
+			var e_aus := minf(maxf(x, x2), bis_aussen) if richtung > 0.0 else maxf(minf(x, x2), -bis_aussen)
+			if richtung > 0.0 and e_in > minf(x, x2) + 0.01:
+				_klotz(stein, m, u, n, minf(x, x2), e_in, -d, -d + 0.35, y0 + 0.5, y + 0.55)
+			elif richtung < 0.0 and e_in < maxf(x, x2) - 0.01:
+				_klotz(stein, m, u, n, e_in, maxf(x, x2), -d, -d + 0.35, y0 + 0.5, y + 0.55)
+			if richtung > 0.0 and e_aus > minf(x, x2) + 0.01:
+				_klotz(stein, m, u, n, minf(x, x2), e_aus, d - BRUSTWEHR_DICKE, d, y0 + 1.0, y + BRUSTWEHR - 0.05)
+			elif richtung < 0.0 and e_aus < maxf(x, x2) - 0.01:
+				_klotz(stein, m, u, n, e_aus, maxf(x, x2), d - BRUSTWEHR_DICKE, d, y0 + 1.0, y + BRUSTWEHR - 0.05)
 		x = x2
 
 
