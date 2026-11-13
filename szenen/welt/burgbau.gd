@@ -91,6 +91,7 @@ const ZINNE_HOEHE := 1.5     # Zinnen darüber
 const BRUSTWEHR_DICKE := 0.6
 const KAEMPFER := 3.4        # Höhe, in der der Torbogen ansetzt
 
+static var _bauten_je_region := {}   # Großelternknoten → alle burgbau-Knoten darunter
 var _flach := {}   # Material → SurfaceTool, Normalen werden erzeugt (kantig)
 var _nachbarn_mauern: Array = []    # [a, b, Krone, Dicke] aller Mauerstücke dieses Baus und seiner Geschwister
 var _hohle: Array = []              # [Mitte, Radius, Innenradius, Wehrganghöhe] der hohlen Rundtürme
@@ -106,6 +107,7 @@ func _ready() -> void:
 
 
 func _neu_bauen() -> void:
+	_bauten_je_region.clear()
 	if _bereit:
 		_baue()
 
@@ -532,6 +534,37 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			_mauerstueck(a, _turm_ende(cp, a, tc, t[2], dicke), unten, oben, dicke, aussen, zinnen, frei_a, true)
 			_mauerstueck(_turm_ende(cp, b, tc, t[2], dicke), b, unten, oben, dicke, aussen, zinnen, true, frei_b)
 			return
+	# Ein abzweigender Arm, der höher liegt als die durchgehende Mauer, an die er stößt: sein letztes Stück liegt auf
+	# deren Höhe, eine Treppe (Rampe) führt von dort auf ihn hinauf
+	if zinnen:
+		for ende in 2:
+			var pe: Vector2 = a if ende == 0 else b
+			var po: Vector2 = b if ende == 0 else a
+			if (frei_a if ende == 0 else frei_b) or _anzahl_nachbarn(pe, po) < 2 or not _ist_abzweig(pe, po):
+				continue
+			var nb_ := _nachbar_an(pe, po)
+			var tiefer: float = oben - float(nb_[1])
+			var laenge_ := pe.distance_to(po)
+			var lauf := tiefer * (2.6 if tiefer <= 1.0 else 1.6) + 1.0
+			if tiefer < 0.03 or lauf > laenge_ - 2.0:
+				continue
+			var knick := pe + (po - pe).normalized() * lauf
+			if ende == 0:
+				_mauerstueck(knick, b, unten, oben, dicke, aussen, zinnen, true, frei_b)
+				_mauerstueck(a, knick, unten, float(nb_[1]), dicke, aussen, zinnen, false, true)
+			else:
+				_mauerstueck(a, knick, unten, oben, dicke, aussen, zinnen, frei_a, true)
+				_mauerstueck(knick, b, unten, float(nb_[1]), dicke, aussen, zinnen, true, false)
+			# die Treppe auf dem tieferen Stück, vom Abzweig bis an den Knick
+			var u_ := (po - pe).normalized()
+			var n_ := u_.orthogonal()
+			if n_.dot(aussen) < 0.0:
+				n_ = -n_
+			var dz := dicke * 0.5
+			var mitte_ := (pe + knick) / 2.0
+			var halb := lauf / 2.0
+			_wehrgang_rampe(mitte_, u_, n_, dz, float(nb_[1]) + 0.06, -halb + 0.8, halb - dz + 0.02, halb + dz, oben + 0.06)
+			return
 	# Nachbarn an den Enden (für Rampen zu höheren Wehrgängen und Ecken), solange die Enden noch die Planpunkte sind
 	var nb_a := _nachbar_an(a, b) if zinnen and not frei_a else []
 	var nb_b := _nachbar_an(b, a) if zinnen and not frei_b else []
@@ -691,20 +724,21 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 		if nb.is_empty():
 			continue
 		var hoeher: float = float(nb[1]) - oben
-		if hoeher < 0.03 or hoeher > 3.0:
+		if hoeher < 0.03 or hoeher > 12.0:
 			continue
 		var richtung: float = ende[1]
 		var s_fuge: float = sb if richtung > 0.0 else sa
 		# dort tritt die Mitte des Wehrgangs in den Körper des Nachbarn (an einer Ecke weiter vor der Fuge)
 		var s1 := s_fuge - richtung * (_eintritt(b_plan if richtung > 0.0 else a_plan, -u * richtung, n, nb) - 0.02)
-		var lang := clampf(hoeher * 2.6, 0.8, 7.8)
+		# bis 1 m eine Rampe (gut 20°), darüber eine Treppe (32°, wenn das Stück kurz ist bis 41°)
+		var lang := clampf(hoeher * 2.6, 0.8, 7.8) if hoeher <= 1.0 else hoeher * 1.6
 		var anfang := s1 - richtung * lang
 		var rest := (anfang - ((a - m).dot(u) if richtung > 0.0 else (b - m).dot(u))) * richtung
 		if rest < 0.0:
 			lang += rest                   # das Stück ist kürzer: steiler
 			anfang = s1 - richtung * lang
-		if lang < hoeher * 1.1:
-			continue                       # steiler als 42°: nicht begehbar
+		if lang < hoeher * (1.1 if hoeher <= 1.0 else 1.15):
+			continue                       # zu steil: nicht begehbar
 		_wehrgang_rampe(m, u, n, d, oben + 0.06, anfang, s1, s_fuge + richtung * d, float(nb[1]) + 0.06)
 		if hoeher > 0.6:
 			if richtung > 0.0:
@@ -794,11 +828,20 @@ func _rundturm(c: Vector2, unten: float, oben: float, r: float, dach: int, dachh
 ## Baus): [Richtung vom Ende ins Nachbarstück, Krone, Dicke (bis zu deren Körper reicht die Stufe), anderes Ende,
 ## Feldseite]; leer, wenn keiner da ist.
 func _nachbar_an(p: Vector2, anderes: Vector2) -> Array:
+	# bei mehreren das, welches dieses Stück am geradesten fortsetzt
+	var bestes: Array = []
+	var gerade := INF
+	var eigen := (anderes - p).normalized()
 	for m: Array in _nachbarn_mauern:
 		for e in 2:
 			var q: Vector2 = m[1 - e]
-			if (m[e] as Vector2).distance_to(p) < 0.05 and q.distance_to(anderes) > 0.05:
-				return [(q - p).normalized(), m[2], m[3], q, m[4]]
+			if (m[e] as Vector2).distance_to(p) < 0.05 and not _gleiche_flucht(p, q, anderes):
+				var w := (q - p).normalized().dot(eigen)
+				if w < gerade:
+					gerade = w
+					bestes = [(q - p).normalized(), m[2], m[3], q, m[4]]
+	if not bestes.is_empty():
+		return bestes
 	var i := 0
 	while i + 7 < tore.size():
 		var g := Vector2(tore[i], tore[i + 1])
@@ -811,13 +854,19 @@ func _nachbar_an(p: Vector2, anderes: Vector2) -> Array:
 	return []
 
 
+## Gehört das Stück p→q zu diesem (p→anderes)? Dasselbe Stück, auch wenn dieses an einem Turm geteilt wurde und
+## anderes darum nicht sein Planende ist
+func _gleiche_flucht(p: Vector2, q: Vector2, anderes: Vector2) -> bool:
+	return q.distance_to(anderes) < 0.05 or (q - p).normalized().dot((anderes - p).normalized()) > 0.9995
+
+
 ## Am Stoß p: Liegt keines der anderen Stücke in der Flucht dieses (von p nach anderes), zweigt dieses ab
 func _ist_abzweig(p: Vector2, anderes: Vector2) -> bool:
 	var eigen := (anderes - p).normalized()
 	var andere: Array = []
 	for m: Array in _nachbarn_mauern:
 		for e in 2:
-			if (m[e] as Vector2).distance_to(p) < 0.05 and (m[1 - e] as Vector2).distance_to(anderes) > 0.05:
+			if (m[e] as Vector2).distance_to(p) < 0.05 and not _gleiche_flucht(p, m[1 - e], anderes):
 				andere.append(((m[1 - e] as Vector2) - p).normalized())
 	if andere.size() < 2:
 		return false
@@ -837,7 +886,7 @@ func _halbe_dicke_an(p: Vector2, anderes: Vector2) -> float:
 	var h := 0.0
 	for m: Array in _nachbarn_mauern:
 		for e in 2:
-			if (m[e] as Vector2).distance_to(p) < 0.05 and (m[1 - e] as Vector2).distance_to(anderes) > 0.05:
+			if (m[e] as Vector2).distance_to(p) < 0.05 and not _gleiche_flucht(p, m[1 - e], anderes):
 				h = maxf(h, float(m[3]) * 0.5)
 	return h
 
@@ -847,7 +896,7 @@ func _anzahl_nachbarn(p: Vector2, anderes: Vector2) -> int:
 	var k := 0
 	for m: Array in _nachbarn_mauern:
 		for e in 2:
-			if (m[e] as Vector2).distance_to(p) < 0.05 and (m[1 - e] as Vector2).distance_to(anderes) > 0.05:
+			if (m[e] as Vector2).distance_to(p) < 0.05 and not _gleiche_flucht(p, m[1 - e], anderes):
 				k += 1
 	return k
 
@@ -882,7 +931,27 @@ func _gehrung(p: Vector2, u: Vector2, q: Vector2, v: Vector2) -> float:
 ## Hofmauer und Brustwehr steigen in Stufen mit
 func _wehrgang_rampe(m: Vector2, u: Vector2, n: Vector2, d: float, y0: float, s0: float, s1: float, s2: float, y1: float) -> void:
 	var richtung := signf(s1 - s0)
-	_keil("boden", m, n, u * richtung, -d + 0.35, d - BRUSTWEHR_DICKE, s0 * richtung, s1 * richtung, y0 - 0.06, y0, y1)
+	if y1 - y0 <= 1.0:
+		_keil("boden", m, n, u * richtung, -d + 0.35, d - BRUSTWEHR_DICKE, s0 * richtung, s1 * richtung, y0 - 0.06, y0, y1)
+	else:
+		# Treppe: Stufen aus Stein, darüber eine unsichtbare Lauffläche über die Stufenkanten (wie bei den Mauertreppen)
+		var stufen := maxi(2, int(ceil((y1 - y0) / 0.25)))
+		var tritt := (s1 - s0) / stufen
+		for k in stufen:
+			var a_ := s0 + tritt * k
+			var b_ := s0 + tritt * (k + 1)
+			var y_ := y0 + (y1 - y0) * (k + 1) / stufen
+			_klotz("boden", m, u, n, minf(a_, b_), maxf(a_, b_), -d + 0.35, d - BRUSTWEHR_DICKE, y0 - 0.06, y_, true)
+			_klotz("hell", m, u, n, minf(a_, a_ + richtung * 0.12), maxf(a_, a_ + richtung * 0.12), -d + 0.35, d - BRUSTWEHR_DICKE, y_ - 0.12, y_ + 0.02)
+		var p := func(su: float, sn: float, y: float) -> Vector3:
+			var q := m + u * su + n * sn
+			return Vector3(q.x, y, q.y)
+		var r0 := s0 - tritt
+		var r1 := s1 - tritt
+		_viereck("rampe", p.call(r0, -d + 0.35, y0 + 0.02), p.call(r1, -d + 0.35, y1 + 0.02), p.call(r1, d - BRUSTWEHR_DICKE, y1 + 0.02),
+			p.call(r0, d - BRUSTWEHR_DICKE, y0 + 0.02), Vector3.UP)
+		_viereck("rampe", p.call(r1, -d + 0.35, y1 + 0.02), p.call(s1, -d + 0.35, y1 + 0.02), p.call(s1, d - BRUSTWEHR_DICKE, y1 + 0.02),
+			p.call(r1, d - BRUSTWEHR_DICKE, y1 + 0.02), Vector3.UP)
 	_klotz("boden", m, u, n, minf(s1, s2), maxf(s1, s2), -d + 0.35, d - BRUSTWEHR_DICKE, y0 - 0.06, y1, true)
 	var x := s0
 	var schritt := 0.5 * richtung
@@ -956,7 +1025,15 @@ func _sammle_nachbarn() -> void:
 	_hohle = []
 	_hohle_eckig = []
 	_nachbarn_bauten = []
-	var knoten: Array = get_parent().get_children() if get_parent() != null else [self]
+	# alle Bauten der Region (unter dem Großelternknoten: Burgen, Stadt, Hafen), einmal je Region gesammelt
+	var oben_ := get_parent().get_parent() if get_parent() != null and get_parent().get_parent() != null else get_parent()
+	var knoten: Array = [self]
+	if oben_ != null:
+		var schluessel := oben_.get_instance_id()
+		if not _bauten_je_region.has(schluessel):
+			_bauten_je_region[schluessel] = oben_.find_children("*", "Node3D", true, false).filter(
+				func(k: Node) -> bool: return "mauern" in k and "tuerme" in k)
+		knoten = _bauten_je_region[schluessel]
 	for k: Node in knoten:
 		if not ("mauern" in k and "tuerme" in k):
 			continue
