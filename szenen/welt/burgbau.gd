@@ -520,10 +520,21 @@ func _balken(mat: String, a: Vector3, b: Vector3, breite: float, hoehe: float, h
 	_viereck(mat, b - bs - ho, b + bs - ho, b + bs + ho, b - bs + ho, d)
 
 
-func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: float, aussen: Vector2, zinnen: bool) -> void:
+func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: float, aussen: Vector2, zinnen: bool,
+		frei_a := false, frei_b := false) -> void:
+	# Läuft die Mauer mitten durch einen hohlen Rundturm, wird sie dort geteilt: beide Teile enden in seiner Wand
+	for t: Array in _hohle:
+		var tc: Vector2 = t[0]
+		if oben + 2.7 <= float(t[3]) or a.distance_to(tc) < float(t[1]) + 0.6 or b.distance_to(tc) < float(t[1]) + 0.6:
+			continue
+		var cp := Geometry2D.get_closest_point_to_segment(tc, a, b)
+		if cp.distance_to(tc) < float(t[2]) - 0.5:
+			_mauerstueck(a, _turm_ende(cp, a, tc, t[2], dicke), unten, oben, dicke, aussen, zinnen, frei_a, true)
+			_mauerstueck(_turm_ende(cp, b, tc, t[2], dicke), b, unten, oben, dicke, aussen, zinnen, true, frei_b)
+			return
 	# Nachbarn an den Enden (für Rampen zu höheren Wehrgängen und Ecken), solange die Enden noch die Planpunkte sind
-	var nb_a := _nachbar_an(a, b) if zinnen else []
-	var nb_b := _nachbar_an(b, a) if zinnen else []
+	var nb_a := _nachbar_an(a, b) if zinnen and not frei_a else []
+	var nb_b := _nachbar_an(b, a) if zinnen and not frei_b else []
 	var a_plan := a
 	var b_plan := b
 	# An einem hohlen Turm endet die Mauer in seiner Wand (samt Überlappung und Breite), nicht in seiner Kammer; ein
@@ -541,11 +552,11 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			return                        # ganz im Turm
 		if in_a:
 			a = _turm_ende(a, b, tc, t[2], dicke)
-		elif a.distance_to(tc) < float(t[1]) + ueber_a + 0.05:
+		elif not frei_a and a.distance_to(tc) < float(t[1]) + ueber_a + 0.05:
 			ueber_a = maxf(0.0, a.distance_to(tc) - float(t[1]) - 0.05)
 		if in_b:
 			b = _turm_ende(b, a, tc, t[2], dicke)
-		elif b.distance_to(tc) < float(t[1]) + ueber_b + 0.05:
+		elif not frei_b and b.distance_to(tc) < float(t[1]) + ueber_b + 0.05:
 			ueber_b = maxf(0.0, b.distance_to(tc) - float(t[1]) - 0.05)
 	for t: Array in _hohle_eckig:
 		if oben + 2.7 <= float(t[5]):
@@ -999,6 +1010,24 @@ func _torturm_zugang(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, obe
 	return {"boden": tief + 0.06, "seiten": seiten, "stufen": stufen, "mitten": mitten, "wege": wege}
 
 
+## Schnittpunkte der Strecke a→b mit dem Kreis (c, rad): der näher an a zuerst; leer, wenn sie ihn nicht zweimal schneidet
+func _kreis_schnitte(a: Vector2, b: Vector2, c: Vector2, rad: float) -> Array:
+	var d := b - a
+	var f := a - c
+	var aa := d.dot(d)
+	var bb := 2.0 * f.dot(d)
+	var cc := f.dot(f) - rad * rad
+	var disk := bb * bb - 4.0 * aa * cc
+	if disk <= 0.0 or aa < 0.0001:
+		return []
+	var w := sqrt(disk)
+	var t0 := (-bb - w) / (2.0 * aa)
+	var t1 := (-bb + w) / (2.0 * aa)
+	if t0 < 0.0 or t1 > 1.0:
+		return []
+	return [a + d * t0, a + d * t1]
+
+
 ## Punkt auf der Strecke von p (im Kreis) nach q mit Abstand rad zur Mitte c: dort tritt die Mauerachse aus dem Kreis
 func _auf_kreis(p: Vector2, q: Vector2, c: Vector2, rad: float) -> Vector2:
 	var d := (q - p).normalized()
@@ -1021,6 +1050,19 @@ func _turm_zugang(c: Vector2, r: float, oben: float) -> Dictionary:
 	var treffer: Array = []
 	var ri := r - _turm_wand(r)
 	for m: Array in _nachbarn_mauern:
+		var ma: Vector2 = m[0]
+		var mb: Vector2 = m[1]
+		if ma.distance_to(c) > r + 0.6 and mb.distance_to(c) > r + 0.6 and \
+				Geometry2D.get_closest_point_to_segment(c, ma, mb).distance_to(c) < ri - 0.5:
+			# die Mauer läuft durch den Turm: eine Tür, wo sie hinein-, eine, wo sie hinausgeht
+			var aus_ := _kreis_schnitte(ma, mb, c, r)
+			var ein_ := _kreis_schnitte(ma, mb, c, ri)
+			if aus_.size() == 2 and ein_.size() == 2:
+				var dir := (mb - ma).normalized()
+				treffer.append([aus_[0], m[2], ein_[0], aus_[0] - dir * 0.4])
+				treffer.append([aus_[1], m[2], ein_[1], aus_[1] + dir * 0.4])
+				hoch = maxf(hoch, m[2])
+			continue
 		for e in 2:
 			var p: Vector2 = m[e]
 			var q: Vector2 = m[1 - e]
