@@ -1040,7 +1040,9 @@ for name_, (bx_, bz_) in BURG_BRUNNEN.items():
     w_ = random.uniform(0, math.tau)
     TAUBEN_BURG.append((round(bx_ + math.cos(w_) * 4.5, 2), boden_, round(bz_ + math.sin(w_) * 4.5, 2), 0.0, random.randint(5, 8), 1.8, False))
 print("Kleinteile in den Höfen (Art: Anzahl):", _klein, "Taubenschwärme:", len(TAUBEN_BURG))
-# Laternen neben den Türen: an jedem Haus und jedem begehbaren Bau eine, an jeder zweiten brennt nachts ein Licht
+# Laternen neben den Türen: an jedem Haus und jedem begehbaren Bau eine, an jeder zweiten brennt nachts ein Licht.
+# Bei den begehbaren Bauten hängen sie auf dem Mauerpfeiler zwischen Tür (1,6 m breit) und erstem Fenster (ab 1,3 m
+# von der Mitte), also gut 1 m neben der Türmitte und nie vor einer Scheibe.
 _laternen = 0
 for k_, (x_, y_, z_, g_, f_) in enumerate(HOFHAEUSER):
     b_, t_ = _FORMEN[f_]
@@ -1060,7 +1062,7 @@ for bau_, boden_ in [(b_, PD.H_VORBURG) for b_ in (PD.VORBURG_BAUTEN[0], PD.VORB
     (pp_, l_, br_, dr_) = bau_
     a_ = math.radians(dr_)
     for s_ in (-1, 1):
-        q_ = (pp_[0] - math.sin(a_) * (br_ / 2 + 0.25) + math.cos(a_) * s_ * 4.0, pp_[1] + math.cos(a_) * (br_ / 2 + 0.25) + math.sin(a_) * s_ * 4.0)
+        q_ = (pp_[0] - math.sin(a_) * (br_ / 2 + 0.25) + math.cos(a_) * s_ * 2.1, pp_[1] + math.cos(a_) * (br_ / 2 + 0.25) + math.sin(a_) * s_ * 2.1)
         lx_, lz_ = W(q_)
         g_ = math.degrees(math.atan2(*(lambda d_: (d_[0], d_[1]))((W((q_[0] - math.sin(a_), q_[1] + math.cos(a_)))[0] - lx_,
                                                               W((q_[0] - math.sin(a_), q_[1] + math.cos(a_)))[1] - lz_))))
