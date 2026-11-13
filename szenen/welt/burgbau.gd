@@ -575,6 +575,12 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			ueber_b = minf(ueber_b, _vor_turm(b, t))
 		a = a2
 		b = b2
+	# Ein abzweigender Arm (an einem Stoß dreier Mauern, keiner der anderen in seiner Flucht) überlappt nicht in den
+	# durchgehenden Wehrgang, er endet an dessen Flanke
+	if stoss_a >= 2 and _ist_abzweig(a_plan, b_plan):
+		ueber_a = -_halbe_dicke_an(a_plan, b_plan)
+	if stoss_b >= 2 and _ist_abzweig(b_plan, a_plan):
+		ueber_b = -_halbe_dicke_an(b_plan, a_plan)
 	var laenge := a.distance_to(b)
 	if laenge < 0.2:
 		return
@@ -803,6 +809,37 @@ func _nachbar_an(p: Vector2, anderes: Vector2) -> Array:
 			return [(g - p).normalized(), weg_y, maxf(dicke_weg, 0.0), g, Vector2.ZERO]
 		i += 8
 	return []
+
+
+## Am Stoß p: Liegt keines der anderen Stücke in der Flucht dieses (von p nach anderes), zweigt dieses ab
+func _ist_abzweig(p: Vector2, anderes: Vector2) -> bool:
+	var eigen := (anderes - p).normalized()
+	var andere: Array = []
+	for m: Array in _nachbarn_mauern:
+		for e in 2:
+			if (m[e] as Vector2).distance_to(p) < 0.05 and (m[1 - e] as Vector2).distance_to(anderes) > 0.05:
+				andere.append(((m[1 - e] as Vector2) - p).normalized())
+	if andere.size() < 2:
+		return false
+	for d: Vector2 in andere:
+		if eigen.dot(d) < -0.95:
+			return false                  # ein anderes Stück setzt dieses gerade fort
+	# die beiden anderen fluchten miteinander: dieses zweigt ab
+	for i in andere.size():
+		for j in range(i + 1, andere.size()):
+			if (andere[i] as Vector2).dot(andere[j]) < -0.95:
+				return true
+	return false
+
+
+## Größte halbe Dicke der anderen Stücke am Stoß p
+func _halbe_dicke_an(p: Vector2, anderes: Vector2) -> float:
+	var h := 0.0
+	for m: Array in _nachbarn_mauern:
+		for e in 2:
+			if (m[e] as Vector2).distance_to(p) < 0.05 and (m[1 - e] as Vector2).distance_to(anderes) > 0.05:
+				h = maxf(h, float(m[3]) * 0.5)
+	return h
 
 
 ## Anzahl anderer Mauerstücke, die am Punkt p enden

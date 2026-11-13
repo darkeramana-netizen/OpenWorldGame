@@ -228,6 +228,64 @@ func _initialize() -> void:
 				else:
 					print("       Tor nicht überquert: %s bei %s (stehe bei %s)" % [bau.name, gm, spieler().global_position.snapped(Vector3.ONE * 0.1)])
 			i += 8
+	# Wehrgänge: über jede dritte Fuge zwischen zwei Mauerstücken (abseits der Türme, Sprung bis 3 m) vom einen Wehrgang
+	# auf den anderen; an Höhensprüngen führen Rampen, an Ecken sind Brustwehr und Hofmauer auf Gehrung geschnitten
+	var stuecke := []
+	var hindernisse := []     # Türme: [Mitte, Abstand]
+	for bau in current_scene.find_children("*", "Node3D", true, false):
+		if not ("mauern" in bau and "tuerme" in bau):
+			continue
+		var mw: PackedFloat32Array = bau.mauern
+		var k := 0
+		while k + 9 < mw.size():
+			if mw[k + 9] > 0.5:
+				stuecke.append([Vector2(mw[k], mw[k + 1]), Vector2(mw[k + 2], mw[k + 3]), mw[k + 5], Vector2(mw[k + 7], mw[k + 8])])
+			k += 10
+		var tw: PackedFloat32Array = bau.tuerme
+		k = 0
+		while k + 6 < tw.size():
+			hindernisse.append([Vector2(tw[k], tw[k + 1]), tw[k + 4] + 3.2])
+			k += 7
+		var tbw: PackedFloat32Array = bau.torbauten
+		k = 0
+		while k + 9 < tbw.size():
+			hindernisse.append([Vector2(tbw[k], tbw[k + 1]), maxf(tbw[k + 6], tbw[k + 7]) * 0.71 + 3.2])
+			k += 10
+	var fugen_ok := 0
+	var fugen_alle := 0
+	var nr := 0
+	for ia in stuecke.size():
+		for ib in range(ia + 1, stuecke.size()):
+			for ea in 2:
+				for eb in 2:
+					var A: Array = stuecke[ia]
+					var B: Array = stuecke[ib]
+					var fuge: Vector2 = A[ea]
+					if fuge.distance_to(B[eb]) > 0.05 or absf(float(A[2]) - float(B[2])) > 3.0:
+						continue
+					if hindernisse.any(func(h): return fuge.distance_to(h[0]) < float(h[1])):
+						continue
+					nr += 1
+					if nr % 3 != 0:
+						continue
+					var da: Vector2 = ((A[1 - ea] as Vector2) - fuge).normalized()
+					var db: Vector2 = ((B[1 - eb] as Vector2) - fuge).normalized()
+					var na := da.orthogonal() * signf(da.orthogonal().dot(A[3]))
+					var nb := db.orthogonal() * signf(db.orthogonal().dot(B[3]))
+					var pa: Vector2 = fuge + da * minf(3.0, (A[0] as Vector2).distance_to(A[1]) * 0.5) - na * 0.125
+					var pb: Vector2 = fuge + db * minf(3.0, (B[0] as Vector2).distance_to(B[1]) * 0.5) - nb * 0.125
+					var ecke: Vector2 = fuge - na * 0.125
+					var nenner := da.x * db.y - da.y * db.x
+					if absf(nenner) >= 0.17:
+						var w0: Vector2 = nb * -0.125 - na * -0.125
+						ecke += da * ((w0.x * db.y - w0.y * db.x) / nenner)
+					fugen_alle += 1
+					await setze(Vector3(pa.x, float(A[2]) + 0.6, pa.y))
+					if await gehe_ueber([ecke, pb], 8.0, 0.6) and spieler().global_position.y > minf(A[2], B[2]) - 0.5:
+						fugen_ok += 1
+					else:
+						print("       Fuge nicht überquert: %s (%.2f -> %.2f), stehe bei %s" % [fuge, A[2], B[2], spieler().global_position.snapped(Vector3.ONE * 0.1)])
+	pruefe(fugen_alle >= 60 and fugen_ok >= fugen_alle * 0.9, "Wehrgänge: über %d von %d Fugen zwischen Mauerstücken gegangen" % [fugen_ok, fugen_alle])
 	pruefe(turm_alle >= 4 and turm_ok == turm_alle, "Hohle Rundtürme: %d von %d auf dem Wehrgang durchquert" % [turm_ok, turm_alle])
 	pruefe(tor_alle >= 3 and tor_ok == tor_alle, "Tore: %d von %d auf dem Wehrgang über den Bogen durch beide Tortürme überquert" % [tor_ok, tor_alle])
 	# Vom Marktplatz auf den Westkai und über den Kai bis an den Kanal vor dem Wassertor
