@@ -26,6 +26,10 @@ extends Node3D
 	set(w):
 		tore = w
 		_neu_bauen()
+## Je Tor eine Regel für die Torflügel (szenen/welt/fluegel.gd), in der Reihenfolge der Tore: "offen", "tag" (nachts und
+## bei Alarm zu) oder "zu", nach einem Doppelpunkt die Bedingung, unter der die Wache dem Spieler öffnet
+## (z. B. "zu:eid_waechter"). Fehlt sie, stehen die Flügel offen.
+@export var tor_regeln := PackedStringArray()
 ## Je Torturm (auch Bergfried, Kirchturm) 10 Werte: x, z, Richtung x, z (entlang der Mauer), unten, oben, Breite
 ## (entlang), Tiefe, außen-Vorzeichen, Dach (0 Zinnen, ab 1 Zeltdach; größere Werte machen den Helm steiler)
 @export var torbauten := PackedFloat32Array():
@@ -120,7 +124,8 @@ func _baue() -> void:
 		i += 7
 	i = 0
 	while i + 7 < tore.size():
-		_tor(Vector2(tore[i], tore[i + 1]), Vector2(tore[i + 2], tore[i + 3]), tore[i + 4], tore[i + 5], tore[i + 6], tore[i + 7])
+		var regel_ := tor_regeln[i / 8] if i / 8 < tor_regeln.size() else "offen"
+		_tor(Vector2(tore[i], tore[i + 1]), Vector2(tore[i + 2], tore[i + 3]), tore[i + 4], tore[i + 5], tore[i + 6], tore[i + 7], regel_)
 		i += 8
 	i = 0
 	while i + 9 < torbauten.size():
@@ -1837,7 +1842,7 @@ func _hoehle(w: PackedFloat32Array) -> void:
 
 
 ## Torbogen: Mauerblock über der Durchfahrt mit rundem Bogen und halb hochgezogenem Fallgitter.
-func _tor(c: Vector2, u: Vector2, boden: float, breite: float, oben: float, dicke: float) -> void:
+func _tor(c: Vector2, u: Vector2, boden: float, breite: float, oben: float, dicke: float, regel := "offen") -> void:
 	u = u.normalized()
 	var n := Vector2(-u.y, u.x)
 	var w := breite / 2.0
@@ -1887,14 +1892,24 @@ func _tor(c: Vector2, u: Vector2, boden: float, breite: float, oben: float, dick
 	# Brustwehr und Zinnen auf dem Bogen
 	_klotz(stein, c, u, n, -w - 0.8, w + 0.8, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
 	_zinnen(c, u, n, breite + 1.6, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR)
-	# Torflügel aus Bohlen mit Eisenbändern, geöffnet: zu beiden Seiten an die Laibung geklappt (ohne Kollision, damit
-	# sie den Durchgang nicht verengen)
-	var fl := minf(w - 0.1, 2.0 * d - 0.4)
-	for seite: float in [-1.0, 1.0]:
-		var x := seite * (w - 0.1)
-		_klotz("holz", c, u, n, x - 0.06, x + 0.06, -d + 0.15, -d + 0.15 + fl, boden + 0.05, kaempfer + w * 0.6, true)
-		for y: float in [boden + 0.6, kaempfer - 0.3, kaempfer + w * 0.4]:
-			_klotz("metall", c, u, n, x - seite * 0.08 - 0.02, x - seite * 0.08 + 0.02, -d + 0.15, -d + 0.15 + fl * 0.85, y, y + 0.12, true)
+	# Torflügel aus Bohlen mit Eisenbändern: an der Innenflucht der Mauer angeschlagen, oben dem Bogen nach geschnitten
+	# und etwas größer als die Öffnung; sie gehen in den Hof auf (bis an die Tortürme) und ragen nie in den Bogen.
+	var teile_ := regel.split(":", true, 1)
+	var innen := _innen_bei(c, n)
+	var fl := Fluegel.new()
+	fl.breite = breite
+	fl.kaempfer = KAEMPFER
+	fl.anzahl = 2
+	fl.ueberstand = 0.06
+	fl.staerke = 0.14
+	fl.winkel_offen = 88.0
+	fl.regel = teile_[0]
+	fl.bedingung = teile_[1] if teile_.size() > 1 else ""
+	fl.reichweite = 7.0
+	fl.anzeige_name = "Das Tor"
+	fl.mat_holz = _material("holz")
+	fl.mat_metall = _material("metall")
+	_setze(fl, c + innen * (d + 0.08), boden, u, innen)
 	# Fallgitter, hochgezogen: nur die Spitzen schauen unter dem Bogen hervor
 	var unterkante := maxf(kaempfer + w * 0.45, boden + 3.2)
 	var stab := -w + 0.25
@@ -1911,6 +1926,35 @@ func _tor(c: Vector2, u: Vector2, boden: float, breite: float, oben: float, dick
 		quer += 0.5
 
 
+## Richtung zur Hofseite eines Tors: gegen die Feldseite (aussen) des nächsten Mauerstücks dieses Baus; ohne Mauer n.
+func _innen_bei(p: Vector2, n: Vector2) -> Vector2:
+	var best := INF
+	var aus := Vector2.ZERO
+	var i := 0
+	while i + 9 < mauern.size():
+		var a := Vector2(mauern[i], mauern[i + 1])
+		var b := Vector2(mauern[i + 2], mauern[i + 3])
+		var dist := Geometry2D.get_closest_point_to_segment(p, a, b).distance_to(p)
+		if dist < best:
+			best = dist
+			aus = Vector2(mauern[i + 7], mauern[i + 8])
+		i += 10
+	if aus == Vector2.ZERO:
+		return n
+	return -n if n.dot(aus) > 0.0 else n
+
+
+## Setzt einen Kindknoten (Flügel) an p auf Höhe y: lokal x entlang u, z nach z_richtung (beide waagrecht)
+func _setze(k: Node3D, p: Vector2, y: float, u: Vector2, z_richtung: Vector2) -> void:
+	var z3 := Vector3(z_richtung.x, 0.0, z_richtung.y).normalized()
+	var x3 := Vector3(u.x, 0.0, u.y).normalized()
+	x3 = (x3 - z3 * x3.dot(z3)).normalized()
+	if x3.cross(Vector3.UP).dot(z3) < 0.0:
+		x3 = -x3                      # rechtshändig: x × y = z
+	k.transform = Transform3D(Basis(x3, Vector3.UP, z3), Vector3(p.x, y, p.y))
+	add_child(k)
+
+
 ## Eckiger Torturm mit Anlauf, Gesims, Pechnasen zur Feldseite und Zeltdach oder Zinnen.
 func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, tiefe: float, aussen: float, dach: float) -> void:
 	u = u.normalized()
@@ -1921,6 +1965,19 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 	var hohl := dach <= -1.5          # begehbarer Bergfried: Mauern mit Tür zur Hofseite (-n), innen baut turm.gd
 	if hohl:
 		_hohl(c, u, n, b, t, HOHL_WAND, unten, oben, hohl_boden)
+		# Zwei Türflügel innen in der Laibung der Tür zur Hofseite (-n), sie gehen nach innen auf
+		var tuer := Fluegel.new()
+		tuer.breite = HOHL_TUER - 0.04
+		tuer.hoehe = 3.56
+		tuer.anzahl = 2
+		tuer.staerke = 0.12
+		tuer.winkel_offen = 90.0
+		tuer.regel = "tuer"
+		tuer.reichweite = 3.2
+		tuer.anzeige_name = "Die Tür"
+		tuer.mat_holz = _material("holz")
+		tuer.mat_metall = _material("metall")
+		_setze(tuer, c - n * (t - HOHL_WAND + 0.1), hohl_boden, u, n)
 	else:
 		_klotz(stein, c, u, n, -b, b, -t, t, unten, oben)
 	# Anlauf rundum
@@ -2204,7 +2261,8 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 				var pos := -L + 1.0 + (f + 0.5) * (2.0 * L - 2.0) / anzahl
 				if k == 0 and seite > 0 and absf(pos) < 1.8 and art != 1:
 					continue   # dort ist die Tür
-				_fenster(c, uz, nx, pos, B * seite, seite, ym, fb, fh, art == 1, begehbar)
+				var tuer_frei := Vector2(-1.1, 1.1) if k == 0 and seite > 0 and art != 1 else Vector2(INF, -INF)
+				_fenster(c, uz, nx, pos, B * seite, seite, ym, fb, fh, art == 1, begehbar, tuer_frei)
 				if begehbar:
 					_fenster_innen(c, uz, nx, pos, (B - 0.6) * seite, -seite, ym, fb, fh)
 			# Giebelseiten
@@ -2534,7 +2592,7 @@ func _doppelfenster(m: Vector2, u: Vector2, n: Vector2, ym: float, fh: float) ->
 ## Sturz mit Verdachung und Endsteinen, dazu aufgeklappte Bretterläden mit Eisenbändern. "hoch" (Kirchen):
 ## Spitzbogen aus gestuften Steinen statt Läden. Zierteile ohne Kollision (Präfix "zier_").
 func _fenster(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite: float, ym: float, fb: float,
-		fh: float, hoch: bool, durch := false) -> void:
+		fh: float, hoch: bool, durch := false, frei := Vector2(INF, -INF)) -> void:
 	var nn := n * signf(seite)
 	var m := c + u * pos + n * abstand
 	var b := fb / 2.0
@@ -2611,12 +2669,15 @@ func _fenster(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, se
 		_klotz("zier_hell", m, u, nn, -0.06, 0.06, -0.02, 0.12, y0, y1)
 	var kh := y0 + fh * 0.64
 	_klotz("zier_hell", m, u, nn, -b, b, -0.02, 0.12, kh - 0.06, kh + 0.06, true)
-	# Wirbel (Ladenhalter) und aufgeklappte Läden: drei Bretter mit Fugen, zwei Leisten, Strebe, Eisenbänder
+	# Wirbel (Ladenhalter) und aufgeklappte Läden: drei Bretter mit Fugen, zwei Leisten, Strebe, Eisenbänder. Ein Laden,
+	# der über die Tür samt Gewände reichte (frei: Bereich entlang u, von c aus gemessen), entfällt.
 	for s_: float in [-1.0, 1.0]:
 		var a0 := s_ * (b + 0.4)
 		var a1 := s_ * (b + 0.4 + b + 0.05)
 		var lo := minf(a0, a1)
 		var hi := maxf(a0, a1)
+		if pos + hi > frei.x - 0.1 and pos + lo < frei.y + 0.1:
+			continue
 		var brett := (hi - lo) / 3.0
 		for k in 3:
 			_klotz("zier_holz", m, u, nn, lo + k * brett + 0.008, lo + (k + 1) * brett - 0.008, 0.05, 0.1, y0 + 0.02,
@@ -2687,8 +2748,19 @@ func _tuer(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, seite
 	var m := c + u * pos + n * abstand
 	var b := tb / 2.0
 	if offen:
-		# Türflügel nach innen aufgeschlagen, an der Laibung
-		_klotz("holz", m + u * (b + 0.05), u, nn, -0.06, 0.04, -0.6 - tb * 0.9, -0.6, boden, boden + th - 0.05)
+		# Begehbarer Bau: ein Türblatt (Kirchenportal: zwei Flügel) innen in der Laibung, das aufgeht, wenn jemand kommt
+		var tuer := Fluegel.new()
+		tuer.breite = tb - 0.04
+		tuer.hoehe = th - 0.04
+		tuer.anzahl = 2 if tb >= 2.2 else 1
+		tuer.staerke = 0.08
+		tuer.winkel_offen = 92.0
+		tuer.regel = "tuer"
+		tuer.reichweite = 2.4
+		tuer.anzeige_name = "Die Tür"
+		tuer.mat_holz = _material("holz")
+		tuer.mat_metall = _material("metall")
+		_setze(tuer, m - nn * 0.52, boden, u, -nn)
 	else:
 		_klotz("holz", m, u, nn, -b, b, -0.06, 0.04, boden, boden + th)
 		# Eisenbänder auf dem geschlossenen Türblatt

@@ -328,6 +328,7 @@ mauern = PackedFloat32Array(-0.81, 240.67, -7.44, 229.45, -18.402, -6.984, 3, -0
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array(-26.411, 186.63, -0.081618, -0.99666, -13.564, 5, -7.0638, 3)
 torbauten = PackedFloat32Array(-25.995, 191.71, -0.081618, -0.99666, -16.752, -1.0638, 5, 5, -1, 1, -26.828, 181.54, -0.081618, -0.99666, -16.726, -1.0638, 5, 5, -1, 1)
+tor_regeln = PackedStringArray("tag:eid_waechter")
 stein = "mauer"
 
 [node name="RingmauerTor0Schild" type="Label3D" parent="Drachenstein/Burgen"]
@@ -347,6 +348,7 @@ mauern = PackedFloat32Array(59.11, 130.88, 60.74, 122, -12.588, -2.2227, 3, 0.98
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array(90.358, -9.4875, 0.10529, -0.99444, -19.6, 10, 7.022, 3)
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray("offen")
 stein = "mauer"
 
 [node name="RingmauerTuerme" type="Node3D" parent="Drachenstein/Burgen"]
@@ -371,6 +373,7 @@ mauern = PackedFloat32Array(55.81, 184.94, 46.73, 191.06, -11.343, -2, 3, 0.5589
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array(30.642, 132.2, 0.9967, -0.081168, -8, 4, -2, 3, 60.27, 140.49, -0.045708, 0.99895, -8.1707, 4.5, -2.1707, 3)
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray("zu:eid_waechter", "tag:eid_waechter")
 stein = "mauer"
 
 [node name="VorburgTuerme" type="Node3D" parent="Drachenstein/Burgen"]
@@ -413,6 +416,7 @@ mauern = PackedFloat32Array(-6.51, 121.81, -12.15, 114.53, -13.811, 12.699, 3, -
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array(32.9, 48.956, 0.99125, -0.13202, 6.4697, 4.5, 12.97, 3, 41.607, 57.013, 0.29442, 0.95568, 6, 5, 12.5, 3)
 torbauten = PackedFloat32Array(40.106, 52.139, 0.29442, 0.95568, 3.2772, 18.5, 5, 5, -1, 1, 43.109, 61.887, 0.29442, 0.95568, 3.4126, 18.5, 5, 5, -1, 1)
+tor_regeln = PackedStringArray("zu:eid_waechter", "zu:eid_waechter")
 stein = "mauer"
 
 [node name="MittelburgTuerme" type="Node3D" parent="Drachenstein/Burgen"]
@@ -437,6 +441,7 @@ mauern = PackedFloat32Array(38.88, 48.16, 43.473, 35.793, 1.7554, 11.717, 2.5, 0
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "mauer"
 
 [node name="OberburgTor0Schild" type="Label3D" parent="Drachenstein/Burgen"]
@@ -456,6 +461,7 @@ mauern = PackedFloat32Array(1.64, 44.82, -9.4633, 39.233, 6.5963, 21, 3, -0.4494
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array(3.1449, -47.926, 0.98987, -0.14197, 14.54, 5, 21.54, 3, 28.127, -47.365, 0.18442, 0.98285, 14, 4.5, 21, 3)
 torbauten = PackedFloat32Array(27.233, -52.132, 0.18442, 0.98285, 11.164, 27, 5, 5, -1, 1, 29.022, -42.598, 0.18442, 0.98285, 10.812, 27, 5, 5, -1, 1)
+tor_regeln = PackedStringArray("zu:eid_waechter", "zu:eid_waechter")
 stein = "mauer"
 
 [node name="TorhausOberburg" type="Node3D" parent="Drachenstein/Burgen"]
@@ -468,6 +474,7 @@ mauern = PackedFloat32Array(-18.22, -41.62, -18.14, -57.09, 10.434, 21.201, 2.5,
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "mauer"
 
 [node name="DurchgangSuedBau" type="Node3D" parent="Drachenstein/Burgen"]
@@ -476,6 +483,7 @@ mauern = PackedFloat32Array(29.71, -51.6, 20.78, -57.93, 11.158, 21.427, 2.5, 0.
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "mauer"
 
 [node name="VortorBau" type="Node3D" parent="Drachenstein/Burgen"]
@@ -484,6 +492,7 @@ mauern = PackedFloat32Array(30.6, -40.57, 35.78, -38.99, 9.8322, 16.759, 2, -0.2
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "mauer"
 
 [node name="PalaszwingerQuerBau" type="Node3D" parent="Drachenstein/Burgen"]
@@ -492,6 +501,7 @@ mauern = PackedFloat32Array(6, -57.73, 15.175, -62.68, 11.34, 20.513, 2, 0.47481
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "mauer"
 
 [node name="OberburgTuerme" type="Node3D" parent="Drachenstein/Burgen"]
@@ -516,6 +526,7 @@ mauern = PackedFloat32Array(20.12, -57.87, 12.061, -57.502, 11.184, 21.5, 3, 0.0
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array(0.00536, -56.953, -0.99896, 0.045555, 15.505, 5, 21.505, 3, 29.7, -64.03, -0.84112, 0.54085, 15.5, 3.5, 21.5, 3)
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray("zu:eid_waechter", "zu:eid_waechter")
 stein = "mauer"
 
 [node name="KernburgTor0Schild" type="Label3D" parent="Drachenstein/Burgen"]
@@ -535,6 +546,7 @@ mauern = PackedFloat32Array(-6.779, -67.186, -15.96, -67.35, 13, 24, 3.5, -0.017
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array(-2.5297, -67.111, -0.99984, -0.017822, 16, 5, 24, 3.5)
 torbauten = PackedFloat32Array(2.5695, -67.02, -0.99984, -0.017822, 13.001, 30, 5, 5.5, -1, 1, -7.6288, -67.201, -0.99984, -0.017822, 13.44, 30, 5, 5.5, -1, 1)
+tor_regeln = PackedStringArray("zu:eid_waechter")
 stein = "mauer"
 
 [node name="KernburgTuerme" type="Node3D" parent="Drachenstein/Burgen"]
@@ -938,6 +950,7 @@ mauern = PackedFloat32Array(-0.81, 240.67, 10.723, 251.49, -19.112, -6.4181, 3, 
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array(230.89, 93.947, -0.081637, -0.99666, -16.004, 5, -8.0041, 3)
 torbauten = PackedFloat32Array(231.3, 99.029, -0.081637, -0.99666, -18.694, -2.0041, 5, 5, 1, 1, 230.47, 88.864, -0.081637, -0.99666, -19.09, -2.0041, 5, 5, 1, 1)
+tor_regeln = PackedStringArray("tag:eid_waechter")
 stein = "mauer"
 
 [node name="StadtmauerTuerme" type="Node3D" parent="Drachenstein/Stadt"]
@@ -950,6 +963,7 @@ mauern = PackedFloat32Array(112, 51.5, 110.67, 40.167, -29.5, -17.76, 4, 0.99315
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiBecken2Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -958,6 +972,7 @@ mauern = PackedFloat32Array(112, -27.5, 121, -32.5, -29.5, -17.76, 4, 0.48564, 0
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiBecken3Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -966,6 +981,7 @@ mauern = PackedFloat32Array(121, -32.5, 134, -33.833, -29.5, -17.76, 4, -0.10203
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiBecken5Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -974,6 +990,7 @@ mauern = PackedFloat32Array(188, -35.5, 187, -24, -29.5, -17.76, 4, 0.99624, 0.0
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiBecken6Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -982,6 +999,7 @@ mauern = PackedFloat32Array(186, -12.5, 186, 1, -29.5, -17.76, 4, 1, -0, 0, 186,
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiBecken7Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -990,6 +1008,7 @@ mauern = PackedFloat32Array(186, 41.5, 176, 46, -29.5, -17.76, 4, 0.41036, 0.911
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiBecken8Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -998,6 +1017,7 @@ mauern = PackedFloat32Array(166, 50.5, 153.67, 52.5, -29.5, -17.76, 4, 0.16007, 
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiBecken9Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -1006,6 +1026,7 @@ mauern = PackedFloat32Array(129, 56.5, 120.5, 54, -29.5, -17.76, 4, -0.28217, 0.
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiNord0Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -1014,6 +1035,7 @@ mauern = PackedFloat32Array(108, 17.5, 108.88, 6.5, -29.5, -17.76, 4, 0.99685, 0
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiNord2Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -1022,6 +1044,7 @@ mauern = PackedFloat32Array(110.6, -14.5, 112, -27.5, -29.5, -17.76, 4, 0.99425,
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiKanal0Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -1030,6 +1053,7 @@ mauern = PackedFloat32Array(110, -4.5, 100.25, -4.5, -29.5, -17.76, 4, -0, -1, 0
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="KaiKanal1Bau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -1038,6 +1062,7 @@ mauern = PackedFloat32Array(110.5, -14.5, 100.5, -14.5, -29.5, -17.76, 4, -0, -1
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "kai"
 
 [node name="HafenmauerBau" type="Node3D" parent="Drachenstein/Drachenhafen"]
@@ -1046,6 +1071,7 @@ mauern = PackedFloat32Array(92, -25, 99, -35.75, -20.325, 8.7262, 3, -0.838, -0.
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array()
 torbauten = PackedFloat32Array()
+tor_regeln = PackedStringArray()
 stein = "mauer"
 
 [node name="SpeicherkaiTor0Schild" type="Label3D" parent="Drachenstein/Drachenhafen"]
@@ -1065,6 +1091,7 @@ mauern = PackedFloat32Array(207, 47.5, 207.41, 34.118, -20.414, -11.662, 3, 0.99
 tuerme = PackedFloat32Array()
 tore = PackedFloat32Array(208.77, -10.025, 0.030755, -0.99953, -17.673, 5, -11.673, 3)
 torbauten = PackedFloat32Array(208.61, -4.9274, 0.030755, -0.99953, -20.173, -5.6734, 5, 5, 1, 1, 208.93, -15.123, 0.030755, -0.99953, -20.217, -5.6734, 5, 5, 1, 1)
+tor_regeln = PackedStringArray("offen")
 stein = "mauer"
 
 [node name="HafenTuerme" type="Node3D" parent="Drachenstein/Drachenhafen"]

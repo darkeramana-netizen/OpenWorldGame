@@ -29,9 +29,9 @@ def turmmasse(pp, r, ueber):
     return [x, z, min(werte) - 2.5, max(werte) + ueber]
 
 
-def tor_an(punkte, p, breite, name, boden=None, tuerme=None):
+def tor_an(punkte, p, breite, name, boden=None, tuerme=None, regel=None):
     """Tor für mauerring: {Kantenindex: (Anteil, Breite, Name)} an der Kante des Linienzugs, die dem Planpunkt p
-    am nächsten liegt (punkte und p im Plan)."""
+    am nächsten liegt (punkte und p im Plan). regel: Torflügel (szenen/welt/fluegel.gd), z. B. "zu:eid_waechter"."""
     bester = None
     for i, (a, b) in enumerate(zip(punkte, punkte[1:])):
         dx, dy = b[0] - a[0], b[1] - a[1]
@@ -40,7 +40,7 @@ def tor_an(punkte, p, breite, name, boden=None, tuerme=None):
         if bester is None or d < bester[0]:
             bester = (d, i, t)
     # tuerme=False: Tor ohne eigene Tortürme (sonst wie in mauerring: Tortürme, außer bei einem Wassertor mit boden)
-    rest = () if boden is None and tuerme is None else (boden, boden is None if tuerme is None else tuerme)
+    rest = () if boden is None and tuerme is None and regel is None else (boden, boden is None if tuerme is None else tuerme, regel)
     return {bester[1]: (round(bester[2], 3), breite, name) + rest}
 
 
@@ -81,6 +81,11 @@ def eckturm(pp, seite, ueber, dach=1, dreh=0.0):
 
 
 MITTE_BURG = W(PD.MITTE_OBERBURG)
+# Torflügel (szenen/welt/fluegel.gd): Stadttore und das Vorburgtor stehen tagsüber offen und werden nachts und bei Alarm
+# geschlossen; die Tore weiter hinein in die Burg bleiben zu. Leuten der Burg öffnet die Wache immer, dem Spieler erst,
+# wenn er den Eid als Wächter geleistet hat.
+TAG = "tag:eid_waechter"
+ZU = "zu:eid_waechter"
 # Fahnen und Banner (szenen/welt/burgbau.gd, "fahnen"): x, y, z, Gier, Breite, Länge, Art (0 Mast, 1 Banner an der Wand)
 FAHNEN = []
 _HOF_TUERME = []            # Planpunkte aller Türme an den Höfen (für den Felssockel in teil_felsen.py)
@@ -90,7 +95,7 @@ _HOF_TUERME = []            # Planpunkte aller Türme an den Höfen (für den Fe
 # Nordosten und Südosten geschlossene Bastionen mit Zinnen, der Turm hinter der Oberburg mit Kegeldach
 RN = PD.RING_NORD
 mauerring("RingmauerNord", BG, WL(RN), 6.5, dicke=3.0, mitte=W(PD.MITTE_VORBURG),
-         tore=tor_an(RN, PD.TORE["Nordtor"], 5.0, "Nordtor"))
+         tore=tor_an(RN, PD.TORE["Nordtor"], 5.0, "Nordtor", regel=TAG))
 RSO = PD.RING_SUED_OST
 mauerring("Ringmauer", BG, WL(RSO), 6.5, dicke=3.0, mitte=MITTE_BURG,
          tore=tor_an(RSO, PD.TORE["Hafentor"], 10.0, "Hafentor", -19.6))
@@ -141,8 +146,8 @@ torbauten = PackedFloat32Array({_zahlen(_torhaeuser)})""")
 # --- Vorburg: Tor in der Südmauer von der Stadt, Osttor hinab in den Burgbezirk ---
 VB = PD.VORBURG + [PD.VORBURG[0]]
 mauerring("Vorburg", BG, WL(VB), 6.0, dicke=3.0, mitte=W(PD.MITTE_VORBURG),
-         tore=tore_an(VB, (PD.TORE["Vorburgtor"], 4.5, "Vorburgtor", None, False),
-                      (PD.TORE["Osttor der Vorburg"], 4.0, "", None, False)))
+         tore=tore_an(VB, (PD.TORE["Vorburgtor"], 4.5, "Vorburgtor", None, False, TAG),
+                      (PD.TORE["Osttor der Vorburg"], 4.0, "", None, False, ZU)))
 _vt = []
 for (gp, gr) in PD.G3.VORBURG_TUERME + [PD.G3.VORBURG_TOR]:
     r = round(gr * G3M, 1)
@@ -192,7 +197,7 @@ bruestung("Rampe", PD.WEG_BURG[_ri:], PD.WEG_BURG_HOEHEN[_ri:], 4.0, nicht_bei=[
 # --- Mittelburg: Rampentor an der Südostecke, gleich rechts das Zwingertor ---
 MB = PD.MITTELBURG + [PD.MITTELBURG[0]]
 mauerring("Mittelburg", BG, WL(MB), 6.5, dicke=3.0, mitte=W(PD.MITTE_MITTELBURG),
-         tore=tore_an(MB, (PD.TORE["Rampentor"], 5.0, "Rampentor"), (PD.TORE["Zwingertor"], 4.5, "", None, False)))
+         tore=tore_an(MB, (PD.TORE["Rampentor"], 5.0, "Rampentor", None, None, ZU), (PD.TORE["Zwingertor"], 4.5, "", None, False, ZU)))
 _mt = []
 _g, _r = PD.G3.MITTELBURG_ECKTURM
 _mt += turmmasse(PD.g3(_g), round(_r * G3M, 1), 0)[:3] + [PD.H_BURGHOF2 + 13, round(_r * G3M, 1), 1, round(_r * G3M * 1.7, 1)]
@@ -209,8 +214,8 @@ mauerring("ZwingermauerSued", BG, WL(PD.ZWINGERMAUER_SUED), 4.5, dicke=2.5, mitt
 # --- Oberburg: Südtor vom Ende des Zwingers, Tor der Oberburg zum Durchgang ---
 OB = PD.OBERBURG + [PD.OBERBURG[0]]
 mauerring("Oberburg", BG, WL(OB), 7.0, dicke=3.0, mitte=MITTE_BURG,
-         tore=tore_an(OB, (PD.TORE["Südtor der Oberburg"], 4.5, ""),
-                      (PD.TORE["Tor der Oberburg"], 5.0, "Tor der Oberburg", None, False)))   # ohne Tortürme: der Durchgang bleibt frei
+         tore=tore_an(OB, (PD.TORE["Südtor der Oberburg"], 4.5, "", None, None, ZU),
+                      (PD.TORE["Tor der Oberburg"], 5.0, "Tor der Oberburg", None, False, ZU)))   # ohne Tortürme: der Durchgang bleibt frei
 # Torhaus über dem Südtor (wie im Plan des Spielers: der Weg führt unter einem Gebäude hindurch in die Oberburg): ein
 # Fachwerkhaus auf dem Torbogen zwischen den beiden Tortürmen
 _st_ = [t_ for t_ in MAUERSTUECKE if t_[0] == "Oberburg"]
@@ -243,7 +248,7 @@ schild("SchildOberburg", BG, *(lambda p: (p[0], PD.H_KERNHOF + 13, p[1]))(W(PD.M
 # --- Palas: zwei Mauerringe dicht hintereinander (wie im Referenzbild), die Tore gegenüber dem Tor der Oberburg ---
 ZW = PD.ZWINGER_KERNBURG + [PD.ZWINGER_KERNBURG[0]]
 mauerring("Zwingermauer", BG, WL(ZW), 6.0, dicke=3.0, mitte=W(PD.MITTE_PALAS),
-         tore=tore_an(ZW, (PD.TORE["Zwingertor des Palas"], 5.0, "", None, False), (PD.TORE["Zwingerpforte des Palas"], 3.5, "", None, False)))
+         tore=tore_an(ZW, (PD.TORE["Zwingertor des Palas"], 5.0, "", None, False, ZU), (PD.TORE["Zwingerpforte des Palas"], 3.5, "", None, False, ZU)))
 KB = PD.PALAS_HOF + [PD.PALAS_HOF[0]]
 # Im Bergfried steht keine Hofmauer: er hat eigene, hohle Mauern (begehbar)
 _bfa = math.radians(PD.BERGFRIED_DREH)
@@ -251,7 +256,7 @@ _bfh = PD.BERGFRIED_SEITE / M / 2 - 1.2
 _bf_ecken = [W((PD.BERGFRIED_KERNBURG[0] + (math.cos(_bfa) * sx - math.sin(_bfa) * sy) * _bfh,
                 PD.BERGFRIED_KERNBURG[1] + (math.sin(_bfa) * sx + math.cos(_bfa) * sy) * _bfh)) for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
 mauerring("Kernburg", BG, WL(KB), 8.0, dicke=3.5, mitte=W(PD.MITTE_PALAS), aussparen=[_bf_ecken],
-         tore=tor_an(KB, PD.TORE["Palastor"], 5.0, "Palastor"))
+         tore=tor_an(KB, PD.TORE["Palastor"], 5.0, "Palastor", regel=ZU))
 _zt = []
 for (gp, gr) in PD.G3.PALAS_ZWINGER_TUERME:
     r = round(max(3.5, gr * G3M), 1)

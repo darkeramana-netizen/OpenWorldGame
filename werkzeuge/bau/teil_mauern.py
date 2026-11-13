@@ -93,13 +93,14 @@ def _drin_poly(q, poly):
 
 def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=None, strassen=(), torbreite=6.0,
              turm_r=0.0, turm_extra=5.0, turm_dach=True, mitte=(0, 0), zinnen=True, mat="Material_mauer",
-             torname="", hoehe_min=None, oben_fest=None, aussparen=()):
+             torname="", hoehe_min=None, oben_fest=None, aussparen=(), tor_regel="offen"):
     """Mauer entlang eines Linienzugs (Welt x, z). tore: {Kantenindex: (Anteil, Breite, Name)}; dazu Tore,
     wo Straßen kreuzen. turm_r > 0: Rundtürme an den Ecken. mitte: ein Punkt innerhalb (für die Feldseite).
     Gebaut wird von szenen/welt/burgbau.gd (Anlauf, Gesims, Wehrgang, Zinnen, Rundtürme, Torbögen); hier
     entstehen nur die Maße. Gibt die Liste der Tore zurück: (x, z, Richtung x, Richtung z, Name).
     oben_fest: Mauerkrone auf genau dieser Höhe (Kaimauern bündig mit dem Kai).
-    aussparen: Vielecke (Welt), in denen keine Mauer steht (dort steht z. B. ein begehbarer Turm mit eigenen Mauern)."""
+    aussparen: Vielecke (Welt), in denen keine Mauer steht (dort steht z. B. ein begehbarer Turm mit eigenen Mauern).
+    tor_regel: Torflügel aller Tore ohne eigene Regel (szenen/welt/fluegel.gd: "offen", "tag", "zu", mit ":Bedingung")."""
     pkt = punkte + [punkte[0]] if geschlossen else list(punkte)
     tore = dict(tore or {})
     for i in range(len(pkt) - 1):
@@ -124,9 +125,10 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
             anteil, breite, tname = tore[i][:3]
             boden_fest = tore[i][3] if len(tore[i]) > 3 else None   # z. B. ein Wassertor auf dem Wasser
             mit_tuermen = tore[i][4] if len(tore[i]) > 4 else boden_fest is None
+            regel = tore[i][5] if len(tore[i]) > 5 and tore[i][5] else tor_regel
             h_ = (breite / 2 + dicke / 2) / laenge     # die Mauerstücke überlappen an ihren Enden um die halbe Dicke
             abschnitte = [(0.0, anteil - h_), (anteil + h_, 1.0)]
-            toreliste.append((x1 + (x2 - x1) * anteil, z1 + (z2 - z1) * anteil, ux, uz, tname, breite, boden_fest, mit_tuermen))
+            toreliste.append((x1 + (x2 - x1) * anteil, z1 + (z2 - z1) * anteil, ux, uz, tname, breite, boden_fest, mit_tuermen, regel))
         for t0, t1 in abschnitte:
             if t1 - t0 <= 0.001:
                 continue
@@ -158,7 +160,9 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
             unten = min(werte) - 2.5
             oben = max(werte) + hoehe + turm_extra
             tuerme += [x, z, unten, oben, turm_r, 1 if turm_dach else 0, turm_r * 1.8]
-    for k, (tx, tz, ux, uz, tname, breite, boden_fest, mit_tuermen) in enumerate(toreliste):
+    regeln = []
+    for k, (tx, tz, ux, uz, tname, breite, boden_fest, mit_tuermen, regel) in enumerate(toreliste):
+        regeln.append(regel)
         nx, nz = -uz, ux
         rings = [H(tx + ux * s + nx * q, tz + uz * s + nz * q) for s in (-breite, 0, breite) for q in (-4, 0, 4)]
         boden = max(rings) if boden_fest is None else boden_fest
@@ -177,6 +181,7 @@ mauern = PackedFloat32Array({_zahlen(mauern)})
 tuerme = PackedFloat32Array({_zahlen(tuerme)})
 tore = PackedFloat32Array({_zahlen(torboegen)})
 torbauten = PackedFloat32Array({_zahlen(torbauten)})
+tor_regeln = PackedStringArray({", ".join('"%s"' % r_ for r_ in regeln)})
 stein = \"{STEINE.get(mat, 'mauer')}\"""")
     return [(x, z, ux, uz, n) for x, z, ux, uz, n, *_ in toreliste]
 
