@@ -410,6 +410,14 @@ for px in range(630, 720, 15):
 for pp in [(652, 417), (700, 417)]:
     x, z = W(pp)
     AUSSTATTUNG.append((4, x - 2.5, KAI_OBEN, z, random.uniform(-15, 15)))
+# Fischernetze zum Trocknen an der Mauer (zwischen den Kramgruppen) und Fischkörbe bei den Fischern am Becken
+for pz_ in (627.5, 657.5, 687.5):
+    x, z = W((pz_ + 3.75, 416))
+    AUSSTATTUNG.append((37, x + 0.4, KAI_OBEN, z, 90))
+for i_ in range(3):
+    x, z = W((630 + 25 * i_, 436))
+    AUSSTATTUNG.append((38, x - 0.9, KAI_OBEN, z + 1.1, random.uniform(0, 360)))
+    AUSSTATTUNG.append((38, x + 0.7, KAI_OBEN, z - 1.2, random.uniform(0, 360)))
 # Speicherkai: Fässer, Kisten und Säcke an der Wand des Speichers (die Tür in der Mitte und der Weg zur Molenpforte
 # bleiben frei), dazu ein Karren
 for px_ in (652, 662, 672, 708, 718, 728):
