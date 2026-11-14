@@ -196,6 +196,8 @@ _verb, _doppelt, _geteilt = mauern_verbinden()
 for _v in _verb:
     print("Mauerende verbunden: %s -> %s" % (tuple(round(x, 2) for x in _v[3]), tuple(round(x, 2) for x in _v[4])))
 print("Doppelmauern entfallen: %d, an der Flanke geteilt: %d" % (_doppelt, _geteilt))
+# An einer Ecke der Vorburg liegen 12 m zwischen den Wehrgängen: ein Treppenturm verbindet sie
+print("Treppenturm Vorburg: Wehrgänge auf %.2f und %.2f" % treppenturm("TreppenturmVorburg", "Drachenstein/Burgen", (19.62, 133.1)))
 wehrgang_wachen()   # die Streifen der Mauerwachen folgen den endgültigen Mauerstücken
 # Person "kordel": person.tscn nutzt KEINE=0, SCHWARZ=1, GRAU=2, GOLDEN=3
 schreibe("region_drachenstein.tscn")

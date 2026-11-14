@@ -484,3 +484,60 @@ def wehrgang_runde(stuecke, tuerme, start, oben, weit=60.0):
             t = 0.0 if vor else l2
 
     return punkt(s0, t0), lauf(True), lauf(False)
+
+
+def treppenturm(name, eltern, punkt, r=5.0, mat="Material_mauer"):
+    """Achteckiger Treppenturm (turm.gd) an einer Fuge, an der zwei Wehrgänge zu weit auseinander liegen für eine
+    Treppe: Die beiden Mauern enden an seiner Wand (samt ihrer Überlappung), je eine Tür auf Höhe ihres Wehrgangs,
+    innen eine Wendelrampe (zwei Windungen je Geschoss), oben eine Plattform mit Zinnen. Nach mauern_verbinden
+    aufrufen. Gibt die Höhen der beiden Wehrgänge zurück."""
+    apothem = r * math.cos(math.pi / 8)
+    enden = []      # (Knoten, Stückindex, Ende, Richtung vom Turm weg, Krone, Dicke)
+    for k, text in enumerate(knoten):
+        m = re.search(r'\nmauern = PackedFloat32Array\(([^)]*)\)', text)
+        if not m or not m.group(1).strip():
+            continue
+        w = [float(x) for x in m.group(1).split(",")]
+        for i in range(0, len(w) - 9, 10):
+            for e in (0, 1):
+                if math.dist(w[i + 2 * e:i + 2 * e + 2], punkt) < 0.05:
+                    ox, oz = w[i + 2 * (1 - e)], w[i + 2 * (1 - e) + 1]
+                    l_ = math.dist((ox, oz), punkt)
+                    enden.append((k, i, e, ((ox - punkt[0]) / l_, (oz - punkt[1]) / l_), w[i + 5], w[i + 6]))
+    assert len(enden) == 2, f"Treppenturm {name}: an {punkt} enden {len(enden)} Mauerstücke"
+    for (k, i, e, (dx, dz), oben, dicke) in enden:
+        m = re.search(r'\nmauern = PackedFloat32Array\(([^)]*)\)', knoten[k])
+        w = [float(x) for x in m.group(1).split(",")]
+        # der Mauerkörper überlappt um die halbe Dicke über das Ende hinaus: er soll in der Turmwand enden
+        ab = apothem + dicke / 2 - 0.3
+        w[i + 2 * e], w[i + 2 * e + 1] = punkt[0] + dx * ab, punkt[1] + dz * ab
+        knoten[k] = knoten[k].replace(m.group(0), "\nmauern = PackedFloat32Array(%s)" % _zahlen(w))
+    enden.sort(key=lambda x: x[4])
+    tief, hoch = enden[0][4] + 0.06, enden[1][4] + 0.06
+    winkel = [math.degrees(math.atan2(dz, dx)) for (_, _, _, (dx, dz), _, _) in enden]
+    grund = min(H(punkt[0] + dx * r, punkt[1] + dz * r) for dx in (-1, 0, 1) for dz in (-1, 0, 1)) - 0.5
+    # Geschosse: unten ein Sockel bis an den tieferen Wehrgang, dann so viele gleich hohe wie nötig (je höchstens
+    # 6,5 m) bis an den höheren, darüber eine Stube von 3,3 m unter der Plattform
+    stock = max(1, math.ceil((hoch - tief) / 6.5))
+    hoehen = [grund - tief] + [(hoch - tief) * k / stock for k in range(stock + 1)] + [hoch - tief + 3.3]
+    nummern = list(range(-1, stock + 1))
+    N(name, "Node3D", eltern, f"""transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, {punkt[0]:.3f}, {tief:.3f}, {punkt[1]:.3f})
+script = ExtResource("14_turm")
+ebenen_nummern = PackedInt32Array({", ".join(str(n) for n in nummern)})
+ebenen_namen = PackedStringArray({", ".join('"Treppe"' for _ in nummern)})
+boden_hoehen = PackedFloat32Array({_zahlen(hoehen)})
+aussen_radien = PackedFloat32Array({_zahlen([r] * len(nummern))})
+wandstaerken = PackedFloat32Array({_zahlen([1.0] * len(nummern))})
+eingaenge = PackedVector2Array(0, {winkel[0]:.2f}, {stock}, {winkel[1]:.2f})
+eingang_breite = 1.8
+eingang_hoehe = 2.7
+achteck_winkel = {winkel[0]:.2f}
+treppen_winkel = {(winkel[0] + winkel[1]) / 2 + 180:.2f}
+windungen = 2
+treppenhaus_radius = 2.0
+saeulen_radius = 0.45
+mit_schildern = false
+material_wand = ExtResource("{mat}")
+material_boden = ExtResource("Material_boden")
+material_rampe = ExtResource("Material_holz")""")
+    return tief, hoch

@@ -190,6 +190,26 @@ func _initialize() -> void:
 	await gehe_ueber([polar(tmitte, 3.8, tw, 0)] + ring(bf, 3.0, tw + 180.0, tw + 360.0))
 	pruefe(spieler().global_position.y > bf.y + bf_innen.dach_hoehe() - 0.5, "Drachenstein: auf der Plattform des Bergfrieds bis zur anderen Seite")
 
+	# --- Treppenturm an der Ecke der Vorburg: vom tieferen Wehrgang durch die Tür, die Wendelrampe hinauf und oben
+	# durch die andere Tür auf den 12 m höheren Wehrgang ---
+	var tt = current_scene.get_node("Drachenstein/Burgen/TreppenturmVorburg")
+	var tm: Vector3 = tt.global_position
+	var w_unten: float = tt.eingaenge[0].y
+	var w_oben: float = tt.eingaenge[1].y
+	var hoch: float = tm.y + tt.boden_von(int(tt.eingaenge[1].x))
+	var trw: float = tt.treppen_winkel
+	while trw < w_unten:
+		trw += 360.0
+	while w_oben < trw:
+		w_oben += 360.0
+	await setze(polar(tm, 6.8, w_unten, tm.y + 0.4))
+	var tt_drin := await gehe_ueber([polar(tm, 5.6, w_unten, 0), polar(tm, 2.9, w_unten, 0)] + ring(tm, 2.9, w_unten, trw) + [polar(tm, 1.2, trw, 0)])
+	pruefe(tt_drin and absf(spieler().global_position.y - tm.y) < 0.6, "Treppenturm der Vorburg: vom Wehrgang durch die Tür bis an die Wendelrampe")
+	var tt_oben := await wendel(tm, 1, hoch - 0.2, 60.0, 1.2)
+	var tt_raus := await gehe_ueber([polar(tm, 2.9, trw, 0)] + ring(tm, 2.9, trw, w_oben) + [polar(tm, 5.6, w_oben, 0), polar(tm, 6.3, w_oben, 0)])
+	pruefe(tt_oben >= hoch - 0.4 and tt_raus and absf(spieler().global_position.y - hoch) < 0.6,
+			"Treppenturm der Vorburg: hinauf und durch die obere Tür auf den %.0f m höheren Wehrgang (y=%.1f)" % [hoch - tm.y, spieler().global_position.y])
+
 	# --- Gravecrest: Fallgatter, Torhaus, Donjon ---
 	S.setze_flag("gravecrest_zugang", false)
 	await setze(Vector3(-606, 70.4, -364.8))
