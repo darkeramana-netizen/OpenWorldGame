@@ -116,7 +116,9 @@ _wl = math.dist(_wa, _wb)
 _wu = ((_wb[0] - _wa[0]) / _wl, (_wb[1] - _wa[1]) / _wl)          # entlang der Ringmauer
 _wn = (-_wu[1], _wu[0])
 _ringe = [H(_wt[0] + _wu[0] * s_ + _wn[0] * q_, _wt[1] + _wu[1] * s_ + _wn[1] * q_) for s_ in (-10, 0, 10) for q_ in (-4, 0, 4)]
-_wt_oben = max(-19.6 + 9.0, max(_ringe) + 9.0)                     # wie mauerring: Krone des Torbaus
+# Krone des Torbaus genau wie mauerring (Ringmauer: 6,5 m über dem höchsten Gelände) und burgbau._tor (mindestens
+# 1 m über dem Scheitel des Bogens: Kämpfer 3,4 m, Bogen halb so hoch wie breit); darauf steht das Fachwerkhaus
+_wt_oben = max(-19.6 + 6.5, max(_ringe) + 6.5, -19.6 + 3.4 + 10.0 / 2 + 1.0)
 _tt = []
 for s_ in (-1, 1):
     _tx, _tz = _wt[0] + _wu[0] * s_ * 7.8, _wt[1] + _wu[1] * s_ * 7.8
