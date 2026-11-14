@@ -1099,7 +1099,7 @@ stein = "mauer"
 
 [node name="HafenTuerme" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
-tuerme = PackedFloat32Array(200, -28.5, -28, -7.8, 6, 2, 143.7, 156, -49.5, -28, -7.8, 6, 2, 95)
+tuerme = PackedFloat32Array(200, -28.5, -28, -7.8, 6, 0, 0, 156, -49.5, -28, -7.8, 6, 0, 0)
 
 [node name="Speicher" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")

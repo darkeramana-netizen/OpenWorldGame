@@ -96,6 +96,7 @@ var _flach := {}   # Material → SurfaceTool, Normalen werden erzeugt (kantig)
 var _nachbarn_mauern: Array = []    # [a, b, Krone, Dicke] aller Mauerstücke dieses Baus und seiner Geschwister
 var _hohle: Array = []              # [Mitte, Radius, Innenradius, Wehrganghöhe] der hohlen Rundtürme
 var _hohle_eckig: Array = []        # [Mitte, u, n, halbe Breite innen, halbe Tiefe innen, Kammerboden] der hohlen Tortürme
+var _schalen: Array = []            # [Mitte, Radius, Innenradius] der halbrunden, hinten offenen Schalentürme
 var _nachbarn_bauten: Array = []    # [Mitte, nx, uz, halbe Breite, halbe Länge, Boden, Traufe] der Gebäude der Geschwister
 var _rund := {}    # Material → SurfaceTool, Normalen von Hand (glatte Rundungen)
 var _bereit := false
@@ -725,9 +726,19 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 		var t_ := _stoss_abstand(b_plan, a_plan, d)
 		aussen1 = minf(aussen1, sb - t_)
 		innen1 = minf(innen1, sb - t_)
-	# Brustwehr und Zinnen auf der Feldseite, eine niedrige Mauer auf der Hofseite
-	_klotz(stein, m, u, n, aussen0, aussen1, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
-	_klotz("hell", m, u, n, aussen0, aussen1, d - BRUSTWEHR_DICKE - 0.05, d + 0.06, oben + BRUSTWEHR - 0.1, oben + BRUSTWEHR + 0.02, true)
+	# Brustwehr und Zinnen auf der Feldseite, eine niedrige Mauer auf der Hofseite. In einem Schalenturm, durch den die
+	# Mauer läuft, ist dessen Schale die Brustwehr: dort fehlt die der Mauer (sonst stünden Zinnen mitten im Turm)
+	var schalen_luecken: Array = []
+	for sch: Array in _schalen:
+		var sc: Vector2 = sch[0]
+		var quer_ := (sc - m).dot(n)
+		if absf(quer_) < float(sch[1]) and absf((sc - m).dot(u)) < l + float(sch[1]):
+			var halb_ := sqrt(maxf(float(sch[2]) * float(sch[2]) - maxf(d - quer_, 0.0) ** 2, 0.0))
+			if halb_ > 0.5:
+				schalen_luecken.append(Vector2((sc - m).dot(u) - halb_, (sc - m).dot(u) + halb_))
+	for ab_: Vector2 in _abschnitte(aussen0, aussen1, schalen_luecken):
+		_klotz(stein, m, u, n, ab_.x, ab_.y, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
+		_klotz("hell", m, u, n, ab_.x, ab_.y, d - BRUSTWEHR_DICKE - 0.05, d + 0.06, oben + BRUSTWEHR - 0.1, oben + BRUSTWEHR + 0.02, true)
 	_klotz(stein, m, u, n, innen0, innen1, -d, -d + 0.35, oben, oben + 0.6)
 	_klotz("hell", m, u, n, innen0, innen1, -d - 0.04, -d + 0.39, oben + 0.52, oben + 0.62, true)
 	# Rampen zu höheren Nachbarn (auch zum Weg über einem Torbogen); die Zinnen enden vor einer hohen Rampe
@@ -765,7 +776,25 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			else:
 				zinnen0 = maxf(zinnen0, anfang - lang * 0.4)
 	var zm := ((a + b) / 2.0 - m).dot(u)
-	_zinnen(m + u * zm, u, n, laenge, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR, zinnen0 - zm, zinnen1 - zm)
+	for ab_: Vector2 in _abschnitte(zinnen0, zinnen1, schalen_luecken):
+		_zinnen(m + u * zm, u, n, laenge, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR, ab_.x - zm, ab_.y - zm)
+
+
+## Teilstrecken von von bis bis ohne die Lücken (je Vector2(Anfang, Ende))
+func _abschnitte(von: float, bis: float, luecken: Array) -> Array:
+	var teile: Array = [Vector2(von, bis)]
+	for lu: Vector2 in luecken:
+		var neu: Array = []
+		for t: Vector2 in teile:
+			if lu.y <= t.x or lu.x >= t.y:
+				neu.append(t)
+				continue
+			if lu.x - t.x > 0.3:
+				neu.append(Vector2(t.x, lu.x))
+			if t.y - lu.y > 0.3:
+				neu.append(Vector2(lu.y, t.y))
+		teile = neu
+	return teile
 
 
 ## Füllt an beiden Enden eines Mauerstücks (Mitte m, Richtung u, Feldseite n, halbe Länge l, halbe Dicke d) je
@@ -1122,6 +1151,7 @@ func _sammle_nachbarn() -> void:
 	_nachbarn_mauern = []
 	_hohle = []
 	_hohle_eckig = []
+	_schalen = []
 	_nachbarn_bauten = []
 	# alle Bauten der Region (unter dem Großelternknoten: Burgen, Stadt, Hafen), einmal je Region gesammelt
 	var oben_ := get_parent().get_parent() if get_parent() != null and get_parent().get_parent() != null else get_parent()
@@ -1155,6 +1185,8 @@ func _sammle_nachbarn() -> void:
 		var t: PackedFloat32Array = k.tuerme
 		var i := 0
 		while i + 6 < t.size():
+			if int(t[i + 5]) == 2:
+				_schalen.append([Vector2(t[i], t[i + 1]), t[i + 4], t[i + 4] - 1.4])
 			if int(t[i + 5]) != 2:
 				var c := Vector2(t[i], t[i + 1])
 				var zugang := _turm_zugang(c, t[i + 4], t[i + 3])
@@ -1586,6 +1618,16 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 	var teile := 24
 	var dicke := 1.4
 	var ri := r - dicke
+	# Der Boden liegt auf der Höhe des Wehrgangs der Mauer, die durch den Turm läuft; die Schale reicht 2,5 m darüber
+	var gang := NAN
+	var nah := INF
+	for mm: Array in _nachbarn_mauern:
+		var dm := Geometry2D.get_closest_point_to_segment(c, mm[0], mm[1]).distance_to(c)
+		if dm < r and dm < nah:
+			nah = dm
+			gang = float(mm[2])
+	if not is_nan(gang):
+		oben = gang + 0.06 + 2.5
 	var st_aussen := _st(stein, true)
 	var w_start := innen_winkel + PI * 0.5          # die offene Hälfte zeigt nach innen
 	var schritte := teile / 2
@@ -1676,13 +1718,18 @@ func _schalenturm(c: Vector2, unten: float, oben: float, r: float, innen_winkel:
 		var kb: Vector3 = punkte.call(r + 0.6, unten, k)
 		var kc: Vector3 = punkte.call(r, unten + anlauf, k)
 		_dreieck(stein, ka, kb, kc, aussen)
-	# Bretterboden auf Höhe des Wehrgangs (halbe Scheibe; die Schale reicht 2,5 m über den Wehrgang)
+	# Boden auf Höhe des Wehrgangs (halbe Scheibe aus Steinplatten); darunter ist der Turm massiv, kein Schacht
 	var yb := oben - 2.5
 	for k in schritte:
 		var w0 := w_start + PI * k / schritte
 		var w1 := w_start + PI * (k + 1) / schritte
 		var m := Vector3(c.x, yb, c.y)
-		_dreieck("holz", m, m + Vector3(cos(w0), 0, sin(w0)) * ri, m + Vector3(cos(w1), 0, sin(w1)) * ri, Vector3.UP)
+		_dreieck("boden", m, m + Vector3(cos(w0), 0, sin(w0)) * ri, m + Vector3(cos(w1), 0, sin(w1)) * ri, Vector3.UP)
+	# die offene Seite unter dem Boden (entlang des Durchmessers) zu, von unten bis an den Boden
+	var e0: Vector3 = punkte.call(ri, unten, 0)
+	var e1: Vector3 = punkte.call(ri, unten, schritte)
+	var aussen_ := Vector3(cos(innen_winkel), 0, sin(innen_winkel))
+	_viereck(stein, e0, e1, Vector3(e1.x, yb, e1.z), Vector3(e0.x, yb, e0.z), aussen_)
 	# Schießscharten
 	for k: int in [2, 6, 10]:
 		var w: float = w_start + PI * (k + 0.5) / schritte
