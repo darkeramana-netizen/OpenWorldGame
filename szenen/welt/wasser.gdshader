@@ -1,8 +1,8 @@
 shader_type spatial;
 // Das Wächtermeer: leichte Wellen, dunkles Blau, glänzende Oberfläche.
 
-uniform vec3 farbe_tief = vec3(0.05, 0.12, 0.18);
-uniform vec3 farbe_hell = vec3(0.16, 0.3, 0.38);
+uniform vec3 farbe_tief = vec3(0.03, 0.11, 0.15);   // tiefes Blaugrün wie im Referenzbild
+uniform vec3 farbe_hell = vec3(0.08, 0.25, 0.29);
 uniform float wellenhoehe = 0.15;
 // Kein Wasser innerhalb dieses Kreises: Dort steht der Unterbau des Bergfrieds.
 uniform vec2 loch_mitte = vec2(250.0, 135.0);
@@ -29,5 +29,5 @@ void fragment() {
 	SPECULAR = 0.6;
 	// Zum Rand hin (flacher Blickwinkel) heller, wie eine Spiegelung des Himmels.
 	float rand = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 4.0);
-	ALBEDO = mix(ALBEDO, vec3(0.45, 0.52, 0.58), rand * 0.5);
+	ALBEDO = mix(ALBEDO, vec3(0.3, 0.4, 0.44), rand * 0.4);
 }
