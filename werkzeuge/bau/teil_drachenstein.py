@@ -413,7 +413,51 @@ def _kuerze_bau(bau, punkt, frei):
     return (pp_neu, abs(rand - fern) / M, breite, dreh)
 
 
+def _kuerze_quer(bau, punkt, frei):
+    """Wie _kuerze_bau, aber entlang der Breite (die andere Achse des Baus)."""
+    (pp, laenge, breite, dreh) = bau
+    (pp2, breite2, laenge2, _) = _kuerze_bau((pp, breite, laenge, dreh - 90.0), punkt, frei)
+    return (pp2, laenge, breite2, dreh)
+
+
+def _kuerze_an_mauern(bau, ringe, abstand=0.15):
+    """Kürzt einen Bau an seinen Enden (Länge und Breite), wo der Körper einer Mauer der genannten Ringe (aus
+    MAUERSTUECKE) in ihn hineinreicht: das Ende rückt bis abstand vor die Mauer. Gibt den neuen Planeintrag und die
+    Kürzungen (Ring, Achse, Kante) zurück."""
+    gekuerzt = []
+    for achse in ("laenge", "breite"):
+        (pp, laenge, breite, dreh) = bau
+        a = math.radians(-dreh)
+        x, z = W(pp)
+        vx, vz = (math.sin(a), math.cos(a)) if achse == "laenge" else (math.cos(a), -math.sin(a))
+        halb, halb_q = (laenge * M / 2, breite * M / 2) if achse == "laenge" else (breite * M / 2, laenge * M / 2)
+        for (name, ax, az, bx, bz, _oben, dicke, _aussen) in MAUERSTUECKE:
+            l_ = math.hypot(bx - ax, bz - az)
+            if name not in ringe or l_ < 0.3:
+                continue
+            ux, uz = (bx - ax) / l_, (bz - az) / l_
+            if abs(ux * vx + uz * vz) > 0.7:
+                continue                    # läuft längs dieser Achse: kürzt das andere Paar Enden
+            werte = []
+            for k in range(int(l_ / 0.25) + 1):
+                for q in (-dicke / 2, 0.0, dicke / 2):
+                    px, pz = ax + ux * k * 0.25 - uz * q, az + uz * k * 0.25 + ux * q
+                    if abs((px - x) * vz - (pz - z) * vx) < halb_q + 0.1:
+                        werte.append((px - x) * vx + (pz - z) * vz)
+            drin = [w_ for w_ in werte if -halb < w_ < halb]
+            if not drin:
+                continue
+            kante = min(w_ for w_ in werte if w_ > 0) if sum(drin) > 0 else max(w_ for w_ in werte if w_ < 0)
+            punkt = (x + vx * kante, z + vz * kante)
+            bau = _kuerze_bau(bau, punkt, abstand) if achse == "laenge" else _kuerze_quer(bau, punkt, abstand)
+            gekuerzt.append((name, achse, round(kante, 2)))
+    return bau, gekuerzt
+
+
 PD.VORBURG_BAUTEN[6] = _kuerze_bau(PD.VORBURG_BAUTEN[6], TREPPENTURM_VORBURG, 5.6)
+# Am anderen Ende stieß der Stall in die Mauer der Mittelburg (das Boxenpferd stand dort mit dem Rumpf in der Mauer)
+PD.VORBURG_BAUTEN[6], _gek = _kuerze_an_mauern(PD.VORBURG_BAUTEN[6], ("Mittelburg",))
+print("Stall der Vorburg an Mauern gekürzt:", _gek)
 print("Stall der Vorburg vor dem Treppenturm: %.1f m lang" % (PD.VORBURG_BAUTEN[6][1] * M))
 gebaeude("Vorburgbau0", BG, PD.VORBURG_BAUTEN[0], 7, PD.H_VORBURG, dach="Material_dach", zweck=5)   # Gesindehaus
 gebaeude("Vorburgbau1", BG, PD.VORBURG_BAUTEN[6], 7, PD.H_VORBURG, dach="Material_dach", zweck=4)   # Stall

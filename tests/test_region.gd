@@ -422,10 +422,31 @@ func _initialize() -> void:
 					stuecke_alle += 1
 					if tb_.is_empty() or absf(float(tb_.position.y) - p_.y) > 0.12:
 						stuecke_falsch.append("Taube in %s bei %s" % [t_.name, p_.snapped(Vector3.ONE * 0.1)])
+	# Tiere (Pferde in den Boxen und vor dem Stall, Vieh, Hunde): der Rumpf steckt in keiner Wand. Strahlen zwischen
+	# Mitte und den Enden des Rumpfs in beiden Richtungen (die Mauern sind Dreiecksformen, die nur von außen treffen)
+	for t_ in current_scene.find_children("*", "Node3D", true, false):
+		if not (t_ is Tier):
+			continue
+		stuecke_alle += 1
+		var kt: Vector3 = Tier.KOERPER[t_.art]
+		var vt := -(t_ as Node3D).global_transform.basis.z
+		vt.y = 0.0
+		vt = vt.normalized()
+		var mt: Vector3 = (t_ as Node3D).global_position + Vector3.UP * kt.y * 0.7
+		var ohne_t := ohne_a.duplicate()
+		for c in t_.find_children("*", "CollisionObject3D", true, false):
+			ohne_t.append((c as CollisionObject3D).get_rid())
+		for e_: Vector3 in [vt * kt.z, -vt * kt.z, vt.cross(Vector3.UP) * kt.x, -vt.cross(Vector3.UP) * kt.x]:
+			for r_ in [[mt, mt + e_], [mt + e_, mt]]:
+				var qt := PhysicsRayQueryParameters3D.create(r_[0], r_[1], 1)
+				qt.exclude = ohne_t
+				var ht: Dictionary = raum_s.intersect_ray(qt)
+				if not ht.is_empty() and not (ht.collider as Node).name.begins_with("Gelaende") and (ht.collider as Node).get_parent().name != "Gelaende":
+					stuecke_falsch.append("Tier (Art %d) bei %s steckt in %s" % [t_.art, (t_ as Node3D).global_position.snapped(Vector3.ONE * 0.1), (ht.collider as Node).get_parent().name])
 	for z_ in stuecke_falsch.slice(0, 8):
 		print("       falsch platziert: %s" % z_)
 	pruefe(stuecke_alle > 250 and stuecke_falsch.is_empty(),
-			"Ausstattung, Hafenkram und Tauben: %d von %d auf dem Boden, keins in einer Wand" % [stuecke_alle - stuecke_falsch.size(), stuecke_alle])
+			"Ausstattung, Hafenkram, Tauben und Tiere: %d von %d auf dem Boden, keins in einer Wand" % [stuecke_alle - stuecke_falsch.size(), stuecke_alle])
 	pruefe(streifen >= 8 and streifen_ok == streifen and streifen_m > 1000.0,
 			"Mauerwachen: %d von %d Streifen ohne Lücke und Wand (zusammen %.0f m)" % [streifen_ok, streifen, streifen_m])
 	# Vom Marktplatz auf den Westkai und über den Kai bis an den Kanal vor dem Wassertor
