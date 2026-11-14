@@ -13,5 +13,5 @@ shader_parameter/rauheit = ExtResource("4_rau")
 shader_parameter/meter = 6.0
 shader_parameter/ton = Color(1.42, 1.4, 1.34, 1)
 shader_parameter/schwankung = 0.22
-shader_parameter/moos = 0.42
-shader_parameter/moos_farbe = Color(0.27, 0.33, 0.13, 1)
+shader_parameter/moos = 0.7
+shader_parameter/moos_farbe = Color(0.3, 0.38, 0.14, 1)
