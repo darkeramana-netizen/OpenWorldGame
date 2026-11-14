@@ -84,6 +84,8 @@ Weg vom Klötzchen-Look: Die Welt hat Texturen, Licht, Bewuchs und richtige Figu
 **Licht und Himmel:**
 - Wolken am Himmel, AgX-Farbumsetzung, Umgebungsverdeckung (SSAO), leichtes Glühen, Höhennebel und Luftperspektive.
 - Die Sonne geht im Osten auf und steht mittags höchstens 58° hoch. Mauern werfen also auch mittags Schatten.
+- Kernburg wie im Referenzbild als ein zusammenhängender Bau: Der Palas reicht hinten bis an den Bergfried (dessen Sockel steckt in der Rückwand), der eckige Zinnenturm steht bündig an seinem Ende, der Rundturm mit Kegeldach halb in seiner vorderen Ecke (`teil_drachenstein.py`, vor dem Bau der Kernburg).
+- Leben und Natur im Detail: Auf den flachen Absätzen des Felsmassivs wachsen Grasbüschel, Moospolster und Farn in Flecken (`felsmassiv.gd` setzt sie selbst auf seine Oberfläche), die Oberseiten sind fleckig bemoost; Möwen kreisen über Hafenbecken, Bucht und Klippe und sitzen auf der Kaikante (`szenen/figuren/moewen.gd`, sie fliegen auf, wenn man näher kommt); am Kai hängen Fischernetze zum Trocknen an Gestellen, bei den Fischern stehen Fischkörbe (`ausstattung.gd`, Arten 37 und 38).
 - Stimmung wie im Referenzbild der Burgfeste: warmer, goldener Dunst statt grau-blauem (`DUNST_TAG` in `tageslicht.gd`, `fog_light_color` in `grundlage.py`), wenig Luftperspektive, ab dem Nachmittag allmählich goldenes Sonnenlicht; heller Kalkstein an den Klippen und im Felsmassiv mit frischem Moos auf den Oberseiten (`moos_farbe` in `stein.gdshader`); das Meer tief blaugrün.
 
 **Gelände:**
