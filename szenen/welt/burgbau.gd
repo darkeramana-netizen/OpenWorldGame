@@ -1092,28 +1092,45 @@ func _wehrgang_rampe(m: Vector2, u: Vector2, n: Vector2, d: float, y0: float, s0
 		_viereck("rampe", p.call(r1, -d + 0.35, y1 + 0.02), p.call(s1, -d + 0.35, y1 + 0.02), p.call(s1, d - BRUSTWEHR_DICKE, y1 + 0.02),
 			p.call(r1, d - BRUSTWEHR_DICKE, y1 + 0.02), Vector3.UP)
 	_klotz("boden", m, u, n, minf(s1, s2), maxf(s1, s2), -d + 0.35, d - BRUSTWEHR_DICKE, y0 - 0.06, y1, true)
-	var x := s0
-	var schritt := 0.5 * richtung
-	while (s2 - x) * richtung > 0.001:
-		var x2 := x + schritt
-		if (x2 - s2) * richtung > 0.0:
-			x2 = s2
-		var t := clampf((x2 - s0) / (s1 - s0), 0.0, 1.0) if absf(s1 - s0) > 0.001 else 1.0
-		var y := lerpf(y0, y1, t)
-		if y > y0 + 0.05:
-			# Hofmauer und Brustwehr steigen mit, enden aber an der Gehrung zum Nachbarn (bis_…, gemessen wie s, in
-			# Richtung der Rampe): an einer Ecke stünden sie sonst quer in dessen Wehrgang
-			var e_in := minf(maxf(x, x2), bis_innen) if richtung > 0.0 else maxf(minf(x, x2), -bis_innen)
-			var e_aus := minf(maxf(x, x2), bis_aussen) if richtung > 0.0 else maxf(minf(x, x2), -bis_aussen)
-			if richtung > 0.0 and e_in > minf(x, x2) + 0.01:
-				_klotz(stein, m, u, n, minf(x, x2), e_in, -d, -d + 0.35, y0 + 0.5, y + 0.55)
-			elif richtung < 0.0 and e_in < maxf(x, x2) - 0.01:
-				_klotz(stein, m, u, n, e_in, maxf(x, x2), -d, -d + 0.35, y0 + 0.5, y + 0.55)
-			if richtung > 0.0 and e_aus > minf(x, x2) + 0.01:
-				_klotz(stein, m, u, n, minf(x, x2), e_aus, d - BRUSTWEHR_DICKE, d, y0 + 1.0, y + BRUSTWEHR - 0.05)
-			elif richtung < 0.0 and e_aus < maxf(x, x2) - 0.01:
-				_klotz(stein, m, u, n, e_aus, maxf(x, x2), d - BRUSTWEHR_DICKE, d, y0 + 1.0, y + BRUSTWEHR - 0.05)
-		x = x2
+	# Hofmauer und Brustwehr steigen mit, als schräge Wange (wie an einer Mauertreppe), enden aber an der Gehrung zum
+	# Nachbarn (bis_…, gemessen wie s, in Richtung der Rampe): an einer Ecke stünden sie sonst quer in dessen Wehrgang
+	for seite in 2:
+		var lim := (bis_innen if seite == 0 else bis_aussen) * richtung
+		var s_ende := lim if (s2 - lim) * richtung > 0.0 else s2
+		var n0 := -d if seite == 0 else d - BRUSTWEHR_DICKE
+		var n1 := -d + 0.35 if seite == 0 else d
+		var unten_ := y0 + (0.5 if seite == 0 else 1.0)
+		var auf := 0.55 if seite == 0 else BRUSTWEHR - 0.05
+		var s_knick := s1 if (s_ende - s1) * richtung > 0.0 else s_ende
+		if (s_knick - s0) * richtung > 0.01:
+			var y_knick := lerpf(y0, y1, clampf((s_knick - s0) / (s1 - s0), 0.0, 1.0)) if absf(s1 - s0) > 0.001 else y1
+			_wange(stein, m, u, n, s0, s_knick, n0, n1, unten_, y0 + auf, y_knick + auf)
+		if (s_ende - s1) * richtung > 0.01:
+			_wange(stein, m, u, n, s1, s_ende, n0, n1, unten_, y1 + auf, y1 + auf)
+
+
+## Mauerstück mit schräger Oberkante im Rahmen m, u, n: entlang u von a (Oberkante oa) bis b (Oberkante ob), quer
+## n0..n1, unten flach auf unten (a und b in beliebiger Reihenfolge)
+func _wange(mat: String, m: Vector2, u: Vector2, n: Vector2, a: float, b: float, n0: float, n1: float, unten: float,
+		oa: float, ob: float) -> void:
+	if a > b:
+		var t_ := a
+		a = b
+		b = t_
+		t_ = oa
+		oa = ob
+		ob = t_
+	var p := func(su: float, sn: float, y: float) -> Vector3:
+		var q := m + u * su + n * sn
+		return Vector3(q.x, y, q.y)
+	var U := Vector3(u.x, 0, u.y)
+	var N := Vector3(n.x, 0, n.y)
+	_viereck(mat, p.call(a, n1, unten), p.call(b, n1, unten), p.call(b, n1, ob), p.call(a, n1, oa), N)
+	_viereck(mat, p.call(a, n0, unten), p.call(b, n0, unten), p.call(b, n0, ob), p.call(a, n0, oa), -N)
+	_viereck(mat, p.call(b, n0, unten), p.call(b, n1, unten), p.call(b, n1, ob), p.call(b, n0, ob), U)
+	_viereck(mat, p.call(a, n0, unten), p.call(a, n1, unten), p.call(a, n1, oa), p.call(a, n0, oa), -U)
+	var schraeg := (Vector3.UP * (b - a) - U * (ob - oa)).normalized()
+	_viereck(mat, p.call(a, n0, oa), p.call(b, n0, ob), p.call(b, n1, ob), p.call(a, n1, oa), schraeg)
 
 
 ## Wie weit ein Mauerende außerhalb eines hohlen Torturms über seine Wand hinaus überlappen darf (sonst halbe Dicke)

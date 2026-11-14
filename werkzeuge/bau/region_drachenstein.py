@@ -219,6 +219,55 @@ for _t, _s, _alt, _neu, _riegel in stummel_an_tuermen():
                                          % (m2_.group(1), _t[0], _t[1], r_[0] + 0.5), k2_)
 # An einer Ecke der Vorburg liegen 12 m zwischen den Wehrgängen: ein Treppenturm verbindet sie
 print("Treppenturm Vorburg: Wehrgänge auf %.2f und %.2f" % treppenturm("TreppenturmVorburg", "Drachenstein/Burgen", TREPPENTURM_VORBURG))
+# Banner an der Wand (Fahnen Art 1), die in einem Torbau oder Turm hingen (z. B. über einem Tor, hinter dem ein hohler
+# Torbau steht): vor dessen Wand rücken, in ihrer eigenen Richtung, so dass das Tuch vor der Fläche hängt
+_eckig, _rund = [], []
+for k_ in knoten:
+    m_ = re.search(r'\ntorbauten = PackedFloat32Array\(([^)]*)\)', k_)
+    if m_ and m_.group(1).strip():
+        t_ = [float(v_) for v_ in m_.group(1).split(",")]
+        _eckig += [t_[i_:i_ + 10] for i_ in range(0, len(t_) - 9, 10)]
+    m_ = re.search(r'\ntuerme = PackedFloat32Array\(([^)]*)\)', k_)
+    if m_ and m_.group(1).strip():
+        t_ = [float(v_) for v_ in m_.group(1).split(",")]
+        _rund += [t_[i_:i_ + 7] for i_ in range(0, len(t_) - 6, 7)]
+    m_ = re.search(r'\ngebaeude = PackedFloat32Array\(([^)]*)\)', k_)
+    if m_ and m_.group(1).strip():
+        t_ = [float(v_) for v_ in m_.group(1).split(",")]
+        for i_ in range(0, len(t_) - 11, 12):
+            g_ = math.radians(t_[i_ + 2])     # wie burgbau.gd: x entlang (cos, -sin), z entlang (sin, cos)
+            _eckig.append([t_[i_], t_[i_ + 1], math.cos(g_), -math.sin(g_), t_[i_ + 5], t_[i_ + 5] + t_[i_ + 7] + 3.0,
+                           t_[i_ + 3], t_[i_ + 4]])
+
+
+def _im_bau(x_, y_, z_):
+    for q_ in _eckig:
+        l_ = math.hypot(q_[2], q_[3])
+        ux_, uz_ = q_[2] / l_, q_[3] / l_
+        a_, b_ = (x_ - q_[0]) * ux_ + (z_ - q_[1]) * uz_, (x_ - q_[0]) * -uz_ + (z_ - q_[1]) * ux_
+        if abs(a_) < q_[6] / 2 + 0.3 and abs(b_) < q_[7] / 2 + 0.3 and q_[4] - 1 < y_ < q_[5] + 1:
+            return True
+    return any(math.dist((x_, z_), q_[:2]) < q_[4] + 0.3 and q_[2] - 1 < y_ < q_[3] + 1 for q_ in _rund)
+
+
+for j_, k_ in enumerate(knoten):
+    if 'name="Fahnen"' not in k_:
+        continue
+    m_ = re.search(r'\nfahnen = PackedFloat32Array\(([^)]*)\)', k_)
+    f_ = [float(v_) for v_ in m_.group(1).split(",")]
+    for i_ in range(0, len(f_) - 6, 7):
+        if int(f_[i_ + 6]) != 1:
+            continue
+        g_ = math.radians(f_[i_ + 3])
+        vx_, vz_ = math.sin(g_), math.cos(g_)
+        schub_ = 0.0
+        while schub_ < 12.0 and _im_bau(f_[i_] + vx_ * (schub_ + 0.25), f_[i_ + 1] - f_[i_ + 5] / 2, f_[i_ + 2] + vz_ * (schub_ + 0.25)):
+            schub_ += 0.1
+        if schub_ > 0.0:
+            print("Banner vor die Wand gerückt: %.1f m (%.1f, %.1f)" % (schub_, f_[i_], f_[i_ + 2]))
+            f_[i_] = round(f_[i_] + vx_ * schub_, 2)
+            f_[i_ + 2] = round(f_[i_ + 2] + vz_ * schub_, 2)
+    knoten[j_] = k_.replace(m_.group(0), "\nfahnen = PackedFloat32Array(%s)" % _zahlen(f_))
 wehrgang_wachen()   # die Streifen der Mauerwachen folgen den endgültigen Mauerstücken
 # Person "kordel": person.tscn nutzt KEINE=0, SCHWARZ=1, GRAU=2, GOLDEN=3
 schreibe("region_drachenstein.tscn")
