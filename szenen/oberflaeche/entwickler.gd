@@ -6,9 +6,39 @@ extends CanvasLayer
 @onready var _liste: VBoxContainer = %Liste
 
 
+var _ort: Label
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_fenster.hide()
+	# Im Debug-Spiel unten links die Position der Kamera und ihre Blickrichtung: so steht auf jedem Bildschirmfoto,
+	# wo es aufgenommen wurde (für Fehlerberichte)
+	if OS.is_debug_build():
+		_ort = Label.new()
+		_ort.name = "Ort"
+		_ort.add_theme_font_size_override("font_size", 13)
+		_ort.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
+		_ort.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+		_ort.add_theme_constant_override("outline_size", 4)
+		_ort.anchor_top = 1.0
+		_ort.anchor_bottom = 1.0
+		_ort.offset_left = 10
+		_ort.offset_top = -24
+		add_child(_ort)
+
+
+func _process(_delta: float) -> void:
+	if _ort == null:
+		return
+	var kamera := get_viewport().get_camera_3d()
+	if kamera == null:
+		_ort.text = ""
+		return
+	var p := kamera.global_position
+	var blick := -kamera.global_basis.z
+	_ort.text = "Ort %.0f, %.0f, %.0f · Blick %.0f°, %.0f° geneigt" % [p.x, p.y, p.z,
+		rad_to_deg(atan2(blick.x, -blick.z)), rad_to_deg(asin(clampf(blick.y, -1.0, 1.0)))]
 
 
 func _unhandled_input(event: InputEvent) -> void:
