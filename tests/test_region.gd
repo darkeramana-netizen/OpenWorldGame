@@ -341,6 +341,57 @@ func _initialize() -> void:
 			streifen_ok += 1
 		else:
 			print("       Streife von %s: %s" % [w_.name, wo])
+	# Ausstattung und Hafenkram stehen auf dem Boden: nicht darin, nicht darüber, nicht in einer Wand; sitzende Tauben
+	# sitzen auf einer Oberfläche
+	var nicht_boden := [5, 6, 7, 9, 19, 20, 21, 22, 23, 24, 25, 26, 31]
+	var ohne_a: Array[RID] = []
+	var traeger: Array = []
+	for k in current_scene.find_children("*", "Node3D", true, false):
+		if (k.has_method("unterwegs") or k is CharacterBody3D or k.has_meta("tier")) and k is CollisionObject3D:
+			ohne_a.append(k.get_rid())
+		var sk = k.get_script()
+		if sk and (String(sk.resource_path).ends_with("ausstattung.gd") or k.name == "Hafenausstattung"):
+			traeger.append(k)
+			for c in k.find_children("*", "CollisionObject3D", true, false):
+				ohne_a.append(c.get_rid())
+	for t_ in get_nodes_in_group("tiere"):
+		if t_ is CollisionObject3D:
+			ohne_a.append(t_.get_rid())
+	var stuecke_alle := 0
+	var stuecke_falsch: Array[String] = []
+	for k: Node3D in traeger:
+		var st_: PackedFloat32Array = k.stuecke
+		var sch := 5 if String(k.get_script().resource_path).ends_with("ausstattung.gd") else 7
+		var i_ := 0
+		while i_ + sch - 1 < st_.size():
+			var art_ := int(st_[i_])
+			if (sch == 5 and not art_ in nicht_boden and art_ != 29) or (sch == 7 and art_ in [5, 6, 7]):
+				stuecke_alle += 1
+				var p_ := k.global_transform * Vector3(st_[i_ + 1], st_[i_ + 2], st_[i_ + 3])
+				var ab_ := PhysicsRayQueryParameters3D.create(p_ + Vector3.UP * 1.8, p_ + Vector3.DOWN * 4.0, 1)
+				ab_.exclude = ohne_a
+				var tb_: Dictionary = raum_s.intersect_ray(ab_)
+				var pq_ := PhysicsPointQueryParameters3D.new()
+				pq_.position = p_ + Vector3.UP * 0.5
+				pq_.exclude = ohne_a
+				if tb_.is_empty() or absf(float(tb_.position.y) - p_.y) > 0.12 or not raum_s.intersect_point(pq_, 1).is_empty():
+					stuecke_falsch.append("%s Art %d bei %s" % [k.name, art_, p_.snapped(Vector3.ONE * 0.1)])
+			i_ += sch
+	for t_ in current_scene.find_children("Schwarm*", "Node3D", true, false):
+		if t_.get("sitzend"):
+			for kind_ in t_.get_children():
+				if kind_ is Node3D:
+					var p_: Vector3 = (kind_ as Node3D).global_position
+					var ab_ := PhysicsRayQueryParameters3D.create(p_ + Vector3.UP * 1.0, p_ + Vector3.DOWN * 3.0, 1)
+					ab_.exclude = ohne_a
+					var tb_: Dictionary = raum_s.intersect_ray(ab_)
+					stuecke_alle += 1
+					if tb_.is_empty() or absf(float(tb_.position.y) - p_.y) > 0.12:
+						stuecke_falsch.append("Taube in %s bei %s" % [t_.name, p_.snapped(Vector3.ONE * 0.1)])
+	for z_ in stuecke_falsch.slice(0, 8):
+		print("       falsch platziert: %s" % z_)
+	pruefe(stuecke_alle > 250 and stuecke_falsch.is_empty(),
+			"Ausstattung, Hafenkram und Tauben: %d von %d auf dem Boden, keins in einer Wand" % [stuecke_alle - stuecke_falsch.size(), stuecke_alle])
 	pruefe(streifen >= 8 and streifen_ok == streifen and streifen_m > 1000.0,
 			"Mauerwachen: %d von %d Streifen ohne Lücke und Wand (zusammen %.0f m)" % [streifen_ok, streifen, streifen_m])
 	# Vom Marktplatz auf den Westkai und über den Kai bis an den Kanal vor dem Wassertor
