@@ -2310,16 +2310,19 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 		else:
 			# Wohnbau, Palas, Küche, Zeughaus: in jedem Geschoss ein Tisch mit Bänken, im Erdgeschoss ein Kamin am Giebel +L,
 			# in den oberen Geschossen Betten am Giebel +L
+			# Im Stall stehen unten nur Boxen: kein Tisch, kein offenes Feuer (Heu und Stroh)
+			var stall_unten := zweck == 4 and k == 0
 			var ts := iL * (0.42 if art == 3 else 0.15)   # im Palas die Tafel hinten, vorn bleibt der Weg zur Treppe frei
 			var lang := minf(iL * 0.9, 6.0) if art == 3 else minf(iL * 0.5, 2.4)
-			_klotz("holz", c + uz * ts, uz, nx, -lang / 2.0, lang / 2.0, -0.5, 0.5, y + 0.72, y + 0.8)
-			for e: float in [-1.0, 1.0]:
-				_klotz("holz", c + uz * (ts + e * (lang / 2.0 - 0.3)), uz, nx, -0.08, 0.08, -0.4, 0.4, y, y + 0.72)
-				_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, -lang / 2.0, lang / 2.0, -0.18, 0.18, y + 0.42, y + 0.48)
-				_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, -lang / 2.0 + 0.2, -lang / 2.0 + 0.3, -0.15, 0.15, y, y + 0.42)
-				_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, lang / 2.0 - 0.3, lang / 2.0 - 0.2, -0.15, 0.15, y, y + 0.42)
-			_klotz("glut", c + uz * ts, uz, nx, -0.06, 0.06, -0.06, 0.06, y + 0.8, y + 0.98)
-			if k == 0 and zweck != 1:
+			if not stall_unten:
+				_klotz("holz", c + uz * ts, uz, nx, -lang / 2.0, lang / 2.0, -0.5, 0.5, y + 0.72, y + 0.8)
+				for e: float in [-1.0, 1.0]:
+					_klotz("holz", c + uz * (ts + e * (lang / 2.0 - 0.3)), uz, nx, -0.08, 0.08, -0.4, 0.4, y, y + 0.72)
+					_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, -lang / 2.0, lang / 2.0, -0.18, 0.18, y + 0.42, y + 0.48)
+					_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, -lang / 2.0 + 0.2, -lang / 2.0 + 0.3, -0.15, 0.15, y, y + 0.42)
+					_klotz("holz", c + uz * ts + nx * e * 0.95, uz, nx, lang / 2.0 - 0.3, lang / 2.0 - 0.2, -0.15, 0.15, y, y + 0.42)
+				_klotz("glut", c + uz * ts, uz, nx, -0.06, 0.06, -0.06, 0.06, y + 0.8, y + 0.98)
+			if k == 0 and zweck != 1 and not stall_unten:
 				var km := c + uz * (iL - 0.45)
 				_klotz("bruchstein", km, uz, nx, -0.45, 0.45, -1.3, -0.9, y, y + 1.4)
 				_klotz("bruchstein", km, uz, nx, -0.45, 0.45, 0.9, 1.3, y, y + 1.4)
