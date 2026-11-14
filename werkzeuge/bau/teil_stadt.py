@@ -202,20 +202,41 @@ size = Vector3(2.5, 0.4, {laenge_:.2f})''')
         oz = sz_ + dz_ * (k * 2.9 + 0.32) - qz_ * 0.98
         for steg_teil in (3, 0):         # Deck und Pfähle
             _steg.append((steg_teil, round(ox, 2), round(KAI_OBEN - 2.62, 2), round(oz, 2), round(g_, 1), 0, 1))   # Deck auf Kaihöhe
+def _auf_kai(x, z, r=0.7, weit=8.0):
+    """Nächster Punkt in Richtung Becken (+x am Nordkai), an dem der Kai eben auf Kaihöhe liegt (nicht am Hang zum
+    Mauerfuß) und der Kaiweg frei bleibt; None, wenn es dort keinen gibt."""
+    weg_ = WL(PD.KAIWEG)
+    s_ = 0.0
+    while s_ <= weit:
+        px_, pz_ = x + s_, z
+        eben_ = all(abs(H(px_ + dx_, pz_ + dz_) - KAI_OBEN) < 0.08 for dx_ in (-r, 0, r) for dz_ in (-r, 0, r))
+        if eben_ and abstand_linie(weg_, px_, pz_) > 2.2:
+            return px_, pz_
+        s_ += 0.25
+    return None
+
+
 # Hafenkram: Fässer und Kisten (Fotoscans) in Gruppen am Nordkai und am Ostkai
 random.seed(77)
 _kram = [W(pp) for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (812, 528)]]    # an der Mauer, abseits der Laufwege
 _kram += [uh(s_ + 3.0, q_ * (UH_BREITE / 2 + 1.6)) for s_ in range(6, 54, 12) for q_ in (-1, 1)]   # in den Lagernischen
-for gx_, gz_ in _kram:
+for k_, (gx_, gz_) in enumerate(_kram):
+    if k_ < 5:                                   # draußen am Kai: auf das ebene Pflaster, nicht an den Hang zur Mauer
+        q_ = _auf_kai(gx_ - 1.0, gz_, 2.4)
+        if q_ is None:
+            continue
+        gx_, gz_ = q_[0] + 1.0, q_[1]
     for _ in range(random.randint(3, 6)):
         art_ = random.choice([5, 5, 6, 7, 7])
         px_, pz_ = gx_ + random.uniform(-1.6, 1.6), gz_ + random.uniform(-1.6, 1.6)
-        _steg.append((art_, round(px_, 2), round(KAI_OBEN + 0.2, 2), round(pz_, 2), round(random.uniform(0, 360), 1), 0, 1))
+        # die Höhe bestimmt felsen.gd beim Start (auf_boden): auf dem Kai oder dem Boden der Lagernische
+        _steg.append((art_, round(px_, 2), round(KAI_OBEN, 2), round(pz_, 2), round(random.uniform(0, 360), 1), 0, 1))
 N("Hafenausstattung", "Node3D", HF, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray("{STEG}#0", "{STEG}#1", "{STEG}#2", "{STEG}#3", "{STEG}#4", "res://modelle/hafen/barrel_03/barrel_03.gltf", "res://modelle/hafen/wooden_crate_01/wooden_crate_01.gltf#1", "res://modelle/hafen/wooden_crate_02/wooden_crate_02.gltf#0")
 stuecke = PackedFloat32Array({", ".join(f"{v:.6g}" for st_ in _steg for v in st_)})
 sichtweite = 400.0
-ohne_kollision = PackedInt32Array(0, 3)""")
+ohne_kollision = PackedInt32Array(0, 3)
+auf_boden = PackedInt32Array(5, 6, 7)""")
 
 # --- Marktplatz mit Brunnen und Ständen ---
 MK = DS + "/Marktplatz"
@@ -404,16 +425,24 @@ random.seed(912)
 # Nordkai zwischen Ringmauer und Becken: Fässer, Kisten, Säcke in Gruppen, dazu Karren
 for px in range(630, 720, 15):
     gx, gz = W((px, random.uniform(414, 418)))
+    q_ = _auf_kai(gx - 1.2, gz, 2.0)             # auf das ebene Kaipflaster, nicht an den Hang zur Mauer
+    if q_ is None:
+        continue
+    gx, gz = q_[0] + 1.2, q_[1]
     for k in range(random.randint(2, 4)):
         art = random.choice((0, 0, 1, 1, 2))
         AUSSTATTUNG.append((art, gx + random.uniform(-1.2, 1.2), KAI_OBEN, gz + random.uniform(-1.6, 1.6), random.uniform(0, 360)))
 for pp in [(652, 417), (700, 417)]:
     x, z = W(pp)
-    AUSSTATTUNG.append((4, x - 2.5, KAI_OBEN, z, random.uniform(-15, 15)))
+    q_ = _auf_kai(x - 2.5, z, 2.0)
+    if q_:
+        AUSSTATTUNG.append((4, q_[0], KAI_OBEN, q_[1], random.uniform(-15, 15)))
 # Fischernetze zum Trocknen an der Mauer (zwischen den Kramgruppen) und Fischkörbe bei den Fischern am Becken
 for pz_ in (627.5, 657.5, 687.5):
     x, z = W((pz_ + 3.75, 416))
-    AUSSTATTUNG.append((37, x + 0.4, KAI_OBEN, z, 90))
+    q_ = _auf_kai(x, z, 1.8)                     # das Gestell ist 3,4 m lang (entlang z)
+    if q_:
+        AUSSTATTUNG.append((37, q_[0], KAI_OBEN, q_[1], 90))
 _kaiweg = WL(PD.KAIWEG)
 for i_ in range(3):
     x, z = W((630 + 25 * i_, 436))

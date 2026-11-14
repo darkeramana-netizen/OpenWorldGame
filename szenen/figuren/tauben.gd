@@ -53,6 +53,30 @@ func _ready() -> void:
 		_tauben.append({"knoten": t, "koerper": koerper, "kopf": kopf, "fluegel": fluegel, "heim": heim,
 			"takt": _zufall.randf_range(0.2, 2.0), "tun": "", "dauer": 0.0, "von": heim, "nach": heim, "flug": 0.0,
 			"winkel": _zufall.randf() * TAU, "hoehe": _zufall.randf_range(6.0, 10.0), "radius": _zufall.randf_range(5.0, 9.0)})
+	_erde.call_deferred()
+
+
+## Jede Taube auf die Oberfläche unter ihrem Platz (Mauerkrone, Hof), sobald Gelände und Bauten ihre Kollision haben:
+## Wo eine Mauer niedriger ist oder fehlt, schwebt sonst eine in der Luft.
+func _erde() -> void:
+	if not is_inside_tree():
+		return
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var raum := get_world_3d().direct_space_state
+	for t in _tauben:
+		var k: Node3D = t["knoten"]
+		var p := to_global(t["heim"] as Vector3)
+		var y: float = (load("res://szenen/welt/ausstattung.gd") as GDScript).boden_unter(raum, p, 1.0, 3.0)
+		if is_nan(y):
+			continue
+		var heim: Vector3 = t["heim"]
+		heim.y = to_local(Vector3(p.x, y, p.z)).y
+		t["heim"] = heim
+		t["von"] = heim
+		t["nach"] = heim
+		if _zustand == Zustand.RUHE:
+			k.position = heim
 
 
 func _teil(eltern: Node3D, art: String, ort: Vector3) -> Node3D:

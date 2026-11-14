@@ -614,7 +614,9 @@ for _laenge in (15.0, 9.6):
       t_ = _laenge / 2 + 1.0
       while t_ < l_ - _laenge / 2 - 1.0:
           x_, z_ = a_[0] + ux_ * t_ + nx_ * 5.3, a_[1] + uz_ * t_ + nz_ * 5.3
-          r_ = _rechteck_ab(x_, z_, _laenge, 6.6, g_)
+          # beim kurzen Platz (9,6 m Pferch) liegt der Koben gleich daneben (bis 9,6 m weiter): er gehört mit zur Fläche
+          r_ = _rechteck_ab(x_, z_, _laenge, 6.6, g_) if _laenge > 10 else \
+              _rechteck_ab(x_ + ux_ * 2.6, z_ + uz_ * 2.6, 15.4, 6.6, g_)
           t_ += 1.0
           if not all(_im_poly(q_, _hof_vb_) for q_ in r_):
               continue
@@ -635,7 +637,10 @@ if _hofstellen:
     _hofstellen.sort(key=lambda h_: h_[0])
     _, x_, z_, g_, weg_, laenge_ = _hofstellen[0]
     PFERCH_RESERVE = (x_, z_, g_, laenge_)
-    _feste_w.append(_rechteck_ab(x_, z_, laenge_ + (0.0 if laenge_ > 10 else 6.0) + 1.0, 7.6, g_))   # für nichts anderes
+    _ua_ = math.radians(g_)
+    _ux_, _uz_ = math.cos(_ua_), -math.sin(_ua_)
+    _feste_w.append(_rechteck_ab(x_, z_, laenge_ + 1.0, 7.6, g_) if laenge_ > 10 else
+                    _rechteck_ab(x_ + _ux_ * 2.6, z_ + _uz_ * 2.6, 16.4, 7.6, g_))   # für nichts anderes
     HOFHAEUSER = [h_ for i_, h_ in enumerate(HOFHAEUSER) if i_ not in set(weg_)]
     print(f"Wirtschaftshof an der Vorburgmauer: {math.dist((x_, z_), _stall_tuer):.1f} m von der Stalltür, {len(weg_)} Häuser weichen")
 N("Mauertreppen", "Node3D", BG, f"""script = ExtResource("28_burgbau")

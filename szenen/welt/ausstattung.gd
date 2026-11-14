@@ -18,8 +18,13 @@ extends Node3D
 @export var stuecke := PackedFloat32Array():
 	set(w):
 		stuecke = w
-		if is_inside_tree():
+		if is_inside_tree() and _bereit:
 			_baue()
+## Beim Start jedes Stück auf die Oberfläche darunter setzen (Gelände, Kai, Hof, Boden eines Baus), damit nichts im
+## Boden steckt oder schwebt. Schiffe, Tiere, Wandlaternen, Tauben und die Schmiede behalten ihre Höhe.
+@export var auf_boden := true
+const OHNE_BODEN := [5, 6, 7, 9, 19, 20, 21, 22, 23, 24, 25, 26, 31]
+var _bereit := false
 
 ## Ausdehnung der Kollisionsbox je Art (halbe Breite, Höhe, halbe Tiefe)
 const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0.6, 0.6, 0.45), Vector3(1.6, 2.6, 1.1),
@@ -55,7 +60,44 @@ static var _mats := {}
 
 
 func _ready() -> void:
+	if auf_boden and not Engine.is_editor_hint():
+		# erst wenn Gelände und Bauten ihre Kollision haben
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		_setze_auf_boden()
+	_bereit = true
 	_baue()
+
+
+## Höhe jedes Stücks: die Oberfläche unter ihm (Strahl von 1,6 m darüber bis 3 m darunter). Personen, Tiere und
+## Fahrzeuge zählen nicht; ohne Treffer bleibt die Höhe.
+func _setze_auf_boden() -> void:
+	var raum := get_world_3d().direct_space_state
+	var neu := stuecke.duplicate()
+	var i := 0
+	while i + 4 < neu.size():
+		if not int(neu[i]) in OHNE_BODEN:
+			var p := global_transform * Vector3(neu[i + 1], neu[i + 2], neu[i + 3])
+			var y := boden_unter(raum, p, 1.6, 3.0)
+			if not is_nan(y):
+				neu[i + 2] = (global_transform.affine_inverse() * Vector3(p.x, y, p.z)).y
+		i += 5
+	stuecke = neu
+
+
+## Oberfläche unter p (Strahl von oben bis unten), Personen, Tiere und bewegte Körper zählen nicht; NAN ohne Treffer
+static func boden_unter(raum: PhysicsDirectSpaceState3D, p: Vector3, oben: float, unten: float) -> float:
+	var abfrage := PhysicsRayQueryParameters3D.create(p + Vector3.UP * oben, p + Vector3.DOWN * unten, 1)
+	for versuch in 4:
+		var t := raum.intersect_ray(abfrage)
+		if t.is_empty():
+			return NAN
+		var k := t.collider as Node
+		if k is CharacterBody3D or k.has_method("unterwegs") or k.has_meta("tier") or (k.get_parent() != null and k.get_parent().has_method("unterwegs")):
+			abfrage.exclude = abfrage.exclude + [t.rid]
+			continue
+		return (t.position as Vector3).y
+	return NAN
 
 
 func _baue() -> void:

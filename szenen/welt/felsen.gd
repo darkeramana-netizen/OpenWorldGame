@@ -24,11 +24,29 @@ extends Node3D
 @export var kachel := 0.0
 ## Modelle (Nummern), die keine Kollision bekommen, z. B. die Pfähle unter einem Steg
 @export var ohne_kollision := PackedInt32Array()
+## Modelle (Nummern), deren Stücke beim Start auf die Oberfläche darunter gesetzt werden (z. B. Fässer und Kisten
+## auf einem Kai), damit nichts im Boden steckt oder schwebt
+@export var auf_boden := PackedInt32Array()
 
 const SCHRITT := 7
 
 
 func _ready() -> void:
+	if not auf_boden.is_empty() and not Engine.is_editor_hint():
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		var raum := get_world_3d().direct_space_state
+		var neu := stuecke.duplicate()
+		var i := 0
+		while i + SCHRITT - 1 < neu.size():
+			if int(neu[i]) in auf_boden:
+				var p := global_transform * Vector3(neu[i + 1], neu[i + 2], neu[i + 3])
+				var y: float = (load("res://szenen/welt/ausstattung.gd") as GDScript).boden_unter(raum, p, 1.6, 3.0)
+				if not is_nan(y):
+					neu[i + 2] = (global_transform.affine_inverse() * Vector3(p.x, y, p.z)).y
+			i += SCHRITT
+		stuecke = neu      # baut neu
+		return
 	_baue()
 
 
