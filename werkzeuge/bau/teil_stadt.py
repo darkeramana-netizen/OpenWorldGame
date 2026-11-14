@@ -229,6 +229,8 @@ for k_, (gx_, gz_) in enumerate(_kram):
     for _ in range(random.randint(3, 6)):
         art_ = random.choice([5, 5, 6, 7, 7])
         px_, pz_ = gx_ + random.uniform(-1.6, 1.6), gz_ + random.uniform(-1.6, 1.6)
+        if k_ < 5 and (abstand_linie(WL(PD.KAIWEG), px_, pz_) < 2.0 or abs(H(px_, pz_) - KAI_OBEN) > 0.08):
+            continue                             # jedes Stück abseits des Kaiwegs und auf ebenem Kai
         # die Höhe bestimmt felsen.gd beim Start (auf_boden): auf dem Kai oder dem Boden der Lagernische
         _steg.append((art_, round(px_, 2), round(KAI_OBEN, 2), round(pz_, 2), round(random.uniform(0, 360), 1), 0, 1))
 N("Hafenausstattung", "Node3D", HF, f"""script = ExtResource("30_felsen")
@@ -431,17 +433,20 @@ for px in range(630, 720, 15):
     gx, gz = q_[0] + 1.2, q_[1]
     for k in range(random.randint(2, 4)):
         art = random.choice((0, 0, 1, 1, 2))
-        AUSSTATTUNG.append((art, gx + random.uniform(-1.2, 1.2), KAI_OBEN, gz + random.uniform(-1.6, 1.6), random.uniform(0, 360)))
+        px_, pz_ = gx + random.uniform(-1.2, 1.2), gz + random.uniform(-1.6, 1.6)
+        if abstand_linie(WL(PD.KAIWEG), px_, pz_) < 2.0 or abs(H(px_, pz_) - KAI_OBEN) > 0.08:
+            continue                             # jedes Stück abseits des Kaiwegs und auf ebenem Kai
+        AUSSTATTUNG.append((art, px_, KAI_OBEN, pz_, random.uniform(0, 360)))
 for pp in [(652, 417), (700, 417)]:
     x, z = W(pp)
     q_ = _auf_kai(x - 2.5, z, 2.0)
-    if q_:
+    if q_ and all(abstand_linie(WL(PD.KAIWEG), q_[0], q_[1] + d_) > 2.4 for d_ in (-1.6, 0, 1.6)):
         AUSSTATTUNG.append((4, q_[0], KAI_OBEN, q_[1], random.uniform(-15, 15)))
 # Fischernetze zum Trocknen an der Mauer (zwischen den Kramgruppen) und Fischkörbe bei den Fischern am Becken
 for pz_ in (627.5, 657.5, 687.5):
     x, z = W((pz_ + 3.75, 416))
     q_ = _auf_kai(x, z, 1.8)                     # das Gestell ist 3,4 m lang (entlang z)
-    if q_:
+    if q_ and all(abstand_linie(WL(PD.KAIWEG), q_[0], q_[1] + d_) > 2.2 for d_ in (-1.7, 0, 1.7)):
         AUSSTATTUNG.append((37, q_[0], KAI_OBEN, q_[1], 90))
 _kaiweg = WL(PD.KAIWEG)
 for i_ in range(3):
@@ -451,7 +456,7 @@ for i_ in range(3):
                  for t_ in [k_ / 20 for k_ in range(21)]), key=lambda q_: math.dist(q_, (x, z)))
     ab_ = max(math.dist(best_, (x, z)), 0.01)
     wx_, wz_ = (x - best_[0]) / ab_, (z - best_[1]) / ab_
-    for quer_, laengs_ in ((1.0, 0.8), (1.2, -0.9)):
+    for quer_, laengs_ in ((1.5, 0.8), (1.7, -0.9)):
         AUSSTATTUNG.append((38, x + wx_ * quer_ - wz_ * laengs_, KAI_OBEN, z + wz_ * quer_ + wx_ * laengs_, random.uniform(0, 360)))
 # Speicherkai: Fässer, Kisten und Säcke an der Wand des Speichers (die Tür in der Mitte und der Weg zur Molenpforte
 # bleiben frei), dazu ein Karren
