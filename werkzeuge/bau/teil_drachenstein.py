@@ -1271,7 +1271,7 @@ N("Moewen", "Node3D", DS)
 for k_, (x_, y_, z_, g_, n_, weite_, hoehe_, sitzend_) in enumerate([
         (150, -20, 10, 0, 6, 30, 16, False), (245, -20, 30, 0, 5, 45, 22, False), (105, -20, -125, 0, 4, 35, 30, False),
         (60, -20, 90, 0, 3, 25, 26, False),
-        (103.2, -17.8, 10, 90, 4, 5, 0, True), (196, -17.8, 20, 90, 3, 4, 0, True)]):
+        (107.9, -17.8, 8, 90, 4, 5, 0, True), (187.0, -17.8, 22, 90, 3, 4, 0, True)]):   # auf der Kaikante
     N(f"Moewen{k_}", "Node3D", DS + "/Moewen", f"""{T(x_, y_, z_, g_)}
 script = ExtResource("43_moewen")
 anzahl = {n_}

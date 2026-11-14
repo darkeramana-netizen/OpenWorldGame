@@ -216,7 +216,8 @@ def _auf_kai(x, z, r=0.7, weit=8.0):
     return None
 
 
-# Hafenkram: Fässer und Kisten (Fotoscans) in Gruppen am Nordkai und am Ostkai
+# Hafenkram: Kisten (Fotoscans) und Holzfässer in Gruppen am Nordkai und am Ostkai
+HAFEN_FAESSER = []
 random.seed(77)
 _kram = [W(pp) for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (812, 528)]]    # an der Mauer, abseits der Laufwege
 _kram += [uh(s_ + 3.0, q_ * (UH_BREITE / 2 + 1.6)) for s_ in range(6, 54, 12) for q_ in (-1, 1)]   # in den Lagernischen
@@ -231,8 +232,12 @@ for k_, (gx_, gz_) in enumerate(_kram):
         px_, pz_ = gx_ + random.uniform(-1.6, 1.6), gz_ + random.uniform(-1.6, 1.6)
         if k_ < 5 and (abstand_linie(WL(PD.KAIWEG), px_, pz_) < 2.0 or abs(H(px_, pz_) - KAI_OBEN) > 0.08):
             continue                             # jedes Stück abseits des Kaiwegs und auf ebenem Kai
-        # die Höhe bestimmt felsen.gd beim Start (auf_boden): auf dem Kai oder dem Boden der Lagernische
-        _steg.append((art_, round(px_, 2), round(KAI_OBEN, 2), round(pz_, 2), round(random.uniform(0, 360), 1), 0, 1))
+        # die Höhe bestimmt felsen.gd bzw. ausstattung.gd beim Start (auf_boden): auf dem Kai oder dem Boden der
+        # Lagernische. Fässer sind Holzfässer (ausstattung.gd, Art 0): der Fass-Scan ist ein modernes Blechfass.
+        if art_ == 5:
+            HAFEN_FAESSER.append((0, round(px_, 2), round(KAI_OBEN, 2), round(pz_, 2), round(random.uniform(0, 360), 1)))
+        else:
+            _steg.append((art_, round(px_, 2), round(KAI_OBEN, 2), round(pz_, 2), round(random.uniform(0, 360), 1), 0, 1))
 N("Hafenausstattung", "Node3D", HF, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray("{STEG}#0", "{STEG}#1", "{STEG}#2", "{STEG}#3", "{STEG}#4", "res://modelle/hafen/barrel_03/barrel_03.gltf", "res://modelle/hafen/wooden_crate_01/wooden_crate_01.gltf#1", "res://modelle/hafen/wooden_crate_02/wooden_crate_02.gltf#0")
 stuecke = PackedFloat32Array({", ".join(f"{v:.6g}" for st_ in _steg for v in st_)})
@@ -422,7 +427,7 @@ N("Stadthaeuser", "Node3D", DS, "script = ExtResource(\"27_stadthaeuser\")\nnur_
 print("Stadthäuser:", len(HAEUSER), "an den Gassen,", len(HINTERHAEUSER), "Hinterhäuser")
 
 # --- Ausstattung: Stände, Kram, Koggen ---
-AUSSTATTUNG = [(3, x, H(x, z), z, 0) for x, z in STAENDE + STAENDE_MEHR] + SCHIFFE
+AUSSTATTUNG = [(3, x, H(x, z), z, 0) for x, z in STAENDE + STAENDE_MEHR] + SCHIFFE + HAFEN_FAESSER
 random.seed(912)
 # Nordkai zwischen Ringmauer und Becken: Fässer, Kisten, Säcke in Gruppen, dazu Karren
 for px in range(630, 720, 15):

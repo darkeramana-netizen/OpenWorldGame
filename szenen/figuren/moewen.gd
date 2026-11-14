@@ -165,6 +165,8 @@ func _flattern(v: Dictionary, delta: float, staerke: float) -> void:
 	var f: Array = v["fluegel"]
 	(f[0] as Node3D).rotation = Vector3(0, 0, w)
 	(f[1] as Node3D).rotation = Vector3(0, 0, -w)
+	(f[0] as Node3D).scale = Vector3.ONE
+	(f[1] as Node3D).scale = Vector3.ONE
 
 
 func _gleite(v: Dictionary, delta: float) -> void:
@@ -174,13 +176,16 @@ func _gleite(v: Dictionary, delta: float) -> void:
 		var g: Node3D = f[i]
 		var ziel := 0.12 * (1.0 if i == 0 else -1.0)
 		g.rotation = Vector3(0, 0, lerpf(g.rotation.z, ziel, clampf(delta * 3.0, 0.0, 1.0)))
+		g.scale = Vector3.ONE
 
 
 func _falte(v: Dictionary) -> void:
-	# Sitzend: Flügel eng am Körper (nach hinten geklappt), aufrecht
+	# Sitzend: Flügel zusammengelegt eng am Körper (nach hinten geklappt und verkürzt, die Spitzen über dem Schwanz)
 	var f: Array = v["fluegel"]
-	(f[0] as Node3D).rotation = Vector3(0, -1.35, 0.15)
-	(f[1] as Node3D).rotation = Vector3(0, 1.35, -0.15)
+	(f[0] as Node3D).rotation = Vector3(0, -1.5, 0.1)
+	(f[1] as Node3D).rotation = Vector3(0, 1.5, -0.1)
+	(f[0] as Node3D).scale = Vector3(0.48, 1.0, 0.5)
+	(f[1] as Node3D).scale = Vector3(0.48, 1.0, 0.5)
 	(v["koerper"] as Node3D).rotation = Vector3.ZERO
 
 
