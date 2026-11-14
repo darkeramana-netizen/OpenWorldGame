@@ -2512,11 +2512,25 @@ func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, i
 			4:   # Stall: Boxen mit Trennwänden und Krippen an der Längswand -B, Heu und Stroh
 				if k == 0:
 					var s_ := frei_s
+					var box := 0
+					var fell_zufall := RandomNumberGenerator.new()
+					fell_zufall.seed = hash(Vector2i(int(c.x * 10.0), int(c.y * 10.0)))
 					while s_ < iL - 2.0:
 						var bm := c + uz * s_ + nx * -(iB - 1.4)
 						_klotz("holz", bm, uz, nx, -0.05, 0.05, -1.4, 1.4, y, y + 1.4)
 						_klotz("holz", bm + uz * 1.4, uz, nx, -0.7, 0.7, -1.4 + 0.05, -1.0, y + 0.6, y + 1.0)
 						_klotz("stroh", bm + uz * 1.4, uz, nx, -1.35, 1.35, -1.0, 1.4, y, y + 0.06)
+						# ein Pferd in jeder Box außer jeder dritten, den Kopf über der Krippe an der Wand
+						if box % 3 != 2 and not Engine.is_editor_hint():
+							var pferd: Node3D = load("res://szenen/figuren/tier.gd").new()
+							pferd.art = 0
+							pferd.fell = [Color(0.36, 0.22, 0.12), Color(0.22, 0.14, 0.09), Color(0.55, 0.4, 0.26),
+								Color(0.12, 0.1, 0.09), Color(0.62, 0.6, 0.56)][fell_zufall.randi() % 5]
+							var pm := bm + uz * 1.4 + nx * 0.3
+							pferd.position = Vector3(pm.x, y, pm.y)
+							pferd.rotation.y = atan2(nx.x, nx.y)    # Blick (lokal -z) zur Wand -B
+							add_child(pferd)
+						box += 1
 						s_ += 2.8
 					# Heuballen in den Ecken an der Türseite, nicht vor der Tür
 					for e in 3:

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cm710uhqyggbk"
-path="res://.godot/imported/moss_01_diff_1k.jpg-0ab0f00e39bea3b0bdc542fd53bba032.ctex"
+uid="uid://dyml1nx7exkvg"
+path="res://.godot/imported/fern_02_diff_1k.png-470f32155b2406c648924c32416755a4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://modelle/pflanzen/moss_01/moss_01_diff_1k.jpg"
-dest_files=["res://.godot/imported/moss_01_diff_1k.jpg-0ab0f00e39bea3b0bdc542fd53bba032.ctex"]
+source_file="res://modelle/pflanzen/fern_02/fern_02_diff_1k.png"
+dest_files=["res://.godot/imported/fern_02_diff_1k.png-470f32155b2406c648924c32416755a4.ctex"]
 
 [params]
 

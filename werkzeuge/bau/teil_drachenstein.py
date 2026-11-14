@@ -1233,16 +1233,7 @@ def _innen(bau, hoehe, boden, art=0):
     return punkt, blick, L_ - 0.6, B_ - 0.6, geschosse_
 
 
-# Pferde in den Boxen des Stalls (Kopf zur Krippe an der Wand -B)
-pk_, bl_, iL_, iB_, _ = _innen(PD.VORBURG_BAUTEN[6], 7, PD.H_VORBURG)
-s_, _boxen = -iL_ + 0.6, 0
-while s_ < iL_ - 2.0:
-    if _boxen % 2 == 0:
-        x_, y_, z_ = pk_(s_ + 1.4, -(iB_ - 1.5))
-        BURG_AUSSTATTUNG.append((19, x_, round(y_ - 0.03, 2), z_, bl_(0, 0, 0, -1)))
-    s_ += 2.8
-    _boxen += 1
-print("Pferde in den Boxen des Stalls:", (_boxen + 1) // 2)
+# Die Pferde in den Boxen des Stalls setzt burgbau.gd selbst (_einrichtung, Zweck 4), passend zu seinen Boxen
 print("Ausstattung der Höfe:", len(BURG_AUSSTATTUNG), "Stücke, davon", sum(1 for a_ in BURG_AUSSTATTUNG if a_[0] == 14), "Feuerkörbe;",
       "Brunnen in", sorted(BURG_BRUNNEN), "abgelehnt:", _GRUND)
 N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\n"
