@@ -1534,7 +1534,7 @@ weite = 1.28
 sitzend = true
 
 [node name="Schwarm14" type="Node3D" parent="Drachenstein/Burgen/Tauben"]
-transform = Transform3D(0.32061, 0, -0.94721, 0, 1, 0, 0.94721, 0, 0.32061, -89.8, 20.72, -198.25)
+transform = Transform3D(0.32061, 0, -0.94721, 0, 1, 0, 0.94721, 0, 0.32061, -89.48, 20.72, -197.3)
 script = ExtResource("42_tauben")
 anzahl = 4
 weite = 1.28
@@ -1548,7 +1548,7 @@ weite = 1.28
 sitzend = true
 
 [node name="Schwarm16" type="Node3D" parent="Drachenstein/Burgen/Tauben"]
-transform = Transform3D(-0.61291, 0, 0.79016, 0, 1, 0, -0.79016, 0, -0.61291, -8.39, 13.32, 117.21)
+transform = Transform3D(-0.61291, 0, 0.79016, 0, 1, 0, -0.79016, 0, -0.61291, -9.77, 13.32, 115.43)
 script = ExtResource("42_tauben")
 anzahl = 2
 weite = 0.64

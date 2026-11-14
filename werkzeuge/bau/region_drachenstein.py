@@ -268,6 +268,31 @@ for j_, k_ in enumerate(knoten):
             f_[i_] = round(f_[i_] + vx_ * schub_, 2)
             f_[i_ + 2] = round(f_[i_ + 2] + vz_ * schub_, 2)
     knoten[j_] = k_.replace(m_.group(0), "\nfahnen = PackedFloat32Array(%s)" % _zahlen(f_))
+# Sitzende Taubenreihen auf den Mauerkronen: keine Taube in einem Turm oder Bau (die Reihe lag zufällig dort, wo die
+# Mauer in einem Turm endet): die Reihe rückt auf der Mauer entlang heraus, sonst entfällt sie
+_tauben_weg = 0
+for j_, k_ in enumerate(knoten):
+    if 'name="Schwarm' not in k_ or "\nsitzend = true" not in k_:
+        continue
+    m_ = re.search(r'transform = Transform3D\(([^)]*)\)', k_)
+    t_ = [float(v_) for v_ in m_.group(1).split(",")]
+    xx_, xz_ = t_[0], t_[6]                 # x-Achse (Text: Zeilen der Basis)
+    ox_, oy_, oz_ = t_[9], t_[10], t_[11]
+    n_ = int(re.search(r'\nanzahl = (\d+)', k_).group(1))
+    w_ = float(re.search(r'\nweite = ([0-9.]+)', k_).group(1))
+    reihe_ = [(i_ - (n_ - 1) / 2) * w_ / max(n_, 1) for i_ in range(n_)]
+
+    def _frei(s_):
+        return not any(_im_bau(ox_ + xx_ * (s_ + r_), oy_, oz_ + xz_ * (s_ + r_)) for r_ in reihe_)
+    schub_ = next((s_ for d_ in range(0, 25) for s_ in (d_ * 0.25, -d_ * 0.25) if _frei(s_)), None)
+    if schub_ is None:
+        knoten[j_] = ""                        # der Knoten entfällt
+        _tauben_weg += 1
+    elif schub_ != 0.0:
+        t_[9], t_[11] = round(ox_ + xx_ * schub_, 2), round(oz_ + xz_ * schub_, 2)
+        knoten[j_] = k_.replace(m_.group(0), "transform = Transform3D(%s)" % ", ".join(f"{v_:.5g}" for v_ in t_))
+        print("Taubenreihe aus Turm/Bau gerückt: %.2f m" % schub_)
+print("Taubenreihen entfallen:", _tauben_weg)
 wehrgang_wachen()   # die Streifen der Mauerwachen folgen den endgültigen Mauerstücken
 # Person "kordel": person.tscn nutzt KEINE=0, SCHWARZ=1, GRAU=2, GOLDEN=3
 schreibe("region_drachenstein.tscn")
