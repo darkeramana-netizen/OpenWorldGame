@@ -97,6 +97,8 @@ var _nachbarn_mauern: Array = []    # [a, b, Krone, Dicke] aller Mauerstücke di
 var _hohle: Array = []              # [Mitte, Radius, Innenradius, Wehrganghöhe] der hohlen Rundtürme
 var _hohle_eckig: Array = []        # [Mitte, u, n, halbe Breite innen, halbe Tiefe innen, Kammerboden] der hohlen Tortürme
 var _schalen: Array = []            # [Mitte, Radius, Innenradius] der halbrunden, hinten offenen Schalentürme
+var _koerper: Array = []            # Baukörper der Region, vor denen kein Fenster sitzen kann: ["eckig", Mitte, u, n,
+                                    # halbe Breite, halbe Tiefe, unten, oben] oder ["rund", Mitte, Radius, unten, oben]
 var _nachbarn_bauten: Array = []    # [Mitte, nx, uz, halbe Breite, halbe Länge, Boden, Traufe] der Gebäude der Geschwister
 var _rund := {}    # Material → SurfaceTool, Normalen von Hand (glatte Rundungen)
 var _bereit := false
@@ -842,6 +844,19 @@ func _anschluss_an_tuerme(m: Vector2, u: Vector2, n: Vector2, l: float, d: float
 				_klotz(stein, m, u, n, minf(s_e, s_bis) - 0.02 * ende, maxf(s_e, s_bis), minf(innen, f), maxf(innen, f), unten, hoch)
 
 
+## Liegt der Punkt q (in der Höhe y) in einem Turm oder einem eckigen Baukörper der Region?
+func _verdeckt(q: Vector2, y: float) -> bool:
+	for k: Array in _koerper:
+		if k[0] == "rund":
+			if q.distance_to(k[1]) < float(k[2]) + 0.1 and y > float(k[3]) and y < float(k[4]) + 1.5:
+				return true
+		else:
+			var l: Vector2 = q - (k[1] as Vector2)
+			if absf(l.dot(k[2])) < float(k[4]) + 0.1 and absf(l.dot(k[3])) < float(k[5]) + 0.1 and y > float(k[6]) and y < float(k[7]) + 1.5:
+				return true
+	return false
+
+
 ## Wetterfahne auf einer Turmspitze: Stange mit Kugel, Fahnenblech mit Zacken, Windrose darunter.
 func _wetterfahne(p: Vector3) -> void:
 	var c := Vector2(p.x, p.z)
@@ -1152,6 +1167,7 @@ func _sammle_nachbarn() -> void:
 	_hohle = []
 	_hohle_eckig = []
 	_schalen = []
+	_koerper = []
 	_nachbarn_bauten = []
 	# alle Bauten der Region (unter dem Großelternknoten: Burgen, Stadt, Hafen), einmal je Region gesammelt
 	var oben_ := get_parent().get_parent() if get_parent() != null and get_parent().get_parent() != null else get_parent()
@@ -1185,6 +1201,7 @@ func _sammle_nachbarn() -> void:
 		var t: PackedFloat32Array = k.tuerme
 		var i := 0
 		while i + 6 < t.size():
+			_koerper.append(["rund", Vector2(t[i], t[i + 1]), t[i + 4], t[i + 2], t[i + 3]])
 			if int(t[i + 5]) == 2:
 				_schalen.append([Vector2(t[i], t[i + 1]), t[i + 4], t[i + 4] - 1.4])
 			if int(t[i + 5]) != 2:
@@ -1199,6 +1216,7 @@ func _sammle_nachbarn() -> void:
 			var tc := Vector2(tb[i], tb[i + 1])
 			var tu := Vector2(tb[i + 2], tb[i + 3]).normalized()
 			var tn := Vector2(-tu.y, tu.x) * signf(tb[i + 8] if tb[i + 8] != 0.0 else 1.0)
+			_koerper.append(["eckig", tc, tu, Vector2(-tu.y, tu.x), tb[i + 6] / 2.0, tb[i + 7] / 2.0, tb[i + 4], tb[i + 5]])
 			if tb[i + 9] >= 1.0:
 				var zug := _torturm_zugang(tc, tu, tn, tb[i + 6] / 2.0, tb[i + 7] / 2.0, tb[i + 5], k.tore)
 				if not zug.is_empty():
@@ -3661,6 +3679,10 @@ func _fenster(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: float, se
 		fh: float, hoch: bool, durch := false, frei := Vector2(INF, -INF)) -> void:
 	var nn := n * signf(seite)
 	var m := c + u * pos + n * abstand
+	# Steht unmittelbar vor der Wand ein Turm oder ein anderer Bau, gibt es hier kein Fenster (sonst ragten Läden und
+	# Sims in dessen Mauer oder Raum)
+	if _verdeckt(m + nn * 0.6, ym):
+		return
 	var b := fb / 2.0
 	var y0 := ym - fh / 2.0
 	var y1 := ym + fh / 2.0
