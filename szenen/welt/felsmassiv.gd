@@ -20,7 +20,7 @@ extends Node3D
 @export var bewuchs_modelle := PackedStringArray()
 @export var bewuchs_arten := PackedInt32Array()
 ## Anteil der Absatzfläche (je m²) mit einer Pflanze, in den Flecken
-@export var bewuchs_dichte := 0.22
+@export var bewuchs_dichte := 0.6
 
 var _g: Node
 var _maske: Image
@@ -108,7 +108,7 @@ func _bewuchs_auf(a: Vector3, b: Vector3, c: Vector3, w: float) -> void:
 		return                                   # Stufen und Klüfte bleiben kahl
 	var m_ := (a + b + c) / 3.0
 	var fleck := _flecken.get_noise_2d(m_.x, m_.z)
-	if fleck < 0.05 or _zufall.randf() > bewuchs_dichte * 2.0 * smoothstep(0.05, 0.45, fleck):
+	if fleck < -0.15 or _zufall.randf() > bewuchs_dichte * smoothstep(-0.15, 0.3, fleck):
 		return
 	# Stelle im Dreieck
 	var r1 := _zufall.randf()
@@ -127,7 +127,7 @@ func _bewuchs_auf(a: Vector3, b: Vector3, c: Vector3, w: float) -> void:
 	if wahl.is_empty():
 		return
 	var modell: int = wahl[_zufall.randi() % wahl.size()]
-	var groesse := [_zufall.randf_range(0.7, 1.2), _zufall.randf_range(20.0, 34.0), _zufall.randf_range(0.7, 1.1)][art] as float
+	var groesse := [_zufall.randf_range(1.0, 1.6), _zufall.randf_range(26.0, 40.0), _zufall.randf_range(0.8, 1.3)][art] as float
 	_pflanzen.append_array([modell, q.x, q.y - 0.04, q.z, _zufall.randf_range(0.0, 360.0), 0.0, groesse])
 
 
