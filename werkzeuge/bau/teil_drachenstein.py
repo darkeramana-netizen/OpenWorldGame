@@ -245,6 +245,42 @@ torbauten = PackedFloat32Array({_zahlen(eckturm(PD.g3(_gp), round(_gs * G3M, 1),
 _HOF_TUERME.append(PD.g3(_gp))
 schild("SchildOberburg", BG, *(lambda p: (p[0], PD.H_KERNHOF + 13, p[1]))(W(PD.MITTE_OBERBURG)), "Oberburg", 40)
 
+# --- Palas, Bergfried, Eckturm und Rundturm hängen zusammen wie im Referenzbild: der Palas reicht hinten bis an den
+# Bergfried (seine Hoffassade bleibt, wo sie ist), der eckige Turm steht bündig an seinem Ende, der Rundturm mit
+# Kegeldach halb in seiner vorderen Ecke ---
+def _rahmen(bau):
+    """Planbau → (Mitte, Richtung der Länge, Richtung der Breite zum Hof, halbe Länge, halbe Breite) in der Welt"""
+    (pp_, laenge_, breite_, dreh_) = bau
+    a_ = math.radians(-dreh_)
+    return W(pp_), (math.sin(a_), math.cos(a_)), (math.cos(a_), -math.sin(a_)), laenge_ * M / 2, breite_ * M / 2
+
+
+def _lokal(punkt, mitte, ul, ub):
+    d_ = (punkt[0] - mitte[0], punkt[1] - mitte[1])
+    return d_[0] * ul[0] + d_[1] * ul[1], d_[0] * ub[0] + d_[1] * ub[1]
+
+
+def _welt(mitte, ul, ub, l_, b_):
+    return (mitte[0] + ul[0] * l_ + ub[0] * b_, mitte[1] + ul[1] * l_ + ub[1] * b_)
+
+
+_pm, _pl, _pb, _pL, _pB = _rahmen(PD.PALAS)
+_bf_l, _bf_b = _lokal(W(PD.BERGFRIED_KERNBURG), _pm, _pl, _pb)
+# Rückwand des Palas bis 0,3 m in die Mauer des Bergfrieds
+_hinten = min(-_pB, _bf_b + PD.BERGFRIED_SEITE / 2 - 0.3)
+_neu_b = (_pB - _hinten) / 2                      # neue halbe Breite (vorn bleibt bei +_pB)
+_neu_mitte = _welt(_pm, _pl, _pb, 0.0, _pB - _neu_b)
+PD.PALAS = (PD.plan(_neu_mitte), PD.PALAS[1], _neu_b * 2 / M, PD.PALAS[3])
+_pm, _pl, _pb, _pL, _pB = _rahmen(PD.PALAS)
+# Eckturm: bündig an das Palasende auf seiner Seite (0,3 m in die Giebelwand)
+_eb_l, _eb_b = _lokal(W(PD.PALAS_ECKBAU[0]), _pm, _pl, _pb)
+_eb_h = PD.PALAS_ECKBAU[1] * M / 2
+_eb_seite = 1.0 if _eb_l > 0 else -1.0
+PD.PALAS_ECKBAU = (PD.plan(_welt(_pm, _pl, _pb, _eb_seite * (_pL + _eb_h - 0.3), _eb_b)),) + tuple(PD.PALAS_ECKBAU[1:])
+# Rundturm mit Kegeldach an der anderen Ecke vorn, halb im Palas
+_rt_welt = _welt(_pm, _pl, _pb, -_eb_seite * (_pL + 1.0), _pB - 1.2)
+print("Palas %.1f m tief (bis an den Bergfried), Eckturm und Rundturm an seinen Enden" % (_neu_b * 2))
+
 # --- Palas: zwei Mauerringe dicht hintereinander (wie im Referenzbild), die Tore gegenüber dem Tor der Oberburg ---
 ZW = PD.ZWINGER_KERNBURG + [PD.ZWINGER_KERNBURG[0]]
 mauerring("Zwingermauer", BG, WL(ZW), 6.0, dicke=3.0, mitte=W(PD.MITTE_PALAS),
@@ -262,10 +298,11 @@ for (gp, gr) in PD.G3.PALAS_ZWINGER_TUERME:
     r = round(max(3.5, gr * G3M), 1)
     _zt += turmmasse(PD.g3(gp), r, 9) + [r, 0, 0]          # Zwingertürme mit Zinnen
     _HOF_TUERME.append(PD.g3(gp))
-for (gp, gr) in PD.G3.PALAS_TUERME:
+for k_, (gp, gr) in enumerate(PD.G3.PALAS_TUERME):
     r = round(max(3.0, gr * G3M), 1)
-    _zt += turmmasse(PD.g3(gp), r, 0)[:3] + [PD.H_KERNBURG + 20, r, 1, round(r * 2.0, 1)]   # Kegeldächer am Palas
-    _HOF_TUERME.append(PD.g3(gp))
+    pp_ = PD.plan(_rt_welt) if k_ == 0 else PD.g3(gp)     # der erste steht an der Ecke des Palas
+    _zt += turmmasse(pp_, r, 0)[:3] + [PD.H_KERNBURG + 20, r, 1, round(r * 2.0, 1)]   # Kegeldächer am Palas
+    _HOF_TUERME.append(pp_)
 _eb = PD.PALAS_ECKBAU
 N("KernburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_zt)})
