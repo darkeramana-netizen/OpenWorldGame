@@ -1,7 +1,8 @@
 # ---------- Leben in der Burgfeste Drachenstein ----------
 # Wird aus region_drachenstein.py nach teil_stadtleben.py ausgeführt. Daten aus teil_drachenstein.py: TREPPEN (Treppen
 # auf die Wehrgänge), MAUERSTUECKE, HOFHAEUSER, BURG_AUSSTATTUNG und ihre Sperrflächen, BURG_BRUNNEN.
-#   - Je Mauertreppe eine Wache: die Treppe hinauf und auf dem Wehrgang auf und ab (Tag und Nacht).
+#   - Je Mauertreppe eine Wache: die Treppe hinauf und die durchgehenden Wehrgänge entlang auf Streife (wehrgang_wachen,
+#     erst nach mauern_verbinden aufgerufen).
 #   - Torwachen an den Toren der Burg und der Stadt.
 #   - Gesinde in den Höfen: tagsüber zwischen Brunnen und Häusern unterwegs, abends daheim.
 #   - Ein Kaplan vor der Drachenkapelle, der Haushofmeister vor dem Palas, ein Stallknecht an der Tränke.
@@ -37,29 +38,32 @@ def p3(punkte, boden=None):
     return [(round(x, 2), round(H(x, z) if boden is None else boden, 2), round(z, 2)) for x, z in punkte]
 
 
-# --- Wachen auf den Wehrgängen: je Treppe eine ---
+# --- Wachen auf den Wehrgängen: je Treppe eine; ihre Streife läuft die durchgehenden Wehrgänge entlang ---
 WACHEN_NAMEN = ["Mauerwache Gero Lind", "Mauerwache Hella Brück", "Mauerwache Utz Raben", "Mauerwache Swana Teich",
                 "Mauerwache Bodo Kiel", "Mauerwache Ragna Holt", "Mauerwache Lutz Ammer", "Mauerwache Femke Dorn",
                 "Mauerwache Ansgar Rieth", "Mauerwache Tilda Wehr", "Mauerwache Kuno Sand", "Mauerwache Edda Born"]
-_wachen = 0
-for k_ in range(0, len(TREPPEN), 7):
-    fx_, fz_, fy_, tx_, tz_, ty_, _ = TREPPEN[k_:k_ + 7]
-    oben_ = ty_ - 0.62
-    stueck_ = min(MAUERSTUECKE, key=lambda m_: abstand_linie([m_[1:3], m_[3:5]], tx_, tz_) + abs(m_[5] - oben_) * 10)
-    _, ax_, az_, bx_, bz_, _, dicke_, aussen_ = stueck_
-    l_ = math.dist((ax_, az_), (bx_, bz_))
-    ux_, uz_ = (bx_ - ax_) / l_, (bz_ - az_) / l_
-    px_, pz_ = tx_ + aussen_[0] * dicke_ / 2, tz_ + aussen_[1] * dicke_ / 2        # Mitte des Wehrgangs
-    s_ = (px_ - ax_) * ux_ + (pz_ - az_) * uz_
-    vor_, zurueck_ = min(8.0, l_ - s_ - 1.5), min(8.0, s_ - 1.5)
-    w1_ = (px_ + ux_ * vor_, pz_ + uz_ * vor_)
-    w2_ = (px_ - ux_ * zurueck_, pz_ - uz_ * zurueck_)
-    y_ = oben_ + 0.06
-    punkte_ = [(fx_, fy_, fz_), (tx_, ty_, tz_), (px_, y_, pz_), (w1_[0], y_, w1_[1]), (w2_[0], y_, w2_[1]), (w1_[0], y_, w1_[1])]
-    punkte_ = [tuple(round(v_, 2) for v_ in q_) for q_ in punkte_]
-    person(f"Wehrgangwache{_wachen}", BL, *punkte_[3], WACHEN_NAMEN[_wachen % len(WACHEN_NAMEN)], "mauerwache", 1, WACHE_TRACHT,
-           ablauf={"morgengrauen": (punkte_, ["runde=3"]), "nacht": (punkte_, ["runde=3", "haltung=fackel"])}, tempo=1.1)
-    _wachen += 1
+
+
+def wehrgang_wachen(weit=60.0):
+    """Erst nach mauern_verbinden aufrufen (die Streifen folgen den endgültigen Mauerstücken). Jede Wache steigt
+    ihre Treppe hinauf und geht dann auf dem Wehrgang bis zu weit Meter in die eine Richtung, zurück, ebenso weit in
+    die andere und zurück, immer wieder; nachts mit Fackel."""
+    stuecke_, tuerme_ = wehrgang_netz()
+    zahl_ = 0
+    laengen_ = []
+    for k_ in range(0, len(TREPPEN), 7):
+        fx_, fz_, fy_, tx_, tz_, ty_, _ = TREPPEN[k_:k_ + 7]
+        p0_, vor_, rueck_ = wehrgang_runde(stuecke_, tuerme_, (tx_, tz_), ty_ - 0.62, weit)
+        runde_ = [p0_] + vor_ + vor_[-2::-1] + [p0_] + rueck_ + rueck_[-2::-1]
+        punkte_ = [(round(fx_, 2), round(fy_, 2), round(fz_, 2)), (round(tx_, 2), round(ty_, 2), round(tz_, 2))] + runde_
+        laengen_.append(round(sum(math.dist(a_[::2], b_[::2]) for a_, b_ in zip([p0_] + vor_, vor_))
+                              + sum(math.dist(a_[::2], b_[::2]) for a_, b_ in zip([p0_] + rueck_, rueck_))))
+        person(f"Wehrgangwache{zahl_}", BL, *p0_, WACHEN_NAMEN[zahl_ % len(WACHEN_NAMEN)], "mauerwache", 1, WACHE_TRACHT,
+               ablauf={"morgengrauen": (punkte_, ["runde=2"]), "nacht": (punkte_, ["runde=2", "haltung=fackel"])}, tempo=1.1)
+        zahl_ += 1
+    print("Wehrgangwachen:", zahl_, "Streifen (m je Richtung zusammen):", laengen_)
+    return zahl_
+
 
 # --- Torwachen: zu beiden Seiten der Tore, mit Blick nach außen ---
 TOR_WACHEN = [("Vorburgtor", PD.VORBURG, False, 2), ("Rampentor", PD.MITTELBURG, False, 1),
@@ -211,4 +215,4 @@ pk_, bl_, iL_, iB_, _ = _innen(PD.DRACHENKAPELLE, 11, PD.H_KERNBURG, art=1)
 person("Kaplan", BL, *pk_(-iL_ + 2.6, 0.0), "Kaplan Benedikt Saar", "kaplan", 0, "0.15, 0.13, 0.14, 1",
        gier=bl_(0, 0, -1, 0), haltung="knien")
 print("Burgleben: in den Gebäuden", _drinnen, "Personen, Kaplan am Altar")
-print("Burgleben:", _wachen, "Wehrgangwachen,", _tw, "Torwachen,", _gs, "Gesinde, Kaplan, Haushofmeister" + (", Stallknecht" if _traenke else ""))
+print("Burgleben:", _tw, "Torwachen,", _gs, "Gesinde, Kaplan, Haushofmeister" + (", Stallknecht" if _traenke else ""))

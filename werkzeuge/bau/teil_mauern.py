@@ -340,3 +340,147 @@ def mauern_verbinden(fang=3.0):
                 text = text.replace(m.group(0), "\ntuerme = PackedFloat32Array(%s)" % _zahlen(t))
         knoten[k] = text
     return verschoben, len(weg), len(teilung)
+
+
+def wehrgang_netz():
+    """Die fertigen Mauerstücke mit Wehrgang (nach mauern_verbinden) und alle Türme, aus den Knoten gelesen:
+    Stücke als dict (a, b, oben, dicke, aussen), Türme als (x, z, Radius, oben, rund und hohl)."""
+    stuecke, tuerme = [], []
+    for text in knoten:
+        m = re.search(r'\nmauern = PackedFloat32Array\(([^)]*)\)', text)
+        if m and m.group(1).strip():
+            w = [float(x) for x in m.group(1).split(",")]
+            for i in range(0, len(w) - 9, 10):
+                if w[i + 9] > 0.5 and math.dist(w[i:i + 2], w[i + 2:i + 4]) > 0.3:
+                    stuecke.append({"a": (w[i], w[i + 1]), "b": (w[i + 2], w[i + 3]), "oben": w[i + 5], "dicke": w[i + 6],
+                                    "aussen": (w[i + 7], w[i + 8])})
+        m = re.search(r'\ntuerme = PackedFloat32Array\(([^)]*)\)', text)
+        if m and m.group(1).strip():
+            t = [float(x) for x in m.group(1).split(",")]
+            for j in range(0, len(t) - 6, 7):
+                tuerme.append((t[j], t[j + 1], t[j + 4], t[j + 3], int(t[j + 5]) != 2))
+        m = re.search(r'\ntorbauten = PackedFloat32Array\(([^)]*)\)', text)
+        if m and m.group(1).strip():
+            t = [float(x) for x in m.group(1).split(",")]
+            for j in range(0, len(t) - 9, 10):
+                # eckige Türme (Tortürme, Ecktürme): ein Kreis um die Ecken, man geht nicht hindurch
+                tuerme.append((t[j], t[j + 1], math.hypot(t[j + 6], t[j + 7]) / 2, t[j + 5], False))
+    return stuecke, tuerme
+
+
+def wehrgang_runde(stuecke, tuerme, start, oben, weit=60.0):
+    """Streife auf dem Wehrgang ab dem Punkt start (x, z) auf dem Stück mit der Krone oben: in beide Richtungen bis
+    zu weit Meter die Mitte des Wehrgangs entlang, über Fugen (auch Treppen zu höheren oder tieferen Stücken, bis
+    12 m) und durch hohle Türme, durch die die Mauer mitten hindurch läuft; Schluss an einem freien Mauerende, an
+    einem Turm in einer Ecke, an einem Tor. Gibt (Mitte, vorwärts, rückwärts) als Punktlisten (x, y, z) zurück."""
+    def richtung(s):
+        (ax, az), (bx, bz) = s["a"], s["b"]
+        l_ = math.hypot(bx - ax, bz - az)
+        return (bx - ax) / l_, (bz - az) / l_, l_
+
+    def mitte(s):
+        # Mitte des Wehrgangs: 0,125 m von der Achse zur Hofseite (zwischen Hofmauer und Brustwehr)
+        return -s["aussen"][0] * 0.125, -s["aussen"][1] * 0.125
+
+    def punkt(s, t):
+        ux, uz, _ = richtung(s)
+        ox, oz = mitte(s)
+        return (round(s["a"][0] + ux * t + ox, 2), round(s["oben"] + 0.06, 2), round(s["a"][1] + uz * t + oz, 2))
+
+    s0 = min(stuecke, key=lambda s: abstand_linie([s["a"], s["b"]], *start) + abs(s["oben"] - oben) * 10)
+    ux, uz, l0 = richtung(s0)
+    t0 = min(max((start[0] - s0["a"][0]) * ux + (start[1] - s0["a"][1]) * uz, 1.0), l0 - 1.0)
+
+    def treppe_moeglich(s, s2):
+        """Wie in burgbau.gd: bis 1 m eine Rampe, darüber eine Treppe, mindestens 1,15 m lang je Meter Höhe, auf dem
+        tieferen Stück vor dem Körper des höheren"""
+        tief, hoch = (s, s2) if s["oben"] <= s2["oben"] else (s2, s)
+        dh = hoch["oben"] - tief["oben"]
+        if dh <= 1.0:
+            return True
+        frei = math.dist(tief["a"], tief["b"]) - hoch["dicke"] / 2 - 0.3
+        return dh <= 12.0 and frei >= dh * 1.15
+
+    def turm_auf(s):
+        """Türme auf dem Stück: (Abstand vom Anfang, Radius, mitten hindurch?)"""
+        ux_, uz_, l_ = richtung(s)
+        auf = []
+        for (tx, tz, r, t_oben, rund) in tuerme:
+            if t_oben < s["oben"] + 1.0:
+                continue
+            entlang = (tx - s["a"][0]) * ux_ + (tz - s["a"][1]) * uz_
+            quer = abs((tx - s["a"][0]) * -uz_ + (tz - s["a"][1]) * ux_)
+            if -r - 1.0 < entlang < l_ + r + 1.0 and quer < r + s["dicke"] / 2:
+                hindurch = rund and quer < 0.6 and r + 1.0 < entlang < l_ - r - 1.0
+                auf.append((entlang, r, hindurch))
+        return auf
+
+    def weiter(s, vor, besucht):
+        """Das Stück, das s an seinem Ende (vor: b, sonst a) am geradesten fortsetzt und erreichbar ist, oder None;
+        dazu, ob dort überhaupt ein anderes Stück endet."""
+        ux_, uz_, _ = richtung(s)
+        sgn = 1.0 if vor else -1.0
+        fuge = s["b"] if vor else s["a"]
+        beste = None
+        nachbar = False
+        for s2 in stuecke:
+            if s2 is s:
+                continue
+            for e2 in ("a", "b"):
+                if math.dist(s2[e2], fuge) < 0.05:
+                    nachbar = True
+                    if id(s2) in besucht or not treppe_moeglich(s, s2):
+                        continue
+                    vx, vz, _ = richtung(s2)
+                    d2 = (vx, vz) if e2 == "a" else (-vx, -vz)
+                    gerade = d2[0] * ux_ * sgn + d2[1] * uz_ * sgn
+                    if gerade > -0.2 and (beste is None or gerade > beste[0]):
+                        beste = (gerade, s2, e2 == "a")
+        return beste, nachbar
+
+    def lauf(vor):
+        punkte = []
+        s, t, rest = s0, t0, weit
+        besucht = {id(s0)}
+        while True:
+            ux_, uz_, l_ = richtung(s)
+            sgn = 1.0 if vor else -1.0
+            beste, nachbar = weiter(s, vor, besucht)
+            # Schluss vor dem Ende: an einem freien Ende, einem Tor oder einem zu hohen Nachbarn (dessen Körper bis in
+            # die Ecke reicht) ...
+            halt = None if beste else (l_ if vor else 0.0) - sgn * (3.0 if nachbar else 1.2)
+            # ... oder vor einem Turm, durch den man nicht hindurch kann
+            for (e, r, hindurch) in turm_auf(s):
+                if (e - t) * sgn > 0 and not hindurch:
+                    grenze = e - sgn * (r + 1.2)
+                    if halt is None or (grenze - halt) * sgn < 0:
+                        halt = grenze
+            if halt is not None and (halt - t) * sgn < 0.3:
+                return punkte                  # schon da
+            ziel = halt if halt is not None else (l_ if vor else 0.0)
+            weg = abs(ziel - t)
+            if weg >= rest:
+                punkte.append(punkt(s, t + sgn * rest))
+                return punkte
+            rest -= weg
+            if halt is not None:
+                punkte.append(punkt(s, halt))
+                return punkte
+            # an der Fuge weiter auf dem nächsten Stück; Eckpunkt: Schnitt der beiden Mittellinien
+            _, s2, vor2 = beste
+            fuge = s["b"] if vor else s["a"]
+            ox, oz = mitte(s)
+            px, pz = fuge[0] + ox, fuge[1] + oz
+            vx, vz, l2 = richtung(s2)
+            ox2, oz2 = mitte(s2)
+            qx, qz = fuge[0] + ox2, fuge[1] + oz2
+            nenner = ux_ * vz - uz_ * vx
+            if abs(nenner) > 0.17:
+                k_ = ((qx - px) * vz - (qz - pz) * vx) / nenner
+                px, pz = px + ux_ * k_, pz + uz_ * k_
+            punkte.append((round(px, 2), round(max(s["oben"], s2["oben"]) + 0.06, 2), round(pz, 2)))
+            besucht.add(id(s2))
+            s, vor = s2, vor2
+            t = 0.0 if vor else l2
+
+    return punkt(s0, t0), lauf(True), lauf(False)
