@@ -266,8 +266,9 @@ def _welt(mitte, ul, ub, l_, b_):
 
 _pm, _pl, _pb, _pL, _pB = _rahmen(PD.PALAS)
 _bf_l, _bf_b = _lokal(W(PD.BERGFRIED_KERNBURG), _pm, _pl, _pb)
-# Rückwand des Palas bis 0,3 m in die Mauer des Bergfrieds
-_hinten = min(-_pB, _bf_b + PD.BERGFRIED_SEITE / 2 - 0.3)
+# Rückwand des Palas an den Bergfried: dessen Sockel springt unten 0,7 m vor, er soll in der Rückwand (0,6 m) des
+# Palas stecken, nicht in dessen Erdgeschoss (dort steht die Treppe); darüber bleibt eine Fuge von 0,1 m
+_hinten = min(-_pB, _bf_b + PD.BERGFRIED_SEITE / 2 + 0.1)
 _neu_b = (_pB - _hinten) / 2                      # neue halbe Breite (vorn bleibt bei +_pB)
 _neu_mitte = _welt(_pm, _pl, _pb, 0.0, _pB - _neu_b)
 PD.PALAS = (PD.plan(_neu_mitte), PD.PALAS[1], _neu_b * 2 / M, PD.PALAS[3])
