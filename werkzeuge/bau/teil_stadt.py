@@ -414,10 +414,16 @@ for pp in [(652, 417), (700, 417)]:
 for pz_ in (627.5, 657.5, 687.5):
     x, z = W((pz_ + 3.75, 416))
     AUSSTATTUNG.append((37, x + 0.4, KAI_OBEN, z, 90))
+_kaiweg = WL(PD.KAIWEG)
 for i_ in range(3):
     x, z = W((630 + 25 * i_, 436))
-    AUSSTATTUNG.append((38, x - 0.9, KAI_OBEN, z + 1.1, random.uniform(0, 360)))
-    AUSSTATTUNG.append((38, x + 0.7, KAI_OBEN, z - 1.2, random.uniform(0, 360)))
+    # auf der Seite des Fischers, die vom Kaiweg abgewandt ist (der Weg zur Mole bleibt frei)
+    best_ = min(((x1 + (x2 - x1) * t_, z1 + (z2 - z1) * t_) for (x1, z1), (x2, z2) in zip(_kaiweg, _kaiweg[1:])
+                 for t_ in [k_ / 20 for k_ in range(21)]), key=lambda q_: math.dist(q_, (x, z)))
+    ab_ = max(math.dist(best_, (x, z)), 0.01)
+    wx_, wz_ = (x - best_[0]) / ab_, (z - best_[1]) / ab_
+    for quer_, laengs_ in ((1.0, 0.8), (1.2, -0.9)):
+        AUSSTATTUNG.append((38, x + wx_ * quer_ - wz_ * laengs_, KAI_OBEN, z + wz_ * quer_ + wx_ * laengs_, random.uniform(0, 360)))
 # Speicherkai: Fässer, Kisten und Säcke an der Wand des Speichers (die Tür in der Mitte und der Weg zur Molenpforte
 # bleiben frei), dazu ein Karren
 for px_ in (652, 662, 672, 708, 718, 728):
