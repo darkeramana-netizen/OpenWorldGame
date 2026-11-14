@@ -161,7 +161,7 @@ void fragment() {
 	farbe = mix(farbe, pf, a_pflaster);
 	vec3 f = mix(dreiseitig(fels_farbe, welt_pos, gewicht, 1.0 / M_FELS), dreiseitig(fels_farbe, welt_pos, gewicht, 1.0 / (M_FELS * 4.0)), 0.4) * fels;
 	vec3 k = mix(dreiseitig(klippe_farbe, welt_pos, gewicht, 1.0 / M_KLIPPE), dreiseitig(klippe_farbe, welt_pos, gewicht, 1.0 / (M_KLIPPE * 5.0)), 0.45);
-	k *= 1.12 + rauschen(welt_pos.xz * 0.03 + welt_pos.y * 0.05) * 0.3;   // hellgrau wie im Referenzbild
+	k *= 1.3 + rauschen(welt_pos.xz * 0.03 + welt_pos.y * 0.05) * 0.3;   // hellgrauer Kalkstein wie im Referenzbild
 	f = mix(f, k, a_klippe);
 	farbe = mix(farbe, f, a_fels);
 	farbe = mix(farbe, zwei(schnee_farbe, p, M_SCHNEE) * schnee, a_schnee);

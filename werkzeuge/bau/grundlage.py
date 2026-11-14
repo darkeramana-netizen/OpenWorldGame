@@ -338,7 +338,7 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     fog_enabled = true
     fog_mode = 0
     fog_light_color = Color(0.76, 0.7, 0.6, 1)
-    fog_sun_scatter = 0.45
+    fog_sun_scatter = 0.3
     fog_density = {nebel}
     fog_aerial_perspective = 0.3
     fog_sky_affect = 0.25
