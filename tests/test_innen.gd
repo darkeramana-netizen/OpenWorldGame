@@ -203,10 +203,10 @@ func _initialize() -> void:
 	while w_oben < trw:
 		w_oben += 360.0
 	await setze(polar(ttm, 6.8, w_unten, ttm.y + 0.4))
-	var tt_drin := await gehe_ueber([polar(ttm, 5.6, w_unten, 0), polar(ttm, 2.9, w_unten, 0)] + ring(ttm, 2.9, w_unten, trw) + [polar(ttm, 1.2, trw, 0)])
+	var tt_drin := await gehe_ueber([polar(ttm, 5.6, w_unten, 0), polar(ttm, 3.0, w_unten, 0)] + ring(ttm, 3.0, w_unten, trw) + [polar(ttm, 1.15, trw, 0)])
 	pruefe(tt_drin and absf(spieler().global_position.y - ttm.y) < 0.6, "Treppenturm der Vorburg: vom Wehrgang durch die Tür bis an die Wendelrampe")
-	var tt_oben := await wendel(ttm, 1, hoch - 0.2, 60.0, 1.2)
-	var tt_raus := await gehe_ueber([polar(ttm, 2.9, trw, 0)] + ring(ttm, 2.9, trw, w_oben) + [polar(ttm, 5.6, w_oben, 0), polar(ttm, 6.3, w_oben, 0)])
+	var tt_oben := await wendel(ttm, 1, hoch - 0.2, 60.0, 1.15)
+	var tt_raus := await gehe_ueber([polar(ttm, 3.0, trw, 0)] + ring(ttm, 3.0, trw, w_oben) + [polar(ttm, 5.6, w_oben, 0), polar(ttm, 6.3, w_oben, 0)])
 	pruefe(tt_oben >= hoch - 0.4 and tt_raus and absf(spieler().global_position.y - hoch) < 0.6,
 			"Treppenturm der Vorburg: hinauf und durch die obere Tür auf den %.0f m höheren Wehrgang (y=%.1f)" % [hoch - ttm.y, spieler().global_position.y])
 
