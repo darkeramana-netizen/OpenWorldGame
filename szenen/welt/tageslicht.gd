@@ -14,6 +14,10 @@ const HIMMEL_DAEMMERUNG := [Color(0.2, 0.2, 0.32), Color(0.75, 0.45, 0.3)]
 const HIMMEL_NACHT := [Color(0.03, 0.05, 0.1), Color(0.12, 0.15, 0.22)]
 ## Dunst bei Tag: warm und golden (wie im Referenzbild der Burgfeste), nicht grau-blau.
 const DUNST_TAG := Color(0.76, 0.7, 0.6)
+## Grundlicht im Schatten: tagsüber warm (Licht, das von Stein und Boden zurückgeworfen wird), sonst wären Fels und
+## Mauern im Schatten fast schwarzblau; nachts kühl.
+const SCHATTEN_TAG := Color(0.7, 0.62, 0.52)
+const SCHATTEN_NACHT := Color(0.12, 0.15, 0.22)
 
 var _himmel: ProceduralSkyMaterial
 
@@ -42,6 +46,7 @@ func _process(_delta: float) -> void:
 	if umgebung:
 		umgebung.environment.background_energy_multiplier = lerpf(0.6, 1.0, tag)
 		umgebung.environment.ambient_light_energy = lerpf(0.5, 1.0, tag)  # nachts bleibt Mondlicht
+		umgebung.environment.ambient_light_color = SCHATTEN_NACHT.lerp(SCHATTEN_TAG, tag)
 		umgebung.environment.fog_light_color = Color(0.08, 0.1, 0.15).lerp(DUNST_TAG, tag)
 	if _himmel:
 		# Nachts dunkel, in der Dämmerung warm, am Tag hell.

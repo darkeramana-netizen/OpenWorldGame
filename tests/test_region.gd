@@ -178,10 +178,12 @@ func _initialize() -> void:
 	# Stücke verschieden hoch sein können.
 	var turm_ok := 0
 	var turm_alle := 0
+	var unter_ok := 0
+	var unter_alle := 0
 	var tor_ok := 0
 	var tor_alle := 0
 	for bau in current_scene.find_children("*", "Node3D", true, false):
-		if not ("_hohle" in bau and "tuerme" in bau and "tore" in bau):
+		if not is_instance_valid(bau) or not ("_hohle" in bau and "tuerme" in bau and "tore" in bau):
 			continue
 		var tu: PackedFloat32Array = bau.tuerme
 		var i := 0
@@ -197,6 +199,31 @@ func _initialize() -> void:
 					turm_ok += 1
 				else:
 					print("       Turm nicht durchquert: %s bei %s (stehe bei %s)" % [bau.name, c, spieler().global_position.snapped(Vector3.ONE * 0.1)])
+			i += 7
+		# Untergeschoss für einen tieferen Wehrgang: durch dessen Tür, die Rampe an der Wand hinauf, durch die Luke in
+		# die Kammer und zur Tür eines oberen Wehrgangs hinaus
+		i = 0
+		while i + 6 < tu.size():
+			var cu := Vector2(tu[i], tu[i + 1])
+			var zu: Dictionary = bau._turm_zugang(cu, tu[i + 4], tu[i + 3]) if int(tu[i + 5]) != 2 else {}
+			if not zu.is_empty() and not (zu["unter"] as Dictionary).is_empty() and not (zu["unter"] as Dictionary).has("riegel"):
+				unter_alle += 1
+				var un: Dictionary = zu["unter"]
+				var rm: float = tu[i + 4] - bau._turm_wand(tu[i + 4]) - 0.55
+				var ra: Array = un["rampe"]
+				var weg_u: Array = [un["weg"][1]]
+				var n_ := int(ceil(float(ra[1]) / 0.3))
+				for j in n_ + 1:
+					var w_: float = float(ra[0]) + float(ra[1]) * j / n_
+					weg_u.append(cu + Vector2(cos(w_), sin(w_)) * rm)
+				var w_e: float = float(ra[0]) + float(ra[1]) + 0.35
+				weg_u.append(cu + Vector2(cos(w_e), sin(w_e)) * (rm - 0.4))
+				weg_u += [cu, zu["wege"][0][1], zu["wege"][0][0]]
+				await setze(Vector3(un["weg"][0].x, float(un["boden"]) + 0.5, un["weg"][0].y))
+				if await gehe_ueber(weg_u, 10.0, 0.6) and absf(spieler().global_position.y - float(zu["stufen"][0])) < 0.8:
+					unter_ok += 1
+				else:
+					print("       Untergeschoss nicht hinauf: %s bei %s (stehe bei %s)" % [bau.name, cu, spieler().global_position.snapped(Vector3.ONE * 0.1)])
 			i += 7
 		# Tore mit hohlen Tortürmen: auf den Weg über dem Bogen, in beide Tortürme und durch ihre anderen Türen hinaus
 		var to: PackedFloat32Array = bau.tore
@@ -291,6 +318,7 @@ func _initialize() -> void:
 						print("       Fuge nicht überquert: %s (%.2f -> %.2f), stehe bei %s" % [fuge, A[2], B[2], spieler().global_position.snapped(Vector3.ONE * 0.1)])
 	pruefe(fugen_alle >= 60 and fugen_ok >= fugen_alle * 0.9, "Wehrgänge: über %d von %d Fugen zwischen Mauerstücken gegangen" % [fugen_ok, fugen_alle])
 	pruefe(turm_alle >= 4 and turm_ok == turm_alle, "Hohle Rundtürme: %d von %d auf dem Wehrgang durchquert" % [turm_ok, turm_alle])
+	pruefe(unter_ok == unter_alle, "Untergeschosse in Rundtürmen (tieferer Wehrgang): %d von %d bis in die Kammer hinauf" % [unter_ok, unter_alle])
 	pruefe(tor_alle >= 3 and tor_ok == tor_alle, "Tore: %d von %d auf dem Wehrgang über den Bogen durch beide Tortürme überquert" % [tor_ok, tor_alle])
 	# Streifen der Mauerwachen: ab dem Kopf ihrer Treppe überall Boden ohne Sprünge über eine Stufe, keine Wand im Weg
 	# (Türflügel ausgenommen, die öffnen sich vor Personen)

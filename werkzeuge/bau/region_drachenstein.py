@@ -196,6 +196,27 @@ _verb, _doppelt, _geteilt = mauern_verbinden()
 for _v in _verb:
     print("Mauerende verbunden: %s -> %s" % (tuple(round(x, 2) for x in _v[3]), tuple(round(x, 2) for x in _v[4])))
 print("Doppelmauern entfallen: %d, an der Flanke geteilt: %d" % (_doppelt, _geteilt))
+# Mauerstummel, die als Pfeiler aus einem Turm ragen, sinken auf den tieferen Wehrgang (Tür unten im Turm)
+for _t, _s, _alt, _neu, _riegel in stummel_an_tuermen():
+    print("Stummel am Turm %s: Krone %.2f -> %.2f, %s" % (tuple(round(x, 2) for x in _t), _alt, _neu,
+                                                       "verriegelte Tür (Turm steckt im Hang)" if _riegel else "Untergeschoss"))
+    for j_, k_ in enumerate(knoten):
+        m_ = re.search(r'\ntuerme = PackedFloat32Array\(([^)]*)\)', k_)
+        if not m_:
+            continue
+        t_ = [float(v_) for v_ in m_.group(1).split(",") if v_.strip()]
+        r_ = [t_[i_ + 4] for i_ in range(0, len(t_) - 6, 7) if math.dist(t_[i_:i_ + 2], _t) < 0.05]
+        if not r_:
+            continue
+        if _riegel:
+            # der Turm baut an diesem Wehrgang eine verriegelte Tür statt eines Untergeschosses
+            knoten[j_] = k_ + "\nriegel_tuerme = PackedVector2Array(%.3f, %.3f)" % _t
+        else:
+            # der Turm ist bis auf diesen Wehrgang hinab hohl: kein Felsmassiv in seinem Untergeschoss
+            for j2_, k2_ in enumerate(knoten):
+                if 'name="Felsmassiv"' in k2_:
+                    knoten[j2_] = re.sub(r'\nfrei = PackedVector3Array\(([^)]*)\)', lambda m2_: "\nfrei = PackedVector3Array(%s, %.2f, %.2f, %.2f)"
+                                         % (m2_.group(1), _t[0], _t[1], r_[0] + 0.5), k2_)
 # An einer Ecke der Vorburg liegen 12 m zwischen den Wehrgängen: ein Treppenturm verbindet sie
 print("Treppenturm Vorburg: Wehrgänge auf %.2f und %.2f" % treppenturm("TreppenturmVorburg", "Drachenstein/Burgen", TREPPENTURM_VORBURG))
 wehrgang_wachen()   # die Streifen der Mauerwachen folgen den endgültigen Mauerstücken

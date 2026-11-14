@@ -312,7 +312,8 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     background_mode = 2
     sky = SubResource("Himmel")
     ambient_light_source = 3
-    ambient_light_sky_contribution = 0.85
+    ambient_light_color = Color(0.7, 0.62, 0.52, 1)
+    ambient_light_sky_contribution = 0.6
     reflected_light_source = 2
     tonemap_mode = 4
     tonemap_exposure = 1.05

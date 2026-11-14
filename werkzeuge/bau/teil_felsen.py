@@ -367,9 +367,9 @@ for k_ in range(0, len(TREPPEN) if "TREPPEN" in globals() else 0, 7):
 # Im Bergfried (Erdgeschoss mit der Wendeltreppe in der Ecke) steht kein Fels
 _bfm = W(PD.BERGFRIED_KERNBURG)
 _frei_fels += [_bfm[0], _bfm[1], 9.6]
-# Bewuchs auf den Absätzen des Felsmassivs (setzt felsmassiv.gd selbst, es kennt die Felsoberfläche): Grasbüschel,
-# Moospolster und Farn wie auf den Klippen
-_BEWUCHS_MASSIV = list(range(GRAS, GRAS + 17)) + list(range(MOOS, MOOS + 12)) + list(range(FARN, FARN + 4))
+# Bewuchs auf den Absätzen des Felsmassivs (setzt felsmassiv.gd selbst, es kennt die Felsoberfläche): Grasbüschel
+# und Moospolster. Kein Farn: auf dem trockenen, offenen Fels stand er als einzelner dunkler Wedel wie ein Fremdkörper.
+_BEWUCHS_MASSIV = list(range(GRAS, GRAS + 17)) + list(range(MOOS, MOOS + 12))
 N("Felsmassiv", "Node3D", DS, f"""script = ExtResource("33_felsmassiv")
 gelaende = NodePath("../../Gelaende")
 bereich = Rect2({min(_rx) - 2:.1f}, {min(_rz) - 2:.1f}, {max(_rx) - min(_rx) + 4:.1f}, {max(_rz) - min(_rz) + 4:.1f})

@@ -342,6 +342,57 @@ def mauern_verbinden(fang=3.0):
     return verschoben, len(weg), len(teilung)
 
 
+def stummel_an_tuermen(rest=1.5, sprung=3.0):
+    """Ein Mauerstück, das fast ganz in einem Rundturm steckt (außen ragt es höchstens rest Meter heraus) und an seinem
+    äußeren Ende an genau ein tieferes Stück stößt (mehr als sprung Meter), stünde dort als Pfeiler über dem Wehrgang:
+    Seine Krone (die sich nach dem Gelände unter dem Turm richtete) sinkt auf die des tieferen Stücks, der Wehrgang
+    läuft so bis an den Turm. burgbau.gd gibt ihm dort eine Tür ins Untergeschoss mit einer Rampe hinauf in die Kammer;
+    steht im Turm das Gelände höher als dieser Wehrgang (der Turm steckt im Hang), wäre dort kein Raum: dann endet der
+    Wehrgang an einer verriegelten Tür (riegel). Nach mauern_verbinden aufrufen.
+    Gibt die Liste (Turm, Stummel, alte Krone, neue Krone, riegel) zurück."""
+    werte_je, stuecke, tuerme = {}, [], []
+    for k, text in enumerate(knoten):
+        m = re.search(r'\nmauern = PackedFloat32Array\(([^)]*)\)', text)
+        if m and m.group(1).strip():
+            w = [float(x) for x in m.group(1).split(",")]
+            werte_je[k] = w
+            stuecke += [(k, i) for i in range(0, len(w) - 9, 10) if w[i + 9] > 0.5]
+        m = re.search(r'\ntuerme = PackedFloat32Array\(([^)]*)\)', text)
+        if m and m.group(1).strip():
+            t = [float(x) for x in m.group(1).split(",")]
+            tuerme += [(t[j], t[j + 1], t[j + 4]) for j in range(0, len(t) - 6, 7) if int(t[j + 5]) != 2]
+    gemeldet, geaendert = [], set()
+    for (k, i) in stuecke:
+        w = werte_je[k]
+        for e in (0, 1):
+            innen, aussen_ = (w[i + 2 * e], w[i + 2 * e + 1]), (w[i + 2 - 2 * e], w[i + 3 - 2 * e])
+            for (tx, tz, r) in tuerme:
+                if math.dist(innen, (tx, tz)) > r - 0.5 or not 0.0 < math.dist(aussen_, (tx, tz)) - r < rest:
+                    continue
+                nachbarn = [(k2, i2) for (k2, i2) in stuecke if (k2, i2) != (k, i) for e2 in (0, 1)
+                            if math.dist((werte_je[k2][i2 + 2 * e2], werte_je[k2][i2 + 2 * e2 + 1]), aussen_) < 0.05]
+                if len(nachbarn) != 1:
+                    continue
+                k2, i2 = nachbarn[0]
+                tiefer = werte_je[k2][i2 + 5]
+                if w[i + 5] - tiefer < sprung:
+                    continue
+                ri = r - min(max(r * 0.26, 1.1), 1.8)      # Kammer wie in burgbau.gd (_turm_wand)
+                innen_h = max(H(tx + math.cos(math.radians(a_)) * ri * f_, tz + math.sin(math.radians(a_)) * ri * f_)
+                              for a_ in range(0, 360, 15) for f_ in (0.0, 0.35, 0.7, 1.0))
+                gemeldet.append(((tx, tz), (innen, aussen_), w[i + 5], tiefer, innen_h > tiefer - 0.3))
+                w[i + 5] = tiefer
+                geaendert.add(k)
+                for j, m_ in enumerate(MAUERSTUECKE):
+                    if {tuple(round(v, 2) for v in m_[1:3]), tuple(round(v, 2) for v in m_[3:5])} == \
+                            {tuple(round(v, 2) for v in innen), tuple(round(v, 2) for v in aussen_)}:
+                        MAUERSTUECKE[j] = m_[:5] + (tiefer,) + m_[6:]
+                break
+    for k in geaendert:
+        knoten[k] = re.sub(r'\nmauern = PackedFloat32Array\([^)]*\)', "\nmauern = PackedFloat32Array(%s)" % _zahlen(werte_je[k]), knoten[k])
+    return gemeldet
+
+
 def wehrgang_netz():
     """Die fertigen Mauerstücke mit Wehrgang (nach mauern_verbinden) und alle Türme, aus den Knoten gelesen:
     Stücke als dict (a, b, oben, dicke, aussen), Türme als (x, z, Radius, oben, rund und hohl)."""
