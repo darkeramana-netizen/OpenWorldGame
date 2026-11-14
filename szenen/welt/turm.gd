@@ -36,6 +36,11 @@ extends Node3D
 @export var treppenhaus_radius: float = 4.6
 @export var saeulen_radius: float = 1.2
 @export var zinnen_hoehe: float = 1.6
+## Stärke der Brüstung auf dem Dach
+@export var bruestung_dicke: float = 1.0
+## Über dem Treppenloch auf dem Dach ein kleines rundes Treppenhäuschen mit Tür (zur Ankunft der Rampe) und flachem
+## Dach, statt eines offenen Lochs mit der Säule darin (bei Türmen, deren Plattform man betritt)
+@export var treppenhaeuschen := false
 @export var material_wand: Material
 @export var material_boden: Material
 @export var material_rampe: Material
@@ -215,12 +220,34 @@ func _baue_dach() -> void:
 	var laenge := 2.0 * apothem * tan(deg_to_rad(_halb())) + 0.05
 	if ohne_mauer:
 		return
+	var bd := bruestung_dicke
 	for k in ecken:
 		var winkel := achteck_winkel + k * 360.0 / ecken
-		_quader_tangential(_st_wand, winkel, apothem - 0.5, 0.0, laenge, hoehe, hoehe + 1.0, 1.0)
+		_quader_tangential(_st_wand, winkel, apothem - bd / 2.0, 0.0, laenge, hoehe, hoehe + 1.0, bd)
 		for z in [-1, 0, 1]:
-			_quader_tangential(_st_wand, winkel, apothem - 0.5, z * laenge / 3.0, laenge / 6.0,
-				hoehe + 1.0, hoehe + 1.0 + zinnen_hoehe, 1.0)
+			_quader_tangential(_st_wand, winkel, apothem - bd / 2.0, z * laenge / 3.0, laenge / 6.0,
+				hoehe + 1.0, hoehe + 1.0 + zinnen_hoehe, bd)
+	if treppenhaeuschen:
+		_baue_treppenhaeuschen(hoehe)
+
+
+## Treppenhäuschen über dem Treppenloch: runde Wand (2,8 m) mit Tür bei treppen_winkel, darüber ein flaches Dach mit
+## kleinem Rand
+func _baue_treppenhaeuschen(hoehe: float) -> void:
+	var r := treppenhaus_radius - TREPPENHAUS_WAND / 2.0
+	var schritt := 360.0 / SEGMENTE
+	var laenge := 2.0 * treppenhaus_radius * tan(deg_to_rad(schritt / 2.0)) + 0.05
+	var halbe_tuer := rad_to_deg(0.8 / treppenhaus_radius)
+	_versatz = Vector3(treppen_mitte.x, 0.0, treppen_mitte.y)
+	for k in SEGMENTE:
+		var winkel := treppen_winkel + (k + 0.5) * schritt
+		var unten := hoehe - BODEN_STAERKE
+		if absf(rad_to_deg(angle_difference(deg_to_rad(winkel), deg_to_rad(treppen_winkel)))) < halbe_tuer + schritt / 2.0:
+			unten = hoehe + 2.5                     # Tür, darüber der Sturz
+		_quader_tangential(_st_wand, winkel, r, 0.0, laenge, unten, hoehe + 2.9, TREPPENHAUS_WAND)
+	_versatz = Vector3.ZERO
+	var m := Vector3(treppen_mitte.x, 0.0, treppen_mitte.y)
+	_scheibe(_st_boden, hoehe + 3.1, treppenhaus_radius + 0.25, 0.0, 360.0, m)
 
 
 ## Wand des Treppenhauses mit einer Tür auf jeder Ebene.
