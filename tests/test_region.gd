@@ -359,6 +359,7 @@ func _initialize() -> void:
 			ohne_a.append(t_.get_rid())
 	var stuecke_alle := 0
 	var stuecke_falsch: Array[String] = []
+	var kram_orte: Array[Vector3] = []
 	for k: Node3D in traeger:
 		var st_: PackedFloat32Array = k.stuecke
 		var sch := 5 if String(k.get_script().resource_path).ends_with("ausstattung.gd") else 7
@@ -376,6 +377,11 @@ func _initialize() -> void:
 				pq_.exclude = ohne_a
 				if tb_.is_empty() or absf(float(tb_.position.y) - p_.y) > 0.12 or not raum_s.intersect_point(pq_, 1).is_empty():
 					stuecke_falsch.append("%s Art %d bei %s" % [k.name, art_, p_.snapped(Vector3.ONE * 0.1)])
+				if (sch == 5 and art_ in [0, 1, 2]) or sch == 7:
+					for q_: Vector3 in kram_orte:
+						if Vector2(q_.x - p_.x, q_.z - p_.z).length() < 0.7:
+							stuecke_falsch.append("%s Art %d bei %s steckt in einem anderen Stück" % [k.name, art_, p_.snapped(Vector3.ONE * 0.1)])
+					kram_orte.append(p_)
 			i_ += sch
 	for t_ in current_scene.find_children("Schwarm*", "Node3D", true, false):
 		if t_.get("sitzend"):

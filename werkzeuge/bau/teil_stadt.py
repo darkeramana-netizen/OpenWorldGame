@@ -218,6 +218,14 @@ def _auf_kai(x, z, r=0.7, weit=8.0):
 
 # Hafenkram: Kisten (Fotoscans) und Holzfässer in Gruppen am Nordkai und am Ostkai
 HAFEN_FAESSER = []
+KRAM_ORTE = []      # (x, z) aller gesetzten Fässer, Kisten und Säcke am Hafen: keins steckt im anderen
+
+
+def _kram_frei(x, z, abstand=0.85):
+    if any(math.dist((x, z), q_) < abstand for q_ in KRAM_ORTE):
+        return False
+    KRAM_ORTE.append((x, z))
+    return True
 random.seed(77)
 _kram = [W(pp) for pp in [(645, 419), (675, 419), (705, 420), (728, 421), (812, 528)]]    # an der Mauer, abseits der Laufwege
 _kram += [uh(s_ + 3.0, q_ * (UH_BREITE / 2 + 1.6)) for s_ in range(6, 54, 12) for q_ in (-1, 1)]   # in den Lagernischen
@@ -232,6 +240,8 @@ for k_, (gx_, gz_) in enumerate(_kram):
         px_, pz_ = gx_ + random.uniform(-1.6, 1.6), gz_ + random.uniform(-1.6, 1.6)
         if k_ < 5 and (abstand_linie(WL(PD.KAIWEG), px_, pz_) < 2.0 or abs(H(px_, pz_) - KAI_OBEN) > 0.08):
             continue                             # jedes Stück abseits des Kaiwegs und auf ebenem Kai
+        if not _kram_frei(px_, pz_, 0.95):
+            continue
         # die Höhe bestimmt felsen.gd bzw. ausstattung.gd beim Start (auf_boden): auf dem Kai oder dem Boden der
         # Lagernische. Fässer sind Holzfässer (ausstattung.gd, Art 0): der Fass-Scan ist ein modernes Blechfass.
         if art_ == 5:
@@ -441,6 +451,8 @@ for px in range(630, 720, 15):
         px_, pz_ = gx + random.uniform(-1.2, 1.2), gz + random.uniform(-1.6, 1.6)
         if abstand_linie(WL(PD.KAIWEG), px_, pz_) < 2.0 or abs(H(px_, pz_) - KAI_OBEN) > 0.08:
             continue                             # jedes Stück abseits des Kaiwegs und auf ebenem Kai
+        if not _kram_frei(px_, pz_, 1.1 if art == 2 else 0.85):
+            continue
         AUSSTATTUNG.append((art, px_, KAI_OBEN, pz_, random.uniform(0, 360)))
 for pp in [(652, 417), (700, 417)]:
     x, z = W(pp)
@@ -469,7 +481,9 @@ for px_ in (652, 662, 672, 708, 718, 728):
     gx, gz = W((px_, random.uniform(615.5, 616.5)))
     for k in range(random.randint(2, 4)):
         art = random.choice((0, 0, 1, 1, 2))
-        AUSSTATTUNG.append((art, gx + random.uniform(-0.6, 0.6), KAI_OBEN, gz + random.uniform(-1.3, 1.3), random.uniform(0, 360)))
+        px_, pz_ = gx + random.uniform(-0.6, 0.6), gz + random.uniform(-1.3, 1.3)
+        if _kram_frei(px_, pz_, 1.1 if art == 2 else 0.85):
+            AUSSTATTUNG.append((art, px_, KAI_OBEN, pz_, random.uniform(0, 360)))
 _kx, _kz = W((740, 616))
 AUSSTATTUNG.append((4, _kx, KAI_OBEN, _kz, random.uniform(-8, 8)))   # längs an der Wand
 for x, z in STAENDE_MEHR:
