@@ -649,7 +649,7 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 	_klotz(stein, m, u, n, -l, l, -d, d, unten, oben)
 	# Endet die Mauer an einem hohlen Rundturm, ist ihr Ende gerade abgeschnitten (vor seiner Kammer); läuft sie nicht
 	# genau auf die Turmmitte zu, bleibt die eine Seitenfläche vor der runden Turmwand stehen: bis dorthin auffüllen
-	_anschluss_an_tuerme(m, u, n, l, d, unten, oben, zinnen)
+	_anschluss_an_tuerme(m, u, n, l, d, unten, oben, zinnen, a_plan, b_plan)
 	if not zinnen:
 		return
 	# Anlauf: schräger Sockel auf der Feldseite
@@ -809,7 +809,8 @@ func _abschnitte(von: float, bis: float, luecken: Array) -> Array:
 ## Füllt an beiden Enden eines Mauerstücks (Mitte m, Richtung u, Feldseite n, halbe Länge l, halbe Dicke d) je
 ## Seitenfläche den Spalt bis zur Außenwand eines hohlen Rundturms: ein Streifen so breit wie Brüstung bzw. Hofmauer, vom Fuß bis
 ## über die Brüstung (Feldseite) bzw. die Hofmauer, so weit er die Kammer nicht berührt.
-func _anschluss_an_tuerme(m: Vector2, u: Vector2, n: Vector2, l: float, d: float, unten: float, oben: float, zinnen: bool) -> void:
+func _anschluss_an_tuerme(m: Vector2, u: Vector2, n: Vector2, l: float, d: float, unten: float, oben: float, zinnen: bool,
+		a_plan: Vector2, b_plan: Vector2) -> void:
 	for t: Array in _hohle:
 		var tc: Vector2 = t[0]
 		var r: float = t[1]
@@ -821,6 +822,8 @@ func _anschluss_an_tuerme(m: Vector2, u: Vector2, n: Vector2, l: float, d: float
 				continue
 			if (tc - e_pkt).dot(u * ende) <= 0.0:
 				continue                              # der Turm liegt nicht vor diesem Ende
+			if (b_plan if ende > 0.0 else a_plan).distance_to(tc) > r + 0.6:
+				continue                              # das Stück endet laut Plan nicht am Turm (nur seine Überlappung reicht heran)
 			for k: float in [-1.0, 1.0]:
 				var f := k * d
 				var w := m + n * f - tc
