@@ -1,4 +1,4 @@
-[gd_scene load_steps=66 format=3]
+[gd_scene load_steps=68 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -35,6 +35,8 @@
 [ext_resource type="Texture2D" path="res://texturen/sumpf_farbe.jpg" id="tex_sumpf_farbe"]
 [ext_resource type="Texture2D" path="res://texturen/pflaster_farbe.jpg" id="tex_pflaster_farbe"]
 [ext_resource type="Texture2D" path="res://texturen/pflaster_normal.jpg" id="tex_pflaster_normal"]
+[ext_resource type="Texture2D" path="res://texturen/klippe_farbe.jpg" id="tex_klippe_farbe"]
+[ext_resource type="Texture2D" path="res://texturen/klippe_normal.jpg" id="tex_klippe_normal"]
 [ext_resource type="Material" path="res://material/mauer.tres" id="Material_mauer"]
 [ext_resource type="Material" path="res://material/hell.tres" id="Material_hell"]
 [ext_resource type="Material" path="res://material/basalt.tres" id="Material_basalt"]
@@ -57,12 +59,12 @@ albedo_color = Color(1, 0.62, 0.18, 1)
 
 [sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
 sky_top_color = Color(0.22, 0.38, 0.62, 1)
-sky_horizon_color = Color(0.66, 0.7, 0.74, 1)
+sky_horizon_color = Color(0.74, 0.73, 0.7, 1)
 sky_curve = 0.12
 sky_cover = ExtResource("25_wolken")
 sky_cover_modulate = Color(1, 1, 1, 0.9)
 ground_bottom_color = Color(0.1, 0.1, 0.1, 1)
-ground_horizon_color = Color(0.66, 0.7, 0.74, 1)
+ground_horizon_color = Color(0.74, 0.73, 0.7, 1)
 sun_angle_max = 20.0
 sun_curve = 0.08
 
@@ -98,10 +100,10 @@ glow_bloom = 0.05
 glow_hdr_threshold = 1.1
 fog_enabled = true
 fog_mode = 0
-fog_light_color = Color(0.62, 0.66, 0.72, 1)
-fog_sun_scatter = 0.25
+fog_light_color = Color(0.76, 0.7, 0.6, 1)
+fog_sun_scatter = 0.45
 fog_density = 0.003
-fog_aerial_perspective = 0.5
+fog_aerial_perspective = 0.3
 fog_sky_affect = 0.25
 fog_height = 0.0
 fog_height_density = 0.0008
@@ -126,6 +128,9 @@ shader_parameter/schnee_farbe = ExtResource("tex_schnee_farbe")
 shader_parameter/sumpf_farbe = ExtResource("tex_sumpf_farbe")
 shader_parameter/pflaster_farbe = ExtResource("tex_pflaster_farbe")
 shader_parameter/pflaster_normal = ExtResource("tex_pflaster_normal")
+shader_parameter/klippe_farbe = ExtResource("tex_klippe_farbe")
+shader_parameter/klippe_normal = ExtResource("tex_klippe_normal")
+shader_parameter/mit_klippe = true
 
 [sub_resource type="ShaderMaterial" id="Material_wasser"]
 shader = ExtResource("10_wasser")

@@ -20,6 +20,7 @@ uniform float meter = 2.5;               // Kantenlänge einer Kachel
 uniform vec3 ton : source_color = vec3(1.0);
 uniform float schwankung = 0.18;         // Farbschwankung über große Flächen
 uniform float moos = 0.35;               // Moos und Flechten auf nach oben weisenden Flächen
+uniform vec3 moos_farbe : source_color = vec3(0.16, 0.19, 0.09);
 uniform float normal_staerke = 1.0;
 uniform float tiefe = 0.0;               // Parallax-Tiefe in Metern (0: aus)
 uniform float fugen = 0.45;              // wie dunkel die tiefsten Stellen werden
@@ -161,7 +162,7 @@ void fragment() {
 
 	// Moos und Flechten auf Oberseiten (Zinnen, Gesimse, Mauerkronen), bevorzugt in Vertiefungen
 	float oben = smoothstep(0.45, 0.85, n.y) * moos * smoothstep(0.35, 0.75, rauschen3(welt_pos * 0.9 + 3.0) + (0.5 - hh) * 0.3);
-	alb = mix(alb, vec3(0.16, 0.19, 0.09), oben);
+	alb = mix(alb, moos_farbe, oben);
 	ALBEDO = alb;
 	ROUGHNESS = clamp(rau + oben * 0.2 - feucht * 0.25, 0.0, 1.0);
 	AO = mix(fuge, 1.0, 0.25);

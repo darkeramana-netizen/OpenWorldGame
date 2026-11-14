@@ -298,12 +298,12 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     E("Texture2D", "res://texturen/wolken.png", "25_wolken")
     S('''[sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
     sky_top_color = Color(0.22, 0.38, 0.62, 1)
-    sky_horizon_color = Color(0.66, 0.7, 0.74, 1)
+    sky_horizon_color = Color(0.74, 0.73, 0.7, 1)
     sky_curve = 0.12
     sky_cover = ExtResource("25_wolken")
     sky_cover_modulate = Color(1, 1, 1, 0.9)
     ground_bottom_color = Color(0.1, 0.1, 0.1, 1)
-    ground_horizon_color = Color(0.66, 0.7, 0.74, 1)
+    ground_horizon_color = Color(0.74, 0.73, 0.7, 1)
     sun_angle_max = 20.0
     sun_curve = 0.08''')
     S('''[sub_resource type="Sky" id="Himmel"]
@@ -337,10 +337,10 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     glow_hdr_threshold = 1.1
     fog_enabled = true
     fog_mode = 0
-    fog_light_color = Color(0.62, 0.66, 0.72, 1)
-    fog_sun_scatter = 0.25
+    fog_light_color = Color(0.76, 0.7, 0.6, 1)
+    fog_sun_scatter = 0.45
     fog_density = {nebel}
-    fog_aerial_perspective = 0.5
+    fog_aerial_perspective = 0.3
     fog_sky_affect = 0.25
     fog_height = 0.0
     fog_height_density = 0.0008

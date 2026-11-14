@@ -9,9 +9,11 @@ const FARBE_MITTAG := Color(1.0, 0.96, 0.88)
 const FARBE_DAEMMERUNG := Color(1.0, 0.55, 0.3)
 
 ## Himmelsfarben bei Tag, in der Dämmerung und nachts: [oben, Horizont].
-const HIMMEL_TAG := [Color(0.22, 0.38, 0.62), Color(0.66, 0.7, 0.74)]
+const HIMMEL_TAG := [Color(0.22, 0.38, 0.62), Color(0.74, 0.73, 0.7)]
 const HIMMEL_DAEMMERUNG := [Color(0.2, 0.2, 0.32), Color(0.75, 0.45, 0.3)]
 const HIMMEL_NACHT := [Color(0.03, 0.05, 0.1), Color(0.12, 0.15, 0.22)]
+## Dunst bei Tag: warm und golden (wie im Referenzbild der Burgfeste), nicht grau-blau.
+const DUNST_TAG := Color(0.76, 0.7, 0.6)
 
 var _himmel: ProceduralSkyMaterial
 
@@ -30,7 +32,8 @@ func _process(_delta: float) -> void:
 	rotation_degrees.y = 90.0 - (anteil - 0.25) * 360.0
 	var tag := clampf(hoehe * 2.0, 0.0, 1.0)
 	light_energy = tag * 1.5
-	light_color = FARBE_DAEMMERUNG.lerp(FARBE_MITTAG, clampf(hoehe * 3.0, 0.0, 1.0))
+	# Ab dem Nachmittag wird das Licht allmählich golden (bis 1 ganz mittäglich, darunter wärmer)
+	light_color = FARBE_DAEMMERUNG.lerp(FARBE_MITTAG, clampf(hoehe * 1.6, 0.0, 1.0))
 	shadow_enabled = tag > 0.05
 	if mond:
 		mond.light_energy = (1.0 - tag) * 0.45
@@ -39,7 +42,7 @@ func _process(_delta: float) -> void:
 	if umgebung:
 		umgebung.environment.background_energy_multiplier = lerpf(0.6, 1.0, tag)
 		umgebung.environment.ambient_light_energy = lerpf(0.5, 1.0, tag)  # nachts bleibt Mondlicht
-		umgebung.environment.fog_light_color = Color(0.08, 0.1, 0.15).lerp(Color(0.62, 0.66, 0.72), tag)
+		umgebung.environment.fog_light_color = Color(0.08, 0.1, 0.15).lerp(DUNST_TAG, tag)
 	if _himmel:
 		# Nachts dunkel, in der Dämmerung warm, am Tag hell.
 		var daemmerung := clampf(1.0 - absf(hoehe) * 4.0, 0.0, 1.0)
