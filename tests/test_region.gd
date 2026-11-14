@@ -292,6 +292,57 @@ func _initialize() -> void:
 	pruefe(fugen_alle >= 60 and fugen_ok >= fugen_alle * 0.9, "Wehrgänge: über %d von %d Fugen zwischen Mauerstücken gegangen" % [fugen_ok, fugen_alle])
 	pruefe(turm_alle >= 4 and turm_ok == turm_alle, "Hohle Rundtürme: %d von %d auf dem Wehrgang durchquert" % [turm_ok, turm_alle])
 	pruefe(tor_alle >= 3 and tor_ok == tor_alle, "Tore: %d von %d auf dem Wehrgang über den Bogen durch beide Tortürme überquert" % [tor_ok, tor_alle])
+	# Streifen der Mauerwachen: ab dem Kopf ihrer Treppe überall Boden ohne Sprünge über eine Stufe, keine Wand im Weg
+	# (Türflügel ausgenommen, die öffnen sich vor Personen)
+	var raum_s: PhysicsDirectSpaceState3D = current_scene.get_world_3d().direct_space_state
+	var ohne: Array[RID] = []
+	for k in current_scene.find_children("*", "", true, false):
+		if k.has_method("unterwegs"):
+			ohne.append(k.get_rid())
+	var streifen := 0
+	var streifen_ok := 0
+	var streifen_m := 0.0
+	for w_ in current_scene.get_node("Personen/Burgleben").get_children():
+		if not String(w_.name).begins_with("Wehrgangwache"):
+			continue
+		streifen += 1
+		var pk: Array[Vector3] = []
+		for t_: String in String(w_.tagesablauf[0]).split(":", true, 1)[1].split("|")[0].split(";"):
+			var z_ := t_.split_floats(",")
+			pk.append(Vector3(z_[0], z_[1], z_[2]))
+		var y_: float = pk[2].y
+		var gut := true
+		var wo := ""
+		for i_ in range(2, pk.size() - 1):
+			var fl := Vector2(pk[i_ + 1].x - pk[i_].x, pk[i_ + 1].z - pk[i_].z)
+			streifen_m += fl.length()
+			var n_ := maxi(1, int(fl.length() / 0.25))
+			var r3 := Vector3(fl.x, 0, fl.y).normalized()
+			for k_ in n_:
+				var q_ := Vector2(pk[i_].x, pk[i_].z) + fl * (k_ + 1) / n_
+				var ab := PhysicsRayQueryParameters3D.create(Vector3(q_.x, y_ + 1.5, q_.y), Vector3(q_.x, y_ - 2.5, q_.y), 1)
+				ab.exclude = ohne
+				var tr_s: Dictionary = raum_s.intersect_ray(ab)
+				if not tr_s or absf(float(tr_s.position.y) - y_) > 0.45:
+					gut = false
+					wo = "Boden bei %s" % Vector3(q_.x, y_, q_.y).snapped(Vector3.ONE * 0.1)
+					break
+				y_ = tr_s.position.y
+				var wq := PhysicsRayQueryParameters3D.create(Vector3(q_.x, y_ + 1.2, q_.y) - r3 * 0.25, Vector3(q_.x, y_ + 1.2, q_.y) + r3 * 0.25, 1)
+				wq.exclude = ohne
+				var tw_s: Dictionary = raum_s.intersect_ray(wq)
+				if tw_s and not ((tw_s.collider as Node).get_parent() is Fluegel or (tw_s.collider as Node).get_parent().get_parent() is Fluegel):
+					gut = false
+					wo = "Wand bei %s (%s)" % [Vector3(q_.x, y_, q_.y).snapped(Vector3.ONE * 0.1), (tw_s.collider as Node).get_parent().name]
+					break
+			if not gut:
+				break
+		if gut:
+			streifen_ok += 1
+		else:
+			print("       Streife von %s: %s" % [w_.name, wo])
+	pruefe(streifen >= 8 and streifen_ok == streifen and streifen_m > 1000.0,
+			"Mauerwachen: %d von %d Streifen ohne Lücke und Wand (zusammen %.0f m)" % [streifen_ok, streifen, streifen_m])
 	# Vom Marktplatz auf den Westkai und über den Kai bis an den Kanal vor dem Wassertor
 	await setze(Vector3(136, g.hoehe_bei(136, 86) + 0.3, 86))
 	var fels := await gehe_ueber([Vector2(145.69, 79.75), Vector2(149.85, 68.99), Vector2(142, 63.5), Vector2(121, 61.5), Vector2(106, 52.5), Vector2(100, 27.5), Vector2(100, -0.5)], 30.0)
