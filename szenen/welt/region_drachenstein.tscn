@@ -1,4 +1,4 @@
-[gd_scene load_steps=105 format=3]
+[gd_scene load_steps=106 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -57,6 +57,7 @@
 [ext_resource type="Script" path="res://szenen/figuren/tauben.gd" id="42_tauben"]
 [ext_resource type="Script" path="res://szenen/figuren/tier.gd" id="41_tier"]
 [ext_resource type="Script" path="res://szenen/figuren/tauben.gd" id="42_tauben"]
+[ext_resource type="Script" path="res://szenen/figuren/moewen.gd" id="43_moewen"]
 [ext_resource type="Script" path="res://szenen/figuren/tier.gd" id="41_tier"]
 [ext_resource type="Script" path="res://szenen/welt/felsen.gd" id="30_felsen"]
 [ext_resource type="Script" path="res://szenen/welt/felssockel.gd" id="31_felssockel"]
@@ -1567,6 +1568,56 @@ script = ExtResource("42_tauben")
 anzahl = 8
 weite = 1.8
 sitzend = false
+
+[node name="Moewen" type="Node3D" parent="Drachenstein"]
+
+[node name="Moewen0" type="Node3D" parent="Drachenstein/Moewen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 150, -20, 10)
+script = ExtResource("43_moewen")
+anzahl = 6
+weite = 30
+hoehe = 16
+sitzend = false
+
+[node name="Moewen1" type="Node3D" parent="Drachenstein/Moewen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 245, -20, 30)
+script = ExtResource("43_moewen")
+anzahl = 5
+weite = 45
+hoehe = 22
+sitzend = false
+
+[node name="Moewen2" type="Node3D" parent="Drachenstein/Moewen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 105, -20, -125)
+script = ExtResource("43_moewen")
+anzahl = 4
+weite = 35
+hoehe = 30
+sitzend = false
+
+[node name="Moewen3" type="Node3D" parent="Drachenstein/Moewen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 60, -20, 90)
+script = ExtResource("43_moewen")
+anzahl = 3
+weite = 25
+hoehe = 26
+sitzend = false
+
+[node name="Moewen4" type="Node3D" parent="Drachenstein/Moewen"]
+transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 103.2, -17.8, 10)
+script = ExtResource("43_moewen")
+anzahl = 4
+weite = 5
+hoehe = 0
+sitzend = true
+
+[node name="Moewen5" type="Node3D" parent="Drachenstein/Moewen"]
+transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 196, -17.8, 20)
+script = ExtResource("43_moewen")
+anzahl = 3
+weite = 4
+hoehe = 0
+sitzend = true
 
 [node name="Tiere" type="Node3D" parent="Drachenstein/Burgen"]
 

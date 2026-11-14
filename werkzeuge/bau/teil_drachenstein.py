@@ -1259,6 +1259,20 @@ script = ExtResource("42_tauben")
 anzahl = {n_}
 weite = {weite_:.3g}
 sitzend = {"true" if sitzend_ else "false"}""")
+# Möwen (szenen/figuren/moewen.gd): kreisend über dem Hafenbecken, über der Bucht und an der Klippe unter der
+# Kernburg; sitzend in Reihen auf der Kaikante (sie setzen sich selbst auf die Oberfläche)
+E("Script", "res://szenen/figuren/moewen.gd", "43_moewen")
+N("Moewen", "Node3D", DS)
+for k_, (x_, y_, z_, g_, n_, weite_, hoehe_, sitzend_) in enumerate([
+        (150, -20, 10, 0, 6, 30, 16, False), (245, -20, 30, 0, 5, 45, 22, False), (105, -20, -125, 0, 4, 35, 30, False),
+        (60, -20, 90, 0, 3, 25, 26, False),
+        (103.2, -17.8, 10, 90, 4, 5, 0, True), (196, -17.8, 20, 90, 3, 4, 0, True)]):
+    N(f"Moewen{k_}", "Node3D", DS + "/Moewen", f"""{T(x_, y_, z_, g_)}
+script = ExtResource("43_moewen")
+anzahl = {n_}
+weite = {weite_}
+hoehe = {hoehe_}
+sitzend = {"true" if sitzend_ else "false"}""")
 # Tiere als eigene Knoten mit Revier (szenen/figuren/tier.gd)
 E("Script", "res://szenen/figuren/tier.gd", "41_tier")
 N("Tiere", "Node3D", BG)
