@@ -367,11 +367,16 @@ for k_ in range(0, len(TREPPEN) if "TREPPEN" in globals() else 0, 7):
 # Im Bergfried (Erdgeschoss mit der Wendeltreppe in der Ecke) steht kein Fels
 _bfm = W(PD.BERGFRIED_KERNBURG)
 _frei_fels += [_bfm[0], _bfm[1], 9.6]
+# Bewuchs auf den Absätzen des Felsmassivs (setzt felsmassiv.gd selbst, es kennt die Felsoberfläche): Grasbüschel,
+# Moospolster und Farn wie auf den Klippen
+_BEWUCHS_MASSIV = list(range(GRAS, GRAS + 17)) + list(range(MOOS, MOOS + 12)) + list(range(FARN, FARN + 4))
 N("Felsmassiv", "Node3D", DS, f"""script = ExtResource("33_felsmassiv")
 gelaende = NodePath("../../Gelaende")
 bereich = Rect2({min(_rx) - 2:.1f}, {min(_rz) - 2:.1f}, {max(_rx) - min(_rx) + 4:.1f}, {max(_rz) - min(_rz) + 4:.1f})
 material = ExtResource("34_felsmassiv_mat")
-frei = PackedVector3Array({", ".join(f"{v:.2f}" for v in _frei_fels)})""")   # gelaende ist ein NodePath (kein Node-Export)
+frei = PackedVector3Array({", ".join(f"{v:.2f}" for v in _frei_fels)})
+bewuchs_modelle = PackedStringArray({", ".join(f'"{FELSMODELLE[m_][0]}"' for m_ in _BEWUCHS_MASSIV)})
+bewuchs_arten = PackedInt32Array({", ".join("0" if GRAS <= m_ < MOOS else ("1" if m_ >= MOOS else "2") for m_ in _BEWUCHS_MASSIV)})""")   # gelaende ist ein NodePath (kein Node-Export)
 _vorher = len(FELSSTUECKE)
 FELSSTUECKE = [f_ for f_ in FELSSTUECKE if not im_vieleck((f_[1], f_[3]), _ring_flaeche)]
 # Vor dem Küstenfels keine Klippenscans und kein Geröll (Pflanzen bleiben)

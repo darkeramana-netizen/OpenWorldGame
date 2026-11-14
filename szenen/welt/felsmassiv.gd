@@ -15,6 +15,12 @@ extends Node3D
 @export var kollision := true
 ## Stellen ohne Fels (x, z, Radius), z. B. an den Treppen auf die Mauern
 @export var frei := PackedVector3Array()
+## Bewuchs auf den flachen Absätzen (wie im Referenzbild: Grasbüschel und Moospolster in Flecken, ab und zu Farn):
+## Modelle wie bei felsen.gd ("res://…gltf#n"), je Modell eine Art (0 Gras, 1 Moos, 2 Farn)
+@export var bewuchs_modelle := PackedStringArray()
+@export var bewuchs_arten := PackedInt32Array()
+## Anteil der Absatzfläche (je m²) mit einer Pflanze, in den Flecken
+@export var bewuchs_dichte := 0.22
 
 var _g: Node
 var _maske: Image
@@ -25,6 +31,9 @@ var _kluft := FastNoiseLite.new()
 var _fein := FastNoiseLite.new()
 var _block := FastNoiseLite.new()     # Felsblöcke: je Zelle eine Höhe (Zellen entlang des Hangs gestreckt: Rippen)
 var _naht := FastNoiseLite.new()      # Zellgrenzen: dort reißt eine Kluft ein
+var _flecken := FastNoiseLite.new()   # wo auf den Absätzen etwas wächst
+var _zufall := RandomNumberGenerator.new()
+var _pflanzen := PackedFloat32Array() # für felsen.gd: Modell, x, y, z, Gier, Neigung, Größe
 
 
 func _ready() -> void:
@@ -61,11 +70,65 @@ func _ready() -> void:
 		z.fractal_type = FastNoiseLite.FRACTAL_NONE
 	_block.cellular_return_type = FastNoiseLite.RETURN_CELL_VALUE
 	_naht.cellular_return_type = FastNoiseLite.RETURN_DISTANCE2_SUB
+	_flecken.seed = 515
+	_flecken.frequency = 0.07
+	_zufall.seed = 8080
 	var nx := ceili(bereich.size.x / (kachel * raster))
 	var nz := ceili(bereich.size.y / (kachel * raster))
 	for kx in nx:
 		for kz in nz:
 			_baue_kachel(bereich.position + Vector2(kx, kz) * kachel * raster)
+	_setze_bewuchs()
+
+
+## Die Pflanzen als felsen.gd-Kind (MultiMesh je Modell, ohne Kollision, in Kacheln für die Sichtweite)
+func _setze_bewuchs() -> void:
+	if _pflanzen.is_empty() or bewuchs_modelle.is_empty():
+		return
+	var f: Node3D = (load("res://szenen/welt/felsen.gd") as GDScript).new()
+	f.name = "Bewuchs"
+	f.set("farben", PackedColorArray())
+	f.set("kachel", 48.0)
+	f.set("sichtweite", 260.0)
+	var ohne := PackedInt32Array()
+	for m in bewuchs_modelle.size():
+		ohne.append(m)
+	f.set("ohne_kollision", ohne)
+	f.set("modelle", bewuchs_modelle)
+	f.set("stuecke", _pflanzen)
+	add_child(f)
+
+
+## Auf einem flachen Absatz (Dreieck abc mit nach oben weisender Normale) vielleicht eine Pflanze
+func _bewuchs_auf(a: Vector3, b: Vector3, c: Vector3, w: float) -> void:
+	if bewuchs_modelle.is_empty() or w < 0.6:
+		return
+	var n := (b - a).cross(c - a).normalized()
+	if absf(n.y) < 0.88:
+		return                                   # Stufen und Klüfte bleiben kahl
+	var m_ := (a + b + c) / 3.0
+	var fleck := _flecken.get_noise_2d(m_.x, m_.z)
+	if fleck < 0.05 or _zufall.randf() > bewuchs_dichte * 2.0 * smoothstep(0.05, 0.45, fleck):
+		return
+	# Stelle im Dreieck
+	var r1 := _zufall.randf()
+	var r2 := _zufall.randf()
+	if r1 + r2 > 1.0:
+		r1 = 1.0 - r1
+		r2 = 1.0 - r2
+	var q := a + (b - a) * r1 + (c - a) * r2
+	# Art: Gras am häufigsten, dann Moos, selten Farn
+	var wurf := _zufall.randf()
+	var art := 0 if wurf < 0.55 else (1 if wurf < 0.9 else 2)
+	var wahl: Array[int] = []
+	for k in bewuchs_arten.size():
+		if bewuchs_arten[k] == art:
+			wahl.append(k)
+	if wahl.is_empty():
+		return
+	var modell: int = wahl[_zufall.randi() % wahl.size()]
+	var groesse := [_zufall.randf_range(0.7, 1.2), _zufall.randf_range(20.0, 34.0), _zufall.randf_range(0.7, 1.1)][art] as float
+	_pflanzen.append_array([modell, q.x, q.y - 0.04, q.z, _zufall.randf_range(0.0, 360.0), 0.0, groesse])
 
 
 ## Wie stark hier Fels ist (0 bis 1): Felsgrund laut Maske, nicht auf Wegen
@@ -173,6 +236,8 @@ func _baue_kachel(start: Vector2) -> void:
 			for i in [a, b, d, a, d, c]:
 				st.add_vertex(punkte[i])
 			dreiecke += 2
+			_bewuchs_auf(punkte[a], punkte[b], punkte[d], minf(gew[a], minf(gew[b], gew[d])))
+			_bewuchs_auf(punkte[a], punkte[d], punkte[c], minf(gew[a], minf(gew[d], gew[c])))
 	if dreiecke == 0:
 		return
 	st.generate_normals()
