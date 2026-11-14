@@ -27,22 +27,27 @@ extends Node3D
 ## Modelle (Nummern), deren Stücke beim Start auf die Oberfläche darunter gesetzt werden (z. B. Fässer und Kisten
 ## auf einem Kai), damit nichts im Boden steckt oder schwebt
 @export var auf_boden := PackedInt32Array()
+## Modelle, deren Stücke beim Start nur dann angehoben werden, wenn sie unter einer Oberfläche begraben sind (z. B.
+## Pflanzen, über die sich das Felsmassiv legt); was richtig liegt (ein Pilz auf einem Stamm), bleibt
+@export var heben := PackedInt32Array()
 
 const SCHRITT := 7
 
 
 func _ready() -> void:
-	if not auf_boden.is_empty() and not Engine.is_editor_hint():
+	if (not auf_boden.is_empty() or not heben.is_empty()) and not Engine.is_editor_hint():
 		await get_tree().physics_frame
 		await get_tree().physics_frame
 		var raum := get_world_3d().direct_space_state
+		var boden := load("res://szenen/welt/ausstattung.gd") as GDScript
 		var neu := stuecke.duplicate()
 		var i := 0
 		while i + SCHRITT - 1 < neu.size():
-			if int(neu[i]) in auf_boden:
+			var m := int(neu[i])
+			if m in auf_boden or m in heben:
 				var p := global_transform * Vector3(neu[i + 1], neu[i + 2], neu[i + 3])
-				var y: float = (load("res://szenen/welt/ausstattung.gd") as GDScript).boden_unter(raum, p, 1.6, 3.0)
-				if not is_nan(y):
+				var y: float = boden.boden_unter(raum, p, 1.6 if m in auf_boden else 3.0, 3.0 if m in auf_boden else 0.2)
+				if not is_nan(y) and (m in auf_boden or y > p.y + 0.3):
 					neu[i + 2] = (global_transform.affine_inverse() * Vector3(p.x, y, p.z)).y
 			i += SCHRITT
 		stuecke = neu      # baut neu

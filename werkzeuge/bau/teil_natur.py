@@ -143,7 +143,8 @@ N("Natur", "Node3D", DS, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray({", ".join(f'"{p}"' for p in NATURMODELLE)})
 stuecke = PackedFloat32Array({", ".join(f"{v:.6g}" for st in NATUR for v in st)})
 sichtweite = 300.0
-kachel = 64.0""")
+kachel = 64.0
+heben = PackedInt32Array({", ".join(str(m_) for m_ in range(len(NATURMODELLE)))})""")   # wo sich das Felsmassiv darüber legt
 _zaehl = lambda ms: sum(1 for n in NATUR if n[0] in ms)
 print("Natur:", len(NATUR), "Stücke –", "Stämme", _zaehl([STAMM, STAMM_DICK]), "Wurzeln", _zaehl([WURZEL]),
       "Pilze", _zaehl([HALLIMASCH, FLIEGENPILZ, SCHWAMM]), "Sträucher", _zaehl(STRAUCH_GROSS + STRAUCH_KLEIN),
