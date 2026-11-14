@@ -637,6 +637,9 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 	var d := dicke / 2.0
 	# Mauerkörper
 	_klotz(stein, m, u, n, -l, l, -d, d, unten, oben)
+	# Endet die Mauer an einem hohlen Rundturm, ist ihr Ende gerade abgeschnitten (vor seiner Kammer); läuft sie nicht
+	# genau auf die Turmmitte zu, bleibt die eine Seitenfläche vor der runden Turmwand stehen: bis dorthin auffüllen
+	_anschluss_an_tuerme(m, u, n, l, d, unten, oben, zinnen)
 	if not zinnen:
 		return
 	# Anlauf: schräger Sockel auf der Feldseite
@@ -763,6 +766,51 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 				zinnen0 = maxf(zinnen0, anfang - lang * 0.4)
 	var zm := ((a + b) / 2.0 - m).dot(u)
 	_zinnen(m + u * zm, u, n, laenge, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR, zinnen0 - zm, zinnen1 - zm)
+
+
+## Füllt an beiden Enden eines Mauerstücks (Mitte m, Richtung u, Feldseite n, halbe Länge l, halbe Dicke d) je
+## Seitenfläche den Spalt bis zur Außenwand eines hohlen Rundturms: ein Streifen so breit wie Brüstung bzw. Hofmauer, vom Fuß bis
+## über die Brüstung (Feldseite) bzw. die Hofmauer, so weit er die Kammer nicht berührt.
+func _anschluss_an_tuerme(m: Vector2, u: Vector2, n: Vector2, l: float, d: float, unten: float, oben: float, zinnen: bool) -> void:
+	for t: Array in _hohle:
+		var tc: Vector2 = t[0]
+		var r: float = t[1]
+		var ri: float = t[2]
+		for ende: float in [-1.0, 1.0]:
+			var s_e := ende * l
+			var e_pkt := m + u * s_e
+			if e_pkt.distance_to(tc) > r + d + 0.5:
+				continue
+			if (tc - e_pkt).dot(u * ende) <= 0.0:
+				continue                              # der Turm liegt nicht vor diesem Ende
+			for k: float in [-1.0, 1.0]:
+				var f := k * d
+				var w := m + n * f - tc
+				var wu := w.dot(u)
+				var disk := wu * wu - w.length_squared() + r * r
+				if disk <= 0.0:
+					continue                          # diese Fläche geht am Turm vorbei
+				var wurzel := sqrt(disk)
+				var s_in := (-wu - wurzel) if ende > 0.0 else (-wu + wurzel)   # wo die Fläche die Turmwand erreicht
+				var luecke := (s_in - s_e) * ende
+				if luecke < 0.03 or luecke > 4.0:
+					continue
+				var breit := minf(BRUSTWEHR_DICKE if k > 0.0 else 0.35, d)   # nur Brüstung bzw. Hofmauer: der Gang bleibt frei
+				var innen := f - k * breit
+				# bis 0,3 m in die Turmwand, aber nicht in die Kammer
+				var s_bis := s_in + ende * 0.3
+				for _v in 8:
+					var ecke1 := m + u * s_bis + n * innen
+					var ecke2 := m + u * s_bis + n * f
+					if ecke1.distance_to(tc) >= ri + 0.05 and ecke2.distance_to(tc) >= ri + 0.05:
+						break
+					s_bis -= ende * 0.1
+				if (s_bis - s_e) * ende <= 0.02:
+					continue
+				var hoch := oben
+				if zinnen:
+					hoch = oben + (BRUSTWEHR if k > 0.0 else 0.6)
+				_klotz(stein, m, u, n, minf(s_e, s_bis) - 0.02 * ende, maxf(s_e, s_bis), minf(innen, f), maxf(innen, f), unten, hoch)
 
 
 ## Wetterfahne auf einer Turmspitze: Stange mit Kugel, Fahnenblech mit Zacken, Windrose darunter.
