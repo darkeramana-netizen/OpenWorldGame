@@ -397,11 +397,15 @@ func _initialize() -> void:
 			if (sch == 5 and not art_ in nicht_boden and art_ != 29) or (sch == 7 and art_ in [5, 6, 7]):
 				stuecke_alle += 1
 				var p_ := k.global_transform * Vector3(st_[i_ + 1], st_[i_ + 2], st_[i_ + 3])
-				# um ein paar Zentimeter versetzt: genau auf der Naht zweier Geländekacheln (z. B. x = 0) verfehlt ein
-				# senkrechter Strahl den Boden
-				var ab_ := PhysicsRayQueryParameters3D.create(p_ + Vector3(0.013, 1.8, 0.017), p_ + Vector3(0.013, -4.0, 0.017), 1)
+				var ab_ := PhysicsRayQueryParameters3D.create(p_ + Vector3.UP * 1.8, p_ + Vector3.DOWN * 4.0, 1)
 				ab_.exclude = ohne_a
 				var tb_: Dictionary = raum_s.intersect_ray(ab_)
+				if tb_.is_empty():
+					# genau auf der Naht zweier Geländekacheln (z. B. x = 0) verfehlt ein senkrechter Strahl den Boden:
+					# ein paar Zentimeter daneben noch einmal
+					ab_.from += Vector3(0.013, 0.0, 0.017)
+					ab_.to += Vector3(0.013, 0.0, 0.017)
+					tb_ = raum_s.intersect_ray(ab_)
 				var pq_ := PhysicsPointQueryParameters3D.new()
 				pq_.position = p_ + Vector3.UP * 0.5
 				pq_.exclude = ohne_a
