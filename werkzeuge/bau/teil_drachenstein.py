@@ -345,6 +345,38 @@ gebaeude("Burgkueche", BG, PD.BURGKUECHE, 7, PD.H_KERNBURG, dach="Material_dach"
 gebaeude("Zeughaus", BG, PD.ZEUGHAUS, 8, PD.H_KERNBURG, zweck=2)
 
 # --- Begehbare Bauten in den übrigen Höfen (wie bisher je Hof zwei) ---
+# Der Stall der Vorburg reichte bis in die Ecke, in der der Treppenturm steht (treppenturm in teil_mauern.py,
+# Außenradius 5 m): auf der Seite zum Turm gekürzt, die andere Seite bleibt, wo sie war. Pferch, Tränke und
+# Einrichtung richten sich nach demselben Planeintrag.
+TREPPENTURM_VORBURG = (19.62, 133.1)
+
+
+def _kuerze_bau(bau, punkt, frei):
+    (pp, laenge, breite, dreh) = bau
+    a = math.radians(-dreh)
+    x, z = W(pp)
+    vx, vz = math.sin(a), math.cos(a)          # Richtung der Länge in der Welt
+    lz = (punkt[0] - x) * vx + (punkt[1] - z) * vz
+    halb = laenge * M / 2
+    sg = 1.0 if lz > 0 else -1.0
+    rand = lz - sg * frei                      # neue Kante zum Punkt hin
+    if (rand - sg * halb) * sg >= 0:
+        return bau                             # weit genug weg
+    fern = -sg * halb
+    mitte = (rand + fern) / 2
+    neu_w = (x + vx * mitte, z + vz * mitte)
+    # zurück in den Plan (W ist affin)
+    e = 1.0
+    (x1, z1), (x2, z2) = W((pp[0] + e, pp[1])), W((pp[0], pp[1] + e))
+    j = ((x1 - x) / e, (x2 - x) / e, (z1 - z) / e, (z2 - z) / e)
+    det = j[0] * j[3] - j[1] * j[2]
+    dx, dz = neu_w[0] - x, neu_w[1] - z
+    pp_neu = (pp[0] + (j[3] * dx - j[1] * dz) / det, pp[1] + (-j[2] * dx + j[0] * dz) / det)
+    return (pp_neu, abs(rand - fern) / M, breite, dreh)
+
+
+PD.VORBURG_BAUTEN[6] = _kuerze_bau(PD.VORBURG_BAUTEN[6], TREPPENTURM_VORBURG, 5.6)
+print("Stall der Vorburg vor dem Treppenturm: %.1f m lang" % (PD.VORBURG_BAUTEN[6][1] * M))
 gebaeude("Vorburgbau0", BG, PD.VORBURG_BAUTEN[0], 7, PD.H_VORBURG, dach="Material_dach", zweck=5)   # Gesindehaus
 gebaeude("Vorburgbau1", BG, PD.VORBURG_BAUTEN[6], 7, PD.H_VORBURG, dach="Material_dach", zweck=4)   # Stall
 gebaeude("Burghof2Bau0", BG, PD.BURGHOF2_BAUTEN[2], 8, PD.H_BURGHOF2, zweck=5)

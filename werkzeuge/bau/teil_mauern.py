@@ -517,9 +517,11 @@ def treppenturm(name, eltern, punkt, r=5.0, mat="Material_mauer"):
     winkel = [math.degrees(math.atan2(dz, dx)) for (_, _, _, (dx, dz), _, _) in enden]
     grund = min(H(punkt[0] + dx * r, punkt[1] + dz * r) for dx in (-1, 0, 1) for dz in (-1, 0, 1)) - 0.5
     # Geschosse: unten ein Sockel bis an den tieferen Wehrgang, dann so viele gleich hohe wie nötig (je höchstens
-    # 6,5 m) bis an den höheren, darüber eine Stube von 3,3 m unter der Plattform
+    # 6,5 m) bis an den höheren, darüber noch eines bis an die Plattform. Jedes mindestens 5,6 m hoch: die Rampe
+    # windet sich zweimal je Geschoss, darunter braucht man Kopffreiheit.
     stock = max(1, math.ceil((hoch - tief) / 6.5))
-    hoehen = [grund - tief] + [(hoch - tief) * k / stock for k in range(stock + 1)] + [hoch - tief + 3.3]
+    je = max((hoch - tief) / stock, 5.6)
+    hoehen = [min(grund - tief, -5.6)] + [(hoch - tief) * k / stock for k in range(stock + 1)] + [hoch - tief + je]
     nummern = list(range(-1, stock + 1))
     N(name, "Node3D", eltern, f"""transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, {punkt[0]:.3f}, {tief:.3f}, {punkt[1]:.3f})
 script = ExtResource("14_turm")
