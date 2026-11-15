@@ -3238,6 +3238,17 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 			mitte = ["regal", "pult", "regal", "tafel", "truhen", "regal"]
 			zweck_haenge = -1
 			zweck_wand = 3
+		28:   # Wohnstube im Erdgeschoss eines Fachwerkhauses
+			wand = [["wandbank", 1.8], ["truhe", 1.1], ["wandbrett", 1.6], ["faesser", 1.4], ["schrank", 1.3], ["kraeuter", 1.4],
+				["kisten", 1.0], ["bottich", 1.0]]
+			mitte = ["esstisch", "werkbank", "spinnen", "vorrat", "waschen", "webstuhl"]
+			zweck_haenge = 5
+			zweck_wand = 5
+		29:   # Kammer im Obergeschoss: Schlafstellen, Truhen, Kleider
+			wand = [["strohlager", 2.1], ["truhe", 1.1], ["haken", 1.2], ["schrank", 1.3], ["truhe", 1.1], ["wandbrett", 1.6]]
+			mitte = ["schlafstelle", "schlafstelle", "spinnen", "truhen", "vorrat"]
+			zweck_haenge = 5
+			zweck_wand = 5
 		26:
 			wand = [["kisten", 1.0], ["faesser", 1.4], ["wandbank", 1.8], ["kisten", 1.0]]
 			zweck_haenge = -1
@@ -3277,10 +3288,14 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 		var laengen := {"esstisch": 2.8, "tafel": 2.8, "schlafstelle": 2.3, "vorrat": 2.3, "waffen": 2.5, "spiesse": 2.3,
 			"pfeile": 1.9, "schleifstein": 1.5, "arbeitstisch": 2.4, "koerbe": 1.7, "hackplatz": 2.3, "zuber": 1.4,
 			"kohlebecken": 1.1, "truhen": 2.1, "pult": 1.5, "schach": 1.7, "bett": 2.6, "regal": 2.4}
-		var a0 := -hl + 1.5
-		var a1 := hl - 1.5
-		var q0 := -hb + 1.5
-		var q1 := hb - 1.5
+		var rand_m := 1.5 if minf(hl, hb) > 3.0 else 1.1      # in kleinen Räumen rücken die Gruppen näher an die Wand
+		var a0 := -hl + rand_m
+		var a1 := hl - rand_m
+		var q0 := -hb + rand_m
+		var q1 := hb - rand_m
+		if q1 - q0 < 1.2:
+			q0 = -0.6
+			q1 = 0.6
 		var spalten := maxi(1, int((q1 - q0) / 2.5))
 		var bq := (q1 - q0) / spalten
 		for sp in spalten:
@@ -3325,7 +3340,16 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 				sv += zufall.randf_range(0.6, 1.1)
 			if not is_nan(stange0):
 				_stange(c, u, n, stange0, minf(sv, hl - 1.2), hb * e, hy, decke)
-	if not mit_licht:
+	elif zweck_haenge > 0 and decke - y >= 2.5:
+		# niedrige Räume: direkt an der Decke, mit Kopffreiheit darunter
+		for e: float in [-0.45, 0.45]:
+			var sv := -hl + 0.8 + zufall.randf() * 0.4
+			while sv < hl - 0.6:
+				var p := c + u * sv + n * hb * e
+				if frei.call(p, 0.5):
+					_haenge(zweck_haenge, false, p, u, n, decke, decke - (y + 2.0), zufall)
+				sv += zufall.randf_range(0.5, 0.9)
+	if not mit_licht or art in [28, 29]:      # die Fachwerkhäuser haben ihr Licht schon (stadthaeuser.gd)
 		return
 	var licht := OmniLight3D.new()
 	licht.position = Vector3(c.x, y + 2.8, c.y)

@@ -1267,10 +1267,58 @@ def _innen(bau, hoehe, boden, art=0):
 # Die Pferde in den Boxen des Stalls setzt burgbau.gd selbst (_einrichtung, Zweck 4), passend zu seinen Boxen
 print("Ausstattung der Höfe:", len(BURG_AUSSTATTUNG), "Stücke, davon", sum(1 for a_ in BURG_AUSSTATTUNG if a_[0] == 14), "Feuerkörbe;",
       "Brunnen in", sorted(BURG_BRUNNEN), "abgelehnt:", _GRUND)
-N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\n"
+N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\nbegehbar = true\n"
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _ in HOFHAEUSER) + ")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HOFHAEUSER) + ")")
 print("Fachwerkhäuser in den Höfen:", _nh)
+# Die Fachwerkhäuser sind begehbar (stadthaeuser.gd, begehbar): jedes Geschoss ganz eingerichtet (burgbau.gd, raeume),
+# unten die Wohnstube, oben Kammern. Frei bleiben der Weg von der Tür, die Treppen (an wechselnden Seitenwänden, von
+# vorn nach hinten ansteigend, wie stadthaeuser.treppen), das Loch, aus dem man heraufkommt, und der Weg dazwischen.
+_FORMEN_OG = [int(o_) for o_ in _re.findall(r"\[\d+\.\d+, \d+\.\d+, (\d), \d, (?:true|false), \d, \d\]",
+              (REPO / "szenen" / "welt" / "stadthaeuser.gd").read_text(encoding="utf-8"))]
+_WAND, _EG, _OG, _VK = 0.3, 3.2, 2.8, 0.35
+_raeume_hh, _frei_hh = [], []
+for hx_, hy_, hz_, hg_, hf_ in HOFHAEUSER:
+    hb_, ht_ = _FORMEN[hf_]
+    og_ = _FORMEN_OG[hf_]
+    a_ = math.radians(hg_)
+
+    def _w(x_, z_):
+        return (hx_ + x_ * math.cos(a_) + z_ * math.sin(a_), hz_ - x_ * math.sin(a_) + z_ * math.cos(a_))
+    treppen_ = []
+    for k_ in range(og_):
+        r_ = _EG if k_ == 0 else _OG
+        zh_ = -ht_ / 2 + _WAND + 0.3
+        treppen_.append((-1.0 if k_ % 2 == 0 else 1.0, zh_, zh_ + r_ * 1.5))
+    for g_ in range(og_ + 1):
+        boden_ = hy_ + (0.0 if g_ == 0 else _EG + _OG * (g_ - 1))
+        decke_ = hy_ + _EG + _OG * g_ - 0.25
+        aus_ = _VK * g_
+        frei_ = []
+        sx_ = lambda s_: s_ * (hb_ / 2 - _WAND - 0.5)
+        if g_ == 0:
+            frei_ += [_w(0, ht_ / 2 - 0.9), _w(0, ht_ / 2 - 1.9)]
+        if g_ < og_:              # die Treppe hinauf und der Platz davor
+            s_, zh_, zv_ = treppen_[g_]
+            z_ = zh_
+            while z_ <= zv_ + 0.9:
+                frei_.append(_w(sx_(s_), z_))
+                z_ += 0.7
+            frei_ += [_w(sx_(s_) * 0.3, zv_ + 0.9), _w(0, zv_ + 0.4)]
+        if g_ > 0:                # das Loch, aus dem man heraufkommt, und der Austritt daneben
+            s_, zh_, zv_ = treppen_[g_ - 1]
+            z_ = zh_
+            while z_ <= zv_ + 0.2:
+                frei_.append(_w(sx_(s_), z_))
+                z_ += 0.7
+            frei_ += [_w(sx_(s_) * -0.2, zh_ + 0.4), _w(0, (zh_ + zv_) / 2)]
+        _frei_hh += [(x_, z_, 0.85, round(boden_, 3)) for x_, z_ in frei_]
+        _raeume_hh += [round(hx_, 3), round(hz_, 3), round(hg_, 2), round(hb_ / 2 - _WAND, 3), round(ht_ / 2 + aus_ - _WAND, 3),
+                       round(boden_, 3), round(decke_, 3), 28 if g_ == 0 else 29]
+N("HofhausEinrichtung", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+raeume = PackedFloat32Array({_zahlen(_raeume_hh)})
+raum_frei = PackedVector4Array({", ".join(f"{a_:.3f}, {b_:.3f}, {c_:.2f}, {d_:.3f}" for a_, b_, c_, d_ in _frei_hh)})""")
+print("Fachwerkhäuser begehbar und eingerichtet: %d Räume" % (len(_raeume_hh) // 8))
 
 # Keine schwebenden Namen über Höfen und Bauten der Burg: beim Betreten zeigt die Oberfläche den Ort an (ort.gd)
 

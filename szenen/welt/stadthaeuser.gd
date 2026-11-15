@@ -25,6 +25,14 @@ extends Node3D
 		nur_fachwerk = wert
 		if is_inside_tree():
 			_baue()
+## Begehbar: die Häuser sind hohl (Mauern mit offener Tür, Dielenböden je Geschoss, Treppen auf wechselnden Seiten mit
+## Deckenloch und Geländer, Fensterlicht innen, ein Licht je Geschoss); die Kollision folgt der Form. Die Einrichtung
+## setzt ein eigener Knoten (burgbau.gd, raeume), dessen Lage hausplan() liefert.
+@export var begehbar := false:
+	set(wert):
+		begehbar = wert
+		if is_inside_tree():
+			_baue()
 ## Je Haus die Nummer der Form (0 bis 23)
 @export var formen: PackedInt32Array = PackedInt32Array():
 	set(wert):
@@ -38,6 +46,8 @@ const VORKRAGUNG := 0.35   # so weit steht jedes Fachwerkgeschoss vor
 const DACHNEIGUNG := 52.0
 const VARIANTEN := 3       # Ausstattungen je Hausform
 const SOCKEL_TIEFE := 7.0  # Mauern reichen so weit hinunter (Hanglage)
+const WAND := 0.3          # Mauerstärke begehbarer Häuser
+const TREPPE_B := 1.0      # Breite der Treppen
 
 ## Formen: [Breite, Tiefe, Obergeschosse, Stil, Giebel zur Straße, Putzfarbe, Dach]
 ## Stil 0 Fachwerk über Stein, 1 Fachwerk über Putz, 2 ganz Stein, 3 verputzt mit Fensterläden
@@ -60,6 +70,7 @@ const PUTZFARBEN := [Color(1.0, 0.97, 0.9), Color(0.98, 0.86, 0.66), Color(0.92,
 static var _mesh_cache := {}
 static var _schornsteine := {}   # Form → Oberkante des Schornsteins (lokal), für den Rauch
 static var _mat_cache := {}
+static var _form_cache := {}     # Schlüssel → Kollisionsform begehbarer Häuser
 
 
 func _ready() -> void:
@@ -94,8 +105,23 @@ func _baue() -> void:
 			var t := Transform3D(Basis(Vector3.UP, deg_to_rad(h.w)), Vector3(h.x, h.y, h.z))
 			mm.set_instance_transform(k, t)
 			var form_k := CollisionShape3D.new()
-			form_k.shape = kiste
-			form_k.transform = t * Transform3D(Basis(), Vector3(0, kiste.size.y / 2.0, 0))
+			if begehbar:
+				form_k.shape = _form_cache[_schluessel(f, fv % VARIANTEN)]
+				form_k.transform = t
+				# ein Licht je Geschoss, warm, ohne Schatten, in der Ferne ausgeblendet
+				for g in int(form[2]) + 1:
+					var licht := OmniLight3D.new()
+					licht.position = t * Vector3(0, (0.0 if g == 0 else EG + OG * (g - 1)) + 2.1, 0)
+					licht.light_color = Color(1.0, 0.8, 0.55)
+					licht.light_energy = 0.9
+					licht.omni_range = maxf(form[0], form[1]) * 0.75
+					licht.distance_fade_enabled = true
+					licht.distance_fade_begin = 28.0
+					licht.distance_fade_length = 8.0
+					add_child(licht)
+			else:
+				form_k.shape = kiste
+				form_k.transform = t * Transform3D(Basis(), Vector3(0, kiste.size.y / 2.0, 0))
 			koerper.add_child(form_k)
 		var mmi := MultiMeshInstance3D.new()
 		mmi.name = "Form%d_%d" % [f, fv % VARIANTEN]
@@ -121,7 +147,22 @@ static func tuer(h: Vector4, form: int) -> Vector3:
 ## Schlüssel für die gemeinsamen Modelle: Form, Ausstattung und die Einstellungen dieses Knotens (sonst teilen sich
 ## Knoten mit verschiedenen Einstellungen dieselben Modelle)
 func _schluessel(f: int, variante: int) -> int:
-	return (f * VARIANTEN + variante) * 4 + (1 if nur_ziegel else 0) + (2 if nur_fachwerk else 0)
+	return (f * VARIANTEN + variante) * 8 + (1 if nur_ziegel else 0) + (2 if nur_fachwerk else 0) + (4 if begehbar else 0)
+
+
+## Lage der Treppen eines begehbaren Hauses der Form f (lokal): je Geschoss k (bis auf das oberste) [Seite (-1/+1),
+## z oben (hinten), z unten (vorn), Boden unten, Steighöhe]. Die Treppe steigt von vorn nach hinten an der Seitenwand.
+static func treppen(f: int) -> Array:
+	var form: Array = FORMEN[f]
+	var b: float = form[0]
+	var t: float = form[1]
+	var liste := []
+	for k in int(form[2]):
+		var r := EG if k == 0 else OG
+		var lauf := r * 1.5
+		var z_hoch := -t / 2.0 + WAND + 0.3
+		liste.append([-1.0 if k % 2 == 0 else 1.0, z_hoch, z_hoch + lauf, 0.0 if k == 0 else EG + OG * (k - 1), r])
+	return liste
 
 
 func _form_mesh(f: int, variante := 0) -> ArrayMesh:
@@ -145,7 +186,12 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 	var oben_mat := "bruchstein" if stil == 2 else "putz%d" % form[5]
 
 	# Erdgeschoss (reicht in den Hang hinunter)
-	_quader(flaechen, unten_mat, Vector3(-b / 2, -SOCKEL_TIEFE, -t / 2), Vector3(b / 2, EG, t / 2))
+	if begehbar:
+		_quader(flaechen, unten_mat, Vector3(-b / 2, -SOCKEL_TIEFE, -t / 2), Vector3(b / 2, -0.12, t / 2))
+		_hohl(flaechen, unten_mat, Vector3(-b / 2, -0.12, -t / 2), Vector3(b / 2, EG, t / 2), true)
+		_boden(flaechen, f, 0, b, t, 0.0, 0.0)
+	else:
+		_quader(flaechen, unten_mat, Vector3(-b / 2, -SOCKEL_TIEFE, -t / 2), Vector3(b / 2, EG, t / 2))
 	# Obergeschosse, im Fachwerk jeweils vorkragend
 	var y := EG
 	var aus := 0.0
@@ -154,7 +200,11 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 			aus += VORKRAGUNG
 		var lo := Vector3(-b / 2, y, -t / 2 - aus)
 		var hi := Vector3(b / 2, y + OG, t / 2 + aus)
-		_quader(flaechen, oben_mat, lo, hi)
+		if begehbar:
+			_hohl(flaechen, oben_mat, lo, hi, false)
+			_boden(flaechen, f, g + 1, b, t, y, aus)
+		else:
+			_quader(flaechen, oben_mat, lo, hi)
 		if fachwerk:
 			_fachwerk(flaechen, lo, hi)
 			# Schwelle des vorkragenden Geschosses, darunter ein abgesetztes Füllholz und die Köpfe der Deckenbalken
@@ -170,6 +220,43 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		y += OG
 	var traufe := y
 	var front := t / 2 + aus
+	if begehbar:
+		# Decke unter dem Dach, Treppen, Fensterlicht innen
+		_quader(flaechen, "dielen", Vector3(-b / 2 + WAND, traufe - 0.25, -front + WAND), Vector3(b / 2 - WAND, traufe, front - WAND))
+		for tr: Array in treppen(f):
+			var sx: float = tr[0]
+			var x0 := sx * (b / 2 - WAND - TREPPE_B)
+			var x1 := sx * (b / 2 - WAND)
+			var zh: float = tr[1]
+			var zv: float = tr[2]
+			var y0: float = tr[3]
+			var r: float = tr[4]
+			var n := int(ceil(r / 0.2))
+			var tritt := (zv - zh) / n
+			for i in n:
+				var za := zv - tritt * (i + 1)
+				_quader(flaechen, "balken", Vector3(minf(x0, x1), y0, za), Vector3(maxf(x0, x1), y0 + r * (i + 1) / n, za + tritt + 0.02))
+			# unsichtbare Lauffläche über die Stufenkanten (nur Kollision)
+			var rs := _st(flaechen, "rampe")
+			_viereck(rs, Vector3(minf(x0, x1), y0 + 0.02, zv), Vector3(maxf(x0, x1), y0 + 0.02, zv),
+				Vector3(maxf(x0, x1), y0 + r + 0.02, zh), Vector3(minf(x0, x1), y0 + r + 0.02, zh))
+		for seite: int in [1, -1]:
+			var anzahl := maxi(2, int(b / 2.3))
+			for g in og + 1:
+				var y0 := 0.9 if g == 0 else EG + OG * (g - 1) + 0.75
+				var hf := 1.25 if g == 0 else 1.35
+				var zi := (t / 2 + (VORKRAGUNG * g if fachwerk else 0.0) - WAND - 0.01) * seite
+				for k in anzahl:
+					var x := -b / 2 + b * (k + 0.5) / anzahl
+					if g == 0 and seite == 1 and absf(x) < b / anzahl * 0.6:
+						continue
+					var fs := _st(flaechen, "fensterlicht")
+					var a := Vector3(x - 0.4, y0, zi)
+					var c_ := Vector3(x + 0.4, y0 + hf, zi)
+					if seite == 1:
+						_viereck(fs, Vector3(c_.x, a.y, zi), a, Vector3(a.x, c_.y, zi), c_)
+					else:
+						_viereck(fs, a, Vector3(c_.x, a.y, zi), c_, Vector3(a.x, c_.y, zi))
 
 	# Fenster und Tür
 	for seite: int in [1, -1]:
@@ -184,7 +271,10 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 				if g == 0 and seite == 1 and absf(x) < b / anzahl * 0.6:
 					continue   # dort ist die Tür
 				_fenster(flaechen, Vector3(x, y0, z_g), seite, hoehe_f, stil == 3)
-	_quader(flaechen, "tuer", Vector3(-0.65, 0.0, t / 2 - 0.05), Vector3(0.65, 2.3, t / 2 + 0.06))
+	if begehbar:
+		_quader(flaechen, "tuer", Vector3(0.65, 0.0, t / 2 - WAND - 1.3), Vector3(0.71, 2.25, t / 2 - WAND))   # offen, innen an der Wand
+	else:
+		_quader(flaechen, "tuer", Vector3(-0.65, 0.0, t / 2 - 0.05), Vector3(0.65, 2.3, t / 2 + 0.06))
 	_quader(flaechen, "balken", Vector3(-0.8, 2.3, t / 2), Vector3(0.8, 2.5, t / 2 + 0.12))
 	# Wandlaterne neben der Tür (bei etwa jedem zweiten Haus), leuchtet warm
 	if zufall.randf() < 0.5:
@@ -298,14 +388,78 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		_dreieck(_st(flaechen, oben_mat), Vector3(-gw, y1, zf), Vector3(gw, y1, zf), Vector3(0, y1 + 0.7, zf))
 
 	var mesh := ArrayMesh.new()
+	var fest := ArrayMesh.new()
 	for mat: String in flaechen:
 		var st: SurfaceTool = flaechen[mat]
+		if mat == "rampe":
+			st.commit(fest)
+			continue
 		st.generate_normals()
 		st.generate_tangents()
 		st.commit(mesh)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
+		if begehbar and mat not in ["glas", "glut", "fensterlicht", "laden"]:
+			st.commit(fest)
+	if begehbar:
+		var sh := ConcavePolygonShape3D.new()
+		sh.set_faces(fest.get_faces())
+		sh.backface_collision = true
+		_form_cache[schluessel] = sh
 	_mesh_cache[schluessel] = mesh
 	return mesh
+
+
+## Hohler Geschosskasten von lo bis hi mit Mauern der Stärke WAND; mit Tür: Öffnung 1,3 m × 2,3 m in der Mitte der
+## Vorderseite (+z), deren Unterkante auf dem Fußboden (y = 0)
+func _hohl(flaechen: Dictionary, mat: String, lo: Vector3, hi: Vector3, tuer: bool) -> void:
+	_quader(flaechen, mat, Vector3(lo.x, lo.y, lo.z), Vector3(hi.x, hi.y, lo.z + WAND))
+	if tuer:
+		_quader(flaechen, mat, Vector3(lo.x, lo.y, hi.z - WAND), Vector3(-0.65, hi.y, hi.z))
+		_quader(flaechen, mat, Vector3(0.65, lo.y, hi.z - WAND), Vector3(hi.x, hi.y, hi.z))
+		_quader(flaechen, mat, Vector3(-0.65, 2.3, hi.z - WAND), Vector3(0.65, hi.y, hi.z))
+		_quader(flaechen, "balken", Vector3(-0.65, 2.22, hi.z - WAND - 0.02), Vector3(0.65, 2.3, hi.z + 0.02))
+	else:
+		_quader(flaechen, mat, Vector3(lo.x, lo.y, hi.z - WAND), Vector3(hi.x, hi.y, hi.z))
+	_quader(flaechen, mat, Vector3(lo.x, lo.y, lo.z + WAND), Vector3(lo.x + WAND, hi.y, hi.z - WAND))
+	_quader(flaechen, mat, Vector3(hi.x - WAND, lo.y, lo.z + WAND), Vector3(hi.x, hi.y, hi.z - WAND))
+
+
+## Dielenboden im Geschoss g (Boden y, Vorkragung aus): bis an die Mauern, mit dem Loch über der Treppe, die aus dem
+## Geschoss darunter heraufkommt, und einem Geländer am Loch (an seinem hinteren Ende offen: dort tritt man heraus)
+func _boden(flaechen: Dictionary, f: int, g: int, b: float, t: float, y: float, aus: float) -> void:
+	var x0 := -b / 2 + WAND
+	var x1 := b / 2 - WAND
+	var z0 := -t / 2 - aus + WAND
+	var z1 := t / 2 + aus - WAND
+	var tr: Array = treppen(f)
+	if g == 0 or g - 1 >= tr.size():
+		_quader(flaechen, "dielen", Vector3(x0, y - 0.25, z0), Vector3(x1, y, z1))
+		return
+	var unten: Array = tr[g - 1]
+	var sx: float = unten[0]
+	var zh: float = float(unten[1]) - 0.05
+	var zv: float = float(unten[2]) + 0.05
+	var lx0 := sx * (b / 2 - WAND - TREPPE_B - 0.05)
+	# Fläche ohne die Spalte der Treppe, dann die Spalte vor und hinter dem Loch
+	if sx < 0.0:
+		_quader(flaechen, "dielen", Vector3(lx0, y - 0.25, z0), Vector3(x1, y, z1))
+		_quader(flaechen, "dielen", Vector3(x0, y - 0.25, zv), Vector3(lx0, y, z1))
+		_quader(flaechen, "dielen", Vector3(x0, y - 0.25, z0), Vector3(lx0, y, zh))
+	else:
+		_quader(flaechen, "dielen", Vector3(x0, y - 0.25, z0), Vector3(lx0, y, z1))
+		_quader(flaechen, "dielen", Vector3(lx0, y - 0.25, zv), Vector3(x1, y, z1))
+		_quader(flaechen, "dielen", Vector3(lx0, y - 0.25, z0), Vector3(x1, y, zh))
+	# Geländer: an der langen Innenkante (die hinteren 1,1 m offen) und quer am vorderen Ende
+	var gx := lx0 - sx * 0.04
+	var zg := zh + 1.1
+	_quader(flaechen, "rahmen", Vector3(gx - 0.04, y + 0.9, zg), Vector3(gx + 0.04, y + 0.98, zv))
+	var xw := sx * (b / 2 - WAND)
+	_quader(flaechen, "rahmen", Vector3(minf(gx, xw), y + 0.9, zv - 0.04), Vector3(maxf(gx, xw), y + 0.98, zv + 0.04))
+	var pz := zg
+	while pz <= zv + 0.01:
+		_quader(flaechen, "rahmen", Vector3(gx - 0.035, y, pz - 0.035), Vector3(gx + 0.035, y + 0.9, pz + 0.035))
+		pz += 0.8
+	_quader(flaechen, "rahmen", Vector3(gx - 0.035, y, zv - 0.035), Vector3(gx + 0.035, y + 0.9, zv + 0.035))
 
 
 func _st(flaechen: Dictionary, mat: String) -> SurfaceTool:
@@ -696,6 +850,15 @@ func _material(name_: String) -> Material:
 			m.albedo_color = Color(0.12, 0.12, 0.13)
 			m.metallic = 0.6
 			m.roughness = 0.5
+		"fensterlicht":
+			m.albedo_color = Color(0.78, 0.84, 0.9)
+			m.emission_enabled = true
+			m.emission = Color(0.7, 0.78, 0.88)
+			m.emission_energy_multiplier = 0.9
+		"dielen":
+			m.albedo_texture = load("res://texturen/holz_farbe.jpg")
+			m.albedo_color = Color(0.7, 0.55, 0.42)
+			m.uv1_scale = Vector3(0.5, 0.5, 0.5)
 		"glas":
 			m.albedo_color = Color(0.08, 0.1, 0.12)
 			m.metallic = 0.4
