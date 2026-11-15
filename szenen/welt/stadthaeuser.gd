@@ -508,11 +508,11 @@ func _boden(flaechen: Dictionary, f: int, g: int, b: float, t: float, y: float, 
 		_quader(flaechen, "dielen", Vector3(x0, y - 0.25, z0), Vector3(lx0, y, z1))
 		_quader(flaechen, "dielen", Vector3(lx0, y - 0.25, zv), Vector3(x1, y, z1))
 		_quader(flaechen, "dielen", Vector3(lx0, y - 0.25, z0), Vector3(x1, y, zh))
-	# Geländer: an der langen Innenkante (am oberen Ende der Treppe 1,1 m offen: dort tritt man heraus) und quer am
+	# Geländer: an der langen Innenkante (am oberen Ende der Treppe 1,5 m offen: dort tritt man heraus) und quer am
 	# Ende über dem Fuß
 	var gx := lx0 - sx * 0.04
-	var g0 := zh + 1.1 if hinten_oben else zh
-	var g1 := zv if hinten_oben else zv - 1.1
+	var g0 := zh + 1.5 if hinten_oben else zh
+	var g1 := zv if hinten_oben else zv - 1.5
 	var zq := zv if hinten_oben else zh
 	_quader(flaechen, "rahmen", Vector3(gx - 0.04, y + 0.9, g0), Vector3(gx + 0.04, y + 0.98, g1))
 	var xw := sx * (b / 2 - WAND)

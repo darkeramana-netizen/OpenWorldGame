@@ -561,7 +561,7 @@ func _initialize() -> void:
 		var vor: Vector2 = hp.call(0.0, ht / 2.0 + 1.6)
 		await setze(Vector3(vor.x, hv.y + 0.4, vor.y))
 		var ok_h := await gehe_ueber([hp.call(0.0, ht / 2.0 - 1.0), hp.call(0.0, ht / 2.0 - 1.9), hp.call(xc * 0.3, zv + 0.9),
-				hp.call(xc, zv + 0.6)], 12.0, 0.4) and await gehe_ueber([hp.call(xc, zh + 0.4)], 15.0, 0.4)
+				hp.call(xc, zv + 0.6)], 12.0, 0.4) and await gehe_ueber([hp.call(xc, zh + 0.35)], 15.0, 0.25)
 		ok_h = ok_h and absf(spieler().global_position.y - (hv.y + 3.2)) < 0.45
 		# mit zweitem Obergeschoss: oben hinten aus dem Loch, an der Rückwand hinüber zum Fuß der nächsten Treppe
 		# (sie steigt von hinten nach vorn) und hinauf
