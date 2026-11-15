@@ -1329,8 +1329,9 @@ N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_zi
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HOFHAEUSER) + ")")
 print("Fachwerkhäuser in den Höfen:", len(HOFHAEUSER), "(gebaut", _nh, ")")
 # Die Fachwerkhäuser sind begehbar (stadthaeuser.gd, begehbar): jedes Geschoss ganz eingerichtet (burgbau.gd, raeume),
-# unten die Wohnstube, oben Kammern. Frei bleiben der Weg von der Tür, die Treppen (an wechselnden Seitenwänden, von
-# vorn nach hinten ansteigend, wie stadthaeuser.treppen), das Loch, aus dem man heraufkommt, und der Weg dazwischen.
+# unten die Wohnstube, oben Kammern. Frei bleiben der Weg von der Tür, die Treppen (an wechselnden Seitenwänden, die
+# geraden von vorn nach hinten, die ungeraden von hinten nach vorn ansteigend, wie stadthaeuser.treppen), das Loch, aus
+# dem man heraufkommt, und der Weg an der Rückwand zum Fuß der nächsten Treppe; die Mitte der Geschosse gehört den Möbeln.
 _FORMEN_OG = [int(o_) for o_ in _re.findall(r"\[\d+\.\d+, \d+\.\d+, (\d), \d, (?:true|false), \d, \d\]",
               (REPO / "szenen" / "welt" / "stadthaeuser.gd").read_text(encoding="utf-8"))]
 _WAND, _EG, _OG, _VK = 0.3, 3.2, 2.8, 0.35
@@ -1342,11 +1343,15 @@ for hx_, hy_, hz_, hg_, hf_ in HOFHAEUSER:
 
     def _w(x_, z_):
         return (hx_ + x_ * math.cos(a_) + z_ * math.sin(a_), hz_ - x_ * math.sin(a_) + z_ * math.cos(a_))
-    treppen_ = []
+    treppen_ = []                 # (Seite, z oberes Ende, z Fuß)
     for k_ in range(og_):
-        r_ = _EG if k_ == 0 else _OG
-        zh_ = -ht_ / 2 + _WAND + 0.3
-        treppen_.append((-1.0 if k_ % 2 == 0 else 1.0, zh_, zh_ + r_ * 1.5))
+        lauf_ = (_EG if k_ == 0 else _OG) * 1.5
+        if k_ % 2 == 0:
+            zh_ = -ht_ / 2 + _WAND + 0.3
+            treppen_.append((-1.0, zh_, zh_ + lauf_))
+        else:
+            zf_ = -ht_ / 2 + _WAND + 1.0
+            treppen_.append((1.0, zf_ + lauf_, zf_))
     for g_ in range(og_ + 1):
         boden_ = hy_ + (0.03 if g_ == 0 else _EG + _OG * (g_ - 1))
         decke_ = hy_ + _EG + _OG * g_ - 0.25
@@ -1355,20 +1360,31 @@ for hx_, hy_, hz_, hg_, hf_ in HOFHAEUSER:
         sx_ = lambda s_: s_ * (hb_ / 2 - _WAND - 0.5)
         if g_ == 0:
             frei_ += [_w(0, ht_ / 2 - 0.9), _w(0, ht_ / 2 - 1.9)]
-        if g_ < og_:              # die Treppe hinauf und der Platz davor
-            s_, zh_, zv_ = treppen_[g_]
-            z_ = zh_
-            while z_ <= zv_ + 0.9:
+        if g_ < og_:              # die Treppe hinauf und der Platz vor ihrem Fuß
+            s_, zo_, zf_ = treppen_[g_]
+            d_ = 1.0 if zf_ > zo_ else -1.0          # vom oberen Ende zum Fuß
+            z_ = zo_
+            while (z_ - (zf_ + d_ * 0.9)) * d_ <= 0.0:
+                frei_.append(_w(sx_(s_), z_))
+                z_ += 0.7 * d_
+            if d_ > 0:
+                frei_ += [_w(sx_(s_) * 0.3, zf_ + 0.9), _w(0, zf_ + 0.4)]
+            else:                 # Fuß hinten: der Gang an der Rückwand vom Loch herüber
+                zr_ = max(-ht_ / 2 - aus_ + _WAND + 0.5, zf_ - 0.6)
+                x_ = -sx_(1.0)
+                while x_ <= sx_(1.0) + 0.01:
+                    frei_.append(_w(x_, zr_))
+                    x_ += 0.7
+        if g_ > 0:                # das Loch, aus dem man heraufkommt, und der Austritt an seinem oberen Ende
+            s_, zo_, zf_ = treppen_[g_ - 1]
+            d_ = 1.0 if zf_ > zo_ else -1.0
+            z_ = min(zo_, zf_)
+            while z_ <= max(zo_, zf_) + 0.2:
                 frei_.append(_w(sx_(s_), z_))
                 z_ += 0.7
-            frei_ += [_w(sx_(s_) * 0.3, zv_ + 0.9), _w(0, zv_ + 0.4)]
-        if g_ > 0:                # das Loch, aus dem man heraufkommt, und der Austritt daneben
-            s_, zh_, zv_ = treppen_[g_ - 1]
-            z_ = zh_
-            while z_ <= zv_ + 0.2:
-                frei_.append(_w(sx_(s_), z_))
-                z_ += 0.7
-            frei_ += [_w(sx_(s_) * -0.2, zh_ + 0.4), _w(0, (zh_ + zv_) / 2)]
+            frei_.append(_w(sx_(s_) * -0.2, zo_ + d_ * 0.4))
+            if g_ == og_:         # oberstes Geschoss: vom Austritt ein Stück in den Raum
+                frei_.append(_w(0, zo_ + d_ * 1.0))
         _frei_hh += [(x_, z_, 0.6, round(boden_, 3)) for x_, z_ in frei_]
         _raeume_hh += [round(hx_, 3), round(hz_, 3), round(hg_, 2), round(hb_ / 2 - _WAND, 3), round(ht_ / 2 + aus_ - _WAND, 3),
                        round(boden_, 3), round(decke_, 3), 28 if g_ == 0 else 29]

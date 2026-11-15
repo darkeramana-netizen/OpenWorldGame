@@ -151,17 +151,23 @@ func _schluessel(f: int, variante: int) -> int:
 
 
 ## Lage der Treppen eines begehbaren Hauses der Form f (lokal): je Geschoss k (bis auf das oberste) [Seite (-1/+1),
-## z oben (hinten), z unten (vorn), Boden unten, Steighöhe]. Die Treppe steigt von vorn nach hinten an der Seitenwand.
+## z am oberen Ende, z am Fuß, Boden unten, Steighöhe]. Die Treppen liegen abwechselnd an der linken und rechten
+## Seitenwand: die geraden steigen von vorn nach hinten, die ungeraden von hinten nach vorn. So kommt man hinten an
+## und geht an der Rückwand entlang zum Fuß der nächsten Treppe; die Mitte des Geschosses bleibt frei für Möbel.
 static func treppen(f: int) -> Array:
 	var form: Array = FORMEN[f]
-	var b: float = form[0]
 	var t: float = form[1]
 	var liste := []
 	for k in int(form[2]):
 		var r := EG if k == 0 else OG
 		var lauf := r * 1.5
-		var z_hoch := -t / 2.0 + WAND + 0.3
-		liste.append([-1.0 if k % 2 == 0 else 1.0, z_hoch, z_hoch + lauf, 0.0 if k == 0 else EG + OG * (k - 1), r])
+		var boden := 0.0 if k == 0 else EG + OG * (k - 1)
+		if k % 2 == 0:
+			var z_hoch := -t / 2.0 + WAND + 0.3
+			liste.append([-1.0, z_hoch, z_hoch + lauf, boden, r])
+		else:
+			var z_fuss := -t / 2.0 + WAND + 1.0
+			liste.append([1.0, z_fuss + lauf, z_fuss, boden, r])
 	return liste
 
 
@@ -237,9 +243,11 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 			var tritt := (zv - zh) / n
 			for i in n:
 				var za := zv - tritt * (i + 1)
-				_quader(flaechen, "balken", Vector3(minf(x0, x1), y0, za), Vector3(maxf(x0, x1), y0 + r * (i + 1) / n, za + tritt + 0.02))
+				var zb := zv - tritt * i
+				_quader(flaechen, "balken", Vector3(minf(x0, x1), y0, minf(za, zb) - 0.01), Vector3(maxf(x0, x1), y0 + r * (i + 1) / n, maxf(za, zb) + 0.01))
 			# unsichtbare Lauffläche über die Stufenkanten (nur Kollision): ein Tritt vor der ersten Stufe vom Boden
-			# aus, durch alle Vorderkanten bis auf die oberste Stufe, dann eben bis an die Wand
+			# aus, durch alle Vorderkanten bis auf die oberste Stufe, dann eben bis an ihr Ende (zh: oberes Ende,
+			# zv: Fuß; tritt zeigt vom oberen Ende zum Fuß)
 			var rs := _st(flaechen, "rampe")
 			var xa := minf(x0, x1)
 			var xb := maxf(x0, x1)
@@ -487,8 +495,9 @@ func _boden(flaechen: Dictionary, f: int, g: int, b: float, t: float, y: float, 
 		return
 	var unten: Array = tr[g - 1]
 	var sx: float = unten[0]
-	var zh: float = float(unten[1]) - 0.05
-	var zv: float = float(unten[2]) + 0.05
+	var hinten_oben: bool = float(unten[1]) < float(unten[2])     # die Treppe kommt hinten herauf
+	var zh: float = minf(unten[1], unten[2]) - 0.05
+	var zv: float = maxf(unten[1], unten[2]) + 0.05
 	var lx0 := sx * (b / 2 - WAND - TREPPE_B - 0.05)
 	# Fläche ohne die Spalte der Treppe, dann die Spalte vor und hinter dem Loch
 	if sx < 0.0:
@@ -499,17 +508,20 @@ func _boden(flaechen: Dictionary, f: int, g: int, b: float, t: float, y: float, 
 		_quader(flaechen, "dielen", Vector3(x0, y - 0.25, z0), Vector3(lx0, y, z1))
 		_quader(flaechen, "dielen", Vector3(lx0, y - 0.25, zv), Vector3(x1, y, z1))
 		_quader(flaechen, "dielen", Vector3(lx0, y - 0.25, z0), Vector3(x1, y, zh))
-	# Geländer: an der langen Innenkante (die hinteren 1,1 m offen) und quer am vorderen Ende
+	# Geländer: an der langen Innenkante (am oberen Ende der Treppe 1,1 m offen: dort tritt man heraus) und quer am
+	# Ende über dem Fuß
 	var gx := lx0 - sx * 0.04
-	var zg := zh + 1.1
-	_quader(flaechen, "rahmen", Vector3(gx - 0.04, y + 0.9, zg), Vector3(gx + 0.04, y + 0.98, zv))
+	var g0 := zh + 1.1 if hinten_oben else zh
+	var g1 := zv if hinten_oben else zv - 1.1
+	var zq := zv if hinten_oben else zh
+	_quader(flaechen, "rahmen", Vector3(gx - 0.04, y + 0.9, g0), Vector3(gx + 0.04, y + 0.98, g1))
 	var xw := sx * (b / 2 - WAND)
-	_quader(flaechen, "rahmen", Vector3(minf(gx, xw), y + 0.9, zv - 0.04), Vector3(maxf(gx, xw), y + 0.98, zv + 0.04))
-	var pz := zg
-	while pz <= zv + 0.01:
+	_quader(flaechen, "rahmen", Vector3(minf(gx, xw), y + 0.9, zq - 0.04), Vector3(maxf(gx, xw), y + 0.98, zq + 0.04))
+	var pz := g0
+	while pz <= g1 + 0.01:
 		_quader(flaechen, "rahmen", Vector3(gx - 0.035, y, pz - 0.035), Vector3(gx + 0.035, y + 0.9, pz + 0.035))
 		pz += 0.8
-	_quader(flaechen, "rahmen", Vector3(gx - 0.035, y, zv - 0.035), Vector3(gx + 0.035, y + 0.9, zv + 0.035))
+	_quader(flaechen, "rahmen", Vector3(gx - 0.035, y, g1 - 0.035), Vector3(gx + 0.035, y + 0.9, g1 + 0.035))
 
 
 func _st(flaechen: Dictionary, mat: String) -> SurfaceTool:

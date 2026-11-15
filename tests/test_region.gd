@@ -537,6 +537,8 @@ func _initialize() -> void:
 	var hh: Node3D = current_scene.get_node("Drachenstein/Burgen/Hofhaeuser")
 	var hh_ok := 0
 	var hh_alle := 0
+	var hh2_ok := 0
+	var hh2_alle := 0
 	var hi := 0
 	while hi < hh.haeuser.size() and hh_alle < 4:
 		var hv: Vector4 = hh.haeuser[hi]
@@ -560,11 +562,28 @@ func _initialize() -> void:
 		await setze(Vector3(vor.x, hv.y + 0.4, vor.y))
 		var ok_h := await gehe_ueber([hp.call(0.0, ht / 2.0 - 1.0), hp.call(0.0, ht / 2.0 - 1.9), hp.call(xc * 0.3, zv + 0.9),
 				hp.call(xc, zv + 0.6)], 12.0, 0.4) and await gehe_ueber([hp.call(xc, zh + 0.4)], 15.0, 0.4)
-		if ok_h and absf(spieler().global_position.y - (hv.y + 3.2)) < 0.45:
+		ok_h = ok_h and absf(spieler().global_position.y - (hv.y + 3.2)) < 0.45
+		# mit zweitem Obergeschoss: oben hinten aus dem Loch, an der Rückwand hinüber zum Fuß der nächsten Treppe
+		# (sie steigt von hinten nach vorn) und hinauf
+		if ok_h and tr_l.size() >= 2:
+			hh2_alle += 1
+			var t1: Array = tr_l[1]
+			var x1: float = float(t1[0]) * (hb / 2.0 - 0.8)
+			var zo1: float = t1[1]
+			var zf1: float = t1[2]
+			var zr: float = maxf(-ht / 2.0 - 0.35 + 0.8, zf1 - 0.6)
+			var ok2 := await gehe_ueber([hp.call(0.0, zh + 0.5), hp.call(0.0, zr), hp.call(x1, zr)], 12.0, 0.35) \
+					and await gehe_ueber([hp.call(x1, zo1 - 0.4)], 15.0, 0.4)
+			if ok2 and absf(spieler().global_position.y - (hv.y + 6.0)) < 0.45:
+				hh2_ok += 1
+			else:
+				ok_h = false
+		if ok_h:
 			hh_ok += 1
 		else:
 			print("       Fachwerkhaus nicht hinauf: %s (stehe bei %s)" % [Vector3(hv.x, hv.y, hv.z), spieler().global_position.snapped(Vector3.ONE * 0.1)])
-	pruefe(hh_alle >= 3 and hh_ok == hh_alle, "Fachwerkhäuser: %d von %d durch die Tür betreten und die Treppe hinauf" % [hh_ok, hh_alle])
+	pruefe(hh_alle >= 3 and hh_ok == hh_alle and hh2_alle >= 1,
+			"Fachwerkhäuser: %d von %d durch die Tür betreten und die Treppe hinauf, %d davon auch die zweite Treppe an der Rückwand" % [hh_ok, hh_alle, hh2_ok])
 	await setze(Vector3(100, g.hoehe_bei(100, -0.5) + 0.3, -0.5))   # zurück auf den Nordkai für den Weg zur Mole
 	# Zurück zum Becken, über den Westkai zum Speicherkai, durch die Molenpforte über Mole und Brücken zu den Inseln
 	var mole := await gehe_ueber([Vector2(100, -0.5), Vector2(100, 27.5), Vector2(106, 52.5),
