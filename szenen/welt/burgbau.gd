@@ -96,6 +96,12 @@ const TORTURM_WAND := 1.0     # Mauerstärke der Kammer eines hohlen Torturms
 const ZINNE_HOEHE := 1.5     # Zinnen darüber
 const BRUSTWEHR_DICKE := 0.6
 const KAEMPFER := 3.4        # Höhe, in der der Torbogen ansetzt
+## Einfache Farben für den Kleinkram in den Räumen (ohne Textur): Kräuter, Vorräte, Felle, Teppiche
+const FARBEN_INNEN := {"kraut": Color(0.3, 0.37, 0.15), "kraut_trocken": Color(0.52, 0.47, 0.24),
+	"wurst": Color(0.36, 0.12, 0.08), "schinken": Color(0.52, 0.27, 0.16), "zwiebel": Color(0.72, 0.5, 0.22),
+	"knoblauch": Color(0.88, 0.85, 0.76), "fell": Color(0.4, 0.31, 0.22), "fell_hell": Color(0.66, 0.6, 0.5),
+	"leinen": Color(0.8, 0.76, 0.66), "teppich_rot": Color(0.42, 0.09, 0.07), "teppich_blau": Color(0.12, 0.17, 0.33),
+	"teppich_gruen": Color(0.15, 0.25, 0.13), "fisch": Color(0.56, 0.54, 0.48), "apfel": Color(0.58, 0.14, 0.09)}
 
 static var _bauten_je_region := {}   # Großelternknoten → alle burgbau-Knoten darunter
 var _flach := {}   # Material → SurfaceTool, Normalen werden erzeugt (kantig)
@@ -2424,6 +2430,7 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 		_einrichtung(zweck, c, uz, nx, iL, iB, fb, gh, stockwerke, lauf, traufe - 0.3)
 	if art != 1:
 		_hausrat(zweck, art, c, uz, nx, L, iL, iB, fb, gh, stockwerke, lauf, traufe - 0.3)
+		_raum_fuellen(zweck, art, c, uz, nx, L, iL, iB, fb, gh, stockwerke, lauf, traufe - 0.3)
 	# Licht je Geschoss: Hängeleuchten etwa alle 9 m entlang des Baus (warm, ohne Schatten)
 	var anzahl := maxi(1, int(ceil(2.0 * iL / 9.0)))
 	for k in stockwerke:
@@ -2722,7 +2729,16 @@ func _hausrat(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L: flo
 				var breite: float = stueck[1]
 				var m := c + uz * ((a + b) / 2.0) + nx * e * iB
 				_hausrat_stueck(stueck[0], m, uz, nx * -e, breite, y, decke, zufall)
-				s_ = b + zufall.randf_range(0.2, 0.7)
+				# in der Lücke zum nächsten Stück steht oft noch etwas Kleines (Eimer, Korb, Holz, Krug, Besen)
+				var luecke := zufall.randf_range(0.2, 0.7)
+				if luecke >= 0.45 and b + luecke <= ende and zufall.randf() < 0.75:
+					var lu_frei := true
+					for sp: Vector2 in sperren:
+						if b + luecke > sp.x and b < sp.y:
+							lu_frei = false
+					if lu_frei:
+						_kleinkram(zweck, c + uz * (b + luecke / 2.0) + nx * e * iB, uz, nx * -e, y, zufall)
+				s_ = b + luecke
 				i += 1
 			# Wandleuchter zwischen den Fenstern
 			for f in fenster.size() - 1:
@@ -2763,6 +2779,254 @@ func _hausrat(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L: flo
 						continue
 					_mitte_stueck(st_[0], c + uz * ((a + b) / 2.0) + nx * e * qm, uz, nx * -e, br, y, zufall)
 					sm = b + zufall.randf_range(0.5, 1.1)
+
+
+## Füllt einen Raum, wie man im Mittelalter jeden Platz nutzte: an der Decke hängen Vorräte und Gerät (in zwei Reihen
+## neben der Mitte, mit Kopffreiheit darunter), an den Wänden über dem Hausrat Werkzeug, Pfannen, Felle, Kränze,
+## Kleider oder im Palas Schilde und Geweihe (nicht über Fenstern und der Tür), auf dem Boden unter dem Tisch ein
+## Teppich (Palas) oder eine Binsenmatte (Wohn- und Gesindehaus). Treppen und Treppenlöcher (am Giebel -L) bleiben frei.
+func _raum_fuellen(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L: float, iL: float, iB: float, fb: float,
+		gh: float, stockwerke: int, lauf: float, decke_oben: float) -> void:
+	if zweck == 6:
+		return
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = hash(Vector2i(int(c.x * 7.0), int(c.y * 7.0))) + 17
+	var frei_s := -iL + 0.9 + lauf + 1.2 if stockwerke > 1 else -iL + 0.6
+	var fenster: Array[float] = []
+	var fenster_halb := 0.8
+	if art == 3:
+		var achsen := maxi(5, int((2.0 * L - 2.0) / 4.4))
+		for f in achsen:
+			fenster.append(-L + 1.0 + (f + 0.5) * (2.0 * L - 2.0) / achsen)
+		fenster_halb = 1.4
+	else:
+		for f in int((2.0 * L - 2.0) / 3.4):
+			fenster.append(-L + 1.0 + (f + 0.5) * (2.0 * L - 2.0) / int((2.0 * L - 2.0) / 3.4))
+	for k in stockwerke:
+		var y := fb + k * gh
+		var decke := decke_oben if k == stockwerke - 1 else y + gh - 0.5
+		var hoehe := decke - y
+		var saal := zweck == 3 and k == stockwerke - 1
+		var s0 := frei_s + 0.3 if stockwerke > 1 else -iL + 0.5
+		var s1 := iL - 0.5
+		# an der Decke
+		if hoehe >= 2.6:
+			for e: float in [-1.0, 1.0]:
+				var s := s0 + zufall.randf() * 0.5
+				while s < s1:
+					_haenge(zweck, saal, c + uz * s + nx * e * iB * 0.55, uz, nx, decke, decke - (y + 2.1), zufall)
+					s += zufall.randf_range(0.6, 1.2) * (2.2 if saal else 1.0)
+		# an den Wänden über dem Hausrat
+		var w0 := y + 2.3
+		var w1 := minf(y + 3.0, decke - 0.12)
+		if w1 - w0 >= 0.35:
+			for e: float in [-1.0, 1.0]:
+				var s := s0 + 0.3
+				while s < s1 - 0.3:
+					var frei := true
+					for fp: float in fenster:
+						if absf(s - fp) < fenster_halb + 0.35:
+							frei = false
+					if k == 0 and e > 0.0 and absf(s) < 2.1:
+						frei = false                               # über der Tür
+					if frei:
+						_wandstueck(zweck, saal, c + uz * s + nx * e * iB, uz, nx * -e, w0, w1, zufall)
+						s += zufall.randf_range(0.75, 1.3)
+					else:
+						s += 0.3
+		# Teppich bzw. Binsenmatte unter dem Tisch in der Mitte (der Rittersaal hat schon seinen Teppich)
+		if zweck in [0, 3, 5] and not saal and iB > 2.0:
+			var ts := iL * (0.42 if art == 3 else 0.15)
+			var lang := minf(iL * 0.5, 2.4) + 1.8
+			var quer := minf(1.4, iB - 0.9)
+			var mat: String = ["zier_teppich_rot", "zier_teppich_blau", "zier_teppich_gruen"][zufall.randi() % 3] if zweck == 3 else "zier_stroh"
+			_klotz(mat, c + uz * ts, uz, nx, -lang / 2.0, lang / 2.0, -quer, quer, y + 0.004, y + 0.016)
+			if zweck == 3:
+				_klotz("zier_hell", c + uz * ts, uz, nx, -lang / 2.0 + 0.12, lang / 2.0 - 0.12, -quer + 0.12, -quer + 0.2, y + 0.016, y + 0.019)
+				_klotz("zier_hell", c + uz * ts, uz, nx, -lang / 2.0 + 0.12, lang / 2.0 - 0.12, quer - 0.2, quer - 0.12, y + 0.016, y + 0.019)
+
+
+## Etwas, das von der Decke hängt (bis zu "frei" Meter tief, damit man darunter durchgeht), je nach Zweck des Raums
+func _haenge(zweck: int, saal: bool, p: Vector2, u: Vector2, n: Vector2, decke: float, frei: float,
+		zufall: RandomNumberGenerator) -> void:
+	if frei < 0.3:
+		return
+	var liste: Array
+	if saal:
+		liste = ["banner"]
+	else:
+		match zweck:
+			1: liste = ["kraeuter", "zwiebeln", "knoblauch", "wurst", "schinken", "topf", "korb", "fisch", "kraeuter", "wurst"]
+			2: liste = ["sack", "korb", "geschirr", "seilrolle"]
+			3: liste = ["banner", "korb", "kraeuter"]
+			4: liste = ["geschirr", "korb", "sack", "kraeuter", "geschirr"]
+			_: liste = ["kraeuter", "zwiebeln", "korb", "sack", "wurst", "fisch", "knoblauch", "kraeuter"]
+	var art: String = liste[zufall.randi() % liste.size()]
+	var faden := func(laenge: float) -> void:
+		_klotz("zier_holz", p, u, n, -0.006, 0.006, -0.006, 0.006, decke - laenge, decke)
+	match art:
+		"kraeuter":
+			var l := minf(0.35, frei - 0.3)
+			faden.call(l)
+			for i in 3:
+				var o := (i - 1) * 0.05
+				_klotz("zier_kraut_trocken" if i != 1 else "zier_kraut", p + u * o, u, n, -0.03, 0.03, -0.03, 0.03,
+					decke - l - 0.3 + absf(o), decke - l + 0.02)
+		"zwiebeln", "knoblauch":
+			var l := minf(0.7, frei)
+			faden.call(l)
+			var stueck := 0.0
+			while stueck < l - 0.08:
+				var sx := 0.04 if int(stueck * 20.0) % 2 == 0 else -0.04
+				_klotz("zier_" + ("zwiebel" if art == "zwiebeln" else "knoblauch"), p + u * sx * 0.5, u, n, -0.045, 0.045,
+					-0.045, 0.045, decke - l + stueck, decke - l + stueck + 0.08)
+				stueck += 0.1
+		"wurst", "fisch":
+			var l := minf(0.25, frei - 0.4)
+			for e: float in [-0.25, 0.25]:
+				_klotz("zier_holz", p + u * e, u, n, -0.006, 0.006, -0.006, 0.006, decke - l, decke)
+			_klotz("zier_holz", p, u, n, -0.32, 0.32, -0.02, 0.02, decke - l - 0.04, decke - l)
+			var i := -0.24
+			while i <= 0.25:
+				if art == "wurst":
+					_klotz("zier_wurst", p + u * i, u, n, -0.025, 0.025, -0.025, 0.025, decke - l - 0.04 - zufall.randf_range(0.25, 0.4), decke - l - 0.04)
+				else:
+					_klotz("zier_fisch", p + u * i, u, n, -0.05, 0.05, -0.008, 0.008, decke - l - 0.04 - 0.38, decke - l - 0.04)
+				i += 0.12
+		"schinken":
+			var l := minf(0.3, frei - 0.4)
+			faden.call(l)
+			_klotz("zier_schinken", p, u, n, -0.08, 0.08, -0.07, 0.07, decke - l - 0.38, decke - l - 0.08)
+			_klotz("zier_schinken", p, u, n, -0.04, 0.04, -0.035, 0.035, decke - l - 0.08, decke - l)
+		"topf":
+			var l := minf(0.4, frei - 0.25)
+			faden.call(l)
+			_klotz("zier_metall", p, u, n, -0.12, 0.12, -0.12, 0.12, decke - l - 0.22, decke - l)
+		"korb":
+			var l := minf(0.4, frei - 0.3)
+			faden.call(l)
+			_mantel("zier_stroh", p, 0.15, 0.2, decke - l - 0.26, decke - l, 8)
+		"sack":
+			var l := minf(0.3, frei - 0.45)
+			faden.call(l)
+			_klotz("zier_leinen", p, u, n, -0.13, 0.13, -0.1, 0.1, decke - l - 0.42, decke - l)
+		"seilrolle":
+			var l := minf(0.3, frei - 0.3)
+			faden.call(l)
+			_mantel("zier_stroh", p, 0.18, 0.18, decke - l - 0.12, decke - l, 10)
+		"geschirr":
+			var l := minf(0.2, frei - 0.6)
+			faden.call(l)
+			for i in 3:
+				_klotz("zier_stoff_leder", p + u * (i - 1) * 0.06, u, n, -0.015, 0.015, -0.005, 0.005, decke - l - 0.55 + i * 0.08, decke - l)
+			_klotz("zier_metall", p, u, n, -0.07, 0.07, -0.01, 0.01, decke - l - 0.12, decke - l - 0.08)
+		"banner":
+			var l := minf(1.8, frei + 0.2)
+			if l < 0.8:
+				return
+			var mat: String = ["zier_teppich_rot", "zier_teppich_blau", "zier_teppich_gruen"][zufall.randi() % 3]
+			_klotz("zier_holz", p, u, n, -0.42, 0.42, -0.02, 0.02, decke - 0.12, decke - 0.08)
+			_klotz(mat, p, u, n, -0.36, 0.36, -0.008, 0.008, decke - l, decke - 0.1)
+			_klotz("zier_hell", p, u, n, -0.36, 0.36, -0.01, 0.01, decke - l + 0.15, decke - l + 0.22)
+
+
+## Etwas an der Wand über dem Hausrat (zwischen w0 und w1 über dem Boden): m auf der Wandfläche, n in den Raum
+func _wandstueck(zweck: int, saal: bool, m: Vector2, u: Vector2, n: Vector2, w0: float, w1: float,
+		zufall: RandomNumberGenerator) -> void:
+	var liste: Array
+	if saal or zweck == 3:
+		liste = ["schild", "geweih", "schild", "bogen", "fell"]
+	else:
+		match zweck:
+			1: liste = ["pfanne", "pfanne", "kranz", "werkzeug", "seil", "sieb"]
+			2: liste = ["schild", "bogen", "werkzeug", "seil", "schild"]
+			4: liste = ["zaumzeug", "seil", "werkzeug", "saege", "zaumzeug"]
+			_: liste = ["werkzeug", "kleid", "fell", "kranz", "saege", "seil", "pfanne", "kleid"]
+	var art: String = liste[zufall.randi() % liste.size()]
+	var ym := (w0 + w1) / 2.0
+	var h := w1 - w0
+	_klotz("zier_metall", m, u, n, -0.015, 0.015, 0.0, 0.05, w1 - 0.04, w1 - 0.01)      # Haken
+	match art:
+		"werkzeug":
+			_klotz("zier_holz", m, u, n, -0.02, 0.02, 0.02, 0.05, w1 - h, w1 - 0.02)
+			_klotz("zier_metall", m + u * 0.06, u, n, -0.07, 0.07, 0.015, 0.045, w1 - 0.18, w1 - 0.04)
+		"saege":
+			_klotz("zier_metall", m, u, n, -0.38, 0.38, 0.01, 0.02, ym - 0.06, ym + 0.04)
+			_klotz("zier_holz", m, u, n, -0.42, -0.36, 0.0, 0.04, ym - 0.15, ym + 0.15)
+			_klotz("zier_holz", m, u, n, 0.36, 0.42, 0.0, 0.04, ym - 0.15, ym + 0.15)
+			_klotz("zier_holz", m, u, n, -0.4, 0.4, 0.0, 0.03, ym + 0.12, ym + 0.15)
+		"pfanne", "sieb":
+			_klotz("zier_metall", m, u, n, -0.15, 0.15, 0.01, 0.04, ym - 0.15, ym + 0.15)
+			_klotz("zier_metall" if art == "pfanne" else "zier_holz", m, u, n, -0.02, 0.02, 0.01, 0.03, ym + 0.15, w1 - 0.03)
+		"seil":
+			_mantel("zier_stroh", m + n * 0.1, 0.16, 0.16, ym - 0.12, ym + 0.12, 10)
+		"fell":
+			var fm := "zier_fell" if zufall.randf() < 0.6 else "zier_fell_hell"
+			_klotz(fm, m, u, n, -0.32, 0.32, 0.005, 0.025, w0 + 0.05, w1 - 0.05)
+			_klotz(fm, m, u, n, -0.42, 0.42, 0.005, 0.025, ym - 0.1, ym + 0.1)
+		"kranz":
+			for i in 8:
+				var wi := TAU * i / 8.0
+				_klotz("zier_kraut" if i % 2 == 0 else "zier_kraut_trocken", m + u * cos(wi) * 0.15, u, n, -0.04, 0.04, 0.01, 0.06,
+					ym + sin(wi) * 0.15 - 0.04, ym + sin(wi) * 0.15 + 0.04)
+		"kleid":
+			var km: String = ["zier_leinen", "zier_teppich_blau", "zier_teppich_gruen", "zier_fell"][zufall.randi() % 4]
+			_klotz(km, m, u, n, -0.22, 0.22, 0.01, 0.05, w0 - 0.4, w1 - 0.06)
+		"zaumzeug":
+			for i in 3:
+				_klotz("zier_stoff_leder", m + u * (i - 1) * 0.07, u, n, -0.015, 0.015, 0.01, 0.025, w0 - 0.2, w1 - 0.04)
+			_klotz("zier_metall", m, u, n, -0.09, 0.09, 0.01, 0.03, w0 - 0.15, w0 - 0.1)
+		"schild":
+			var farbe: String = ["zier_teppich_rot", "zier_teppich_blau", "zier_teppich_gruen"][zufall.randi() % 3]
+			var sh := minf(0.6, h - 0.05)
+			_klotz("zier_holz", m, u, n, -0.26, 0.26, 0.01, 0.05, w1 - sh, w1 - 0.04)
+			_klotz(farbe, m, u, n, -0.24, 0.24, 0.05, 0.055, w1 - sh + 0.25, w1 - 0.06)
+			_klotz("zier_hell", m, u, n, -0.04, 0.04, 0.05, 0.058, w1 - sh + 0.02, w1 - 0.06)
+			_klotz("zier_metall", m, u, n, -0.05, 0.05, 0.05, 0.08, w1 - sh * 0.6, w1 - sh * 0.6 + 0.1)
+		"geweih":
+			_klotz("zier_holz", m, u, n, -0.12, 0.12, 0.0, 0.04, ym - 0.12, ym + 0.08)
+			for sx: float in [-1.0, 1.0]:
+				_klotz("zier_knoblauch", m + u * sx * 0.16, u, n, -0.02, 0.02, 0.03, 0.07, ym, ym + 0.3)
+				_klotz("zier_knoblauch", m + u * sx * 0.28, u, n, -0.13, 0.02, 0.03, 0.06, ym + 0.26, ym + 0.3)
+				_klotz("zier_knoblauch", m + u * sx * 0.24, u, n, -0.015, 0.015, 0.03, 0.06, ym + 0.1, ym + 0.22)
+		"bogen":
+			_klotz("zier_holz", m, u, n, -0.03, 0.03, 0.02, 0.05, w0, w1 - 0.04)
+			_klotz("zier_holz", m + u * 0.06, u, n, -0.03, 0.03, 0.02, 0.05, w0 + 0.1, w1 - 0.14)
+			_klotz("zier_leinen", m + u * -0.07, u, n, -0.004, 0.004, 0.03, 0.04, w0 + 0.02, w1 - 0.06)
+
+
+## Kleinkram auf dem Boden in einer Lücke an der Wand (bis 0,45 m breit): Eimer, Korb, Holzscheite, Krug, Besen,
+## Schemel; m auf der Wandfläche, n in den Raum
+func _kleinkram(zweck: int, m: Vector2, u: Vector2, n: Vector2, y: float, zufall: RandomNumberGenerator) -> void:
+	var liste := ["eimer", "korb", "holz", "krug", "besen", "schemel"]
+	if zweck == 4:
+		liste = ["eimer", "korb", "besen", "eimer"]
+	var art: String = liste[zufall.randi() % liste.size()]
+	var p := m + n * 0.28
+	match art:
+		"eimer":
+			_mantel("zier_holz", p, 0.13, 0.15, y, y + 0.32, 10)
+			_mantel("zier_metall", p, 0.155, 0.155, y + 0.24, y + 0.27, 10)
+		"korb":
+			_mantel("zier_stroh", p, 0.14, 0.19, y, y + 0.3, 8)
+			_klotz("zier_apfel" if zufall.randf() < 0.5 else "zier_zwiebel", p, u, n, -0.1, 0.1, -0.1, 0.1, y + 0.22, y + 0.28)
+		"holz":
+			for i in 3:
+				_klotz("zier_holz", p + u * (i - 1) * 0.12, u, n, -0.055, 0.055, -0.2, 0.2, y, y + 0.11)
+			for i in 2:
+				_klotz("zier_holz", p + u * (i - 0.5) * 0.12, u, n, -0.055, 0.055, -0.2, 0.2, y + 0.11, y + 0.22)
+		"krug":
+			_mantel("zier_ziegelton", p, 0.1, 0.07, y, y + 0.3, 8)
+			_mantel("zier_ziegelton", p, 0.07, 0.05, y + 0.3, y + 0.38, 8)
+		"besen":
+			var w := m + n * 0.06
+			_klotz("zier_holz", w, u, n, -0.015, 0.015, -0.015, 0.015, y + 0.3, y + 1.45)
+			_klotz("zier_stroh", w + n * 0.06, u, n, -0.1, 0.1, -0.04, 0.04, y, y + 0.32)
+		"schemel":
+			_klotz("holz", p, u, n, -0.16, 0.16, -0.16, 0.16, y + 0.38, y + 0.44)
+			for su: float in [-1.0, 1.0]:
+				for sn: float in [-1.0, 1.0]:
+					_klotz("holz", p + u * su * 0.11 + n * sn * 0.11, u, n, -0.025, 0.025, -0.025, 0.025, y, y + 0.38)
 
 
 ## Möbel für die Raummitte: [Name, Breite entlang des Baus]
@@ -4279,6 +4543,11 @@ func _material(name_: String) -> Material:
 		s.albedo_color = Color(0.03, 0.03, 0.035)
 		s.roughness = 1.0
 		m = s
+	elif FARBEN_INNEN.has(name_):
+		var fi := StandardMaterial3D.new()
+		fi.albedo_color = FARBEN_INNEN[name_]
+		fi.roughness = 0.92
+		m = fi
 	elif name_ == "dach":
 		m = load("res://material/dach_schiefer.tres")
 	elif name_ == "ziegel":
