@@ -3241,12 +3241,12 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 		28:   # Wohnstube im Erdgeschoss eines Fachwerkhauses
 			wand = [["wandbank", 1.8], ["truhe", 1.1], ["wandbrett", 1.6], ["faesser", 1.4], ["schrank", 1.3], ["kraeuter", 1.4],
 				["kisten", 1.0], ["bottich", 1.0]]
-			mitte = ["esstisch", "werkbank", "spinnen", "vorrat", "waschen", "webstuhl"]
+			mitte = ["esstisch", "werkbank", "spinnen", "vorrat", "waschen", "webstuhl", "truhen", "hackplatz", "zuber"]
 			zweck_haenge = 5
 			zweck_wand = 5
 		29:   # Kammer im Obergeschoss: Schlafstellen, Truhen, Kleider
 			wand = [["strohlager", 2.1], ["truhe", 1.1], ["haken", 1.2], ["schrank", 1.3], ["truhe", 1.1], ["wandbrett", 1.6]]
-			mitte = ["schlafstelle", "schlafstelle", "spinnen", "truhen", "vorrat"]
+			mitte = ["schlafstelle", "schlafstelle", "spinnen", "truhen", "vorrat", "kohlebecken", "zuber"]
 			zweck_haenge = 5
 			zweck_wand = 5
 		26:
@@ -3296,6 +3296,10 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 			"pfeile": 1.9, "schleifstein": 1.5, "arbeitstisch": 2.4, "koerbe": 1.7, "hackplatz": 2.3, "zuber": 1.4,
 			"kohlebecken": 1.1, "truhen": 2.1, "pult": 1.5, "schach": 1.7, "bett": 2.6, "regal": 2.4, "spinnen": 1.9,
 			"webstuhl": 2.0, "waschen": 2.4, "werkbank": 2.4, "feuerstelle": 2.6}
+		# halbe Tiefe quer (mit Bänken, Stühlen, Körben daneben), für die Prüfung gegen freie Wege
+		var tiefen := {"esstisch": 1.05, "tafel": 1.1, "feuerstelle": 1.4, "schlafstelle": 1.0, "spinnen": 1.6, "webstuhl": 1.2,
+			"vorrat": 0.8, "waschen": 0.6, "werkbank": 1.0, "arbeitstisch": 1.0, "arbeitstisch_voll": 1.5, "hackplatz": 0.45,
+			"zuber": 0.6, "koerbe": 1.4, "truhen": 0.4, "kohlebecken": 0.5, "pult": 1.0, "schach": 1.0}
 		var rand_m := 1.5 if minf(hl, hb) > 3.0 else 1.1      # in kleinen Räumen rücken die Gruppen näher an die Wand
 		var a0 := -hl + rand_m
 		var a1 := hl - rand_m
@@ -3311,40 +3315,34 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 			var hq := minf(bq / 2.0 - 0.25, 1.3)
 			var sv := a0 + zufall.randf() * 0.5
 			while sv < a1 - 1.0:
-				var gruppe: String = mitte[zufall.randi() % mitte.size()]
-				var lg: float = laengen[gruppe]
-				if sv + lg > a1:
-					sv += 0.4
-					continue
-				# erst genau auf der Spalte; ist dort etwas frei zu halten (Treppe, Weg), quer verschoben und schmaler,
-				# solange die Gruppe 0,9 m von der Wand bleibt (davor steht der Wandhausrat)
-				var ok := false
-				var m := Vector2.ZERO
-				var hq_g := hq
-				var q_g := qm
-				for dq: float in [0.0, 0.35, -0.35, 0.7, -0.7, 1.05, -1.05, 1.4, -1.4]:
-					for f_h: float in [1.0, 0.75, 0.5]:
-						var hq_t := hq * f_h
-						if absf(qm + dq) + hq_t > hb - 0.85 and dq != 0.0:
+				# die Gruppe des Zufalls zuerst, passt sie hier nicht, die anderen des Raums; erst genau auf der Spalte,
+				# ist dort etwas frei zu halten (Treppe, Weg), quer verschoben, solange die Gruppe mit ihrer wirklichen
+				# Tiefe 0,85 m von der Wand bleibt (davor steht der Wandhausrat)
+				var s0 := zufall.randi() % mitte.size()
+				var gesetzt := false
+				for k in mitte.size():
+					var gruppe: String = mitte[(s0 + k) % mitte.size()]
+					var lg: float = laengen[gruppe]
+					if sv + lg > a1:
+						continue
+					var tief: float = tiefen.get(gruppe, hq)
+					for dq: float in [0.0, 0.35, -0.35, 0.7, -0.7, 1.05, -1.05, 1.4, -1.4]:
+						if dq != 0.0 and (absf(qm + dq) + tief > hb - 0.85 or (spalten > 1 and absf(dq) + tief > bq / 2.0 + 0.1)):
 							continue
 						var m_t := c + u * (sv + lg / 2.0) + n * (qm + dq)
 						var ok_t := true
 						for e1: float in [-0.5, 0.0, 0.5]:
 							for e2: float in [-1.0, 0.0, 1.0]:
-								if not frei.call(m_t + u * e1 * lg + n * e2 * hq_t, 0.35):
+								if not frei.call(m_t + u * e1 * lg + n * e2 * tief, 0.35):
 									ok_t = false
 						if ok_t:
-							ok = true
-							m = m_t
-							hq_g = hq_t
-							q_g = qm + dq
+							_insel(gruppe, m_t, u, n * (1.0 if qm + dq < 0.0 else -1.0), lg / 2.0, tief, y, zufall)
+							sv += lg + zufall.randf_range(0.45, 0.8)
+							gesetzt = true
 							break
-					if ok:
+					if gesetzt:
 						break
-				if ok:
-					_insel(gruppe, m, u, n * (1.0 if q_g < 0.0 else -1.0), lg / 2.0, hq_g, y, zufall)
-					sv += lg + zufall.randf_range(0.45, 0.8)
-				else:
+				if not gesetzt:
 					sv += 0.5
 		if art == 24:
 			# ein großer Teppich in der Mitte
