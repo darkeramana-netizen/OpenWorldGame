@@ -3287,7 +3287,8 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 	if not mitte.is_empty():
 		var laengen := {"esstisch": 2.8, "tafel": 2.8, "schlafstelle": 2.3, "vorrat": 2.3, "waffen": 2.5, "spiesse": 2.3,
 			"pfeile": 1.9, "schleifstein": 1.5, "arbeitstisch": 2.4, "koerbe": 1.7, "hackplatz": 2.3, "zuber": 1.4,
-			"kohlebecken": 1.1, "truhen": 2.1, "pult": 1.5, "schach": 1.7, "bett": 2.6, "regal": 2.4}
+			"kohlebecken": 1.1, "truhen": 2.1, "pult": 1.5, "schach": 1.7, "bett": 2.6, "regal": 2.4, "spinnen": 1.9,
+			"webstuhl": 2.0, "waschen": 2.4, "werkbank": 2.4, "feuerstelle": 2.6}
 		var rand_m := 1.5 if minf(hl, hb) > 3.0 else 1.1      # in kleinen Räumen rücken die Gruppen näher an die Wand
 		var a0 := -hl + rand_m
 		var a1 := hl - rand_m
