@@ -3316,14 +3316,33 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 				if sv + lg > a1:
 					sv += 0.4
 					continue
-				var m := c + u * (sv + lg / 2.0) + n * qm
-				var ok := true
-				for e1: float in [-0.5, 0.0, 0.5]:
-					for e2: float in [-1.0, 0.0, 1.0]:
-						if not frei.call(m + u * e1 * lg + n * e2 * hq, 0.35):
-							ok = false
+				# erst genau auf der Spalte; ist dort etwas frei zu halten (Treppe, Weg), quer verschoben und schmaler,
+				# solange die Gruppe 0,9 m von der Wand bleibt (davor steht der Wandhausrat)
+				var ok := false
+				var m := Vector2.ZERO
+				var hq_g := hq
+				var q_g := qm
+				for dq: float in [0.0, 0.35, -0.35, 0.7, -0.7, 1.05, -1.05]:
+					for f_h: float in [1.0, 0.75]:
+						var hq_t := hq * f_h
+						if absf(qm + dq) + hq_t > hb - 0.9 and dq != 0.0:
+							continue
+						var m_t := c + u * (sv + lg / 2.0) + n * (qm + dq)
+						var ok_t := true
+						for e1: float in [-0.5, 0.0, 0.5]:
+							for e2: float in [-1.0, 0.0, 1.0]:
+								if not frei.call(m_t + u * e1 * lg + n * e2 * hq_t, 0.35):
+									ok_t = false
+						if ok_t:
+							ok = true
+							m = m_t
+							hq_g = hq_t
+							q_g = qm + dq
+							break
+					if ok:
+						break
 				if ok:
-					_insel(gruppe, m, u, n * (1.0 if qm < 0.0 else -1.0), lg / 2.0, hq, y, zufall)
+					_insel(gruppe, m, u, n * (1.0 if q_g < 0.0 else -1.0), lg / 2.0, hq_g, y, zufall)
 					sv += lg + zufall.randf_range(0.45, 0.8)
 				else:
 					sv += 0.5
