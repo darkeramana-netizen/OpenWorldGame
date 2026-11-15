@@ -98,7 +98,7 @@ const BRUSTWEHR_DICKE := 0.6
 const KAEMPFER := 3.4        # Höhe, in der der Torbogen ansetzt
 ## Einfache Farben für den Kleinkram in den Räumen (ohne Textur): Kräuter, Vorräte, Felle, Teppiche
 const FARBEN_INNEN := {"kraut": Color(0.3, 0.37, 0.15), "kraut_trocken": Color(0.52, 0.47, 0.24),
-	"wurst": Color(0.36, 0.12, 0.08), "schinken": Color(0.52, 0.27, 0.16), "zwiebel": Color(0.72, 0.5, 0.22),
+	"wurst": Color(0.36, 0.12, 0.08), "schinken": Color(0.52, 0.27, 0.16), "zwiebel": Color(0.58, 0.4, 0.2),
 	"knoblauch": Color(0.88, 0.85, 0.76), "fell": Color(0.4, 0.31, 0.22), "fell_hell": Color(0.66, 0.6, 0.5),
 	"leinen": Color(0.8, 0.76, 0.66), "teppich_rot": Color(0.42, 0.09, 0.07), "teppich_blau": Color(0.12, 0.17, 0.33),
 	"teppich_gruen": Color(0.15, 0.25, 0.13), "fisch": Color(0.56, 0.54, 0.48), "apfel": Color(0.58, 0.14, 0.09)}
@@ -2815,7 +2815,7 @@ func _raum_fuellen(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L
 				var s := s0 + zufall.randf() * 0.5
 				while s < s1:
 					_haenge(zweck, saal, c + uz * s + nx * e * iB * 0.55, uz, nx, decke, decke - (y + 2.1), zufall)
-					s += zufall.randf_range(0.6, 1.2) * (2.2 if saal else 1.0)
+					s += zufall.randf_range(0.6, 1.2) * (2.2 if zweck == 3 else 1.0)
 		# an den Wänden über dem Hausrat
 		var w0 := y + 2.3
 		var w1 := minf(y + 3.0, decke - 0.12)
@@ -2834,8 +2834,49 @@ func _raum_fuellen(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L
 						s += zufall.randf_range(0.75, 1.3)
 					else:
 						s += 0.3
+		# Große Säle im Wohn- und Gesindehaus: weitere Tische mit Bänken entlang der Achse (zum Giebel +L hin, der Weg
+		# von der Tür zur Treppe am Giebel -L bleibt frei) und eine zweite Reihe Möbel zwischen Wand und Mittelgang
+		var tische: Array[Vector2] = []
+		var ts0 := iL * (0.42 if art == 3 else 0.15)
+		var lang0 := minf(iL * 0.9, 6.0) if art == 3 else minf(iL * 0.5, 2.4)
+		tische.append(Vector2(ts0 - lang0 / 2.0, ts0 + lang0 / 2.0))
+		if zweck in [0, 5] and iB >= 3.0 and not (k == 0 and zweck == 4):
+			var ts := ts0 + lang0 / 2.0 + 2.6
+			while ts + 1.2 < iL - 2.6:
+				var lg := 2.4
+				_klotz("holz", c + uz * (ts + lg / 2.0), uz, nx, -lg / 2.0, lg / 2.0, -0.5, 0.5, y + 0.72, y + 0.8)
+				for e: float in [-1.0, 1.0]:
+					_klotz("holz", c + uz * (ts + lg / 2.0 + e * (lg / 2.0 - 0.3)), uz, nx, -0.08, 0.08, -0.4, 0.4, y, y + 0.72)
+					_klotz("holz", c + uz * (ts + lg / 2.0) + nx * e * 0.95, uz, nx, -lg / 2.0, lg / 2.0, -0.18, 0.18, y + 0.42, y + 0.48)
+					for f: float in [-1.0, 1.0]:
+						_klotz("holz", c + uz * (ts + lg / 2.0 + f * (lg / 2.0 - 0.25)) + nx * e * 0.95, uz, nx, -0.05, 0.05, -0.15, 0.15, y, y + 0.42)
+				# auf dem Tisch: Krug, Becher, Brett mit Brot
+				_mantel("zier_ziegelton", c + uz * (ts + 0.5), 0.08, 0.06, y + 0.8, y + 1.05, 8)
+				_klotz("zier_holz", c + uz * (ts + 1.4), uz, nx, -0.2, 0.2, -0.14, 0.14, y + 0.8, y + 0.83)
+				_klotz("zier_schinken", c + uz * (ts + 1.4), uz, nx, -0.1, 0.1, -0.07, 0.07, y + 0.83, y + 0.93)
+				tische.append(Vector2(ts, ts + lg))
+				ts += lg + 3.0
+			var qm := iB - 1.55
+			var q2 := qm - 1.75
+			if q2 >= 1.7:
+				for e: float in [-1.0, 1.0]:
+					var sm := s0 + 1.0
+					while sm < s1 - 1.0:
+						var st_ := _mitte_wahl(zweck, zufall)
+						var br: float = st_[1]
+						var frei := true
+						for t: Vector2 in tische:
+							if sm + br > t.x - 1.2 and sm < t.y + 1.2:
+								frei = false
+						if k == 0 and e > 0.0 and absf(sm + br / 2.0) < 2.4:
+							frei = false                                  # vor der Tür
+						if frei:
+							_mitte_stueck(st_[0], c + uz * (sm + br / 2.0) + nx * e * q2, uz, nx * -e, br, y, zufall)
+							sm += br + zufall.randf_range(0.8, 1.6)
+						else:
+							sm += 0.6
 		# Teppich bzw. Binsenmatte unter dem Tisch in der Mitte (der Rittersaal hat schon seinen Teppich)
-		if zweck in [0, 3, 5] and not saal and iB > 2.0:
+		if zweck in [0, 5] and iB > 2.0:
 			var ts := iL * (0.42 if art == 3 else 0.15)
 			var lang := minf(iL * 0.5, 2.4) + 1.8
 			var quer := minf(1.4, iB - 0.9)
@@ -2857,8 +2898,11 @@ func _haenge(zweck: int, saal: bool, p: Vector2, u: Vector2, n: Vector2, decke: 
 	else:
 		match zweck:
 			1: liste = ["kraeuter", "zwiebeln", "knoblauch", "wurst", "schinken", "topf", "korb", "fisch", "kraeuter", "wurst"]
-			2: liste = ["sack", "korb", "geschirr", "seilrolle"]
-			3: liste = ["banner", "korb", "kraeuter"]
+			2:
+				if zufall.randf() < 0.55:
+					return                                   # im Zeughaus hängt nur hier und da etwas
+				liste = ["seilrolle", "geschirr", "sack", "seilrolle"]
+			3: liste = ["banner"]
 			4: liste = ["geschirr", "korb", "sack", "kraeuter", "geschirr"]
 			_: liste = ["kraeuter", "zwiebeln", "korb", "sack", "wurst", "fisch", "knoblauch", "kraeuter"]
 	var art: String = liste[zufall.randi() % liste.size()]
