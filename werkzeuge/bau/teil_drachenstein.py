@@ -1369,7 +1369,7 @@ for hx_, hy_, hz_, hg_, hf_ in HOFHAEUSER:
                 frei_.append(_w(sx_(s_), z_))
                 z_ += 0.7
             frei_ += [_w(sx_(s_) * -0.2, zh_ + 0.4), _w(0, (zh_ + zv_) / 2)]
-        _frei_hh += [(x_, z_, 0.85, round(boden_, 3)) for x_, z_ in frei_]
+        _frei_hh += [(x_, z_, 0.6, round(boden_, 3)) for x_, z_ in frei_]
         _raeume_hh += [round(hx_, 3), round(hz_, 3), round(hg_, 2), round(hb_ / 2 - _WAND, 3), round(ht_ / 2 + aus_ - _WAND, 3),
                        round(boden_, 3), round(decke_, 3), 28 if g_ == 0 else 29]
 N("HofhausEinrichtung", "Node3D", BG, f"""script = ExtResource("28_burgbau")
