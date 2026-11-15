@@ -697,6 +697,63 @@ if _hofstellen:
     print(f"Wirtschaftshof an der Vorburgmauer: {math.dist((x_, z_), _stall_tuer):.1f} m von der Stalltür, {len(weg_)} Häuser weichen")
 N("Mauertreppen", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 treppen = PackedFloat32Array({_zahlen(TREPPEN)})""")
+# --- Kein Hofhaus steckt in einem Rundturm (mit Anlauf am Fuß) oder in einer Mauer: Punkte auf dem Rand und in der
+# Fläche des Hauses (mit Vorkragung) gegen Turmkreise und Mauerstücke
+def _haus_stoesst(h_):
+    ecken_ = _haus_rechteck(h_, 0.15)
+    punkte_ = []
+    for i_ in range(4):
+        (x1_, z1_), (x2_, z2_) = ecken_[i_], ecken_[(i_ + 1) % 4]
+        n_ = max(1, int(math.dist((x1_, z1_), (x2_, z2_)) / 0.5))
+        punkte_ += [(x1_ + (x2_ - x1_) * k_ / n_, z1_ + (z2_ - z1_) * k_ / n_) for k_ in range(n_)]
+    for fa_ in (0.25, 0.5, 0.75):
+        for fb_ in (0.25, 0.5, 0.75):
+            punkte_.append((ecken_[0][0] + (ecken_[1][0] - ecken_[0][0]) * fa_ + (ecken_[3][0] - ecken_[0][0]) * fb_,
+                            ecken_[0][1] + (ecken_[1][1] - ecken_[0][1]) * fa_ + (ecken_[3][1] - ecken_[0][1]) * fb_))
+    for rx_, rz_, rr_ in _runde_w:
+        if any(math.dist(q_, (rx_, rz_)) < rr_ + 0.8 for q_ in punkte_):
+            return "Turm bei (%.1f, %.1f)" % (rx_, rz_)
+    for (nm_, ax_, az_, bx_, bz_, _, dicke_, _) in MAUERSTUECKE:
+        if any(abstand_linie([(ax_, az_), (bx_, bz_)], *q_) < dicke_ / 2 + 0.1 for q_ in punkte_):
+            return "Mauer %s" % nm_
+    return ""
+
+
+_stossend = []
+for i_, h_ in enumerate(HOFHAEUSER):
+    grund_ = _haus_stoesst(h_)
+    if not grund_:
+        continue
+    # erst ein kleineres Haus an derselben Stelle (Rücken an derselben Linie), dann seitlich verschoben, zuletzt bis
+    # 1,2 m von der Mauer abgerückt
+    x_, y_, z_, g_, f_ = h_
+    a_ = math.radians(g_)
+    ux_, uz_, vx_, vz_ = math.cos(a_), -math.sin(a_), math.sin(a_), math.cos(a_)
+    t_alt_ = _FORMEN[f_][1]
+    ersatz_ = None
+    for schub_, extra_ in [(s_, e_) for e_ in (0.0, 0.4, 0.8, 1.2) for s_ in (0.0, -0.6, 0.6, -1.2, 1.2, -1.8, 1.8, -2.5, 2.5)]:
+        for f2_ in sorted(range(len(_FORMEN)), key=lambda k_: -_FORMEN[k_][0] * _FORMEN[k_][1]):
+            b2_, t2_ = _FORMEN[f2_]
+            if b2_ > _FORMEN[f_][0] + 0.01 or t2_ > t_alt_ + 0.01:
+                continue
+            vor_ = (t2_ - t_alt_) / 2 + extra_   # Rücken bleibt an seiner Linie (oder rückt ein Stück vor)
+            neu_ = (round(x_ + ux_ * schub_ + vx_ * vor_, 2), y_, round(z_ + uz_ * schub_ + vz_ * vor_, 2), g_, f2_)
+            if _haus_stoesst(neu_):
+                continue
+            if any(j_ != i_ and _ueberlappen_plan(_haus_rechteck(neu_, 0.05), _haus_rechteck(o_, 0.05))
+                   for j_, o_ in enumerate(HOFHAEUSER)):
+                continue
+            ersatz_ = neu_
+            break
+        if ersatz_:
+            break
+    if ersatz_:
+        HOFHAEUSER[i_] = ersatz_
+        print(f"Hofhaus bei ({x_}, {z_}) stieß an {grund_}: jetzt Form {ersatz_[4]} bei ({ersatz_[0]}, {ersatz_[2]})")
+    else:
+        _stossend.append(i_)
+        print(f"Hofhaus bei ({x_}, {z_}) stößt an {grund_}: weicht")
+HOFHAEUSER = [h_ for i_, h_ in enumerate(HOFHAEUSER) if i_ not in set(_stossend)]
 # --- Ausstattung der Höfe (szenen/welt/ausstattung.gd): Ziehbrunnen in der Mitte, Fässer, Kisten und Säcke vor den
 # Häusern (neben den Türen), Holzstapel, Karren, Pferdetränke am Stall, Waffenständer am Zeughaus und in der Oberburg,
 # Feuerkörbe mit Licht an den Toren. Nichts steht auf Wegen, vor Türen begehbarer Bauten, an Treppen oder Toren.
@@ -1270,7 +1327,7 @@ print("Ausstattung der Höfe:", len(BURG_AUSSTATTUNG), "Stücke, davon", sum(1 f
 N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\nbegehbar = true\n"
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _ in HOFHAEUSER) + ")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HOFHAEUSER) + ")")
-print("Fachwerkhäuser in den Höfen:", _nh)
+print("Fachwerkhäuser in den Höfen:", len(HOFHAEUSER), "(gebaut", _nh, ")")
 # Die Fachwerkhäuser sind begehbar (stadthaeuser.gd, begehbar): jedes Geschoss ganz eingerichtet (burgbau.gd, raeume),
 # unten die Wohnstube, oben Kammern. Frei bleiben der Weg von der Tür, die Treppen (an wechselnden Seitenwänden, von
 # vorn nach hinten ansteigend, wie stadthaeuser.treppen), das Loch, aus dem man heraufkommt, und der Weg dazwischen.

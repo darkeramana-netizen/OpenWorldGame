@@ -208,8 +208,10 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		if fachwerk:
 			_fachwerk(flaechen, lo, hi)
 			# Schwelle des vorkragenden Geschosses, darunter ein abgesetztes Füllholz und die Köpfe der Deckenbalken
-			_quader(flaechen, "balken", Vector3(-b / 2 - 0.05, y - 0.22, -t / 2 - aus - 0.05), Vector3(b / 2 + 0.05, y, t / 2 + aus + 0.05))
-			_quader(flaechen, "balken", Vector3(-b / 2 - 0.02, y - 0.3, -t / 2 - aus - 0.01), Vector3(b / 2 + 0.02, y - 0.22, t / 2 + aus + 0.01))
+			# (im begehbaren Haus nur als Kranz an den Außenwänden, sonst schlössen sie das Treppenloch)
+			var innen := Rect2(-b / 2 + WAND, -t / 2 - aus + WAND, b - 2 * WAND, t + 2 * aus - 2 * WAND) if begehbar else Rect2()
+			_kranz(flaechen, "balken", Vector3(-b / 2 - 0.05, y - 0.22, -t / 2 - aus - 0.05), Vector3(b / 2 + 0.05, y, t / 2 + aus + 0.05), innen)
+			_kranz(flaechen, "balken", Vector3(-b / 2 - 0.02, y - 0.3, -t / 2 - aus - 0.01), Vector3(b / 2 + 0.02, y - 0.22, t / 2 + aus + 0.01), innen)
 			var bx := -b / 2 + 0.3
 			while bx < b / 2 - 0.2:
 				for sz: int in [1, -1]:
@@ -442,6 +444,21 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 
 ## Hohler Geschosskasten von lo bis hi mit Mauern der Stärke WAND; mit Tür: Öffnung 1,3 m × 2,3 m in der Mitte der
 ## Vorderseite (+z), deren Unterkante auf dem Fußboden (y = 0)
+## Quader von lo bis hi; ist innen (x/z) nicht leer, nur der Kranz darum (vier Stücke)
+func _kranz(flaechen: Dictionary, mat: String, lo: Vector3, hi: Vector3, innen: Rect2) -> void:
+	if innen.size == Vector2.ZERO:
+		_quader(flaechen, mat, lo, hi)
+		return
+	var ix0 := innen.position.x
+	var ix1 := innen.end.x
+	var iz0 := innen.position.y
+	var iz1 := innen.end.y
+	_quader(flaechen, mat, lo, Vector3(hi.x, hi.y, iz0))
+	_quader(flaechen, mat, Vector3(lo.x, lo.y, iz1), hi)
+	_quader(flaechen, mat, Vector3(lo.x, lo.y, iz0), Vector3(ix0, hi.y, iz1))
+	_quader(flaechen, mat, Vector3(ix1, lo.y, iz0), Vector3(hi.x, hi.y, iz1))
+
+
 func _hohl(flaechen: Dictionary, mat: String, lo: Vector3, hi: Vector3, tuer: bool) -> void:
 	_quader(flaechen, mat, Vector3(lo.x, lo.y, lo.z), Vector3(hi.x, hi.y, lo.z + WAND))
 	if tuer:
