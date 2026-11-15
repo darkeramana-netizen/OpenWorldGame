@@ -154,10 +154,11 @@ for name_, hof_, boden_ in _hoefe:
     _hw += 1
 print("Burgleben: Hofwachen", _hw)
 
-# --- Zwei Knappen üben am Übungsplatz (Puppen bei lokal x = ±2,5 vor dem Knoten ObererBurg) mit dem Schwert ---
+# --- Zwei Knappen üben am Übungsplatz miteinander, abseits der Puppen (lokal x = ±2,5 vor dem Knoten ObererBurg; an
+# ihnen übt der Spieler, test_stufe4): sie stehen sich mit dem Schwert gegenüber ---
 for i_, (name_, anzeige_) in enumerate([("KnappeBurg0", "Knappe Rupert Harz"), ("KnappeBurg1", "Knappe Ida Wendt")]):
-    person(name_, BL, round(UEB[0] + (2.5 if i_ == 0 else -2.5), 2), PD.H_KERNBURG, round(UEB[1] + 1.7, 2), anzeige_,
-           "knappe_burg", 0, "0.38, 0.1, 0.08, 1", gier=180.0, sichtbar_wenn="alarm<2", haltung="schwert")
+    person(name_, BL, round(UEB[0] + 6.5, 2), PD.H_KERNBURG, round(UEB[1] + (2.6 if i_ == 0 else 4.2), 2), anzeige_,
+           "knappe_burg", 0, "0.38, 0.1, 0.08, 1", gier=180.0 if i_ == 0 else 0.0, sichtbar_wenn="alarm<2", haltung="schwert")
 
 # --- Hühner (szenen/figuren/huehner.gd): je Hof ein paar Scharen vor den Haustüren, das Revier ganz im Hof, frei von
 # Häusern, Ausstattung und Treppen, nicht am Brunnen und nicht vor der Tür selbst ---

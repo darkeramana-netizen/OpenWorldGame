@@ -1637,6 +1637,12 @@ func _rundturm_hohl(c: Vector2, unten: float, oben: float, r: float, dach: int, 
 			var t: float = innen_w[j]
 			var rad := Vector2(cos(t), sin(t))
 			_keil("holz", c, rad.orthogonal(), rad, -0.75, 0.75, ri - maxf(1.0, stufe * 2.6), ri + 0.05, fb, fb, fb + stufe)
+	# Einrichtung als Wachstube an der Wand, abseits der Türen und unter der Rampe nur, wo sie hoch genug ist
+	var frei_ab := NAN
+	if rampe:
+		frei_ab = start + spanne * minf(2.2 / steig, 0.95)
+	_turm_einrichtung(c, ri, fb, tueren, innen_w, start if rampe else NAN, frei_ab, start + spanne if rampe else NAN,
+		minf(decke, oben) - fb)
 	# Licht in der Kammer (die Scharten lassen wenig herein)
 	var licht := OmniLight3D.new()
 	licht.position = Vector3(c.x, fb + 2.4, c.y)
@@ -1674,6 +1680,83 @@ func _rundturm_hohl(c: Vector2, unten: float, oben: float, r: float, dach: int, 
 		var w := TAU * k / zinnen
 		var d := Vector2(cos(w), sin(w))
 		_zinne(c + d * (rk + ra) / 2.0, Vector2(-d.y, d.x), d, -0.65, 0.65, -0.3, 0.3, oben + BRUSTWEHR, ZINNE_HOEHE)
+
+
+## Wachstube in der Kammer eines hohlen Rundturms: an der Innenwand (Radius ri, Boden fb) je nach Platz eine Bank,
+## ein Fass, ein Waffenständer mit Spießen, ein Strohlager mit Decke und ein Kohlebecken. Frei bleiben die Türen samt
+## ihrem Eintritt (Winkel tueren, innen_w), der Weg durch die Mitte und die Rampe an der Wand: nur dort, wo sie schon
+## mindestens 2,2 m hoch ist (Winkel frei_ab bis rampe_bis), steht etwas darunter.
+func _turm_einrichtung(c: Vector2, ri: float, fb: float, tueren: Array, innen_w: Array, rampe_ab: float, frei_ab: float,
+		rampe_bis: float, hoehe: float) -> void:
+	if ri < 2.2 or hoehe < 2.4:
+		return
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = hash(Vector2i(int(c.x * 10.0), int(c.y * 10.0)))
+	var gesperrt := func(w: float, halb: float) -> bool:
+		for j in tueren.size():
+			for t: float in [float(tueren[j]), float(innen_w[j])]:
+				if absf(angle_difference(w, t)) < halb + 0.5 + 0.9 / ri:
+					return true
+		if not is_nan(rampe_ab):
+			var x := fposmod(w - rampe_ab, TAU)
+			var x_frei := fposmod(frei_ab - rampe_ab, TAU)
+			var x_bis := fposmod(rampe_bis - rampe_ab, TAU)
+			if x_bis < 0.001:
+				x_bis = TAU
+			# unter dem niedrigen Teil der Rampe (vom Anfang bis frei_ab) und am Lukenende nichts
+			if x - halb < x_frei or x + halb > x_bis - 0.3:
+				if x < x_bis + halb:
+					return true
+		return false
+	var stuecke := ["bank", "fass", "waffen", "stroh", "becken"]
+	var gesetzt: Array[float] = []
+	var w := zufall.randf() * TAU
+	for art: String in stuecke:
+		var breite: float = {"bank": 1.5, "fass": 0.7, "waffen": 1.1, "stroh": 2.0, "becken": 0.7}[art]
+		var halb := breite / 2.0 / (ri - 0.5)
+		var platz := NAN
+		for versuch in 36:
+			var kandidat := w + versuch * TAU / 36.0
+			var frei: bool = not gesperrt.call(kandidat, halb)
+			for g: float in gesetzt:
+				if absf(angle_difference(kandidat, g)) < halb + 0.45:
+					frei = false
+			if frei:
+				platz = kandidat
+				break
+		if is_nan(platz):
+			continue
+		gesetzt.append(platz)
+		var d := Vector2(cos(platz), sin(platz))     # nach außen
+		var u := Vector2(-d.y, d.x)                  # entlang der Wand
+		match art:
+			"bank":
+				var m := c + d * (ri - 0.3)
+				_klotz("holz", m, u, d, -0.75, 0.75, -0.2, 0.2, fb + 0.4, fb + 0.47, true)
+				for e: float in [-0.6, 0.6]:
+					_klotz("holz", m + u * e, u, d, -0.05, 0.05, -0.15, 0.15, fb, fb + 0.4)
+			"fass":
+				var m := c + d * (ri - 0.4)
+				_klotz("holz", m, u, d, -0.3, 0.3, -0.3, 0.3, fb, fb + 0.85)
+				for y_: float in [0.15, 0.65]:
+					_klotz("metall", m, u, d, -0.32, 0.32, -0.32, 0.32, fb + y_, fb + y_ + 0.05)
+			"waffen":
+				var m := c + d * (ri - 0.25)
+				_klotz("holz", m, u, d, -0.55, 0.55, -0.05, 0.05, fb + 1.1, fb + 1.18)
+				_klotz("holz", m, u, d, -0.55, 0.55, -0.05, 0.05, fb + 0.25, fb + 0.32)
+				for e: float in [-0.4, -0.13, 0.13, 0.4]:
+					_klotz("holz", m + u * e, u, d, -0.025, 0.025, -0.025, 0.025, fb, fb + 2.1)
+					_klotz("metall", m + u * e, u, d, -0.04, 0.04, -0.01, 0.01, fb + 2.1, fb + 2.35)
+			"stroh":
+				var m := c + d * (ri - 0.5)
+				_klotz("stroh", m, u, d, -0.95, 0.95, -0.42, 0.42, fb, fb + 0.16)
+				_klotz("stoff", m + u * 0.2, u, d, -0.6, 0.6, -0.38, 0.38, fb + 0.16, fb + 0.2)
+			"becken":
+				var m := c + d * (ri - 0.6)
+				for e: float in [-1.0, 1.0]:
+					_klotz("metall", m + u * e * 0.18, u, d, -0.02, 0.02, -0.02, 0.02, fb, fb + 0.6)
+				_klotz("metall", m, u, d, -0.25, 0.25, -0.25, 0.25, fb + 0.6, fb + 0.75)
+				_klotz("glut", m, u, d, -0.2, 0.2, -0.2, 0.2, fb + 0.7, fb + 0.8)
 
 
 ## Verriegelte Tür (Abschnittstür) in der Wand eines Rundturms am Ende eines tieferen Wehrgangs: Gewände und Sturz aus
