@@ -855,6 +855,15 @@ for name_, hof_, boden_ in _hoefe:
                 print("Schmiede:", round(px_, 1), round(boden_, 1), round(pz_, 1), "nach innen", round(nx_, 2), round(nz_, 2))
         werkplatz(f"Holzplatz {name_}", [(11, -1.4, 0.0, 90), (11, 1.4, 0.2, 90), (1, 0.0, 2.6, 30)], hof_w_, boden_)
         werkplatz(f"Unterstand {name_}", [(17, 0.0, 0.6, 0), (4, 3.6, 1.6, 10)], hof_w_, boden_, tiefe=1.6)
+        # Heuplatz: zwei Heuhaufen und ein Karren, der gerade abgeladen wird
+        werkplatz(f"Heuplatz {name_}", [(18, -1.3, 0.2, 0), (18, 1.2, 0.5, 35), (4, 4.3, 1.5, 80)],
+                  hof_w_, boden_, tiefe=1.2)
+    # Ladeplatz an der Hofmauer: ein Karren, daneben Fässer, Kisten und Säcke (Vorräte, die gerade ankommen)
+    werkplatz(f"Ladeplatz {name_}", [(4, 0.0, 1.6, 15), (0, 3.1, 0.4, 0), (0, 3.9, 0.8, 0), (0, 3.4, 1.6, 0),
+                                     (1, -3.1, 0.5, 10), (1, -3.2, 1.5, 40), (2, -2.1, 2.5, 0)], hof_w_, boden_, tiefe=1.0)
+    if name_ in ("Mittelburg", "Oberburg"):
+        # Tränke für die Reitpferde der Boten, daneben ein Wasserfass
+        werkplatz(f"Tränke {name_}", [(12, 0.0, 0.4, 0), (0, 1.9, 0.3, 0)], hof_w_, boden_)
     # Feuerkörbe zu beiden Seiten jedes Tors, innen im Hof
     for tor_ in PD.TORE.values():
         tw_ = W(tor_)

@@ -219,6 +219,13 @@ for _t, _s, _alt, _neu, _riegel in stummel_an_tuermen():
                                          % (m2_.group(1), _t[0], _t[1], r_[0] + 0.5), k2_)
 # An einer Ecke der Vorburg liegen 12 m zwischen den Wehrgängen: ein Treppenturm verbindet sie
 print("Treppenturm Vorburg: Wehrgänge auf %.2f und %.2f" % treppenturm("TreppenturmVorburg", "Drachenstein/Burgen", TREPPENTURM_VORBURG))
+# In der Burg keine schwebenden Tornamen (wie bei Höfen und Bauten zeigt die Oberfläche den Ort beim Betreten an)
+_tornamen = 0
+for j_, k_ in enumerate(knoten):
+    if re.search(r'\[node name="\w+Tor\d+Schild" type="Label3D" parent="Drachenstein/Burgen"\]', k_):
+        knoten[j_] = ""
+        _tornamen += 1
+print("Tornamen in der Burg entfallen:", _tornamen)
 # Banner an der Wand (Fahnen Art 1), die in einem Torbau oder Turm hingen (z. B. über einem Tor, hinter dem ein hohler
 # Torbau steht): vor dessen Wand rücken, in ihrer eigenen Richtung, so dass das Tuch vor der Fläche hängt
 _eckig, _rund = [], []

@@ -223,6 +223,21 @@ for hofname_ in ("Vorburg", "Mittelburg", "Oberburg", "Palas"):
                haltung="knien" if _ar % 2 == 0 else "arbeiten")
         _ar += 1
 print("Burgleben: an den Lagerplätzen", _ar)
+# An Heu- und Ladeplätzen lädt jemand ab (steht vor dem Karren, Blick zur Mauer)
+for wn_, (px_, pz_, (ux_, uz_), (nx_, nz_), boden_) in sorted(WERKPLAETZE.items()):
+    if not (wn_.startswith("Heuplatz") or wn_.startswith("Ladeplatz")):
+        continue
+    for q_ in (3.4, 4.0, 4.6):
+        x_, z_ = px_ + nx_ * q_, pz_ + nz_ * q_
+        if not any(_drin((x_, z_), r_) for r_ in _HINDERNISSE):
+            break
+    else:
+        continue
+    person(f"Arbeit{_ar}", BL, round(x_, 2), boden_, round(z_, 2), ARBEIT_NAMEN[_ar % len(ARBEIT_NAMEN)], "burggesinde", 0,
+           GESINDE_TRACHTEN[(_ar + 1) % 4], gier=round(math.degrees(math.atan2(-nx_, -nz_)), 1), sichtbar_wenn="alarm<3",
+           haltung="arbeiten" if _ar % 2 == 0 else "knien")
+    _ar += 1
+print("Burgleben: mit den Heu- und Ladeplätzen", _ar)
 
 # --- Der Schmied am Amboss ---
 if "Schmiede" in WERKPLAETZE:
