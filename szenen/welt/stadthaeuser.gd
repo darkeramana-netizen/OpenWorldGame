@@ -236,10 +236,16 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 			for i in n:
 				var za := zv - tritt * (i + 1)
 				_quader(flaechen, "balken", Vector3(minf(x0, x1), y0, za), Vector3(maxf(x0, x1), y0 + r * (i + 1) / n, za + tritt + 0.02))
-			# unsichtbare Lauffläche über die Stufenkanten (nur Kollision)
+			# unsichtbare Lauffläche über die Stufenkanten (nur Kollision): ein Tritt vor der ersten Stufe vom Boden
+			# aus, durch alle Vorderkanten bis auf die oberste Stufe, dann eben bis an die Wand
 			var rs := _st(flaechen, "rampe")
-			_viereck(rs, Vector3(minf(x0, x1), y0 + 0.02, zv), Vector3(maxf(x0, x1), y0 + 0.02, zv),
-				Vector3(maxf(x0, x1), y0 + r + 0.02, zh), Vector3(minf(x0, x1), y0 + r + 0.02, zh))
+			var xa := minf(x0, x1)
+			var xb := maxf(x0, x1)
+			var z_vorn := zv + tritt
+			_viereck(rs, Vector3(xa, y0 + 0.02, z_vorn), Vector3(xb, y0 + 0.02, z_vorn),
+				Vector3(xb, y0 + r + 0.02, zh + tritt), Vector3(xa, y0 + r + 0.02, zh + tritt))
+			_viereck(rs, Vector3(xa, y0 + r + 0.02, zh + tritt), Vector3(xb, y0 + r + 0.02, zh + tritt),
+				Vector3(xb, y0 + r + 0.02, zh), Vector3(xa, y0 + r + 0.02, zh))
 		for seite: int in [1, -1]:
 			var anzahl := maxi(2, int(b / 2.3))
 			for g in og + 1:
