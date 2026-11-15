@@ -2834,57 +2834,228 @@ func _raum_fuellen(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L
 						s += zufall.randf_range(0.75, 1.3)
 					else:
 						s += 0.3
-		# Große Säle im Wohn- und Gesindehaus: weitere Tische mit Bänken entlang der Achse (zum Giebel +L hin, der Weg
-		# von der Tür zur Treppe am Giebel -L bleibt frei) und eine zweite Reihe Möbel zwischen Wand und Mittelgang
-		var tische: Array[Vector2] = []
+		# Die Raumfläche füllen: Inseln (Möbelgruppen je nach Zweck) auf einem Raster zwischen den Möbeln an den Wänden.
+		# Frei bleiben nur die Wege: von der Tür hinein und die Achse entlang zur Treppe am Giebel -L, der Bereich vor
+		# der Treppe, der Haupttisch mit seinen Leuten, die Plätze der Personen im Bau (teil_burgleben.py) und der Giebel
+		# +L (Kamin, Herd, Betten); zwischen den Inseln bleiben Gassen.
 		var ts0 := iL * (0.42 if art == 3 else 0.15)
 		var lang0 := minf(iL * 0.9, 6.0) if art == 3 else minf(iL * 0.5, 2.4)
-		tische.append(Vector2(ts0 - lang0 / 2.0, ts0 + lang0 / 2.0))
-		if zweck in [0, 5] and iB >= 3.0 and not (k == 0 and zweck == 4):
-			var ts := ts0 + lang0 / 2.0 + 2.6
-			while ts + 1.2 < iL - 2.6:
-				var lg := 2.4
-				_klotz("holz", c + uz * (ts + lg / 2.0), uz, nx, -lg / 2.0, lg / 2.0, -0.5, 0.5, y + 0.72, y + 0.8)
-				for e: float in [-1.0, 1.0]:
-					_klotz("holz", c + uz * (ts + lg / 2.0 + e * (lg / 2.0 - 0.3)), uz, nx, -0.08, 0.08, -0.4, 0.4, y, y + 0.72)
-					_klotz("holz", c + uz * (ts + lg / 2.0) + nx * e * 0.95, uz, nx, -lg / 2.0, lg / 2.0, -0.18, 0.18, y + 0.42, y + 0.48)
-					for f: float in [-1.0, 1.0]:
-						_klotz("holz", c + uz * (ts + lg / 2.0 + f * (lg / 2.0 - 0.25)) + nx * e * 0.95, uz, nx, -0.05, 0.05, -0.15, 0.15, y, y + 0.42)
-				# auf dem Tisch: Krug, Becher, Brett mit Brot
-				_mantel("zier_ziegelton", c + uz * (ts + 0.5), 0.08, 0.06, y + 0.8, y + 1.05, 8)
-				_klotz("zier_holz", c + uz * (ts + 1.4), uz, nx, -0.2, 0.2, -0.14, 0.14, y + 0.8, y + 0.83)
-				_klotz("zier_schinken", c + uz * (ts + 1.4), uz, nx, -0.1, 0.1, -0.07, 0.07, y + 0.83, y + 0.93)
-				tische.append(Vector2(ts, ts + lg))
-				ts += lg + 3.0
-			var qm := iB - 1.55
-			var q2 := qm - 1.75
-			if q2 >= 1.7:
-				for e: float in [-1.0, 1.0]:
-					var sm := s0 + 1.0
-					while sm < s1 - 1.0:
-						var st_ := _mitte_wahl(zweck, zufall)
-						var br: float = st_[1]
-						var frei := true
-						for t: Vector2 in tische:
-							if sm + br > t.x - 1.2 and sm < t.y + 1.2:
-								frei = false
-						if k == 0 and e > 0.0 and absf(sm + br / 2.0) < 2.4:
-							frei = false                                  # vor der Tür
-						if frei:
-							_mitte_stueck(st_[0], c + uz * (sm + br / 2.0) + nx * e * q2, uz, nx * -e, br, y, zufall)
-							sm += br + zufall.randf_range(0.8, 1.6)
-						else:
-							sm += 0.6
+		if not saal and not (zweck == 4 and k == 0) and zweck != 6:
+			_inseln(zweck, k, c, uz, nx, iL, iB, y, s0 + 0.5, iL - 2.7, ts0, lang0, zufall)
 		# Teppich bzw. Binsenmatte unter dem Tisch in der Mitte (der Rittersaal hat schon seinen Teppich)
 		if zweck in [0, 5] and iB > 2.0:
-			var ts := iL * (0.42 if art == 3 else 0.15)
-			var lang := minf(iL * 0.5, 2.4) + 1.8
+			var ts := ts0
+			var lang := lang0 + 1.8
 			var quer := minf(1.4, iB - 0.9)
 			var mat: String = ["zier_teppich_rot", "zier_teppich_blau", "zier_teppich_gruen"][zufall.randi() % 3] if zweck == 3 else "zier_stroh"
 			_klotz(mat, c + uz * ts, uz, nx, -lang / 2.0, lang / 2.0, -quer, quer, y + 0.004, y + 0.016)
 			if zweck == 3:
 				_klotz("zier_hell", c + uz * ts, uz, nx, -lang / 2.0 + 0.12, lang / 2.0 - 0.12, -quer + 0.12, -quer + 0.2, y + 0.016, y + 0.019)
 				_klotz("zier_hell", c + uz * ts, uz, nx, -lang / 2.0 + 0.12, lang / 2.0 - 0.12, quer - 0.2, quer - 0.12, y + 0.016, y + 0.019)
+
+
+## Inseln in der Raumfläche eines Geschosses (Boden y): ein Raster aus Zellen (3,1 m entlang, 2,9 m quer) zwischen
+## den Möbelreihen an den Wänden (|q| bis iB - 2,3) und von s_a bis s_b. Gesperrt sind der Weg von der Tür (Mitte der
+## Längsseite +B, nur im Erdgeschoss) und die Achse zur Treppe, der Haupttisch (ts, lang) samt Bänken und den Leuten
+## daran und die festen Plätze der Personen je Zweck. Jede Zelle bekommt eine Möbelgruppe, die zum Raum passt.
+func _inseln(zweck: int, k: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, iB: float, y: float, s_a: float,
+		s_b: float, ts: float, lang: float, zufall: RandomNumberGenerator) -> void:
+	var q_max := iB - 2.3
+	if q_max < 1.4 or s_b - s_a < 2.6:
+		return
+	var personen: Array[Vector2] = []
+	match zweck:
+		1: personen = [Vector2(iL - 2.3, 0.4), Vector2(iL * 0.35, -(iB - 1.35))]
+		2: personen = [Vector2(iL * 0.3, 0.6)]
+		3: personen = [Vector2(iL * 0.42 - 3.5, 1.6), Vector2(iL * 0.42 + 3.5, 1.6)]     # Standleuchter
+	var spalten := maxi(1, int(2.0 * q_max / 2.9))
+	var breite_q := 2.0 * q_max / spalten
+	var zeilen := maxi(1, int((s_b - s_a) / 3.1))
+	var laenge_s := (s_b - s_a) / zeilen
+	var feuer := false
+	for zi in zeilen:
+		for sp in spalten:
+			var sm := s_a + (zi + 0.5) * laenge_s
+			var qm := -q_max + (sp + 0.5) * breite_q
+			var hs := laenge_s / 2.0 - 0.45            # halbe Ausdehnung der Insel (Gassen dazwischen)
+			var hq := breite_q / 2.0 - 0.4
+			var frei := true
+			# Weg von der Tür zur Achse und die Achse entlang zur Treppe (Erdgeschoss); oben die Achse zur Treppe
+			if k == 0 and qm + hq > -0.1 and sm - hs < 1.5 and sm + hs > -1.5:
+				frei = false
+			if absf(qm) - hq < 0.75 and sm - hs < 1.8:
+				frei = false
+			# Haupttisch mit Bänken und Leuten
+			if sm + hs > ts - lang / 2.0 - 1.0 and sm - hs < ts + lang / 2.0 + 1.0 and absf(qm) - hq < 2.0:
+				frei = false
+			if zweck == 3 and absf(qm) - hq < 1.9:
+				frei = false                                  # der Läufer zum Thron
+			for pp: Vector2 in personen:
+				if absf(pp.x - sm) < hs + 1.2 and absf(pp.y - qm) < hq + 1.2:
+					frei = false
+			if not frei:
+				continue
+			var m := c + uz * sm + nx * qm
+			var n := nx * (1.0 if qm < 0.0 else -1.0)      # zur Achse
+			var liste: Array
+			match zweck:
+				1: liste = ["arbeitstisch_voll", "vorrat", "hackplatz", "zuber", "koerbe", "arbeitstisch_voll"]
+				2: liste = ["waffen", "spiesse", "schleifstein", "pfeile", "waffen", "arbeitstisch"]
+				3: liste = ["pult", "schach", "truhen", "tafel", "kohlebecken"]
+				4: liste = ["heu", "vorrat", "heu"]
+				_:
+					liste = ["esstisch", "schlafstelle", "spinnen", "webstuhl", "vorrat", "waschen", "werkbank", "schlafstelle"]
+					if k == 0 and not feuer and absf(qm) < q_max * 0.75 + 0.1:
+						liste = ["feuerstelle"]
+			var art: String = liste[zufall.randi() % liste.size()]
+			if art == "feuerstelle":
+				feuer = true
+			_insel(art, m, uz, n, minf(hs, 1.45), minf(hq, 1.3), y, zufall)
+
+
+## Eine Möbelgruppe in der Raumfläche: Mitte m, u entlang des Baus, n quer (zur Achse); Ausdehnung ±hs entlang, ±hq quer.
+func _insel(art: String, m: Vector2, u: Vector2, n: Vector2, hs: float, hq: float, y: float, zufall: RandomNumberGenerator) -> void:
+	match art:
+		"esstisch", "tafel":
+			var lg := minf(2.0 * hs - 0.4, 2.4)
+			_klotz("holz", m, u, n, -lg / 2.0, lg / 2.0, -0.45, 0.45, y + 0.72, y + 0.8)
+			for e: float in [-1.0, 1.0]:
+				_klotz("holz", m + u * e * (lg / 2.0 - 0.3), u, n, -0.07, 0.07, -0.35, 0.35, y, y + 0.72)
+				if art == "esstisch":
+					_klotz("holz", m + n * e * 0.85, u, n, -lg / 2.0, lg / 2.0, -0.16, 0.16, y + 0.42, y + 0.48)
+					for f: float in [-1.0, 1.0]:
+						_klotz("holz", m + u * f * (lg / 2.0 - 0.25) + n * e * 0.85, u, n, -0.05, 0.05, -0.13, 0.13, y, y + 0.42)
+				else:
+					for f: float in [-0.5, 0.5]:
+						_stuhl(m + u * f * lg * 0.6 + n * e * 0.8, u, n * -e, y)
+			_mantel("zier_ziegelton", m + u * (-lg * 0.25), 0.08, 0.06, y + 0.8, y + 1.05, 8)
+			_mantel("zier_holz", m + u * (lg * 0.1) + n * 0.2, 0.04, 0.04, y + 0.8, y + 0.92, 6)
+			_mantel("zier_holz", m + u * (lg * 0.1) - n * 0.2, 0.04, 0.04, y + 0.8, y + 0.92, 6)
+			_klotz("zier_holz", m + u * (lg * 0.3), u, n, -0.2, 0.2, -0.14, 0.14, y + 0.8, y + 0.83)
+			_klotz("zier_schinken", m + u * (lg * 0.3), u, n, -0.1, 0.1, -0.07, 0.07, y + 0.83, y + 0.93)
+		"feuerstelle":
+			# Herdstelle aus Steinen mit Glut, darüber ein Kessel am Dreibein, Schemel und Holz daneben
+			for i in 10:
+				var w := TAU * i / 10.0
+				_klotz("bruchstein", m + u * cos(w) * 0.7 + n * sin(w) * 0.7, u, n, -0.14, 0.14, -0.14, 0.14, y, y + 0.22)
+			_klotz("glut", m, u, n, -0.45, 0.45, -0.45, 0.45, y, y + 0.08)
+			_klotz("zier_holz", m, u, n, -0.4, 0.4, -0.06, 0.06, y + 0.06, y + 0.14)
+			_klotz("zier_holz", m, u, n, -0.06, 0.06, -0.4, 0.4, y + 0.08, y + 0.16)
+			for i in 3:
+				var w := TAU * i / 3.0
+				var fuss := m + u * cos(w) * 0.85 + n * sin(w) * 0.85
+				_balken("zier_metall", Vector3(fuss.x, y, fuss.y), Vector3(m.x, y + 1.5, m.y), 0.04, 0.04)
+			_klotz("zier_metall", m, u, n, -0.01, 0.01, -0.01, 0.01, y + 0.85, y + 1.5)
+			_mantel("metall", m, 0.24, 0.3, y + 0.5, y + 0.85, 10)
+			_mantel("zier_dunkel", m, 0.0, 0.25, y + 0.85, y + 0.86, 10)
+			_stuhl(m + u * 1.25, u, -u, y, true)
+			_stuhl(m - n * 1.15 + u * 0.3, u, n, y, true)
+			_kleinkram(0, m + u * -1.3 + n * 0.6 - n * 0.28, u, n, y, zufall)
+			var licht := OmniLight3D.new()
+			licht.position = Vector3(m.x, y + 0.6, m.y)
+			licht.light_color = Color(1.0, 0.6, 0.3)
+			licht.light_energy = 1.2
+			licht.omni_range = 6.0
+			add_child(licht)
+		"schlafstelle":
+			for e: float in [-1.0, 1.0]:
+				var b := m + n * e * 0.55
+				_klotz("stroh", b, u, n, -0.95, 0.95, -0.42, 0.42, y, y + 0.18)
+				var decke: String = ["zier_fell", "zier_leinen", "zier_teppich_blau", "zier_fell_hell"][zufall.randi() % 4]
+				_klotz(decke, b + u * 0.25, u, n, -0.65, 0.65, -0.4, 0.4, y + 0.18, y + 0.23)
+				_klotz("zier_leinen", b - u * 0.75, u, n, -0.15, 0.15, -0.28, 0.28, y + 0.18, y + 0.28)
+			_hausrat_klein_truhe(m + u * (hs - 0.35), u, n, y)
+		"spinnen":
+			_mitte_stueck("spinnrad", m, u, n, 1.4, y, zufall)
+			_mitte_stueck("koerbe", m - n * 1.1, u, n, 1.3, y, zufall)
+		"webstuhl":
+			_mitte_stueck("webstuhl", m, u, n, 1.7, y, zufall)
+			_stuhl(m - n * 0.95, u, n, y, true)
+		"vorrat":
+			for i in 3:
+				var f := m + u * (i - 1) * 0.65 + n * 0.45
+				_mantel("holz", f, 0.3, 0.3, y, y + 0.85, 12)
+				_mantel("zier_metall", f, 0.31, 0.31, y + 0.15, y + 0.2, 12)
+				_mantel("zier_metall", f, 0.31, 0.31, y + 0.65, y + 0.7, 12)
+			_klotz("holz", m - n * 0.45 + u * 0.3, u, n, -0.38, 0.38, -0.32, 0.32, y, y + 0.62)
+			_klotz("holz", m - n * 0.45 + u * 0.3, u, n, -0.32, 0.32, -0.28, 0.28, y + 0.62, y + 1.12)
+			_klotz("zier_leinen", m - n * 0.45 - u * 0.65, u, n, -0.28, 0.28, -0.22, 0.22, y, y + 0.5)
+			_klotz("zier_leinen", m - n * 0.45 - u * 0.65 + u * 0.12, u, n, -0.22, 0.22, -0.2, 0.2, y + 0.5, y + 0.82)
+		"waschen":
+			_mitte_stueck("zuber", m, u, n, 1.1, y, zufall)
+			_kleinkram(0, m + u * 0.9 - n * 0.28, u, n, y, zufall)
+			_mantel("zier_stroh", m - u * 0.9, 0.22, 0.28, y, y + 0.4, 8)
+			_klotz("zier_leinen", m - u * 0.9, u, n, -0.2, 0.2, -0.2, 0.2, y + 0.35, y + 0.45)
+		"werkbank", "arbeitstisch":
+			_mitte_stueck("arbeitstisch", m, u, n, 1.7, y, zufall)
+			_stuhl(m - n * 0.75, u, n, y, true)
+			_kleinkram(0, m + u * 1.1 - n * 0.28, u, n, y, zufall)
+		"arbeitstisch_voll":
+			_mitte_stueck("arbeitstisch", m, u, n, 1.7, y, zufall)
+			_mitte_stueck("koerbe", m - n * 1.1, u, n, 1.3, y, zufall)
+		"hackplatz":
+			_mantel("holz", m, 0.32, 0.36, y, y + 0.7, 12)
+			_klotz("zier_metall", m + u * 0.05, u, n, -0.02, 0.18, -0.02, 0.02, y + 0.7, y + 0.82)
+			for i in 2:
+				var f := m + u * (i + 0.9) * 0.65
+				_mantel("holz", f, 0.3, 0.3, y, y + 0.85, 12)
+				_mantel("zier_metall", f, 0.31, 0.31, y + 0.15, y + 0.2, 12)
+		"zuber":
+			_mitte_stueck("zuber", m, u, n, 1.1, y, zufall)
+		"koerbe":
+			_mitte_stueck("koerbe", m, u, n, 1.3, y, zufall)
+			_mitte_stueck("koerbe", m - n * 1.0 + u * 0.5, u, n, 1.3, y, zufall)
+		"waffen":
+			_mitte_stueck("waffenkiste", m - u * 0.7, u, n, 1.3, y, zufall)
+			_mitte_stueck("ruestbock", m + u * 0.8, u, n, 1.0, y, zufall)
+		"pfeile":
+			_mitte_stueck("pfeilfass", m - u * 0.5, u, n, 0.9, y, zufall)
+			_mitte_stueck("pfeilfass", m + u * 0.5, u, n, 0.9, y, zufall)
+		"spiesse":
+			_klotz("holz", m, u, n, -1.0, 1.0, -0.06, 0.06, y + 1.2, y + 1.28)
+			_klotz("holz", m, u, n, -1.0, 1.0, -0.06, 0.06, y + 0.3, y + 0.37)
+			for e: float in [-1.0, 1.0]:
+				_klotz("holz", m + u * e, u, n, -0.05, 0.05, -0.3, 0.3, y, y + 1.3)
+			var t := -0.85
+			while t < 0.9:
+				_klotz("holz", m + u * t, u, n, -0.02, 0.02, -0.02, 0.02, y, y + 2.4)
+				_klotz("zier_metall", m + u * t, u, n, -0.035, 0.035, -0.008, 0.008, y + 2.4, y + 2.68)
+				t += 0.22
+		"schleifstein":
+			_mantel("bruchstein", m, 0.0, 0.32, y + 0.55, y + 0.65, 14)
+			_klotz("holz", m, u, n, -0.5, 0.5, -0.12, 0.12, y + 0.35, y + 0.45)
+			for e: float in [-1.0, 1.0]:
+				_klotz("holz", m + u * e * 0.42, u, n, -0.05, 0.05, -0.05, 0.05, y, y + 0.35)
+			_klotz("bruchstein", m, u, n, -0.08, 0.08, -0.33, 0.33, y + 0.45, y + 0.95)
+			_mitte_stueck("waffenkiste", m - n * 1.1, u, n, 1.3, y, zufall)
+		"pult", "schach", "kohlebecken":
+			_mitte_stueck(art, m, u, n, 1.2 if art == "pult" else (1.5 if art == "schach" else 0.9), y, zufall)
+			if art != "kohlebecken":
+				_stuhl(m - n * 0.75, u, n, y)
+		"truhen":
+			_hausrat_klein_truhe(m - u * 0.6, u, n, y)
+			_hausrat_klein_truhe(m + u * 0.6, u, n, y)
+		"heu":
+			_mitte_stueck("heu", m, u, n, 1.7, y, zufall)
+			_klotz("zier_leinen", m - n * 1.0, u, n, -0.3, 0.3, -0.22, 0.22, y, y + 0.55)
+
+
+## Stuhl oder Schemel (lehne: nein) an Ort m, das Gesicht nach n
+func _stuhl(m: Vector2, u: Vector2, n: Vector2, y: float, schemel := false) -> void:
+	_klotz("holz", m, u, n, -0.2, 0.2, -0.2, 0.2, y + 0.42, y + 0.48)
+	for su: float in [-1.0, 1.0]:
+		for sn: float in [-1.0, 1.0]:
+			_klotz("holz", m + u * su * 0.15 + n * sn * 0.15, u, n, -0.025, 0.025, -0.025, 0.025, y, y + 0.42)
+	if not schemel:
+		_klotz("holz", m - n * 0.17, u, n, -0.2, 0.2, -0.03, 0.03, y + 0.48, y + 1.0)
+
+
+## Kleine Truhe mit Eisenbändern (Mitte m, Deckel nach oben)
+func _hausrat_klein_truhe(m: Vector2, u: Vector2, n: Vector2, y: float) -> void:
+	_klotz("holz", m, u, n, -0.42, 0.42, -0.27, 0.27, y, y + 0.48)
+	_klotz("holz", m, u, n, -0.44, 0.44, -0.29, 0.29, y + 0.48, y + 0.56, true)
+	for e: float in [-0.25, 0.25]:
+		_klotz("zier_metall", m + u * e, u, n, -0.03, 0.03, -0.3, 0.3, y + 0.02, y + 0.57)
 
 
 ## Etwas, das von der Decke hängt (bis zu "frei" Meter tief, damit man darunter durchgeht), je nach Zweck des Raums
