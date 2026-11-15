@@ -78,6 +78,18 @@ extends Node3D
 	set(w):
 		stein = w
 		_neu_bauen()
+## Räume, die ganz eingerichtet werden (z. B. die Geschosse eines Bergfrieds, dessen Mauern turm.gd baut): je 8 Werte
+## x, z (Mitte), Gier (Grad), halbe Länge (entlang u), halbe Breite (entlang n), Boden, Decke, Art (20 Eingang,
+## 21 Wachstube, 22 Vorratskammer, 23 Waffenkammer, 24 Kammer des Herrn, 25 Archiv, 26 Glockenstube, 27 Türmerstube).
+@export var raeume := PackedFloat32Array():
+	set(w):
+		raeume = w
+		_neu_bauen()
+## Frei zu haltende Kreise in den Räumen: x, z, Radius, Boden (nur dieses Geschoss; unter -999: alle Geschosse)
+@export var raum_frei := PackedVector4Array():
+	set(w):
+		raum_frei = w
+		_neu_bauen()
 ## Rundtürme (Mitte x, z), die im Hang stecken: Ein tieferer Wehrgang, der an ihnen endet, führt an eine verriegelte
 ## Tür (Abschnittstür) statt in ein Untergeschoss, für das im Turm kein Raum ist.
 @export var riegel_tuerme := PackedVector2Array():
@@ -172,6 +184,10 @@ func _baue() -> void:
 	while i + 12 < hallen.size():
 		_halle(hallen.slice(i, i + 13))
 		i += 13
+	i = 0
+	while i + 7 < raeume.size():
+		_raum(raeume.slice(i, i + 8))
+		i += 8
 	i = 0
 	while i + 6 < hoehlen.size():
 		_hoehle(hoehlen.slice(i, i + 7))
@@ -2403,7 +2419,7 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 			var stall_unten := zweck == 4 and k == 0
 			var ts := iL * (0.42 if art == 3 else 0.15)   # im Palas die Tafel hinten, vorn bleibt der Weg zur Treppe frei
 			var lang := minf(iL * 0.9, 6.0) if art == 3 else minf(iL * 0.5, 2.4)
-			if not stall_unten:
+			if not stall_unten and zweck != 1:      # die Küche hat ihren eigenen Arbeitstisch (_kueche_voll)
 				_klotz("holz", c + uz * ts, uz, nx, -lang / 2.0, lang / 2.0, -0.5, 0.5, y + 0.72, y + 0.8)
 				for e: float in [-1.0, 1.0]:
 					_klotz("holz", c + uz * (ts + e * (lang / 2.0 - 0.3)), uz, nx, -0.08, 0.08, -0.4, 0.4, y, y + 0.72)
@@ -2476,15 +2492,18 @@ func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, i
 					_klotz("metall", hm, uz, nx, -0.38, 0.38, -0.38, 0.38, y + 1.0, y + 1.6)
 					_klotz("holz", hm, uz, nx, -0.4, 0.4, -0.4, 0.4, y + 1.6, y + 1.63)
 				for e: float in [-1.0, 1.0]:
-					var ts := iL * 0.35
-					_klotz("holz", c + uz * ts + nx * e * (iB - 0.5), uz, nx, -1.4, 1.4, -0.45, 0.45, y + 0.85, y + 0.92)
+					# Arbeitstische an den Längswänden zwischen Tür und Herd (die Tür bleibt frei)
+					var ts := iL - 2.45
+					_klotz("holz", c + uz * ts + nx * e * (iB - 0.5), uz, nx, -1.2, 1.2, -0.45, 0.45, y + 0.85, y + 0.92)
 					for f: float in [-1.0, 1.0]:
-						_klotz("holz", c + uz * (ts + f * 1.25) + nx * e * (iB - 0.5), uz, nx, -0.07, 0.07, -0.4, 0.4, y, y + 0.85)
+						_klotz("holz", c + uz * (ts + f * 1.05) + nx * e * (iB - 0.5), uz, nx, -0.07, 0.07, -0.4, 0.4, y, y + 0.85)
 					# Töpfe, Krüge und Brotlaibe auf dem Tisch
 					for i in 4:
-						var tp := c + uz * (ts - 1.0 + i * 0.65) + nx * e * (iB - 0.5)
+						var tp := c + uz * (ts - 0.9 + i * 0.6) + nx * e * (iB - 0.5)
 						_klotz("metall" if i % 2 == 0 else "hell", tp, uz, nx, -0.13, 0.13, -0.13, 0.13, y + 0.92, y + 1.15 + 0.08 * (i % 3))
 				_regal(c + uz * (-iL * 0.1) + nx * -(iB - 0.25), uz, nx, -1.0, y, 1.8, 2.2)
+				if k == 0:
+					_kueche_voll(c, uz, nx, iL, iB, y, decke)
 			2:   # Zeughaus: Waffenständer mit Spießen, Rüstungsständer, Schilde an der Wand, Kisten
 				var s_ := frei_s
 				var i := 0
@@ -2686,7 +2705,7 @@ func _hausrat(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L: flo
 				sperren.append(Vector2(ts - lang / 2.0 - 0.3, ts + lang / 2.0 + 0.3))   # Tisch in der Mitte reicht bis an die Wand
 			match zweck:
 				1:
-					sperren.append(Vector2(iL * 0.35 - 1.6, iL * 0.35 + 1.6))
+					sperren.append(Vector2(iL - 3.85, iL))
 					if e < 0:
 						sperren.append(Vector2(-iL * 0.1 - 1.0, -iL * 0.1 + 1.0))
 				3:
@@ -2809,13 +2828,17 @@ func _raum_fuellen(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L
 		var saal := zweck == 3 and k == stockwerke - 1
 		var s0 := frei_s + 0.3 if stockwerke > 1 else -iL + 0.5
 		var s1 := iL - 0.5
-		# an der Decke
+		# an der Decke; in hohen Räumen (ein Geschoss bis unters Dach) an Hängestangen auf 3,3 m
 		if hoehe >= 2.6:
+			var hoch := hoehe > 4.2 and zweck != 3
+			var hy := y + 3.3 if hoch else decke
 			for e: float in [-1.0, 1.0]:
 				var s := s0 + zufall.randf() * 0.5
 				while s < s1:
-					_haenge(zweck, saal, c + uz * s + nx * e * iB * 0.55, uz, nx, decke, decke - (y + 2.1), zufall)
+					_haenge(zweck, saal, c + uz * s + nx * e * iB * 0.55, uz, nx, hy, hy - (y + 2.1), zufall)
 					s += zufall.randf_range(0.6, 1.2) * (2.2 if zweck == 3 else 1.0)
+				if hoch:
+					_stange(c, uz, nx, s0, s1, e * iB * 0.55, hy, decke)
 		# an den Wänden über dem Hausrat
 		var w0 := y + 2.3
 		var w1 := minf(y + 3.0, decke - 0.12)
@@ -2840,7 +2863,7 @@ func _raum_fuellen(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L
 		# +L (Kamin, Herd, Betten); zwischen den Inseln bleiben Gassen.
 		var ts0 := iL * (0.42 if art == 3 else 0.15)
 		var lang0 := minf(iL * 0.9, 6.0) if art == 3 else minf(iL * 0.5, 2.4)
-		if not saal and not (zweck == 4 and k == 0) and zweck != 6:
+		if not saal and not (zweck == 4 and k == 0) and zweck != 6 and zweck != 1:
 			_inseln(zweck, k, c, uz, nx, iL, iB, y, -iL + 1.7, iL - 2.7, ts0, lang0, frei_s if stockwerke > 1 else NAN, zufall)
 		# Teppich bzw. Binsenmatte unter dem Tisch in der Mitte (der Rittersaal hat schon seinen Teppich)
 		if zweck in [0, 5] and iB > 2.0:
@@ -2931,6 +2954,290 @@ func _inseln(zweck: int, k: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float
 				var n := nx * (1.0 if qm < 0.0 else -1.0)      # zur Achse
 				_insel(art, m, uz, n, lg / 2.0, hq, y, zufall)
 				sv += lg + zufall.randf_range(0.45, 0.8)
+
+
+## Die Burgküche ganz eingerichtet (Erdgeschoss, Boden y; s entlang uz mit dem Herd am Giebel +L, q entlang nx mit der
+## Tür in der Mitte der Längsseite +B): in der Mitte ein großer Arbeitstisch voller Brot, Kohl, Zwiebeln, Fisch, Töpfe
+## und Schüsseln mit Schemeln, darüber ein Hängegestell mit Töpfen, Kellen, Würsten und Kräutern; am Herd ein Bratspieß,
+## daneben Brennholz und Wasserfass mit Butterfass; am Giebel -L die Vorräte (Fässer, Mehlsäcke, Gemüsekörbe) und ein
+## Backtrog; neben dem Tisch ein Hackplatz. Frei bleiben der Weg von der Tür und die Plätze von Koch und Magd.
+func _kueche_voll(c: Vector2, uz: Vector2, nx: Vector2, iL: float, iB: float, y: float, decke: float) -> void:
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = hash(Vector2i(int(c.x * 13.0), int(c.y * 13.0)))
+	var p := func(s: float, q: float) -> Vector2:
+		return c + uz * s + nx * q
+	# Arbeitstisch
+	var t0 := -1.55
+	var t1 := 0.85
+	var tm: Vector2 = p.call((t0 + t1) / 2.0, 0.0)
+	var tl := (t1 - t0) / 2.0
+	_klotz("holz", tm, uz, nx, -tl, tl, -0.55, 0.55, y + 0.82, y + 0.92, true)
+	for su: float in [-1.0, 1.0]:
+		for sn: float in [-1.0, 1.0]:
+			_klotz("holz", tm + uz * su * (tl - 0.12) + nx * sn * 0.43, uz, nx, -0.06, 0.06, -0.06, 0.06, y, y + 0.82)
+	_klotz("holz", tm, uz, nx, -tl + 0.12, tl - 0.12, -0.04, 0.04, y + 0.2, y + 0.27)
+	var tisch := y + 0.92
+	var waren := ["brot", "kohl", "zwiebeln", "fisch", "topf", "schuessel", "brett", "krug", "brot", "kohl"]
+	var sv := -tl + 0.2
+	while sv < tl - 0.2:
+		for sn: float in [-0.25, 0.25]:
+			var wm := tm + uz * sv + nx * sn
+			match waren[zufall.randi() % waren.size()]:
+				"brot":
+					_klotz("zier_schinken", wm, uz, nx, -0.13, 0.13, -0.08, 0.08, tisch, tisch + 0.09)
+				"kohl":
+					_klotz("zier_kraut", wm, uz, nx, -0.1, 0.1, -0.1, 0.1, tisch, tisch + 0.17)
+				"zwiebeln":
+					for i in 4:
+						_klotz("zier_zwiebel", wm + uz * (i % 2) * 0.08 + nx * (i / 2) * 0.08, uz, nx, -0.035, 0.035, -0.035, 0.035, tisch, tisch + 0.07)
+				"fisch":
+					_klotz("zier_fisch", wm, uz, nx, -0.2, 0.2, -0.05, 0.05, tisch, tisch + 0.04)
+				"topf":
+					_mantel("metall", wm, 0.13, 0.12, tisch, tisch + 0.18, 10)
+				"schuessel":
+					_mantel("zier_holz", wm, 0.08, 0.15, tisch, tisch + 0.08, 10)
+				"brett":
+					_klotz("zier_holz", wm, uz, nx, -0.18, 0.18, -0.12, 0.12, tisch, tisch + 0.025)
+					_klotz("zier_metall", wm + uz * 0.05, uz, nx, -0.12, 0.08, -0.012, 0.012, tisch + 0.025, tisch + 0.035)
+				"krug":
+					_mantel("zier_ziegelton", wm, 0.08, 0.06, tisch, tisch + 0.25, 8)
+		sv += zufall.randf_range(0.32, 0.45)
+	for s_: float in [t0 + 0.5, t1 - 0.6]:
+		_stuhl(p.call(s_, -0.95), uz, nx, y, true)
+	# Hängegestell über dem Tisch: zwei Stangen an Seilen, daran Gerät und Vorräte
+	var hy := y + 2.6
+	for sn: float in [-0.3, 0.3]:
+		_klotz("zier_holz", tm + nx * sn, uz, nx, -tl, tl, -0.035, 0.035, hy, hy + 0.07)
+		for su: float in [-1.0, 1.0]:
+			_klotz("zier_holz", tm + nx * sn + uz * su * (tl - 0.2), uz, nx, -0.012, 0.012, -0.012, 0.012, hy + 0.07, decke)
+		var h_ := -tl + 0.15
+		while h_ < tl - 0.1:
+			var hm := tm + nx * sn + uz * h_
+			match zufall.randi() % 5:
+				0:
+					_klotz("zier_metall", hm, uz, nx, -0.01, 0.01, -0.01, 0.01, hy - 0.12, hy)
+					_mantel("metall", hm, 0.11, 0.1, hy - 0.3, hy - 0.12, 8)
+				1:
+					_klotz("zier_holz", hm, uz, nx, -0.015, 0.015, -0.015, 0.015, hy - 0.45, hy)
+					_mantel("zier_holz", hm, 0.06, 0.03, hy - 0.52, hy - 0.45, 6)
+				2:
+					for i in 3:
+						_klotz("zier_wurst", hm + uz * (i - 1) * 0.05, uz, nx, -0.022, 0.022, -0.022, 0.022, hy - zufall.randf_range(0.25, 0.4), hy)
+				3:
+					_klotz("zier_kraut_trocken", hm, uz, nx, -0.04, 0.04, -0.04, 0.04, hy - 0.32, hy)
+				_:
+					_klotz("zier_metall", hm, uz, nx, -0.08, 0.08, -0.01, 0.01, hy - 0.28, hy - 0.04)
+			h_ += zufall.randf_range(0.18, 0.3)
+	# Bratspieß über dem Herdfeuer mit einem Braten
+	var hs := iL - 0.95
+	for sn: float in [-1.0, 1.0]:
+		_klotz("zier_metall", p.call(hs, sn * 1.45), uz, nx, -0.025, 0.025, -0.025, 0.025, y + 0.95, y + 1.35)
+	_klotz("zier_metall", p.call(hs, 0.0), uz, nx, -0.012, 0.012, -1.5, 1.5, y + 1.28, y + 1.31)
+	_klotz("zier_schinken", p.call(hs, 0.1), uz, nx, -0.17, 0.17, -0.32, 0.32, y + 1.13, y + 1.45)
+	_klotz("zier_metall", p.call(hs, 1.62), uz, nx, -0.02, 0.02, -0.02, 0.2, y + 1.28, y + 1.31)     # Kurbel
+	# neben dem Herd: Brennholz (eine Seite), Wasserfass und Butterfass (andere Seite)
+	var holz: Vector2 = p.call(iL - 0.5, -3.3)
+	for r in 4:
+		for i in 4 - r % 2:
+			_klotz("holz", holz + nx * (i - 1.5) * 0.24 + nx * (r % 2) * 0.12, uz, nx, -0.4, 0.4, -0.11, 0.11, y + r * 0.21, y + r * 0.21 + 0.2)
+	var wf: Vector2 = p.call(iL - 0.55, 3.2)
+	_mantel("holz", wf, 0.38, 0.38, y, y + 0.9, 12)
+	_mantel("zier_metall", wf, 0.39, 0.39, y + 0.2, y + 0.25, 12)
+	_mantel("zier_metall", wf, 0.39, 0.39, y + 0.7, y + 0.75, 12)
+	_mantel("wasser_innen", wf, 0.0, 0.35, y + 0.85, y + 0.86, 12)
+	var bf: Vector2 = p.call(iL - 0.5, 2.3)
+	_mantel("holz", bf, 0.2, 0.16, y, y + 0.8, 10)
+	_klotz("zier_holz", bf, uz, nx, -0.015, 0.015, -0.015, 0.015, y + 0.8, y + 1.25)
+	# Vorräte am Giebel -L: Fässer und Säcke (eine Seite), Gemüsekörbe und Mehlsäcke (andere), dazwischen der Backtrog
+	for i in 3:
+		var fm: Vector2 = p.call(-iL + 0.6, -1.4 - i * 0.68)
+		_mantel("holz", fm, 0.3, 0.3, y, y + 0.85, 12)
+		_mantel("zier_metall", fm, 0.31, 0.31, y + 0.15, y + 0.2, 12)
+		_mantel("zier_metall", fm, 0.31, 0.31, y + 0.65, y + 0.7, 12)
+	_mantel("holz", p.call(-iL + 0.6, -2.08), 0.28, 0.28, y + 0.86, y + 1.6, 12)
+	for i in 3:
+		_klotz("zier_leinen", p.call(-iL + 1.45, -1.5 - i * 0.6), uz, nx, -0.25, 0.25, -0.2, 0.2, y, y + 0.55)
+	_klotz("zier_leinen", p.call(-iL + 1.45, -1.8), uz, nx, -0.22, 0.22, -0.18, 0.18, y + 0.55, y + 0.95)
+	for i in 4:
+		var km: Vector2 = p.call(-iL + 0.55 + (i % 2) * 0.62, 1.5 + (i / 2) * 0.7)
+		_mantel("zier_stroh", km, 0.2, 0.27, y, y + 0.36, 8)
+		_klotz(["zier_apfel", "zier_zwiebel", "zier_kraut", "zier_knoblauch"][i], km, uz, nx, -0.17, 0.17, -0.17, 0.17, y + 0.28, y + 0.38)
+	for i in 2:
+		_klotz("zier_leinen", p.call(-iL + 1.75, 1.6 + i * 0.65), uz, nx, -0.25, 0.25, -0.2, 0.2, y, y + 0.6)
+	var bt: Vector2 = p.call(-iL + 0.75, 0.0)
+	_klotz("holz", bt, uz, nx, -0.32, 0.32, -0.75, 0.75, y + 0.55, y + 0.85)
+	_klotz("zier_leinen", bt, uz, nx, -0.26, 0.26, -0.68, 0.68, y + 0.85, y + 0.87)
+	for sn: float in [-1.0, 1.0]:
+		_klotz("holz", bt + nx * sn * 0.62, uz, nx, -0.25, 0.25, -0.05, 0.05, y, y + 0.55)
+	# Hackplatz neben dem Tisch (auf der Seite ohne Tür)
+	var hk: Vector2 = p.call(-0.4, -2.25)
+	_mantel("holz", hk, 0.3, 0.34, y, y + 0.7, 12)
+	_klotz("zier_metall", hk + uz * 0.05, uz, nx, -0.02, 0.17, -0.02, 0.02, y + 0.7, y + 0.82)
+	_klotz("zier_holz", hk + uz * 0.05, uz, nx, -0.015, 0.015, -0.015, 0.015, y + 0.78, y + 1.15)
+	_mantel("zier_holz", p.call(-0.4, -1.55), 0.13, 0.15, y, y + 0.32, 10)
+	_mantel("zier_stroh", p.call(0.45, -2.3), 0.18, 0.24, y, y + 0.35, 8)
+
+
+## Ein ganz eingerichteter Raum (siehe raeume): an allen vier Wänden Hausrat, darüber Gerät und Schmuck, in der
+## Fläche Möbelgruppen auf einem Raster, in hohen Räumen Hängestangen auf 3,3 m mit Vorräten oder Gerät, ein Licht.
+## Frei bleiben die Kreise aus raum_frei (Treppe, Wege, Glocke).
+func _raum(w: PackedFloat32Array) -> void:
+	var c := Vector2(w[0], w[1])
+	var g := deg_to_rad(w[2])
+	var u := Vector2(cos(g), -sin(g))
+	var n := Vector2(sin(g), cos(g))
+	var hl: float = w[3]
+	var hb: float = w[4]
+	var y: float = w[5]
+	var decke: float = w[6]
+	var art := int(w[7])
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = hash(Vector3i(int(c.x * 10.0), int(y * 10.0), int(c.y * 10.0)))
+	var frei := func(p: Vector2, rand: float) -> bool:
+		for f: Vector4 in raum_frei:
+			if (f.w < -999.0 or absf(f.w - y) < 0.1) and p.distance_to(Vector2(f.x, f.y)) < f.z + rand:
+				return false
+		return true
+	# Wandhausrat [Name, Breite, Höhe], Raumgruppen, Zweck für Gehänge und Wandstücke (wie bei den Gebäuden)
+	var wand: Array = []
+	var mitte: Array = []
+	var zweck_haenge := 0
+	var zweck_wand := 5
+	match art:
+		20:
+			wand = [["wandbank", 1.8], ["truhe", 1.1], ["haken", 1.2], ["faesser", 1.4], ["kisten", 1.0]]
+			mitte = ["vorrat", "waffen", "truhen"]
+			zweck_haenge = 2
+			zweck_wand = 2
+		21, 27:
+			wand = [["wandbank", 1.8], ["haken", 1.2], ["strohlager", 2.1], ["truhe", 1.1], ["faesser", 1.4], ["wandbrett", 1.6]]
+			mitte = ["esstisch", "schlafstelle", "kohlebecken", "waffen", "schlafstelle", "vorrat"]
+			zweck_haenge = 5
+			zweck_wand = 2
+		22:
+			wand = [["faesser", 1.4], ["saecke", 1.3], ["kisten", 1.0], ["wandbrett", 1.6], ["faesser", 1.4], ["saecke", 1.3]]
+			mitte = ["vorrat", "vorrat", "koerbe", "hackplatz", "vorrat", "zuber"]
+			zweck_haenge = 1
+			zweck_wand = 1
+		23:
+			wand = [["kisten", 1.0], ["faesser", 1.4], ["haken", 1.2], ["truhe", 1.1], ["kisten", 1.0]]
+			mitte = ["waffen", "spiesse", "pfeile", "schleifstein", "waffen", "spiesse", "arbeitstisch"]
+			zweck_haenge = 2
+			zweck_wand = 2
+		24:
+			wand = [["truhe", 1.1], ["schrank", 1.3], ["kredenz", 1.6], ["wandbank", 2.0], ["truhe", 1.1]]
+			mitte = ["bett", "tafel", "pult", "schach", "truhen", "kohlebecken"]
+			zweck_haenge = 3
+			zweck_wand = 3
+		25:
+			wand = [["schrank", 1.3], ["wandbrett", 1.6], ["schrank", 1.3], ["truhe", 1.1], ["kisten", 1.0]]
+			mitte = ["regal", "pult", "regal", "tafel", "truhen", "regal"]
+			zweck_haenge = -1
+			zweck_wand = 3
+		26:
+			wand = [["kisten", 1.0], ["faesser", 1.4], ["wandbank", 1.8], ["kisten", 1.0]]
+			zweck_haenge = -1
+			zweck_wand = 2
+	# Wände: Mitte der Wand, Richtung entlang, Richtung in den Raum, halbe Länge
+	var waende := [[c + n * hb, u, -n, hl], [c - n * hb, u, n, hl], [c + u * hl, n, -u, hb], [c - u * hl, n, u, hb]]
+	if not wand.is_empty():
+		for wd: Array in waende:
+			var wm: Vector2 = wd[0]
+			var la: Vector2 = wd[1]
+			var ri: Vector2 = wd[2]
+			var halb: float = wd[3]
+			var sv := -halb + 0.35
+			while sv < halb - 0.6:
+				var st: Array = wand[zufall.randi() % wand.size()]
+				var br: float = st[1]
+				if sv + br > halb - 0.3:
+					sv += 0.4
+					continue
+				var m := wm + la * (sv + br / 2.0)
+				var ok := true
+				for t in 3:
+					if not frei.call(m + la * (t - 1) * br * 0.45 + ri * 0.4, 0.45):
+						ok = false
+				if ok:
+					_hausrat_stueck(st[0], m, la, ri, br, y, decke, zufall)
+					if decke - y > 3.2 and zufall.randf() < 0.7:
+						_wandstueck(zweck_wand, false, m + la * zufall.randf_range(-0.3, 0.3), la, ri, y + 2.4, y + 3.1, zufall)
+					var lu := zufall.randf_range(0.15, 0.6)
+					if lu >= 0.45 and frei.call(m + la * (br / 2.0 + lu / 2.0) + ri * 0.3, 0.3):
+						_kleinkram(zweck_haenge if zweck_haenge > 0 else 5, wm + la * (sv + br + lu / 2.0), la, ri, y, zufall)
+					sv += br + lu
+				else:
+					sv += 0.5
+	# Fläche: Gruppen auf einem Raster zwischen den Wandreihen
+	if not mitte.is_empty():
+		var laengen := {"esstisch": 2.8, "tafel": 2.8, "schlafstelle": 2.3, "vorrat": 2.3, "waffen": 2.5, "spiesse": 2.3,
+			"pfeile": 1.9, "schleifstein": 1.5, "arbeitstisch": 2.4, "koerbe": 1.7, "hackplatz": 2.3, "zuber": 1.4,
+			"kohlebecken": 1.1, "truhen": 2.1, "pult": 1.5, "schach": 1.7, "bett": 2.6, "regal": 2.4}
+		var a0 := -hl + 1.5
+		var a1 := hl - 1.5
+		var q0 := -hb + 1.5
+		var q1 := hb - 1.5
+		var spalten := maxi(1, int((q1 - q0) / 2.5))
+		var bq := (q1 - q0) / spalten
+		for sp in spalten:
+			var qm := q0 + (sp + 0.5) * bq
+			var hq := minf(bq / 2.0 - 0.25, 1.3)
+			var sv := a0 + zufall.randf() * 0.5
+			while sv < a1 - 1.0:
+				var gruppe: String = mitte[zufall.randi() % mitte.size()]
+				var lg: float = laengen[gruppe]
+				if sv + lg > a1:
+					sv += 0.4
+					continue
+				var m := c + u * (sv + lg / 2.0) + n * qm
+				var ok := true
+				for e1: float in [-0.5, 0.0, 0.5]:
+					for e2: float in [-1.0, 0.0, 1.0]:
+						if not frei.call(m + u * e1 * lg + n * e2 * hq, 0.35):
+							ok = false
+				if ok:
+					_insel(gruppe, m, u, n * (1.0 if qm < 0.0 else -1.0), lg / 2.0, hq, y, zufall)
+					sv += lg + zufall.randf_range(0.45, 0.8)
+				else:
+					sv += 0.5
+		if art == 24:
+			# ein großer Teppich in der Mitte
+			_klotz("zier_teppich_rot", c, u, n, -hl * 0.45, hl * 0.45, -hb * 0.35, hb * 0.35, y + 0.004, y + 0.016)
+	# Hängestangen unter der Decke (hohe Räume): an Seilen, daran Vorräte oder Gerät
+	if zweck_haenge > 0 and decke - y > 3.8:
+		var hy := y + 3.3
+		for e: float in [-0.45, 0.45]:
+			var sv := -hl + 1.2
+			var stange0 := NAN
+			while sv < hl - 1.2:
+				var p := c + u * sv + n * hb * e
+				if frei.call(p, 0.6):
+					if is_nan(stange0):
+						stange0 = sv
+					_haenge(zweck_haenge, false, p, u, n, hy, 1.15, zufall)
+				elif not is_nan(stange0):
+					_stange(c, u, n, stange0, sv - 0.6, hb * e, hy, decke)
+					stange0 = NAN
+				sv += zufall.randf_range(0.6, 1.1)
+			if not is_nan(stange0):
+				_stange(c, u, n, stange0, minf(sv, hl - 1.2), hb * e, hy, decke)
+	var licht := OmniLight3D.new()
+	licht.position = Vector3(c.x, y + 2.8, c.y)
+	licht.omni_range = maxf(hl, hb) * 2.2
+	licht.light_energy = 1.2
+	licht.light_color = Color(1.0, 0.8, 0.55)
+	add_child(licht)
+
+
+## Hängestange entlang u von a bis b (quer bei q), auf Höhe hy, an Seilen von der Decke
+func _stange(c: Vector2, u: Vector2, n: Vector2, a: float, b: float, q: float, hy: float, decke: float) -> void:
+	if b - a < 0.6:
+		return
+	_klotz("zier_holz", c + u * ((a + b) / 2.0) + n * q, u, n, -(b - a) / 2.0 - 0.2, (b - a) / 2.0 + 0.2, -0.04, 0.04, hy, hy + 0.08)
+	var s := a
+	while s <= b + 0.01:
+		_klotz("zier_holz", c + u * s + n * q, u, n, -0.01, 0.01, -0.01, 0.01, hy + 0.08, decke)
+		s += maxf((b - a) / maxf(1.0, floor((b - a) / 2.5)), 0.6)
 
 
 ## Eine Möbelgruppe in der Raumfläche: Mitte m, u entlang des Baus, n quer (zur Achse); Ausdehnung ±hs entlang, ±hq quer.
@@ -3055,6 +3362,42 @@ func _insel(art: String, m: Vector2, u: Vector2, n: Vector2, hs: float, hq: floa
 		"truhen":
 			_hausrat_klein_truhe(m - u * 0.6, u, n, y)
 			_hausrat_klein_truhe(m + u * 0.6, u, n, y)
+		"bett":
+			# Bett mit vier Pfosten, Himmel und Vorhängen, Truhe am Fußende
+			var bm := m - n * 0.1
+			_klotz("holz", bm, u, n, -1.05, 1.05, -0.8, 0.8, y + 0.25, y + 0.55)
+			_klotz("zier_leinen", bm, u, n, -1.0, 1.0, -0.75, 0.75, y + 0.55, y + 0.72)
+			_klotz("zier_teppich_rot", bm + u * 0.25, u, n, -0.8, 0.8, -0.78, 0.78, y + 0.72, y + 0.78)
+			_klotz("zier_leinen", bm - u * 0.8, u, n, -0.18, 0.18, -0.6, 0.6, y + 0.72, y + 0.86)
+			for su: float in [-1.0, 1.0]:
+				for sn: float in [-1.0, 1.0]:
+					_klotz("holz", bm + u * su * 1.02 + n * sn * 0.77, u, n, -0.06, 0.06, -0.06, 0.06, y, y + 2.3)
+			_klotz("holz", bm, u, n, -1.1, 1.1, -0.85, 0.85, y + 2.3, y + 2.4, true)
+			for sn: float in [-1.0, 1.0]:
+				_klotz("zier_teppich_rot", bm + n * sn * 0.83, u, n, -0.9, -0.3, -0.02, 0.02, y + 0.9, y + 2.3)
+			_klotz("zier_teppich_rot", bm - u * 1.05, u, n, -0.02, 0.02, -0.8, 0.8, y + 1.2, y + 2.3)
+			_hausrat_klein_truhe(bm + u * 1.45, n, u, y)
+		"regal":
+			# freistehendes Regal mit Büchern und Schriftrollen, von beiden Seiten
+			_klotz("holz", m, u, n, -1.05, 1.05, -0.03, 0.03, y, y + 2.2)
+			for e: float in [-1.0, 1.0]:
+				_klotz("holz", m + u * e * 1.05, u, n, -0.04, 0.04, -0.35, 0.35, y, y + 2.2)
+			var buecher := ["zier_teppich_rot", "zier_teppich_blau", "zier_teppich_gruen", "zier_stoff_leder", "zier_leinen"]
+			for b_ in 5:
+				var yb := y + 0.1 + b_ * 0.45
+				_klotz("holz", m, u, n, -1.0, 1.0, -0.33, 0.33, yb, yb + 0.03)
+				if b_ < 4:
+					var t := -0.95
+					while t < 0.9:
+						var bw := zufall.randf_range(0.04, 0.09)
+						var bh := zufall.randf_range(0.22, 0.34)
+						var mat: String = buecher[zufall.randi() % buecher.size()]
+						for e: float in [-1.0, 1.0]:
+							_klotz(mat, m + u * (t + bw / 2.0) + n * e * 0.17, u, n, -bw / 2.0, bw / 2.0, -0.13, 0.13, yb + 0.03, yb + 0.03 + bh)
+						t += bw + zufall.randf_range(0.0, 0.03)
+						if zufall.randf() < 0.08:
+							t += 0.25          # Lücke, eine liegende Rolle
+							_klotz("zier_leinen", m + u * (t - 0.12), u, n, -0.1, 0.1, -0.12, 0.12, yb + 0.03, yb + 0.09)
 		"heu":
 			_mitte_stueck("heu", m, u, n, 1.7, y, zufall)
 			_klotz("zier_leinen", m - n * 1.0, u, n, -0.3, 0.3, -0.22, 0.22, y, y + 0.55)

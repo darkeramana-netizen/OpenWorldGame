@@ -343,7 +343,8 @@ treppenhaus_radius = {_tr_r}
 saeulen_radius = 0.35
 material_wand = ExtResource("Material_mauer")
 material_boden = ExtResource("Material_boden")
-material_rampe = ExtResource("Material_holz")""")
+material_rampe = ExtResource("Material_holz")
+mit_schildern = false""")
 # Einrichtung der Ebenen: in drei Ecken des Raums und an der Rückwand (in der vierten Ecke steht die Wendeltreppe)
 BI = BG + "/BergfriedInnen"
 def _ecke(k_, r_=7.4):
@@ -352,22 +353,33 @@ def _ecke(k_, r_=7.4):
         return (round((_innen - 1.3) * math.cos(w_), 2), round((_innen - 1.3) * math.sin(w_), 2))
     return (round(r_ * math.cos(math.radians(_tuer_w + 45 + 90 * k_)), 2), round(r_ * math.sin(math.radians(_tuer_w + 45 + 90 * k_)), 2))
 _drehung = lambda k_: round(-(_tuer_w + 180) - 45, 1) if k_ == 1 else round(-(_tuer_w + 45 + 90 * k_), 1)
-for ebene_, teile_ in enumerate([
-        [("Bank", 2.6, 0.45, 0.5, "Material_holz"), ("Bank", 2.6, 0.45, 0.5, "Material_holz"), ("Waffen", 1.6, 2.2, 0.4, "Material_metall"), ("Truhe", 1.2, 0.7, 0.8, "Material_holz")],
-        [("Tisch", 2.2, 0.8, 1.1, "Material_holz"), ("Bank", 2.2, 0.45, 0.45, "Material_holz"), ("Fass", 0.8, 1.0, 0.8, "Material_holz"), ("Pritsche", 2.0, 0.5, 0.9, "Material_stoff")],
-        [("Kisten", 1.6, 1.6, 1.6, "Material_holz"), ("Kisten", 1.6, 1.2, 1.6, "Material_holz"), ("Saecke", 1.4, 0.8, 1.2, "Material_stoff"), ("Faesser", 1.6, 1.0, 1.6, "Material_holz")],
-        [("Spiesse", 2.0, 2.6, 0.4, "Material_metall"), ("Ruestung", 0.6, 1.9, 0.6, "Material_metall"), ("Spiesse", 2.0, 2.6, 0.4, "Material_metall"), ("Schilde", 1.6, 1.4, 0.3, "Material_holz")],
-        [("Bett", 2.2, 0.6, 1.5, "Material_stoff"), ("Tisch", 1.8, 0.8, 1.0, "Material_holz"), ("Truhe", 1.4, 0.8, 0.8, "Material_holz"), ("Teppich", 2.6, 0.03, 1.8, "Material_stoff")],
-        [("Regal", 2.4, 2.6, 0.5, "Material_holz"), ("Pult", 1.4, 1.1, 0.9, "Material_papier"), ("Regal", 2.4, 2.6, 0.5, "Material_holz"), ("Truhe", 1.2, 0.7, 0.8, "Material_holz")],
-        [("Glockenstuhl", 2.6, 0.3, 0.3, "Material_holz"), ("Seil", 0.1, 3.0, 0.1, "Material_holz"), ("Kisten", 1.2, 1.0, 1.2, "Material_holz"), ("Bank", 2.0, 0.45, 0.5, "Material_holz")],
-        [("Tisch", 1.8, 0.8, 1.0, "Material_holz"), ("Feuerbecken", 1.0, 0.9, 1.0, "Material_metall"), ("Pritsche", 2.0, 0.5, 0.9, "Material_stoff"), ("Fass", 0.8, 1.0, 0.8, "Material_holz")]]):
-    y0_ = ebene_ * _bstufe
-    for k_, (n_, sx_, sy_, sz_, mat_) in enumerate(teile_):
-        x_, z_ = _ecke(k_)
-        box(f"E{ebene_}{n_}{k_}", BI, x_, round(y0_ + sy_ / 2, 2), z_, sx_, sy_, sz_, mat_, gier=_drehung(k_) + 45)
-    if ebene_ == 6:      # die Glocke hängt über der Mitte des Raums an einem Balken
-        x_, z_ = _ecke(0, 6.0)
-        zyl("Glocke", BI, x_, round(y0_ + 4.2, 2), z_, 0.9, 1.4, "Material_metall", 12, kollision=False)
+# Jedes Geschoss ganz eingerichtet (burgbau.gd, raeume): Hausrat an allen Wänden, Möbelgruppen in der Fläche, in den
+# hohen Räumen Hängestangen; frei bleiben die Wendeltreppe in der Ecke, der Weg von ihr zur Mitte, die Mitte, im
+# Eingang der Weg von der Tür und in der Glockenstube die Glocke mit ihrem Stuhl.
+_r_mitte = math.radians(_tr_ecke + 180)
+_tm_w = (bx + _tr_mitte[0], bz + _tr_mitte[1])
+_dw = math.radians(_tuer_w)
+_frei_bf = [(_tm_w[0], _tm_w[1], _tr_r + 0.5, -1e4),
+            (_tm_w[0] + math.cos(_r_mitte) * 3.6, _tm_w[1] + math.sin(_r_mitte) * 3.6, 1.4, -1e4),
+            (bx, bz, 1.4, -1e4)] + \
+           [(bx + math.cos(_dw) * d_, bz + math.sin(_dw) * d_, 1.4, PD.H_KERNBURG) for d_ in (6.2, 3.6)]
+_gl = _ecke(0, 6.0)
+_frei_bf.append((bx + _gl[0], bz + _gl[1], 2.6, PD.H_KERNBURG + 6 * _bstufe))
+_raeume_bf = []
+_bg = math.degrees(math.atan2(-_bu[1], _bu[0]))          # u = _bu
+for ebene_, art_ in enumerate([20, 21, 22, 23, 24, 25, 26, 27]):
+    _raeume_bf += [bx, bz, round(_bg, 2), 6.75, 6.75, round(PD.H_KERNBURG + ebene_ * _bstufe, 3),
+                   round(PD.H_KERNBURG + (ebene_ + 1) * _bstufe - 0.3, 3), art_]
+N("BergfriedEinrichtung", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+raeume = PackedFloat32Array({_zahlen(_raeume_bf)})
+raum_frei = PackedVector4Array({", ".join(f"{a_:.3f}, {b_:.3f}, {c_:.2f}, {d_:.3f}" for a_, b_, c_, d_ in _frei_bf)})""")
+# In der Glockenstube hängt die Glocke an ihrem Stuhl über der Mitte des Raums
+_y6 = 6 * _bstufe
+x_, z_ = _ecke(0)
+box("E6Glockenstuhl0", BI, x_, round(_y6 + 0.15, 2), z_, 2.6, 0.3, 0.3, "Material_holz", gier=_drehung(0) + 45)
+x_, z_ = _ecke(0, 6.0)
+zyl("Glocke", BI, x_, round(_y6 + 4.2, 2), z_, 0.9, 1.4, "Material_metall", 12, kollision=False)
+box("E6Seil1", BI, x_, round(_y6 + 2.0, 2), z_, 0.06, 3.0, 0.06, "Material_holz", kollision=False)
 BERGFRIED_TUER = (round(bx - _bu[0] * PD.BERGFRIED_SEITE / 2, 2), round(bz - _bu[1] * PD.BERGFRIED_SEITE / 2, 2))
 _HOF_TUERME.append(PD.BERGFRIED_KERNBURG)
 FAHNEN.extend([bx, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE + 0.05, bz, 30, 3.6, 6.0, 0])

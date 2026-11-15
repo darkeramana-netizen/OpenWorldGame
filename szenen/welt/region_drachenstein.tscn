@@ -495,173 +495,17 @@ saeulen_radius = 0.35
 material_wand = ExtResource("Material_mauer")
 material_boden = ExtResource("Material_boden")
 material_rampe = ExtResource("Material_holz")
+mit_schildern = false
 
-[node name="E0Bank0" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(-0.41945, 0, -0.90778, 0, 1, 0, 0.90778, 0, -0.41945, -6.95, 0.23, 2.55)
-use_collision = true
-size = Vector3(2.6, 0.45, 0.5)
-material = ExtResource("Material_holz")
-
-[node name="E0Bank1" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 2.41, 0.23, -5.22)
-use_collision = true
-size = Vector3(2.6, 0.45, 0.5)
-material = ExtResource("Material_holz")
-
-[node name="E0Waffen2" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 6.95, 1.1, -2.55)
-use_collision = true
-size = Vector3(1.6, 2.2, 0.4)
-material = ExtResource("Material_metall")
-
-[node name="E0Truhe3" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.90778, 0, -0.41945, 0, 1, 0, 0.41945, 0, 0.90778, 2.55, 0.35, 6.95)
-use_collision = true
-size = Vector3(1.2, 0.7, 0.8)
-material = ExtResource("Material_holz")
-
-[node name="E1Tisch0" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(-0.41945, 0, -0.90778, 0, 1, 0, 0.90778, 0, -0.41945, -6.95, 7.9, 2.55)
-use_collision = true
-size = Vector3(2.2, 0.8, 1.1)
-material = ExtResource("Material_holz")
-
-[node name="E1Bank1" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 2.41, 7.72, -5.22)
-use_collision = true
-size = Vector3(2.2, 0.45, 0.45)
-material = ExtResource("Material_holz")
-
-[node name="E1Fass2" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 6.95, 8, -2.55)
-use_collision = true
-size = Vector3(0.8, 1.0, 0.8)
-material = ExtResource("Material_holz")
-
-[node name="E1Pritsche3" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.90778, 0, -0.41945, 0, 1, 0, 0.41945, 0, 0.90778, 2.55, 7.75, 6.95)
-use_collision = true
-size = Vector3(2.0, 0.5, 0.9)
-material = ExtResource("Material_stoff")
-
-[node name="E2Kisten0" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(-0.41945, 0, -0.90778, 0, 1, 0, 0.90778, 0, -0.41945, -6.95, 15.8, 2.55)
-use_collision = true
-size = Vector3(1.6, 1.6, 1.6)
-material = ExtResource("Material_holz")
-
-[node name="E2Kisten1" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 2.41, 15.6, -5.22)
-use_collision = true
-size = Vector3(1.6, 1.2, 1.6)
-material = ExtResource("Material_holz")
-
-[node name="E2Saecke2" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 6.95, 15.4, -2.55)
-use_collision = true
-size = Vector3(1.4, 0.8, 1.2)
-material = ExtResource("Material_stoff")
-
-[node name="E2Faesser3" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.90778, 0, -0.41945, 0, 1, 0, 0.41945, 0, 0.90778, 2.55, 15.5, 6.95)
-use_collision = true
-size = Vector3(1.6, 1.0, 1.6)
-material = ExtResource("Material_holz")
-
-[node name="E3Spiesse0" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(-0.41945, 0, -0.90778, 0, 1, 0, 0.90778, 0, -0.41945, -6.95, 23.8, 2.55)
-use_collision = true
-size = Vector3(2.0, 2.6, 0.4)
-material = ExtResource("Material_metall")
-
-[node name="E3Ruestung1" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 2.41, 23.45, -5.22)
-use_collision = true
-size = Vector3(0.6, 1.9, 0.6)
-material = ExtResource("Material_metall")
-
-[node name="E3Spiesse2" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 6.95, 23.8, -2.55)
-use_collision = true
-size = Vector3(2.0, 2.6, 0.4)
-material = ExtResource("Material_metall")
-
-[node name="E3Schilde3" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.90778, 0, -0.41945, 0, 1, 0, 0.41945, 0, 0.90778, 2.55, 23.2, 6.95)
-use_collision = true
-size = Vector3(1.6, 1.4, 0.3)
-material = ExtResource("Material_holz")
-
-[node name="E4Bett0" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(-0.41945, 0, -0.90778, 0, 1, 0, 0.90778, 0, -0.41945, -6.95, 30.3, 2.55)
-use_collision = true
-size = Vector3(2.2, 0.6, 1.5)
-material = ExtResource("Material_stoff")
-
-[node name="E4Tisch1" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 2.41, 30.4, -5.22)
-use_collision = true
-size = Vector3(1.8, 0.8, 1.0)
-material = ExtResource("Material_holz")
-
-[node name="E4Truhe2" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 6.95, 30.4, -2.55)
-use_collision = true
-size = Vector3(1.4, 0.8, 0.8)
-material = ExtResource("Material_holz")
-
-[node name="E4Teppich3" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.90778, 0, -0.41945, 0, 1, 0, 0.41945, 0, 0.90778, 2.55, 30.02, 6.95)
-use_collision = true
-size = Vector3(2.6, 0.03, 1.8)
-material = ExtResource("Material_stoff")
-
-[node name="E5Regal0" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(-0.41945, 0, -0.90778, 0, 1, 0, 0.90778, 0, -0.41945, -6.95, 38.8, 2.55)
-use_collision = true
-size = Vector3(2.4, 2.6, 0.5)
-material = ExtResource("Material_holz")
-
-[node name="E5Pult1" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 2.41, 38.05, -5.22)
-use_collision = true
-size = Vector3(1.4, 1.1, 0.9)
-material = SubResource("Material_papier")
-
-[node name="E5Regal2" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 6.95, 38.8, -2.55)
-use_collision = true
-size = Vector3(2.4, 2.6, 0.5)
-material = ExtResource("Material_holz")
-
-[node name="E5Truhe3" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.90778, 0, -0.41945, 0, 1, 0, 0.41945, 0, 0.90778, 2.55, 37.85, 6.95)
-use_collision = true
-size = Vector3(1.2, 0.7, 0.8)
-material = ExtResource("Material_holz")
+[node name="BergfriedEinrichtung" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("28_burgbau")
+raeume = PackedFloat32Array(-52.98, -158.11, 65.19, 6.75, 6.75, 16, 23.2, 20, -52.98, -158.11, 65.19, 6.75, 6.75, 23.5, 30.7, 21, -52.98, -158.11, 65.19, 6.75, 6.75, 31, 38.2, 22, -52.98, -158.11, 65.19, 6.75, 6.75, 38.5, 45.7, 23, -52.98, -158.11, 65.19, 6.75, 6.75, 46, 53.2, 24, -52.98, -158.11, 65.19, 6.75, 6.75, 53.5, 60.7, 25, -52.98, -158.11, 65.19, 6.75, 6.75, 61, 68.2, 26, -52.98, -158.11, 65.19, 6.75, 6.75, 68.5, 75.7, 27)
+raum_frei = PackedVector4Array(-55.396, -164.680, 3.00, -10000.000, -54.154, -161.301, 1.40, -10000.000, -52.980, -158.110, 1.40, -10000.000, -55.582, -152.482, 1.40, 16.000, -54.491, -154.842, 1.40, 16.000, -58.610, -156.040, 2.60, 61.000)
 
 [node name="E6Glockenstuhl0" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
 transform = Transform3D(-0.41945, 0, -0.90778, 0, 1, 0, 0.90778, 0, -0.41945, -6.95, 45.15, 2.55)
 use_collision = true
 size = Vector3(2.6, 0.3, 0.3)
-material = ExtResource("Material_holz")
-
-[node name="E6Seil1" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 2.41, 46.5, -5.22)
-use_collision = true
-size = Vector3(0.1, 3.0, 0.1)
-material = ExtResource("Material_holz")
-
-[node name="E6Kisten2" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 6.95, 45.5, -2.55)
-use_collision = true
-size = Vector3(1.2, 1.0, 1.2)
-material = ExtResource("Material_holz")
-
-[node name="E6Bank3" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.90778, 0, -0.41945, 0, 1, 0, 0.41945, 0, 0.90778, 2.55, 45.23, 6.95)
-use_collision = true
-size = Vector3(2.0, 0.45, 0.5)
 material = ExtResource("Material_holz")
 
 [node name="Glocke" type="CSGCylinder3D" parent="Drachenstein/Burgen/BergfriedInnen"]
@@ -672,28 +516,10 @@ height = 1.4
 sides = 12
 material = ExtResource("Material_metall")
 
-[node name="E7Tisch0" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(-0.41945, 0, -0.90778, 0, 1, 0, 0.90778, 0, -0.41945, -6.95, 52.9, 2.55)
-use_collision = true
-size = Vector3(1.8, 0.8, 1.0)
-material = ExtResource("Material_holz")
+[node name="E6Seil1" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5.63, 47, 2.07)
 
-[node name="E7Feuerbecken1" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 2.41, 52.95, -5.22)
-use_collision = true
-size = Vector3(1.0, 0.9, 1.0)
-material = ExtResource("Material_metall")
-
-[node name="E7Pritsche2" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.41945, 0, 0.90778, 0, 1, 0, -0.90778, 0, 0.41945, 6.95, 52.75, -2.55)
-use_collision = true
-size = Vector3(2.0, 0.5, 0.9)
-material = ExtResource("Material_stoff")
-
-[node name="E7Fass3" type="CSGBox3D" parent="Drachenstein/Burgen/BergfriedInnen"]
-transform = Transform3D(0.90778, 0, -0.41945, 0, 1, 0, 0.41945, 0, 0.90778, 2.55, 53, 6.95)
-use_collision = true
-size = Vector3(0.8, 1.0, 0.8)
+size = Vector3(0.06, 3.0, 0.06)
 material = ExtResource("Material_holz")
 
 [node name="Palas" type="Node3D" parent="Drachenstein/Burgen"]
