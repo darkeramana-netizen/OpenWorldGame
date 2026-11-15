@@ -1,4 +1,4 @@
-[gd_scene load_steps=106 format=3]
+[gd_scene load_steps=107 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -65,6 +65,7 @@
 [ext_resource type="Script" path="res://szenen/welt/felsmassiv.gd" id="33_felsmassiv"]
 [ext_resource type="Material" path="res://material/felsmassiv.tres" id="34_felsmassiv_mat"]
 [ext_resource type="Script" path="res://szenen/welt/bewuchs.gd" id="26_bewuchs"]
+[ext_resource type="Script" path="res://szenen/figuren/huehner.gd" id="44_huehner"]
 
 [sub_resource type="StandardMaterial3D" id="Material_flamme"]
 shading_mode = 0
@@ -382,17 +383,6 @@ stein = "mauer"
 script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array(36.73, 198.26, -11.479, 6, 5, 1, 8.5, 55.81, 184.94, -11.945, 6, 7.7, 1, 13.09, 59.11, 130.88, -12.442, 6, 6.7, 1, 11.39)
 
-[node name="SchildVorburg" type="Label3D" parent="Drachenstein/Burgen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 24.14, 1, 154.18)
-billboard = 1
-visibility_range_end = 70.0
-visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
-pixel_size = 0.02
-text = "Vorburg"
-font_size = 40
-outline_size = 14
-
 [node name="WegVorburgOst" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
 mauern = PackedFloat32Array(29.8, 124.49, 32.325, 123.59, -12.01, -7, 1.2, -0.335, -0.942, 0, 32.215, 131.27, 34.74, 130.37, -11, -7, 1.2, 0.335, 0.942, 0, 31.76, 123.79, 34.285, 122.89, -11, -7, 1.2, -0.335, -0.942, 0, 34.175, 130.57, 36.7, 129.68, -11.02, -7, 1.2, 0.335, 0.942, 0, 33.72, 123.09, 36.245, 122.19, -11, -7, 1.2, -0.335, -0.942, 0, 36.135, 129.88, 38.66, 128.98, -11.49, -7, 1.2, 0.335, 0.942, 0, 35.68, 122.39, 38.205, 121.5, -11.73, -7, 1.2, -0.335, -0.942, 0, 38.095, 129.18, 40.62, 128.28, -11.7, -7, 1.2, 0.335, 0.942, 0, 37.64, 121.7, 40.165, 120.8, -11.65, -7, 1.2, -0.335, -0.942, 0, 40.055, 128.48, 42.58, 127.58, -11.41, -7, 1.2, 0.335, 0.942, 0, 39.274, 121.17, 41.81, 119.96, -11.63, -7, 1.2, -0.429, -0.903, 0, 42.365, 127.67, 44.901, 126.46, -11.07, -7, 1.2, 0.429, 0.903, 0, 41.269, 120.22, 43.805, 119.01, -11.57, -7.08, 1.2, -0.429, -0.903, 0, 44.36, 126.72, 46.896, 125.52, -11.4, -7.08, 1.2, 0.429, 0.903, 0, 43.264, 119.27, 45.8, 118.06, -11.61, -7.17, 1.2, -0.429, -0.903, 0, 46.355, 125.77, 48.891, 124.57, -11.72, -7.17, 1.2, 0.429, 0.903, 0, 45.259, 118.32, 47.795, 117.12, -11.62, -7.25, 1.2, -0.429, -0.903, 0, 48.35, 124.83, 50.886, 123.62, -11.39, -7.25, 1.2, 0.429, 0.903, 0, 47.254, 117.37, 49.79, 116.17, -11.66, -7.33, 1.2, -0.429, -0.903, 0, 50.345, 123.88, 52.881, 122.67, -11.72, -7.33, 1.2, 0.429, 0.903, 0, 49.249, 116.43, 51.785, 115.22, -11.82, -7.42, 1.2, -0.429, -0.903, 0, 52.34, 122.93, 54.876, 121.72, -11.71, -7.42, 1.2, 0.429, 0.903, 0, 49.97, 116.73, 51.682, 114.37, -11.76, -7.5, 1.2, -0.809, -0.587, 0, 55.798, 120.96, 57.51, 118.6, -11.76, -7.5, 1.2, 0.809, 0.587, 0, 51.33, 114.85, 53.042, 112.49, -11.91, -7.62, 1.2, -0.809, -0.587, 0, 57.158, 119.08, 58.87, 116.72, -11.76, -7.62, 1.2, 0.809, 0.587, 0)
@@ -426,17 +416,6 @@ script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array(-6.51, 121.81, -15.886, 19, 6.7, 1, 11.4)
 torbauten = PackedFloat32Array(-34.45, 67.95, 0.5, -0.866, -8.7077, 26.499, 7, 7, 1, 1)
 riegel_tuerme = PackedVector2Array(-6.510, 121.810)
-
-[node name="SchildMittelburg" type="Label3D" parent="Drachenstein/Burgen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 8.42, 15, 83.57)
-billboard = 1
-visibility_range_end = 70.0
-visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
-pixel_size = 0.02
-text = "Mittelburg"
-font_size = 40
-outline_size = 14
 
 [node name="ZwingermauerSuedBau" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
@@ -511,17 +490,6 @@ stein = "mauer"
 script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array(28.25, -7.77, 9.2439, 26, 4, 1, 7.2, 31.43, -30.56, 9.1545, 26, 3, 1, 5.4, -38.09, 23.55, 10.649, 24, 2.5, 1, 4.5)
 torbauten = PackedFloat32Array(-23.48, -40.18, 0.5, -0.866, 10.773, 28.403, 9, 9, 1, 0)
-
-[node name="SchildOberburg" type="Label3D" parent="Drachenstein/Burgen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -0.24, 27, -1.38)
-billboard = 1
-visibility_range_end = 70.0
-visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
-pixel_size = 0.02
-text = "Oberburg"
-font_size = 40
-outline_size = 14
 
 [node name="ZwingermauerBau" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
@@ -782,17 +750,6 @@ use_collision = true
 size = Vector3(0.8, 1.0, 0.8)
 material = ExtResource("Material_holz")
 
-[node name="SchildBergfriedKernburg" type="Label3D" parent="Drachenstein/Burgen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -52.98, 88, -158.11)
-billboard = 1
-visibility_range_end = 70.0
-visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
-pixel_size = 0.02
-text = "Bergfried"
-font_size = 56
-outline_size = 14
-
 [node name="Palas" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
 gebaeude = PackedFloat32Array(-42.63, -139.81, -24.8, 15.441, 44.26, 16, 14.5, 16, 11, 1, 0, 313)
@@ -844,50 +801,6 @@ nur_fachwerk = true
 haeuser = PackedVector4Array(45.07, -8, 183.15, -148.8, 8.59, -8, 157.77, 107.7, 3.17, -8, 149.31, 116.1, 1.15, -8, 144.62, 116.1, 51.85, -8, 168, -90, 51.81, -8, 173.6, -90, 52.46, -8, 149.38, -88.9, 7.95, 6, 111.57, -117.1, 5.91, 6, 116.25, -116.1, -4.92, 6, 108.38, 108.4, -6.08, 6, 101.81, 108.8, 20.55, 6, 112.78, -167.3, 15.18, 6, 115.54, -167.3, 28.97, 6, 105.17, -123.7, -25.9, 14, 8.47, 93.4, -19.34, 14, -29.78, 79.6, -18.46, 14, -34.55, 79.6, 17.1, 14, 20.57, -108.4, 15.43, 14, 25.55, -108.8, 24.06, 14, -2.37, -88.9, 23.94, 14, 2.74, -88.9, 25.34, 14, -24.85, -87.7, 25.5, 14, -20.25, -87.7, 25.67, 14, -15.65, -87.7, -36.19, 16, -97.22, 111, -37.71, 16, -105.06, 112.4, -18.51, 16, -77.54, 143.8, -24.5, 16, -80.14, 143.1, 22.69, 16, -121.67, -80.7, 23.52, 16, -116.9, -79.6, 24.4, 16, -111.87, -80.7, 25.23, 16, -107.1, -79.6, 16.49, 16, -144.03, -76.2, 17.91, 16, -139.13, -76.2, 18.85, 16, -134.11, -76.2, 20.82, 16, -129.08, -76.2, -11.44, 16, -76.04, -170.9, -16.37, 16, -74.52, -172)
 formen = PackedInt32Array(13, 0, 26, 27, 26, 26, 24, 26, 24, 9, 11, 5, 24, 0, 27, 28, 24, 26, 30, 24, 26, 24, 24, 24, 20, 7, 22, 24, 24, 28, 28, 24, 29, 27, 29, 28, 29, 24)
 
-[node name="SchildPalas" type="Label3D" parent="Drachenstein/Burgen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -42.63, 38, -139.81)
-billboard = 1
-visibility_range_end = 70.0
-visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
-pixel_size = 0.02
-text = "Palas"
-font_size = 40
-outline_size = 14
-
-[node name="SchildKapelle" type="Label3D" parent="Drachenstein/Burgen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 19.22, 34, -93.59)
-billboard = 1
-visibility_range_end = 70.0
-visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
-pixel_size = 0.02
-text = "Drachenkapelle"
-font_size = 40
-outline_size = 14
-
-[node name="SchildKueche" type="Label3D" parent="Drachenstein/Burgen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 6.72, 30, -80.25)
-billboard = 1
-visibility_range_end = 70.0
-visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
-pixel_size = 0.02
-text = "Burgküche"
-font_size = 40
-outline_size = 14
-
-[node name="SchildZeughaus" type="Label3D" parent="Drachenstein/Burgen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -1.3, 31, -165.79)
-billboard = 1
-visibility_range_end = 70.0
-visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
-pixel_size = 0.02
-text = "Zeughaus"
-font_size = 40
-outline_size = 14
-
 [node name="ObererBurg" type="Node3D" parent="Drachenstein"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 10.4, 16, -114.89)
 
@@ -906,28 +819,6 @@ waffe = "puppe"
 flag_besiegt = ""
 zaehler = ""
 tracht = Color(0.55, 0.45, 0.3, 1)
-
-[node name="SchildUebungsplatz" type="Label3D" parent="Drachenstein/ObererBurg"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 3.5, 4)
-billboard = 1
-visibility_range_end = 70.0
-visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
-pixel_size = 0.02
-text = "Übungsplatz"
-font_size = 40
-outline_size = 14
-
-[node name="SchildKernburg" type="Label3D" parent="Drachenstein/Burgen"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -15.79, 26, -120.48)
-billboard = 1
-visibility_range_end = 70.0
-visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
-pixel_size = 0.02
-text = "Palas"
-font_size = 44
-outline_size = 14
 
 [node name="Fahnen" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
@@ -5806,7 +5697,7 @@ shape = SubResource("Form_ort11")
 [node name="Bewuchs" type="Node3D" parent="."]
 script = ExtResource("26_bewuchs")
 frei_vielecke = Array[PackedVector2Array]([PackedVector2Array(455, 55, 545, 55, 545, 145, 455, 145), PackedVector2Array(-720, -325, -480, -325, -480, -85, -720, -85), PackedVector2Array(-769, -396, -619, -396, -619, -336, -769, -336), PackedVector2Array(-0.81, 240.67, -7.44, 229.45, -25.81, 193.97, -27.04, 178.95, -31.42, 125.53, -23.19, 131.57, -10.42, 135.57, -10.36, 128.17, -7.93, 120.91, 7.9, 121.29, 18.62, 120.75, 19.62, 133.1, 36.32, 131.74, 50.51, 128.56, 59.11, 130.88, 60.74, 122, 87.5, 17.5, 98.5, 60, 121, 67.5, 166, 72.5, 218, 67.5, 218, 67.5, 229.93, 82.26, 235.4, 149.04, 220.56, 214.12, 214.85, 226.36, 210.22, 251.95, 168.18, 272.2, 84.7, 279.05, 81.33, 299.49, 68.28, 283.75, 33.79, 273.13), PackedVector2Array(98.5, 60, 92, -25, 106, -46.5, 156, -53.5, 160.5, -38.5, 189, -36.5, 197, -32.5, 206, -32.5, 210, -17.5, 211, 47.5, 218, 67.5, 166, 72.5, 121, 67.5), PackedVector2Array(-6.51, 121.81, -12.15, 114.53, -28.9, 74.22, -33.45, 67.87, -18.11, 58.21, 2.43, 54.51, 25.59, 49.93, 38.88, 48.16, 45.75, 70.46, 40.62, 102.14, 32.22, 118.63, 14.72, 122.41), PackedVector2Array(1.64, 44.82, -31.67, 28.06, -33.89, 21.52, -33.47, -2.05, -29.1, -22.57, -26.86, -36.2, -10.84, -45.92, 27.37, -51.4, 31.53, -29.23, 32.92, -4.12, 29.42, 14.65, 23.56, 25.21, 16.31, 39.25), PackedVector2Array(0.87, -67.05, -15.96, -67.35, -26.33, -70.87, -39.17, -83.94, -45.28, -96.88, -57.99, -116.69, -66.25, -135.5, -55.09, -163.31, -36.36, -180.98, -13.5, -180.84, 15.49, -175.82, 21.14, -156.11, 25.45, -136.3, 35.94, -98.5, 20.22, -77.04), PackedVector2Array(55.81, 184.94, 37.65, 197.18, 29.91, 197.14, 14.09, 196.76, 9.72, 192.75, 5.88, 174.57, -1.02, 155.97, -7.32, 144.73, -10.36, 128.17, -7.93, 120.91, 7.9, 121.29, 18.62, 120.75, 19.62, 133.1, 36.32, 131.74, 50.51, 128.56, 55.97, 133.49, 60.5, 135.47, 58.57, 177.65), PackedVector2Array(20.12, -57.87, -16.72, -56.19, -37.53, -63.9, -55.87, -82.57, -71.96, -114.87, -80.55, -137.69, -73, -168.57, -58.22, -193.31, -32.33, -205.51, -1.72, -201.3, 22.75, -189.86, 34.13, -173.99, 39.93, -144.2, 48.5, -101.2, 39.28, -70.19), PackedVector2Array(-18.11, 58.21, 2.43, 54.51, 25.59, 49.93, 38.88, 48.16, 52.66, 11.06, 46.44, -23.72, 54.46, -28.42, 56.22, -48.06, 51.84, -60.47, 41.39, -73.06, 38.66, -69.48, 21.73, -58.68, 3.28, -58.17, -16.83, -57.53, -29.14, -51.81, -16.8, -48.8, 27.37, -51.4, 31.53, -29.23, 32.92, -4.12, 29.42, 14.65, 23.56, 25.21, 16.31, 39.25, 1.64, 44.82, -31.67, 28.06, -27.91, 41.2), PackedVector2Array(59.11, 130.88, 60.74, 122, 87.5, 17.5, 92, -25, 93.37, -74.63, 91.63, -108.11, 87.22, -141.36, 78.94, -181.01, 68.93, -208.77, 56.6, -227.93, 35.75, -236.3, -45.35, -241.42, -76.29, -241.58, -92.56, -202.26, -90.35, -195.72, -86.75, -98.53, -88.27, -88.32, -62.88, -45.02, -46.67, -31.89, -65.47, 25.79, -54.37, 38.32, -34.45, 67.95, -28.9, 74.22, -12.15, 114.53, -7.93, 120.91, 7.9, 121.29, 18.62, 120.75, 19.62, 133.1, 36.32, 131.74, 50.51, 128.56, 55.97, 133.49), PackedVector2Array(-0.81, 240.67, -7.44, 229.45, -25.81, 193.97, -27.04, 178.95, -31.42, 125.53, -23.19, 131.57, -10.42, 135.57, -10.36, 128.17, -7.93, 120.91, -12.15, 114.53, -28.9, 74.22, -33.45, 67.87, -54.37, 38.32, -65.47, 25.79, -46.67, -31.89, -62.88, -45.02, -88.27, -88.32, -86.75, -98.53, -90.35, -195.72, -92.56, -202.26, -76.29, -241.58, -45.35, -241.42, 35.75, -236.3, 56.6, -227.93, 68.93, -208.77, 78.94, -181.01, 87.22, -141.36, 91.63, -108.11, 93.37, -74.63, 95.59, -31.11, 92, -25, 106, -46.5, 156, -53.5, 160.5, -38.5, 189, -36.5, 197, -32.5, 206, -32.5, 210, -17.5, 211, 47.5, 208.5, 47.5, 218, 67.5, 229.93, 82.26, 235.4, 149.04, 220.56, 214.12, 214.85, 226.36, 210.22, 251.95, 168.18, 272.2, 84.7, 279.05, 81.33, 299.49, 68.28, 283.75, 33.79, 273.13)])
-feste_baeume = PackedVector4Array(58.77, -14.38, 257, 0.98, 187.76, -16.42, 73.99, 1.11, 223.22, -15.4, 173.8, 0.94, 89.81, -16.48, 37.11, 0.84, 211.6, -14.84, 215.14, 1.1, 226.05, -15.77, 128.57, 1.11, 26.75, -8.74, 202.16, 1.03, 4.57, -8.68, 194.52, 0.93, 61.39, -8.9, 185.94, 0.91, 142.12, -14.3, 268.65, 0.91, 227.68, -15.48, 160.02, 1.04, 187.64, -16.2, 88.21, 1.09, 140.31, -16.85, 70.15, 1, 86.13, -13.05, 175.46, 0.9, 44.49, -14.55, 268.18, 1.15, 103.11, -16.59, 95.07, 0.82)
+feste_baeume = PackedVector4Array(58.77, -14.38, 257, 0.98, 187.76, -16.42, 73.99, 1.11, 223.22, -15.4, 173.8, 0.94, 89.81, -16.48, 37.11, 0.84, 211.6, -14.84, 215.14, 1.1, 226.05, -15.77, 128.57, 1.11, 26.75, -8.74, 202.16, 1.03, 4.57, -8.68, 194.52, 0.93, 61.39, -8.9, 185.94, 0.91, 142.12, -14.3, 268.65, 0.91, 227.68, -15.48, 160.02, 1.04, 187.64, -16.2, 88.21, 1.09, 140.31, -16.85, 70.15, 1, 86.13, -13.05, 175.46, 0.9, 44.49, -14.55, 268.18, 1.15, 103.11, -16.59, 95.07, 0.82, 31.14, -8, 154.18, -1.25, 15.42, 6, 83.57, -1.25, 6.76, 14, -1.38, -1.25)
 wald_anteil = 0.24
 
 [node name="Personen" type="Node3D" parent="."]
@@ -6389,31 +6280,128 @@ sichtbar_wenn = "alarm<3"
 tagesablauf = PackedStringArray("morgengrauen: 13.98,6,110.22,arbeiten,5; 8.91,6,85.92,arbeiten,7; 7.91,6,85.92; 2.88,6,108.97,arbeiten,4; 7.91,6,85.92; 8.91,6,85.92; 13.98,6,110.22 | runde", "stille_stunde: 13.98,6,110.22 | weg")
 
 [node name="Gesinde4" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 18.61, 14, -2.27)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 19.89, 14, -24.63)
 anzeige_name = "Magd Elsbeth Krug"
 dialog_id = "burggesinde"
 kordel = 0
 tracht = Color(0.42, 0.34, 0.24, 1)
 sichtbar_wenn = "alarm<3"
-tagesablauf = PackedStringArray("morgengrauen: 18.61,14,-2.27,arbeiten,5; 2.16,14,-1.5,arbeiten,7; 2.1,14,-0.85; 18.24,14,2.85,arbeiten,4; 2.1,14,-0.85; 2.16,14,-1.5; 18.61,14,-2.27 | runde", "stille_stunde: 18.61,14,-2.27 | weg")
+tagesablauf = PackedStringArray("morgengrauen: 19.89,14,-24.63,arbeiten,5; 1.33,14,-3.2,arbeiten,7; 1.74,14,-2.74; 20.22,14,-15.43,arbeiten,4; 1.74,14,-2.74; 1.33,14,-3.2; 19.89,14,-24.63 | runde", "stille_stunde: 19.89,14,-24.63 | weg")
 
 [node name="Gesinde5" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -12.42, 16, -82.16)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -19.96, 14, 8.12)
 anzeige_name = "Knecht Ole Stamm"
 dialog_id = "burggesinde"
 kordel = 0
 tracht = Color(0.36, 0.3, 0.26, 1)
 sichtbar_wenn = "alarm<3"
-tagesablauf = PackedStringArray("morgengrauen: -12.42,16,-82.16,arbeiten,5; -15.58,16,-118.09,arbeiten,7; -17.15,16,-118.5; -30.17,16,-99.53,arbeiten,4; -17.15,16,-118.5; -15.58,16,-118.09; -12.42,16,-82.16 | runde", "stille_stunde: -12.42,16,-82.16 | weg")
+tagesablauf = PackedStringArray("morgengrauen: -19.96,14,8.12,arbeiten,5; -2.4,14,-0.34,arbeiten,7; 0.67,14,0.84; 10.03,14,23.71,arbeiten,4; 0.67,14,0.84; -2.4,14,-0.34; -19.96,14,8.12 | runde", "stille_stunde: -19.96,14,8.12 | weg")
 
 [node name="Gesinde6" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 19.02, 16, -110.99)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 18.24, 14, 2.85)
 anzeige_name = "Magd Grete Fass"
 dialog_id = "burggesinde"
 kordel = 0
 tracht = Color(0.5, 0.44, 0.32, 1)
 sichtbar_wenn = "alarm<3"
-tagesablauf = PackedStringArray("morgengrauen: 19.02,16,-110.99,arbeiten,5; -13.47,16,-119.85,arbeiten,7; -13.39,16,-120.5; 17.31,16,-120.79,arbeiten,4; -13.39,16,-120.5; -13.47,16,-119.85; 19.02,16,-110.99 | runde", "stille_stunde: 19.02,16,-110.99 | weg")
+tagesablauf = PackedStringArray("morgengrauen: 18.24,14,2.85,arbeiten,5; 2.1,14,-0.85,arbeiten,7; 0.99,14,0.68; 11.69,14,18.77,arbeiten,4; 0.99,14,0.68; 2.1,14,-0.85; 18.24,14,2.85 | runde", "stille_stunde: 18.24,14,2.85 | weg")
+
+[node name="Gesinde7" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 19.02, 16, -110.99)
+anzeige_name = "Knecht Mattis Rain"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.33, 0.36, 0.3, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 19.02,16,-110.99,arbeiten,5; -13.47,16,-119.85,arbeiten,7; -13.75,16,-121.74; 12.13,16,-137.71,arbeiten,4; -13.75,16,-121.74; -13.47,16,-119.85; 19.02,16,-110.99 | runde", "stille_stunde: 19.02,16,-110.99 | weg")
+
+[node name="Huehner" type="Node3D" parent="Drachenstein/Burgen"]
+
+[node name="Schar0" type="Node3D" parent="Drachenstein/Burgen/Huehner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 11.98, -8, 148.89)
+script = ExtResource("44_huehner")
+anzahl = 5
+weite = 3
+
+[node name="Schar1" type="Node3D" parent="Drachenstein/Burgen/Huehner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 43.71, -8, 170.1)
+script = ExtResource("44_huehner")
+anzahl = 6
+weite = 3
+
+[node name="Schar2" type="Node3D" parent="Drachenstein/Burgen/Huehner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 2.12, 6, 95.32)
+script = ExtResource("44_huehner")
+anzahl = 5
+weite = 3
+
+[node name="Schar3" type="Node3D" parent="Drachenstein/Burgen/Huehner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 19.25, 6, 102.89)
+script = ExtResource("44_huehner")
+anzahl = 4
+weite = 3
+
+[node name="Schar4" type="Node3D" parent="Drachenstein/Burgen/Huehner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 10.52, 14, 14.69)
+script = ExtResource("44_huehner")
+anzahl = 4
+weite = 3
+
+[node name="Schar5" type="Node3D" parent="Drachenstein/Burgen/Huehner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 17.36, 14, -28.03)
+script = ExtResource("44_huehner")
+anzahl = 4
+weite = 3
+
+[node name="Schar6" type="Node3D" parent="Drachenstein/Burgen/Huehner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 10.64, 16, -133.74)
+script = ExtResource("44_huehner")
+anzahl = 7
+weite = 3
+
+[node name="BurgKindLudo" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 47.01, -8, 149.48)
+anzeige_name = "Ludo, ein Knechtsjunge"
+dialog_id = "kind_burg"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("vormittag: 34.54,-8,154.18; 33.74,-8,156.37; 31.73,-8,157.53; 29.44,-8,157.12; 27.95,-8,155.34; 27.95,-8,153.02; 29.44,-8,151.24; 31.73,-8,150.83; 33.74,-8,151.99; 34.54,-8,154.18 | runde", "mittag: 47.01,-8,149.48 | weg", "nachmittag: 34.54,-8,154.18; 33.74,-8,151.99; 31.73,-8,150.83; 29.44,-8,151.24; 27.95,-8,153.02; 27.95,-8,155.34; 29.44,-8,157.12; 31.73,-8,157.53; 33.74,-8,156.37; 34.54,-8,154.18 | runde", "stille_stunde: 47.01,-8,149.48 | weg")
+tempo = 2.2
+groesse = 0.68
+
+[node name="BurgKindWenke" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 47.01, -8, 149.48)
+anzeige_name = "Wenke, eine Magdtochter"
+dialog_id = "kind_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("vormittag: 27.95,-8,155.34; 29.44,-8,157.12; 31.73,-8,157.53; 33.74,-8,156.37; 34.54,-8,154.18; 33.74,-8,151.99; 31.73,-8,150.83; 29.44,-8,151.24; 27.95,-8,153.02; 27.95,-8,155.34 | runde", "mittag: 47.01,-8,149.48 | weg", "nachmittag: 27.95,-8,155.34; 27.95,-8,153.02; 29.44,-8,151.24; 31.73,-8,150.83; 33.74,-8,151.99; 34.54,-8,154.18; 33.74,-8,156.37; 31.73,-8,157.53; 29.44,-8,157.12; 27.95,-8,155.34 | runde", "stille_stunde: 47.01,-8,149.48 | weg")
+tempo = 2.2
+groesse = 0.68
+
+[node name="BurgKindFinn" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 23.19, 6, 101.31)
+anzeige_name = "Finn, ein Stallbursche"
+dialog_id = "kind_burg"
+kordel = 0
+tracht = Color(0.33, 0.36, 0.3, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("vormittag: 18.82,6,83.57; 18.02,6,85.76; 16.01,6,86.92; 13.72,6,86.51; 12.23,6,84.73; 12.23,6,82.41; 13.72,6,80.63; 16.01,6,80.22; 18.02,6,81.38; 18.82,6,83.57 | runde", "mittag: 23.19,6,101.31 | weg", "nachmittag: 18.82,6,83.57; 18.02,6,81.38; 16.01,6,80.22; 13.72,6,80.63; 12.23,6,82.41; 12.23,6,84.73; 13.72,6,86.51; 16.01,6,86.92; 18.02,6,85.76; 18.82,6,83.57 | runde", "stille_stunde: 23.19,6,101.31 | weg")
+tempo = 2.2
+groesse = 0.68
+
+[node name="BurgKindMira" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 18.61, 14, -2.27)
+anzeige_name = "Mira, die Tochter der Wäscherin"
+dialog_id = "kind_burg"
+kordel = 0
+tracht = Color(0.42, 0.34, 0.24, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("vormittag: 10.16,14,-1.38; 9.36,14,0.81; 7.35,14,1.97; 5.06,14,1.56; 3.57,14,-0.22; 3.57,14,-2.54; 5.06,14,-4.32; 7.35,14,-4.73; 9.36,14,-3.57; 10.16,14,-1.38 | runde", "mittag: 18.61,14,-2.27 | weg", "nachmittag: 10.16,14,-1.38; 9.36,14,-3.57; 7.35,14,-4.73; 5.06,14,-4.32; 3.57,14,-2.54; 3.57,14,-0.22; 5.06,14,1.56; 7.35,14,1.97; 9.36,14,0.81; 10.16,14,-1.38 | runde", "stille_stunde: 18.61,14,-2.27 | weg")
+tempo = 2.2
+groesse = 0.68
 
 [node name="Arbeit0" parent="Personen/Burgleben" instance=ExtResource("4_person")]
 transform = Transform3D(-0.97592, 0, -0.21814, 0, 1, 0, 0.21814, 0, -0.97592, 40.47, -8, 136.55)
@@ -6425,7 +6413,7 @@ sichtbar_wenn = "alarm<3"
 haltung = "knien"
 
 [node name="Arbeit1" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(0.45399, 0, 0.89101, 0, 1, 0, -0.89101, 0, 0.45399, 34.27, 6, 102.27)
+transform = Transform3D(-0.97592, 0, -0.21814, 0, 1, 0, 0.21814, 0, -0.97592, 48.48, -8, 134.75)
 anzeige_name = "Magd Liesel Garbe"
 dialog_id = "burggesinde"
 kordel = 0
@@ -6434,7 +6422,7 @@ sichtbar_wenn = "alarm<3"
 haltung = "arbeiten"
 
 [node name="Arbeit2" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(0.93483, 0, 0.35511, 0, 1, 0, -0.35511, 0, 0.93483, 11.52, 14, 35.08)
+transform = Transform3D(0.45399, 0, 0.89101, 0, 1, 0, -0.89101, 0, 0.45399, 34.27, 6, 102.27)
 anzeige_name = "Knecht Thies Moor"
 dialog_id = "burggesinde"
 kordel = 0
@@ -6443,7 +6431,7 @@ sichtbar_wenn = "alarm<3"
 haltung = "knien"
 
 [node name="Arbeit3" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(-0.017452, 0, -0.99985, 0, 1, 0, 0.99985, 0, -0.017452, -28.24, 14, 18.62)
+transform = Transform3D(0.99961, 0, -0.027922, 0, 1, 0, 0.027922, 0, 0.99961, 11.88, 6, 116.73)
 anzeige_name = "Magd Hanna Seil"
 dialog_id = "burggesinde"
 kordel = 0
@@ -6452,7 +6440,7 @@ sichtbar_wenn = "alarm<3"
 haltung = "arbeiten"
 
 [node name="Arbeit4" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(-0.72777, 0, -0.68582, 0, 1, 0, 0.68582, 0, -0.72777, -38.17, 16, -171.57)
+transform = Transform3D(0.93483, 0, 0.35511, 0, 1, 0, -0.35511, 0, 0.93483, 11.52, 14, 35.08)
 anzeige_name = "Knecht Fiete Rumpf"
 dialog_id = "burggesinde"
 kordel = 0
@@ -6461,11 +6449,29 @@ sichtbar_wenn = "alarm<3"
 haltung = "knien"
 
 [node name="Arbeit5" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(0.42736, 0, -0.90408, 0, 1, 0, 0.90408, 0, 0.42736, -35.39, 16, -89.04)
+transform = Transform3D(0.45865, 0, 0.88862, 0, 1, 0, -0.88862, 0, 0.45865, 13.62, 14, 32.25)
 anzeige_name = "Magd Kaja Spindel"
 dialog_id = "burggesinde"
 kordel = 0
 tracht = Color(0.33, 0.36, 0.3, 1)
+sichtbar_wenn = "alarm<3"
+haltung = "arbeiten"
+
+[node name="Arbeit6" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.72777, 0, -0.68582, 0, 1, 0, 0.68582, 0, -0.72777, -38.17, 16, -171.57)
+anzeige_name = "Knecht Wido Last"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.42, 0.34, 0.24, 1)
+sichtbar_wenn = "alarm<3"
+haltung = "knien"
+
+[node name="Arbeit7" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.99998, 0, 0.0069813, 0, 1, 0, -0.0069813, 0, -0.99998, -24.46, 16, -175.31)
+anzeige_name = "Magd Berit Kamm"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
 sichtbar_wenn = "alarm<3"
 haltung = "arbeiten"
 

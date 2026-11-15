@@ -1,0 +1,32 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Wir spielen Fangen um die Linde! Du darfst aber nicht mitspielen, du bist zu groß.",
+				"Mein Vater ist Knecht beim Stall. Er sagt, die Pferde sind klüger als die Ritter.",
+				"Hast du die Hühner gesehen? Der Hahn hat mich gestern gezwickt!",
+				"Wenn ich groß bin, darf ich auf die Mauer. Die Wachen sehen von da oben bis zum Meer.",
+				{
+					"text": "Die Glocke läutet so laut … Müssen wir jetzt in den Keller?",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"optionen": [
+				{
+					"text": "Lauf nicht unter die Hufe der Pferde.",
+					"weiter": "pferde"
+				},
+				{
+					"text": "Spielt weiter.",
+					"weiter": "ende"
+				}
+			]
+		},
+		"pferde": {
+			"text": "Bin doch nicht dumm. Die großen Rappen beißen."
+		},
+		"ende": {
+			"text": "Fang mich doch!"
+		}
+	}
+}

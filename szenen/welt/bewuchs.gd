@@ -24,7 +24,7 @@ extends Node3D
 @export var frei_kreise: PackedVector3Array = PackedVector3Array()
 ## Nur in diesem Rechteck (x, z, Breite, Tiefe); leer: das ganze Gelände.
 @export var bereich: Rect2 = Rect2()
-## Zusätzlich fest gesetzte Bäume (x, y, z, Größe), z. B. die Waldstücke an den Landstraßen.
+## Zusätzlich fest gesetzte Bäume (x, y, z, Größe), z. B. die Waldstücke an den Landstraßen; negative Größe: Laubbaum.
 @export var feste_baeume: PackedVector4Array = PackedVector4Array()
 
 const RASTER := 4.0             # Prüfraster für Bäume in m
@@ -196,8 +196,9 @@ func _pflanze() -> void:
 			z += RASTER
 		x += RASTER
 	for b in feste_baeume:
-		var ex := _exemplar(zufall, b.x, b.y, b.z, b.w, b.w)
-		listen["nadel" if zufall.randf() < nadel_anteil else "laub"].append(ex)
+		# negative Größe: sicher ein Laubbaum (z. B. die Hoflinden der Burg)
+		var ex := _exemplar(zufall, b.x, b.y, b.z, absf(b.w), absf(b.w))
+		listen["laub" if b.w < 0.0 or zufall.randf() >= nadel_anteil else "nadel"].append(ex)
 	_zeige("Nadelbaeume", _nadelbaum(), listen["nadel"], _material(0.012, 0.6, 0.0, 0.85), true)
 	_zeige("Laubbaeume", _laubbaum(), listen["laub"], _material(0.015, 0.6, 0.0, 0.85), true)
 	_zeige("Buesche", _busch(), listen["busch"], _material(0.04, 0.6, 0.0, 0.9), false)

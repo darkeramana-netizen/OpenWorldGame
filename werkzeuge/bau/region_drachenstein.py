@@ -114,7 +114,7 @@ untertitel = "{untertitel}"''')
 bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG),
                        WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG), WL(PD.ZWINGER_III), WL(PD.BURGBEZIRK), WL(PD.RINGMAUER)],   # im Burgbezirk Felsgrund
         frei_rechtecke=[(BF_X_NEU, BF_Z_NEU, 90, 90), (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24,
-        feste_baeume=STADTBAEUME)   # Hausbäume in den Höfen der Stadt (teil_stadt.py)
+        feste_baeume=STADTBAEUME + BURGBAEUME)   # Hausbäume in den Höfen der Stadt (teil_stadt.py)
 
 # ---------- Personen der Region ----------
 N("Personen", "Node3D", ".")

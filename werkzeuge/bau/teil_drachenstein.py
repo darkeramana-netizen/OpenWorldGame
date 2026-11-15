@@ -157,7 +157,6 @@ for (gp, gr) in PD.G3.VORBURG_TUERME + [PD.G3.VORBURG_TOR]:
     _HOF_TUERME.append(pp)
 N("VorburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_vt)})""")
-schild("SchildVorburg", BG, *(lambda p: (p[0], PD.H_VORBURG + 9, p[1]))(W(PD.MITTE_VORBURG)), "Vorburg", 40)
 
 
 def bruestung(name, linie, hoehen, abstand, ab=None, nicht_bei=()):
@@ -206,7 +205,6 @@ N("MittelburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_mt)})
 torbauten = PackedFloat32Array({_zahlen(eckturm(PD.g3(PD.G3.MITTELBURG_NORDTURM), 7.0, 15, 1, 30))})""")
 _HOF_TUERME.append(PD.g3(PD.G3.MITTELBURG_NORDTURM))
-schild("SchildMittelburg", BG, *(lambda p: (p[0], PD.H_BURGHOF2 + 9, p[1]))(W(PD.MITTE_MITTELBURG)), "Mittelburg", 40)
 
 # --- Zwinger der Oberburg: die Zwingermauer im Süden, niedriger als die Hofmauer ---
 mauerring("ZwingermauerSued", BG, WL(PD.ZWINGERMAUER_SUED), 4.5, dicke=2.5, mitte=MITTE_BURG)
@@ -243,7 +241,6 @@ N("OberburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_ot)})
 torbauten = PackedFloat32Array({_zahlen(eckturm(PD.g3(_gp), round(_gs * G3M, 1), 14, 0, 30))})""")
 _HOF_TUERME.append(PD.g3(_gp))
-schild("SchildOberburg", BG, *(lambda p: (p[0], PD.H_KERNHOF + 13, p[1]))(W(PD.MITTE_OBERBURG)), "Oberburg", 40)
 
 # --- Palas, Bergfried, Eckturm und Rundturm hängen zusammen wie im Referenzbild: der Palas reicht hinten bis an den
 # Bergfried (seine Hoffassade bleibt, wo sie ist), der eckige Turm steht bündig an seinem Ende, der Rundturm mit
@@ -373,7 +370,6 @@ for ebene_, teile_ in enumerate([
         zyl("Glocke", BI, x_, round(y0_ + 4.2, 2), z_, 0.9, 1.4, "Material_metall", 12, kollision=False)
 BERGFRIED_TUER = (round(bx - _bu[0] * PD.BERGFRIED_SEITE / 2, 2), round(bz - _bu[1] * PD.BERGFRIED_SEITE / 2, 2))
 _HOF_TUERME.append(PD.BERGFRIED_KERNBURG)
-schild("SchildBergfriedKernburg", BG, bx, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE + 12, bz, "Bergfried", 56)
 FAHNEN.extend([bx, PD.H_BERGFRIEDFELS + PD.BERGFRIED_HOEHE + 0.05, bz, 30, 3.6, 6.0, 0])
 
 # Palas: drei Geschosse mit gotischen Doppelfenstern, steiles Schieferdach, an der Nordostmauer
@@ -783,6 +779,7 @@ def _naechste_kante_innen(p, poly):
 
 
 BURG_BRUNNEN = {}
+BURGBAEUME = []                  # Hoflinden (x, y, z, Größe; negativ: Laubbaum), für bewuchs in region_drachenstein.py
 WERKPLAETZE = {}                 # Name → (x, z, entlang, nach innen, Boden): dort steht jemand bei der Arbeit
 
 
@@ -830,6 +827,19 @@ for name_, hof_, boden_ in _hoefe:
             BURG_BRUNNEN[name_] = (x_, z_)
             _vorplaetze_w.append(_rechteck_w(x_, z_, 5.4, 5.4, 0.0))   # rund um den Brunnen bleibt Platz zum Wasserholen
             break
+    # Hoflinde (Laubbaum) unweit des Brunnens: Stamm abseits der Wege, die Krone (7 m) über keinem Haus und keinem Bau
+    if name_ in BURG_BRUNNEN and name_ != "Palas":
+        bx_, bz_ = BURG_BRUNNEN[name_]
+        for k_ in range(60):
+            w_, r_ = k_ * 2.4, 7.0 + 0.15 * k_
+            x_, z_ = bx_ + r_ * math.cos(w_), bz_ + r_ * math.sin(w_)
+            krone_ = _rechteck_w(x_, z_, 7.0, 7.0, 0.0)
+            if any(_ueberlappen_plan(krone_, f_) for f_ in _haeuser_w + _feste_w):
+                continue
+            if stelle(10, x_, z_, 0.0, hof_w_, boden_, wegabstand=3.0, probe=True):
+                BURGBAEUME.append((round(x_, 2), round(boden_, 2), round(z_, 2), -1.25))
+                BURG_SPERREN.append(_rechteck_w(x_, z_, 1.6, 1.6, 0.0))
+                break
     # Werkplätze: Schmiede, Holzplatz und ein Unterstand für Karren in der Vorburg, Holzplatz und Unterstand in der
     # Mittelburg (die Stücke stehen mit dem Rücken zur Hofmauer)
     if name_ in ("Vorburg", "Mittelburg"):
@@ -1241,10 +1251,7 @@ N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_zi
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in HOFHAEUSER) + ")")
 print("Fachwerkhäuser in den Höfen:", _nh)
 
-for name, pp, text, y_ in [("SchildPalas", PD.PALAS[0], "Palas", 22), ("SchildKapelle", PD.DRACHENKAPELLE[0], "Drachenkapelle", 18),
-                           ("SchildKueche", PD.BURGKUECHE[0], "Burgküche", 14), ("SchildZeughaus", PD.ZEUGHAUS[0], "Zeughaus", 15)]:
-    x, z = W(pp)
-    schild(name, BG, x, PD.H_KERNBURG + y_, z, text, 40)
+# Keine schwebenden Namen über Höfen und Bauten der Burg: beim Betreten zeigt die Oberfläche den Ort an (ort.gd)
 
 # Übungsplatz mit zwei Puppen im Hof des Palas (Stufe 4, Kampf), im Süden des Hofs abseits vom Weg zum Palas
 OB_ = DS + "/ObererBurg"
@@ -1252,8 +1259,6 @@ UEB = g3p((1440, 395))
 N("ObererBurg", "Node3D", DS, T(round(UEB[0], 2), PD.H_KERNBURG, round(UEB[1], 2)))
 for k, x in enumerate([-2.5, 2.5]):
     gegner(f"Uebungspuppe{k + 1}", OB_, x, 0, 0, "Übungspuppe", waffe="puppe", tracht="0.55, 0.45, 0.3, 1")
-schild("SchildUebungsplatz", OB_, 0, 3.5, 4, "Übungsplatz", 40)
-schild("SchildKernburg", BG, *(lambda p: (p[0], PD.H_KERNBURG + 10, p[1]))(W(PD.MITTE_PALAS)), "Palas", 44)
 
 # Banner an den Wänden (Art 1): an der Hofseite des Palas, am Bergfried unter der Krone und an den Tortürmen der
 # Haupttore; Gier so, dass das Tuch vor der Wand zum Hof hängt

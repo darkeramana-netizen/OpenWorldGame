@@ -428,6 +428,19 @@ func _initialize() -> void:
 					stuecke_alle += 1
 					if tb_.is_empty() or absf(float(tb_.position.y) - p_.y) > 0.12:
 						stuecke_falsch.append("Taube in %s bei %s" % [t_.name, p_.snapped(Vector3.ONE * 0.1)])
+	# Hühner stehen auf dem Boden (Hof, Boden eines Baus)
+	for t_ in current_scene.find_children("Schar*", "Node3D", true, false):
+		if t_.get_script() == null or not String(t_.get_script().resource_path).ends_with("huehner.gd"):
+			continue
+		for kind_ in t_.get_children():
+			if kind_ is Node3D and not kind_ is MeshInstance3D:
+				var p_: Vector3 = (kind_ as Node3D).global_position
+				var ab_ := PhysicsRayQueryParameters3D.create(p_ + Vector3.UP * 1.0, p_ + Vector3.DOWN * 3.0, 1)
+				ab_.exclude = ohne_a
+				var tb_: Dictionary = raum_s.intersect_ray(ab_)
+				stuecke_alle += 1
+				if tb_.is_empty() or absf(float(tb_.position.y) - p_.y) > 0.12:
+					stuecke_falsch.append("Huhn in %s bei %s" % [t_.name, p_.snapped(Vector3.ONE * 0.1)])
 	# Tiere (Pferde in den Boxen und vor dem Stall, Vieh, Hunde): der Rumpf steckt in keiner Wand. Strahlen zwischen
 	# Mitte und den Enden des Rumpfs in beiden Richtungen (die Mauern sind Dreiecksformen, die nur von außen treffen)
 	for t_ in current_scene.find_children("*", "Node3D", true, false):
@@ -452,7 +465,7 @@ func _initialize() -> void:
 	for z_ in stuecke_falsch.slice(0, 8):
 		print("       falsch platziert: %s" % z_)
 	pruefe(stuecke_alle > 250 and stuecke_falsch.is_empty(),
-			"Ausstattung, Hafenkram, Tauben und Tiere: %d von %d auf dem Boden, keins in einer Wand" % [stuecke_alle - stuecke_falsch.size(), stuecke_alle])
+			"Ausstattung, Hafenkram, Tauben, Hühner und Tiere: %d von %d auf dem Boden, keins in einer Wand" % [stuecke_alle - stuecke_falsch.size(), stuecke_alle])
 	pruefe(streifen >= 8 and streifen_ok == streifen and streifen_m > 1000.0,
 			"Mauerwachen: %d von %d Streifen ohne Lücke und Wand (zusammen %.0f m)" % [streifen_ok, streifen, streifen_m])
 	# Vom Marktplatz auf den Westkai und über den Kai bis an den Kanal vor dem Wassertor

@@ -126,6 +126,84 @@ for name_, hof_, boden_ in _hoefe:
                        "stille_stunde": (p3([heim_], boden_), ["weg"])})
         _gs += 1
 
+# --- Hühner (szenen/figuren/huehner.gd): je Hof ein paar Scharen vor den Haustüren, das Revier ganz im Hof, frei von
+# Häusern, Ausstattung und Treppen, nicht am Brunnen und nicht vor der Tür selbst ---
+E("Script", "res://szenen/figuren/huehner.gd", "44_huehner")
+N("Huehner", "Node3D", BG)
+HUEHNER_BURG = []          # (x, y, z, Anzahl, Weite)
+for name_, hof_, boden_ in _hoefe:
+    hof_w_ = WL(hof_)
+    wunsch_ = {"Vorburg": 3, "Mittelburg": 2, "Oberburg": 2, "Palas": 1}.get(name_, 0)
+    orte_ = []
+    for x_, _, z_, g_, f_ in HOFHAEUSER:
+        if not _drin((x_, z_), hof_w_):
+            continue
+        a_ = math.radians(g_)
+        for seit_ in (-1.0, 1.0):
+            vor_ = (_FORMEN[f_][1] + 0.7) / 2 + 4.0
+            orte_.append((x_ + math.sin(a_) * vor_ + math.cos(a_) * seit_ * 3.5, z_ + math.cos(a_) * vor_ - math.sin(a_) * seit_ * 3.5))
+    random.shuffle(orte_)
+    gesetzt_ = 0
+    for c_ in orte_:
+        if gesetzt_ >= wunsch_:
+            break
+        weite_ = 3.0
+        rand_ = [(c_[0] + math.cos(w_) * weite_ * r_, c_[1] + math.sin(w_) * weite_ * r_) for w_ in [k_ * math.tau / 12 for k_ in range(12)]
+                 for r_ in (0.5, 1.0)] + [c_]
+        if not all(_drin(q_, hof_w_) for q_ in rand_) or any(_drin(q_, r_) for q_ in rand_ for r_ in _HINDERNISSE):
+            continue
+        if name_ in BURG_BRUNNEN and math.dist(c_, BURG_BRUNNEN[name_]) < weite_ + 3.0:
+            continue
+        if any(math.dist(c_, (h_[0], h_[2])) < 12.0 for h_ in HUEHNER_BURG):
+            continue
+        HUEHNER_BURG.append((round(c_[0], 2), boden_, round(c_[1], 2), random.randint(4, 7), weite_))
+        gesetzt_ += 1
+for k_, (x_, y_, z_, n_, weite_) in enumerate(HUEHNER_BURG):
+    N(f"Schar{k_}", "Node3D", BG + "/Huehner", f"""{T(x_, y_, z_)}
+script = ExtResource("44_huehner")
+anzahl = {n_}
+weite = {weite_:.3g}""")
+print("Hühner: %d Scharen, %d Tiere" % (len(HUEHNER_BURG), sum(h_[3] for h_ in HUEHNER_BURG)))
+
+# --- Kinder spielen Fangen um die Hoflinde (BURGBAEUME aus teil_drachenstein.py), mittags und abends daheim ---
+KINDER_BURG = [("Ludo", "Ludo, ein Knechtsjunge"), ("Wenke", "Wenke, eine Magdtochter"), ("Finn", "Finn, ein Stallbursche"),
+               ("Mira", "Mira, die Tochter der Wäscherin")]
+_kd = 0
+for bx_, by_, bz_, _ in BURGBAEUME:
+    hof_ = next(((n_, WL(h_)) for n_, h_, _ in _hoefe if _drin((bx_, bz_), WL(h_))), None)
+    if hof_ is None:
+        continue
+    kreis_ = [(bx_ + math.cos(math.radians(w_)) * 3.4, bz_ + math.sin(math.radians(w_)) * 3.4) for w_ in range(0, 360, 40)]
+    if any(_drin(q_, r_) for q_ in kreis_ for r_ in _HINDERNISSE if math.dist(q_, (bx_, bz_)) > 0) or \
+            not all(_drin(q_, hof_[1]) for q_ in kreis_):
+        continue
+    tueren_ = []
+    for x_, _, z_, g_, f_ in HOFHAEUSER:
+        if not _drin((x_, z_), hof_[1]):
+            continue
+        a_ = math.radians(g_)
+        vor_ = (_FORMEN[f_][1] + 0.7) / 2 + 1.6
+        t_ = (x_ + math.sin(a_) * vor_, z_ + math.cos(a_) * vor_)
+        if not any(_drin(t_, r_) for r_ in _HINDERNISSE):
+            tueren_.append(t_)
+    tueren_.sort(key=lambda t_: math.dist(t_, (bx_, bz_)))
+    heim_ = next((t_ for t_ in tueren_ if strecke_frei(t_, min(kreis_, key=lambda q_: math.dist(q_, t_)))), None)
+    if heim_ is None:
+        continue
+    for i_ in range(2 if hof_[0] == "Vorburg" else 1):
+        name_, anzeige_ = KINDER_BURG[_kd % len(KINDER_BURG)]
+        k_ = kreis_[i_ * 4:] + kreis_[:i_ * 4]
+        k_ = k_ + [k_[0]]
+        if i_ == 1:
+            k_ = k_[::-1]                       # das zweite Kind läuft andersherum: sie begegnen sich
+        punkte_ = p3(k_, by_)
+        person(f"BurgKind{name_}", BL, round(heim_[0], 2), by_, round(heim_[1], 2), anzeige_, "kind_burg", 0,
+               GESINDE_TRACHTEN[(_kd + 1) % 4], sichtbar_wenn="alarm<2", tempo=2.2, groesse=0.68,
+               ablauf={"vormittag": (punkte_, ["runde"]), "mittag": (p3([heim_], by_), ["weg"]),
+                       "nachmittag": (punkte_[::-1], ["runde"]), "stille_stunde": (p3([heim_], by_), ["weg"])})
+        _kd += 1
+print("Burgleben: Kinder an den Hoflinden", _kd)
+
 # --- An den Lagerplätzen arbeitet jemand: zählt Fässer, stapelt Holz (steht davor, Blick zur Mauer) ---
 ARBEIT_NAMEN = ["Knecht Edgar Strunk", "Magd Liesel Garbe", "Knecht Thies Moor", "Magd Hanna Seil", "Knecht Fiete Rumpf",
                 "Magd Kaja Spindel", "Knecht Wido Last", "Magd Berit Kamm"]

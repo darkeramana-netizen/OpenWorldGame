@@ -3725,9 +3725,11 @@ func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, bo
 	for f in achsen:
 		var pos := -L + 1.0 + (f + 0.5) * abst
 		var m := c + uz * pos + nx * B
-		# Arkadenbogen im Erdgeschoss (in der Mitte die Tür)
+		# Arkadenbogen im Erdgeschoss (in der Mitte die Tür): vermauert mit Bruchstein, darin ein kleines Bleiglasfenster
+		# (eine schwarze Fläche wirkte von nahem wie ein Loch ins Nichts)
 		if absf(pos) > abst * 0.6:
-			_rundbogen(m, uz, nx, boden + 0.15, 2.6, gh * 0.62, 0.35)
+			_rundbogen(m, uz, nx, boden + 0.15, 2.6, gh * 0.62, 0.35, false, "bruchstein")
+			_rundbogen(m + nx * 0.03, uz, nx, boden + 0.15 + gh * 0.62 * 0.3, 0.7, gh * 0.62 * 0.5, 0.14)
 		# Gekuppelte Rundbogenfenster in den Obergeschossen (wie im Referenzbild): zwei hohe Bögen, dazwischen
 		# eine Säule, darunter eine durchgehende Sohlbank
 		for k in range(1, geschosse):
@@ -3801,11 +3803,14 @@ func _palas_fassade(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, bo
 
 ## Rundbogenöffnung in einer Wand (Mitte m auf der Außenfläche, n nach außen): dunkle Fläche mit Halbkreis oben,
 ## Gewände und Bogensteine in hellem Stein.
-func _rundbogen(m: Vector2, u: Vector2, n: Vector2, unten: float, breite: float, hoehe: float, rahmen: float, durch := false) -> void:
+func _rundbogen(m: Vector2, u: Vector2, n: Vector2, unten: float, breite: float, hoehe: float, rahmen: float, durch := false,
+		fuellung := "") -> void:
 	var b := breite / 2.0
 	var kaempfer := unten + hoehe - b
 	var glas := rahmen < 0.3      # schmale Rahmen: Fenster mit Bleiglas, breite: dunkle Arkade
 	var fuell := "zier_glas" if glas else "dunkel"
+	if fuellung != "":
+		fuell = fuellung
 	var glas_n := 0.02            # Lage der Glasfläche vor der Mauer
 	if durch:
 		# echtes Loch (begehbarer Bau): klares Glas mitten in der Mauer, Zwickel über dem Bogen gemauert
