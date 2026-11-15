@@ -2841,7 +2841,7 @@ func _raum_fuellen(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L
 		var ts0 := iL * (0.42 if art == 3 else 0.15)
 		var lang0 := minf(iL * 0.9, 6.0) if art == 3 else minf(iL * 0.5, 2.4)
 		if not saal and not (zweck == 4 and k == 0) and zweck != 6:
-			_inseln(zweck, k, c, uz, nx, iL, iB, y, s0 + 0.5, iL - 2.7, ts0, lang0, zufall)
+			_inseln(zweck, k, c, uz, nx, iL, iB, y, -iL + 1.7, iL - 2.7, ts0, lang0, frei_s if stockwerke > 1 else NAN, zufall)
 		# Teppich bzw. Binsenmatte unter dem Tisch in der Mitte (der Rittersaal hat schon seinen Teppich)
 		if zweck in [0, 5] and iB > 2.0:
 			var ts := ts0
@@ -2859,7 +2859,7 @@ func _raum_fuellen(zweck: int, art: int, c: Vector2, uz: Vector2, nx: Vector2, L
 ## Längsseite +B, nur im Erdgeschoss) und die Achse zur Treppe, der Haupttisch (ts, lang) samt Bänken und den Leuten
 ## daran und die festen Plätze der Personen je Zweck. Jede Zelle bekommt eine Möbelgruppe, die zum Raum passt.
 func _inseln(zweck: int, k: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, iB: float, y: float, s_a: float,
-		s_b: float, ts: float, lang: float, zufall: RandomNumberGenerator) -> void:
+		s_b: float, ts: float, lang: float, ankunft: float, zufall: RandomNumberGenerator) -> void:
 	var q_max := iB - 2.3
 	if q_max < 1.4 or s_b - s_a < 2.6:
 		return
@@ -2868,25 +2868,42 @@ func _inseln(zweck: int, k: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float
 		1: personen = [Vector2(iL - 2.3, 0.4), Vector2(iL * 0.35, -(iB - 1.35))]
 		2: personen = [Vector2(iL * 0.3, 0.6)]
 		3: personen = [Vector2(iL * 0.42 - 3.5, 1.6), Vector2(iL * 0.42 + 3.5, 1.6)]     # Standleuchter
-	var spalten := maxi(1, int(2.0 * q_max / 2.9))
-	var breite_q := 2.0 * q_max / spalten
 	var zeilen := maxi(1, int((s_b - s_a) / 3.1))
 	var laenge_s := (s_b - s_a) / zeilen
 	var feuer := false
+	var zellen: Array[Vector2] = []           # (sm, qm) mit Halbmaßen in hq_je
+	var hq_je: Array[float] = []
 	for zi in zeilen:
-		for sp in spalten:
-			var sm := s_a + (zi + 0.5) * laenge_s
-			var qm := -q_max + (sp + 0.5) * breite_q
-			var hs := laenge_s / 2.0 - 0.45            # halbe Ausdehnung der Insel (Gassen dazwischen)
-			var hq := breite_q / 2.0 - 0.4
+		var sm := s_a + (zi + 0.5) * laenge_s
+		var hs := laenge_s / 2.0 - 0.45
+		# bis s = 1,8 läuft in der Mitte die Gasse von der Tür zur Treppe (1,3 m breit): links und rechts davon je ein
+		# eigener Streifen; dahinter die ganze Breite
+		var streifen: Array[Vector2] = [Vector2(0.65, q_max), Vector2(-q_max, -0.65)] if sm - hs < 1.8 else [Vector2(-q_max, q_max)]
+		for st: Vector2 in streifen:
+			var w := st.y - st.x
+			if w < 1.6:
+				continue
+			var spalten := maxi(1, int(w / 2.7))
+			var bq := w / spalten
+			for sp in spalten:
+				zellen.append(Vector2(sm, st.x + (sp + 0.5) * bq))
+				hq_je.append(bq / 2.0 - 0.35)
+	for zi in zellen.size():
+		var sm := zellen[zi].x
+		var qm := zellen[zi].y
+		var hs := laenge_s / 2.0 - 0.45            # halbe Ausdehnung der Insel (Gassen dazwischen)
+		var hq: float = hq_je[zi]
+		if true:
 			var frei := true
-			# Weg von der Tür zur Achse und die Achse entlang zur Treppe (Erdgeschoss); oben die Achse zur Treppe
+			# Weg von der Tür zur Gasse (Erdgeschoss)
 			if k == 0 and qm + hq > -0.1 and sm - hs < 1.5 and sm + hs > -1.5:
 				frei = false
-			if absf(qm) - hq < 0.75 and sm - hs < 1.8:
+			# wo man oben von der Treppe kommt: ein Querstreifen über die ganze Breite (der Treppenfuß am Giebel -L liegt
+			# vor s_a, der Streifen dort ist ohnehin frei)
+			if not is_nan(ankunft) and sm + hs > ankunft - 1.9 and sm - hs < ankunft + 0.4:
 				frei = false
-			# Haupttisch mit Bänken und Leuten
-			if sm + hs > ts - lang / 2.0 - 1.0 and sm - hs < ts + lang / 2.0 + 1.0 and absf(qm) - hq < 2.0:
+			# Haupttisch mit Bänken und den Leuten daran
+			if sm + hs > ts - lang / 2.0 - 0.6 and sm - hs < ts + lang / 2.0 + 0.6 and absf(qm) - hq < 2.1:
 				frei = false
 			if zweck == 3 and absf(qm) - hq < 1.9:
 				frei = false                                  # der Läufer zum Thron
