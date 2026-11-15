@@ -3283,7 +3283,14 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 					sv += br + lu
 				else:
 					sv += 0.5
-	# Fläche: Gruppen auf einem Raster zwischen den Wandreihen
+	# Fläche: Gruppen auf einem Raster zwischen den Wandreihen, entlang der längeren Seite des Raums gereiht
+	if not mitte.is_empty() and hb > hl:
+		var u0 := u
+		u = n
+		n = -u0
+		var t_ := hl
+		hl = hb
+		hb = t_
 	if not mitte.is_empty():
 		var laengen := {"esstisch": 2.8, "tafel": 2.8, "schlafstelle": 2.3, "vorrat": 2.3, "waffen": 2.5, "spiesse": 2.3,
 			"pfeile": 1.9, "schleifstein": 1.5, "arbeitstisch": 2.4, "koerbe": 1.7, "hackplatz": 2.3, "zuber": 1.4,

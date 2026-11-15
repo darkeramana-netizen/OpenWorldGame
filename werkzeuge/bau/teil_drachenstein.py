@@ -1291,7 +1291,7 @@ for hx_, hy_, hz_, hg_, hf_ in HOFHAEUSER:
         zh_ = -ht_ / 2 + _WAND + 0.3
         treppen_.append((-1.0 if k_ % 2 == 0 else 1.0, zh_, zh_ + r_ * 1.5))
     for g_ in range(og_ + 1):
-        boden_ = hy_ + (0.0 if g_ == 0 else _EG + _OG * (g_ - 1))
+        boden_ = hy_ + (0.03 if g_ == 0 else _EG + _OG * (g_ - 1))
         decke_ = hy_ + _EG + _OG * g_ - 0.25
         aus_ = _VK * g_
         frei_ = []

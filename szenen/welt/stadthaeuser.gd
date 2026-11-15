@@ -257,6 +257,22 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 						_viereck(fs, Vector3(c_.x, a.y, zi), a, Vector3(a.x, c_.y, zi), c_)
 					else:
 						_viereck(fs, a, Vector3(c_.x, a.y, zi), c_, Vector3(a.x, c_.y, zi))
+					# Rahmen, Sprossenkreuz und Bleiruten vor der Scheibe, eine Fensterbank darunter
+					var zr := zi - seite * 0.02
+					var zr2 := zi - seite * 0.06
+					var zlo := minf(zr, zr2)
+					var zhi := maxf(zr, zr2)
+					_quader(flaechen, "rahmen", Vector3(x - 0.46, y0 - 0.06, zlo), Vector3(x + 0.46, y0, zhi))
+					_quader(flaechen, "rahmen", Vector3(x - 0.46, y0 + hf, zlo), Vector3(x + 0.46, y0 + hf + 0.06, zhi))
+					for e_: float in [-1.0, 1.0]:
+						_quader(flaechen, "rahmen", Vector3(x + e_ * 0.43 - 0.03, y0, zlo), Vector3(x + e_ * 0.43 + 0.03, y0 + hf, zhi))
+					_quader(flaechen, "rahmen", Vector3(x - 0.025, y0, zlo), Vector3(x + 0.025, y0 + hf, zhi))
+					_quader(flaechen, "rahmen", Vector3(x - 0.4, y0 + hf * 0.55 - 0.025, zlo), Vector3(x + 0.4, y0 + hf * 0.55 + 0.025, zhi))
+					var blei := 0.2
+					while blei < hf - 0.05:
+						_quader(flaechen, "metall", Vector3(x - 0.4, y0 + blei - 0.006, zlo + 0.01), Vector3(x + 0.4, y0 + blei + 0.006, zhi - 0.01))
+						blei += 0.2
+					_quader(flaechen, "balken", Vector3(x - 0.55, y0 - 0.12, minf(zi, zi - seite * 0.25)), Vector3(x + 0.55, y0 - 0.06, maxf(zi, zi - seite * 0.25)))
 
 	# Fenster und Tür
 	for seite: int in [1, -1]:
@@ -433,7 +449,9 @@ func _boden(flaechen: Dictionary, f: int, g: int, b: float, t: float, y: float, 
 	var z1 := t / 2 + aus - WAND
 	var tr: Array = treppen(f)
 	if g == 0 or g - 1 >= tr.size():
-		_quader(flaechen, "dielen", Vector3(x0, y - 0.25, z0), Vector3(x1, y, z1))
+		# im Erdgeschoss 3 cm über dem Gelände (sonst flimmert das Pflaster des Hofs durch)
+		var yb := y + (0.03 if g == 0 else 0.0)
+		_quader(flaechen, "dielen", Vector3(x0, yb - 0.25, z0), Vector3(x1, yb, z1))
 		return
 	var unten: Array = tr[g - 1]
 	var sx: float = unten[0]
@@ -851,10 +869,10 @@ func _material(name_: String) -> Material:
 			m.metallic = 0.6
 			m.roughness = 0.5
 		"fensterlicht":
-			m.albedo_color = Color(0.78, 0.84, 0.9)
+			m.albedo_color = Color(0.62, 0.7, 0.74)
 			m.emission_enabled = true
-			m.emission = Color(0.7, 0.78, 0.88)
-			m.emission_energy_multiplier = 0.9
+			m.emission = Color(0.62, 0.7, 0.78)
+			m.emission_energy_multiplier = 0.45
 		"dielen":
 			m.albedo_texture = load("res://texturen/holz_farbe.jpg")
 			m.albedo_color = Color(0.7, 0.55, 0.42)
