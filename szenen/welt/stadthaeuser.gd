@@ -362,8 +362,17 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		var r3 := Vector3(ex - ew - 0.15, ey1 - 0.05, ez + et + 0.2)
 		_viereck(es, r0, r1, r2, r3)
 		_viereck(es, r3, r2, r1, r0)
-	# Sockelleiste aus Stein
-	_quader(flaechen, "quader", Vector3(-b / 2 - 0.08, -0.6, -t / 2 - 0.08), Vector3(b / 2 + 0.08, 0.45, t / 2 + 0.08))
+	# Sockelleiste aus Stein (begehbar: nur ein Ring außen um die Mauer, an der Tür offen)
+	if begehbar:
+		var sl := 0.08
+		_quader(flaechen, "quader", Vector3(-b / 2 - sl, -0.6, -t / 2 - sl), Vector3(b / 2 + sl, 0.45, -t / 2 + 0.02))
+		_quader(flaechen, "quader", Vector3(-b / 2 - sl, -0.6, t / 2 - 0.02), Vector3(-0.65, 0.45, t / 2 + sl))
+		_quader(flaechen, "quader", Vector3(0.65, -0.6, t / 2 - 0.02), Vector3(b / 2 + sl, 0.45, t / 2 + sl))
+		for e: float in [-1.0, 1.0]:
+			_quader(flaechen, "quader", Vector3(minf(e * (b / 2 - 0.02), e * (b / 2 + sl)), -0.6, -t / 2),
+				Vector3(maxf(e * (b / 2 - 0.02), e * (b / 2 + sl)), 0.45, t / 2))
+	else:
+		_quader(flaechen, "quader", Vector3(-b / 2 - 0.08, -0.6, -t / 2 - 0.08), Vector3(b / 2 + 0.08, 0.45, t / 2 + 0.08))
 
 	# Dach: Satteldach mit Überstand; First entlang z (Giebel zur Straße) oder entlang x
 	var dach_mat := "dach0" if nur_ziegel else "dach%d" % form[6]
