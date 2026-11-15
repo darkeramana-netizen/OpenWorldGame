@@ -2868,66 +2868,68 @@ func _inseln(zweck: int, k: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float
 		1: personen = [Vector2(iL - 2.3, 0.4), Vector2(iL * 0.35, -(iB - 1.35))]
 		2: personen = [Vector2(iL * 0.3, 0.6)]
 		3: personen = [Vector2(iL * 0.42 - 3.5, 1.6), Vector2(iL * 0.42 + 3.5, 1.6)]     # Standleuchter
-	var zeilen := maxi(1, int((s_b - s_a) / 3.1))
-	var laenge_s := (s_b - s_a) / zeilen
 	var feuer := false
-	var zellen: Array[Vector2] = []           # (sm, qm) mit Halbmaßen in hq_je
-	var hq_je: Array[float] = []
-	for zi in zeilen:
-		var sm := s_a + (zi + 0.5) * laenge_s
-		var hs := laenge_s / 2.0 - 0.45
-		# bis s = 1,8 läuft in der Mitte die Gasse von der Tür zur Treppe (1,3 m breit): links und rechts davon je ein
-		# eigener Streifen; dahinter die ganze Breite
-		var streifen: Array[Vector2] = [Vector2(0.65, q_max), Vector2(-q_max, -0.65)] if sm - hs < 1.8 else [Vector2(-q_max, q_max)]
-		for st: Vector2 in streifen:
-			var w := st.y - st.x
-			if w < 1.6:
-				continue
-			var spalten := maxi(1, int(w / 2.7))
-			var bq := w / spalten
-			for sp in spalten:
-				zellen.append(Vector2(sm, st.x + (sp + 0.5) * bq))
-				hq_je.append(bq / 2.0 - 0.35)
-	for zi in zellen.size():
-		var sm := zellen[zi].x
-		var qm := zellen[zi].y
-		var hs := laenge_s / 2.0 - 0.45            # halbe Ausdehnung der Insel (Gassen dazwischen)
-		var hq: float = hq_je[zi]
-		if true:
-			var frei := true
-			# Weg von der Tür zur Gasse (Erdgeschoss)
-			if k == 0 and qm + hq > -0.1 and sm - hs < 1.5 and sm + hs > -1.5:
-				frei = false
-			# wo man oben von der Treppe kommt: ein Querstreifen über die ganze Breite (der Treppenfuß am Giebel -L liegt
-			# vor s_a, der Streifen dort ist ohnehin frei)
-			if not is_nan(ankunft) and sm + hs > ankunft - 1.9 and sm - hs < ankunft + 0.4:
-				frei = false
-			# Haupttisch mit Bänken und den Leuten daran
-			if sm + hs > ts - lang / 2.0 - 0.6 and sm - hs < ts + lang / 2.0 + 0.6 and absf(qm) - hq < 2.1:
-				frei = false
+	# zwei Bereiche: vor s = 1,8 links und rechts der Gasse von der Tür zur Treppe, dahinter die ganze Breite
+	var bereiche: Array = []                 # [s von, s bis, q von, q bis]
+	if s_a < 1.8:
+		bereiche.append([s_a, minf(1.8, s_b), 0.65, q_max])
+		bereiche.append([s_a, minf(1.8, s_b), -q_max, -0.65])
+	if s_b > 1.8:
+		bereiche.append([maxf(1.8, s_a), s_b, -q_max, q_max])
+	var laengen := {"esstisch": 2.8, "tafel": 2.8, "feuerstelle": 2.6, "schlafstelle": 2.3, "spinnen": 1.9, "webstuhl": 2.0,
+		"vorrat": 2.3, "waschen": 2.4, "werkbank": 2.4, "arbeitstisch": 2.4, "arbeitstisch_voll": 2.0, "hackplatz": 2.3,
+		"zuber": 1.4, "koerbe": 1.7, "waffen": 2.5, "pfeile": 1.9, "spiesse": 2.3, "schleifstein": 1.5, "pult": 1.5,
+		"schach": 1.7, "truhen": 2.1, "kohlebecken": 1.1, "heu": 2.0}
+	for ber: Array in bereiche:
+		var w: float = float(ber[3]) - float(ber[2])
+		if w < 1.7:
+			continue
+		var spalten := maxi(1, int(w / 2.6))
+		var bq := w / spalten
+		for sp in spalten:
+			var qm: float = float(ber[2]) + (sp + 0.5) * bq
+			var hq := minf(bq / 2.0 - 0.3, 1.3)
+			# gesperrte Abschnitte entlang s für diese Spalte
+			var sperren: Array[Vector2] = []
+			if k == 0 and qm + hq > -0.1:
+				sperren.append(Vector2(-1.5, 1.5))                       # Weg von der Tür
+			if not is_nan(ankunft):
+				sperren.append(Vector2(ankunft - 1.9, ankunft + 0.4))    # wo man von der Treppe kommt
+			if absf(qm) - hq < 2.1:
+				sperren.append(Vector2(ts - lang / 2.0 - 0.6, ts + lang / 2.0 + 0.6))   # Haupttisch
 			if zweck == 3 and absf(qm) - hq < 1.9:
-				frei = false                                  # der Läufer zum Thron
+				continue                                                 # der Läufer zum Thron
 			for pp: Vector2 in personen:
-				if absf(pp.x - sm) < hs + 1.2 and absf(pp.y - qm) < hq + 1.2:
-					frei = false
-			if not frei:
-				continue
-			var m := c + uz * sm + nx * qm
-			var n := nx * (1.0 if qm < 0.0 else -1.0)      # zur Achse
-			var liste: Array
-			match zweck:
-				1: liste = ["arbeitstisch_voll", "vorrat", "hackplatz", "zuber", "koerbe", "arbeitstisch_voll"]
-				2: liste = ["waffen", "spiesse", "schleifstein", "pfeile", "waffen", "arbeitstisch"]
-				3: liste = ["pult", "schach", "truhen", "tafel", "kohlebecken"]
-				4: liste = ["heu", "vorrat", "heu"]
-				_:
-					liste = ["esstisch", "schlafstelle", "spinnen", "webstuhl", "vorrat", "waschen", "werkbank", "schlafstelle"]
-					if k == 0 and not feuer and absf(qm) < q_max * 0.75 + 0.1:
-						liste = ["feuerstelle"]
-			var art: String = liste[zufall.randi() % liste.size()]
-			if art == "feuerstelle":
-				feuer = true
-			_insel(art, m, uz, n, minf(hs, 1.45), minf(hq, 1.3), y, zufall)
+				if absf(pp.y - qm) < hq + 1.2:
+					sperren.append(Vector2(pp.x - 1.2, pp.x + 1.2))
+			var sv: float = float(ber[0]) + zufall.randf() * 0.4
+			var s_ende: float = ber[1]
+			while sv < s_ende - 1.0:
+				var liste: Array
+				match zweck:
+					1: liste = ["arbeitstisch_voll", "vorrat", "hackplatz", "zuber", "koerbe", "arbeitstisch_voll"]
+					2: liste = ["waffen", "spiesse", "schleifstein", "pfeile", "waffen", "arbeitstisch"]
+					3: liste = ["pult", "schach", "truhen", "tafel", "kohlebecken"]
+					4: liste = ["heu", "vorrat", "heu"]
+					_:
+						liste = ["esstisch", "schlafstelle", "spinnen", "webstuhl", "vorrat", "waschen", "werkbank", "schlafstelle"]
+						if k == 0 and not feuer and absf(qm) < 1.6:
+							liste = ["feuerstelle"]
+				var art: String = liste[zufall.randi() % liste.size()]
+				var lg: float = laengen[art]
+				var frei := sv + lg <= s_ende
+				for sp_: Vector2 in sperren:
+					if sv + lg > sp_.x and sv < sp_.y:
+						frei = false
+				if not frei:
+					sv += 0.4
+					continue
+				if art == "feuerstelle":
+					feuer = true
+				var m := c + uz * (sv + lg / 2.0) + nx * qm
+				var n := nx * (1.0 if qm < 0.0 else -1.0)      # zur Achse
+				_insel(art, m, uz, n, lg / 2.0, hq, y, zufall)
+				sv += lg + zufall.randf_range(0.6, 1.1)
 
 
 ## Eine Möbelgruppe in der Raumfläche: Mitte m, u entlang des Baus, n quer (zur Achse); Ausdehnung ±hs entlang, ±hq quer.
