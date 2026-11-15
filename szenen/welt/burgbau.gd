@@ -1719,7 +1719,7 @@ func _turm_einrichtung(c: Vector2, ri: float, fb: float, tueren: Array, innen_w:
 	var gesperrt := func(w: float, halb: float) -> bool:
 		for j in tueren.size():
 			for t: float in [float(tueren[j]), float(innen_w[j])]:
-				if absf(angle_difference(w, t)) < halb + 0.5 + 0.9 / ri:
+				if absf(angle_difference(w, t)) < halb + 1.5 / ri:
 					return true
 		if not is_nan(rampe_ab):
 			var x := fposmod(w - rampe_ab, TAU)
@@ -1732,6 +1732,13 @@ func _turm_einrichtung(c: Vector2, ri: float, fb: float, tueren: Array, innen_w:
 				if x < x_bis + halb:
 					return true
 		return false
+	# Abstand eines Punkts von den Wegen (Tür → Mitte)
+	var weg_abstand := func(q: Vector2) -> float:
+		var best := INF
+		for j in innen_w.size():
+			var dp := c + Vector2(cos(innen_w[j]), sin(innen_w[j])) * ri
+			best = minf(best, Geometry2D.get_closest_point_to_segment(q, c, dp).distance_to(q))
+		return best
 	var breiten := {"bank": 1.5, "fass": 0.7, "waffen": 1.1, "stroh": 2.0, "becken": 0.7, "kisten": 0.9, "saecke": 0.9,
 		"haken": 0.9}
 	var reihe := ["bank", "fass", "waffen", "stroh", "becken", "kisten", "saecke", "haken", "fass", "bank", "kisten", "stroh"]
@@ -1804,12 +1811,41 @@ func _turm_einrichtung(c: Vector2, ri: float, fb: float, tueren: Array, innen_w:
 		# darüber an der Wand: Gerät, Schilde, Bögen
 		if hoehe > 3.0 and art != "waffen" and zufall.randf() < 0.6:
 			_wandstueck(2, false, c + d * ri, u, -d, fb + 2.2, minf(fb + 2.9, fb + hoehe - 0.2), zufall)
-	# Tisch in der Mitte großer Kammern, abseits der Wege von den Türen zur Mitte
+	# zweiter Ring: Möbelgruppen zwischen der Wandreihe und der Mitte, abseits der Wege (nur in großen Kammern)
+	var belegt: Array[Vector2] = []
+	if ri >= 3.8:
+		var rr := ri - 1.9
+		var gruppen := ["vorrat", "waffen", "pfeile", "schlafstelle", "spiesse", "vorrat", "koerbe"]
+		var wr := zufall.randf() * TAU
+		var wende := wr + TAU
+		while wr < wende:
+			var gruppe: String = gruppen[zufall.randi() % gruppen.size()]
+			var lg: float = {"vorrat": 2.3, "waffen": 2.5, "pfeile": 1.9, "schlafstelle": 2.3, "spiesse": 2.3, "koerbe": 1.7}[gruppe]
+			var hw_ := lg / 2.0 / rr
+			var wm := wr + hw_
+			var d := Vector2(cos(wm), sin(wm))
+			var tu := Vector2(-d.y, d.x)
+			var m := c + d * rr
+			var ok := true
+			for e1: float in [-0.5, 0.0, 0.5]:
+				for e2: float in [-0.6, 0.6]:
+					if weg_abstand.call(m + tu * e1 * lg + d * e2) < 1.0:
+						ok = false
+			if ok:
+				_insel(gruppe, m, tu, -d, lg / 2.0, 0.65, fb, zufall)
+				belegt.append(m)
+				wr += 2.0 * hw_ + 0.9 / rr
+			else:
+				wr += 0.15
+	# Tisch in der Mitte großer Kammern, abseits der Wege von den Türen zur Mitte und der Gruppen
 	if ri >= 4.0:
 		for versuch in 12:
 			var wt := zufall.randf() * TAU
 			var tm := c + Vector2(cos(wt), sin(wt)) * ri * 0.42
 			var ok := true
+			for bm: Vector2 in belegt:
+				if bm.distance_to(tm) < 2.2:
+					ok = false
 			for j in innen_w.size():
 				var dp := c + Vector2(cos(innen_w[j]), sin(innen_w[j])) * ri
 				if Geometry2D.get_closest_point_to_segment(tm, c, dp).distance_to(tm) < 1.6:
