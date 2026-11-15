@@ -523,7 +523,8 @@ func _initialize() -> void:
 			var lauf := gh * 1.75
 			var fuss := -iL + 0.9                 # Fuß der Treppe, davor ein Absatz am Giebel
 			var q := -iB + 0.575                  # Mitte der Treppe
-			ok = await gehe_ueber([c, c + uz * (fuss - 0.45) + nx * (q + 1.6), c + uz * (fuss - 0.45) + nx * q], 15.0, 0.3) \
+			# die Gasse in der Achse entlang bis vor den Giebel, dann am Giebel zur Treppe (die Raumfläche ist voll)
+			ok = await gehe_ueber([c, c + uz * (fuss - 0.45), c + uz * (fuss - 0.45) + nx * (q + 1.6), c + uz * (fuss - 0.45) + nx * q], 15.0, 0.3) \
 					and await gehe_ueber([c + uz * (fuss + lauf + 1.0) + nx * q], 15.0, 0.4) \
 					and absf(spieler().global_position.y - (fb + gh)) < 0.4
 		if ok:
