@@ -1,0 +1,26 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Hofwache. Ich sehe zu, dass hier niemand Unfug treibt – und dass die Kinder nicht unter die Karren laufen.",
+				"Zwei Runden um den Brunnen, dann ans Tor, dann wieder von vorn. So geht der Tag.",
+				{
+					"text": "Wächter {name}. Im Hof ist alles in Ordnung.",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm! Alle Leute in die Häuser, die Tore werden geschlossen.",
+					"bedingung": "alarm>=2"
+				},
+				{
+					"text": "Nachts ist es still im Hof. Nur die Pferde scharren im Stall.",
+					"bedingung": "abschnitt=nacht"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Ich muss meine Runde weitergehen."
+		}
+	}
+}

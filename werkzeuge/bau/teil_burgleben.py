@@ -110,7 +110,7 @@ for name_, hof_, boden_ in _hoefe:
         if not any(_drin(t_, r_) for r_ in _HINDERNISSE) and strecke_frei(t_, um_brunnen_):
             tueren_.append((t_, um_brunnen_))
     random.shuffle(tueren_)
-    for i_ in range(min(4, len(tueren_) // 2)):
+    for i_ in range(min(6, len(tueren_) // 2)):
         (heim_, b1_), (arbeit_, b2_) = tueren_[2 * i_], tueren_[2 * i_ + 1]
         if not strecke_frei(b1_, b2_):
             continue
@@ -125,6 +125,39 @@ for name_, hof_, boden_ in _hoefe:
                ablauf={"morgengrauen": (punkte_, ["runde"]),
                        "stille_stunde": (p3([heim_], boden_), ["weg"])})
         _gs += 1
+
+# --- Hofwachen: je Hof eine, die eine Runde um den Brunnen geht (Wegpunkte frei von Häusern, Ausstattung und Treppen,
+# jede Strecke dazwischen frei), nachts mit Fackel ---
+HOFWACHEN_NAMEN = ["Hofwache Brun Eggert", "Hofwache Lene Stauf", "Hofwache Ortwin Hag", "Hofwache Margit Frey"]
+_hw = 0
+for name_, hof_, boden_ in _hoefe:
+    if name_ not in BURG_BRUNNEN:
+        continue
+    hof_w_ = WL(hof_)
+    bx_, bz_ = BURG_BRUNNEN[name_]
+    runde_ = None
+    for r_ in (12.0, 10.0, 14.0, 8.0, 16.0, 6.5):
+        for dreh_ in range(0, 60, 15):
+            kreis_ = [(bx_ + math.cos(math.radians(w_ + dreh_)) * r_, bz_ + math.sin(math.radians(w_ + dreh_)) * r_)
+                      for w_ in range(0, 360, 60)]
+            if all(_drin(q_, hof_w_) and not any(_drin(q_, h_) for h_ in _HINDERNISSE) for q_ in kreis_) and \
+                    all(strecke_frei(a_, b_) for a_, b_ in zip(kreis_, kreis_[1:] + kreis_[:1])):
+                runde_ = kreis_ + kreis_[:1]
+                break
+        if runde_:
+            break
+    if not runde_:
+        continue
+    punkte_ = p3(runde_, boden_)
+    person(f"Hofwache{_hw}", BL, *punkte_[0], HOFWACHEN_NAMEN[_hw % len(HOFWACHEN_NAMEN)], "hofwache_burg", 1, WACHE_TRACHT,
+           ablauf={"morgengrauen": (punkte_, ["runde"]), "nacht": (punkte_, ["runde", "haltung=fackel"])}, tempo=1.0)
+    _hw += 1
+print("Burgleben: Hofwachen", _hw)
+
+# --- Zwei Knappen üben am Übungsplatz (Puppen bei lokal x = ±2,5 vor dem Knoten ObererBurg) mit dem Schwert ---
+for i_, (name_, anzeige_) in enumerate([("KnappeBurg0", "Knappe Rupert Harz"), ("KnappeBurg1", "Knappe Ida Wendt")]):
+    person(name_, BL, round(UEB[0] + (2.5 if i_ == 0 else -2.5), 2), PD.H_KERNBURG, round(UEB[1] + 1.7, 2), anzeige_,
+           "knappe_burg", 0, "0.38, 0.1, 0.08, 1", gier=180.0, sichtbar_wenn="alarm<2", haltung="schwert")
 
 # --- Hühner (szenen/figuren/huehner.gd): je Hof ein paar Scharen vor den Haustüren, das Revier ganz im Hof, frei von
 # Häusern, Ausstattung und Treppen, nicht am Brunnen und nicht vor der Tür selbst ---

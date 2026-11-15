@@ -1,0 +1,22 @@
+{
+	"knoten": {
+		"start": {
+			"text": [
+				"Hieb, Parade, Stoß. Der Waffenmeister sagt, nach tausend Hieben weiß der Arm es von allein.",
+				"Die Puppe schlägt nicht zurück. Das ist das Einzige, was mir an ihr gefällt.",
+				{
+					"text": "Wächter {name}! Wollt Ihr mir zeigen, wie man den Säbel richtig führt?",
+					"bedingung": "rang>=4"
+				},
+				{
+					"text": "Alarm? Dann ist jetzt keine Übung mehr.",
+					"bedingung": "alarm>=2"
+				}
+			],
+			"weiter": "ende"
+		},
+		"ende": {
+			"text": "Weiter geht's. Hieb, Parade, Stoß …"
+		}
+	}
+}
