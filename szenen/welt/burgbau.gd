@@ -1704,10 +1704,12 @@ func _rundturm_hohl(c: Vector2, unten: float, oben: float, r: float, dach: int, 
 		_zinne(c + d * (rk + ra) / 2.0, Vector2(-d.y, d.x), d, -0.65, 0.65, -0.3, 0.3, oben + BRUSTWEHR, ZINNE_HOEHE)
 
 
-## Wachstube in der Kammer eines hohlen Rundturms: an der Innenwand (Radius ri, Boden fb) je nach Platz eine Bank,
-## ein Fass, ein Waffenständer mit Spießen, ein Strohlager mit Decke und ein Kohlebecken. Frei bleiben die Türen samt
-## ihrem Eintritt (Winkel tueren, innen_w), der Weg durch die Mitte und die Rampe an der Wand: nur dort, wo sie schon
-## mindestens 2,2 m hoch ist (Winkel frei_ab bis rampe_bis), steht etwas darunter.
+## Wachstube in der Kammer eines hohlen Rundturms (Radius ri, Boden fb): rundum an der Innenwand Bänke, Fässer,
+## Waffenständer mit Spießen, Strohlager, Kohlebecken, Kistenstapel, Säcke und Kleiderhaken, darüber Gerät und Schilde an
+## der Wand; in großen Kammern ein Tisch mit Schemeln, Krug und Würfelbecher abseits der Wege; unter der Decke hängen
+## Kräuter, Säcke und Körbe. Frei bleiben die Türen samt ihrem Eintritt (Winkel tueren, innen_w), die Wege von den Türen
+## zur Mitte und die Rampe an der Wand: nur wo sie schon mindestens 2,2 m hoch ist (Winkel frei_ab bis rampe_bis),
+## steht etwas darunter.
 func _turm_einrichtung(c: Vector2, ri: float, fb: float, tueren: Array, innen_w: Array, rampe_ab: float, frei_ab: float,
 		rampe_bis: float, hoehe: float) -> void:
 	if ri < 2.2 or hoehe < 2.4:
@@ -1730,25 +1732,24 @@ func _turm_einrichtung(c: Vector2, ri: float, fb: float, tueren: Array, innen_w:
 				if x < x_bis + halb:
 					return true
 		return false
-	var stuecke := ["bank", "fass", "waffen", "stroh", "becken"]
-	var gesetzt: Array[float] = []
+	var breiten := {"bank": 1.5, "fass": 0.7, "waffen": 1.1, "stroh": 2.0, "becken": 0.7, "kisten": 0.9, "saecke": 0.9,
+		"haken": 0.9}
+	var reihe := ["bank", "fass", "waffen", "stroh", "becken", "kisten", "saecke", "haken", "fass", "bank", "kisten", "stroh"]
 	var w := zufall.randf() * TAU
-	for art: String in stuecke:
-		var breite: float = {"bank": 1.5, "fass": 0.7, "waffen": 1.1, "stroh": 2.0, "becken": 0.7}[art]
-		var halb := breite / 2.0 / (ri - 0.5)
-		var platz := NAN
-		for versuch in 36:
-			var kandidat := w + versuch * TAU / 36.0
-			var frei: bool = not gesperrt.call(kandidat, halb)
-			for g: float in gesetzt:
-				if absf(angle_difference(kandidat, g)) < halb + 0.45:
-					frei = false
-			if frei:
-				platz = kandidat
-				break
-		if is_nan(platz):
+	var ende := w + TAU
+	var i := 0
+	var becken := false
+	while w < ende:
+		var art: String = reihe[(i + zufall.randi() % 3) % reihe.size()]
+		if art == "becken" and becken:
+			art = "fass"
+		var halb: float = float(breiten[art]) / 2.0 / (ri - 0.5)
+		if w + 2.0 * halb > ende or gesperrt.call(w + halb, halb):
+			w += 0.12
 			continue
-		gesetzt.append(platz)
+		var platz := w + halb
+		w += 2.0 * halb + 0.25 / ri + zufall.randf_range(0.0, 0.2) / ri
+		i += 1
 		var d := Vector2(cos(platz), sin(platz))     # nach außen
 		var u := Vector2(-d.y, d.x)                  # entlang der Wand
 		match art:
@@ -1757,11 +1758,13 @@ func _turm_einrichtung(c: Vector2, ri: float, fb: float, tueren: Array, innen_w:
 				_klotz("holz", m, u, d, -0.75, 0.75, -0.2, 0.2, fb + 0.4, fb + 0.47, true)
 				for e: float in [-0.6, 0.6]:
 					_klotz("holz", m + u * e, u, d, -0.05, 0.05, -0.15, 0.15, fb, fb + 0.4)
+				if zufall.randf() < 0.5:
+					_klotz("zier_fell", m + u * 0.3, u, d, -0.3, 0.3, -0.2, 0.2, fb + 0.47, fb + 0.5)
 			"fass":
 				var m := c + d * (ri - 0.4)
-				_klotz("holz", m, u, d, -0.3, 0.3, -0.3, 0.3, fb, fb + 0.85)
+				_mantel("holz", m, 0.3, 0.3, fb, fb + 0.85, 12)
 				for y_: float in [0.15, 0.65]:
-					_klotz("metall", m, u, d, -0.32, 0.32, -0.32, 0.32, fb + y_, fb + y_ + 0.05)
+					_mantel("metall", m, 0.31, 0.31, fb + y_, fb + y_ + 0.05, 12)
 			"waffen":
 				var m := c + d * (ri - 0.25)
 				_klotz("holz", m, u, d, -0.55, 0.55, -0.05, 0.05, fb + 1.1, fb + 1.18)
@@ -1772,13 +1775,75 @@ func _turm_einrichtung(c: Vector2, ri: float, fb: float, tueren: Array, innen_w:
 			"stroh":
 				var m := c + d * (ri - 0.5)
 				_klotz("stroh", m, u, d, -0.95, 0.95, -0.42, 0.42, fb, fb + 0.16)
-				_klotz("stoff", m + u * 0.2, u, d, -0.6, 0.6, -0.38, 0.38, fb + 0.16, fb + 0.2)
+				_klotz(["zier_fell", "zier_leinen", "zier_teppich_blau"][i % 3], m + u * 0.2, u, d, -0.6, 0.6, -0.38, 0.38, fb + 0.16, fb + 0.2)
+				_klotz("zier_leinen", m - u * 0.75, u, d, -0.15, 0.15, -0.3, 0.3, fb + 0.16, fb + 0.26)
 			"becken":
+				becken = true
 				var m := c + d * (ri - 0.6)
 				for e: float in [-1.0, 1.0]:
 					_klotz("metall", m + u * e * 0.18, u, d, -0.02, 0.02, -0.02, 0.02, fb, fb + 0.6)
 				_klotz("metall", m, u, d, -0.25, 0.25, -0.25, 0.25, fb + 0.6, fb + 0.75)
 				_klotz("glut", m, u, d, -0.2, 0.2, -0.2, 0.2, fb + 0.7, fb + 0.8)
+			"kisten":
+				var m := c + d * (ri - 0.45)
+				_klotz("holz", m, u, d, -0.4, 0.4, -0.35, 0.35, fb, fb + 0.6)
+				_klotz("holz", m + u * 0.05, u, d, -0.3, 0.3, -0.28, 0.28, fb + 0.6, fb + 1.05)
+				_klotz("metall", m, u, d, -0.41, 0.41, -0.36, 0.36, fb + 0.5, fb + 0.54)
+			"saecke":
+				var m := c + d * (ri - 0.4)
+				for e: float in [-0.22, 0.22]:
+					_klotz("zier_leinen", m + u * e, u, d, -0.2, 0.2, -0.18, 0.18, fb, fb + 0.55)
+				_klotz("zier_leinen", m, u, d, -0.2, 0.2, -0.16, 0.16, fb + 0.55, fb + 0.85)
+			"haken":
+				var m := c + d * ri
+				_klotz("holz", m, u, -d, -0.45, 0.45, 0.0, 0.04, fb + 1.7, fb + 1.8)
+				for e: float in [-0.3, 0.0, 0.3]:
+					var km: String = ["zier_fell", "zier_teppich_rot", "zier_leinen"][zufall.randi() % 3]
+					_klotz(km, m + u * e, u, -d, -0.12, 0.12, 0.02, 0.07, fb + 0.9, fb + 1.75)
+				_mantel("metall", m - d * 0.15 + u * 0.3, 0.12, 0.1, fb + 1.8, fb + 2.0, 8)      # Helm am Haken
+		# darüber an der Wand: Gerät, Schilde, Bögen
+		if hoehe > 3.0 and art != "waffen" and zufall.randf() < 0.6:
+			_wandstueck(2, false, c + d * ri, u, -d, fb + 2.2, minf(fb + 2.9, fb + hoehe - 0.2), zufall)
+	# Tisch in der Mitte großer Kammern, abseits der Wege von den Türen zur Mitte
+	if ri >= 4.0:
+		for versuch in 12:
+			var wt := zufall.randf() * TAU
+			var tm := c + Vector2(cos(wt), sin(wt)) * ri * 0.42
+			var ok := true
+			for j in innen_w.size():
+				var dp := c + Vector2(cos(innen_w[j]), sin(innen_w[j])) * ri
+				if Geometry2D.get_closest_point_to_segment(tm, c, dp).distance_to(tm) < 1.6:
+					ok = false
+			if not ok:
+				continue
+			var tu := Vector2(-sin(wt), cos(wt))
+			var tn := Vector2(cos(wt), sin(wt))
+			_klotz("holz", tm, tu, tn, -0.55, 0.55, -0.4, 0.4, fb + 0.75, fb + 0.82, true)
+			for su: float in [-1.0, 1.0]:
+				for sn: float in [-1.0, 1.0]:
+					_klotz("holz", tm + tu * su * 0.45 + tn * sn * 0.3, tu, tn, -0.04, 0.04, -0.04, 0.04, fb, fb + 0.75)
+			_mantel("zier_ziegelton", tm + tu * 0.2, 0.07, 0.05, fb + 0.82, fb + 1.05, 8)
+			_mantel("zier_holz", tm - tu * 0.2 + tn * 0.1, 0.04, 0.04, fb + 0.82, fb + 0.92, 6)
+			_klotz("zier_knoblauch", tm - tu * 0.05 - tn * 0.1, tu, tn, -0.015, 0.015, -0.015, 0.015, fb + 0.82, fb + 0.85)
+			for su: float in [-1.0, 1.0]:
+				_stuhl(tm + tu * su * 0.85, tu, -tu * su, fb, true)
+			break
+	# unter der Decke: Kräuter, Säcke, Körbe (nicht über den Türwegen), an Seilen bis höchstens 3,2 m herab
+	var hy := minf(fb + hoehe - 0.2, fb + 3.2)
+	if hy - fb >= 2.6:
+		for k in 5:
+			var wh := zufall.randf() * TAU
+			var hp := c + Vector2(cos(wh), sin(wh)) * ri * zufall.randf_range(0.35, 0.6)
+			var ok := true
+			for j in innen_w.size():
+				var dp := c + Vector2(cos(innen_w[j]), sin(innen_w[j])) * ri
+				if Geometry2D.get_closest_point_to_segment(hp, c, dp).distance_to(hp) < 0.9:
+					ok = false
+			if not ok:
+				continue
+			if fb + hoehe - 0.2 > hy + 0.05:
+				_klotz("zier_holz", hp, Vector2.RIGHT, Vector2.DOWN, -0.008, 0.008, -0.008, 0.008, hy, fb + hoehe)
+			_haenge(5, false, hp, Vector2.RIGHT, Vector2.DOWN, hy, hy - (fb + 2.1), zufall)
 
 
 ## Verriegelte Tür (Abschnittstür) in der Wand eines Rundturms am Ende eines tieferen Wehrgangs: Gewände und Sturz aus
@@ -3081,7 +3146,7 @@ func _kueche_voll(c: Vector2, uz: Vector2, nx: Vector2, iL: float, iB: float, y:
 ## Ein ganz eingerichteter Raum (siehe raeume): an allen vier Wänden Hausrat, darüber Gerät und Schmuck, in der
 ## Fläche Möbelgruppen auf einem Raster, in hohen Räumen Hängestangen auf 3,3 m mit Vorräten oder Gerät, ein Licht.
 ## Frei bleiben die Kreise aus raum_frei (Treppe, Wege, Glocke).
-func _raum(w: PackedFloat32Array) -> void:
+func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true) -> void:
 	var c := Vector2(w[0], w[1])
 	var g := deg_to_rad(w[2])
 	var u := Vector2(cos(g), -sin(g))
@@ -3093,8 +3158,11 @@ func _raum(w: PackedFloat32Array) -> void:
 	var art := int(w[7])
 	var zufall := RandomNumberGenerator.new()
 	zufall.seed = hash(Vector3i(int(c.x * 10.0), int(y * 10.0), int(c.y * 10.0)))
+	var alle_frei: Array[Vector4] = extra.duplicate()
+	for f: Vector4 in raum_frei:
+		alle_frei.append(f)
 	var frei := func(p: Vector2, rand: float) -> bool:
-		for f: Vector4 in raum_frei:
+		for f: Vector4 in alle_frei:
 			if (f.w < -999.0 or absf(f.w - y) < 0.1) and p.distance_to(Vector2(f.x, f.y)) < f.z + rand:
 				return false
 		return true
@@ -3221,6 +3289,8 @@ func _raum(w: PackedFloat32Array) -> void:
 				sv += zufall.randf_range(0.6, 1.1)
 			if not is_nan(stange0):
 				_stange(c, u, n, stange0, minf(sv, hl - 1.2), hb * e, hy, decke)
+	if not mit_licht:
+		return
 	var licht := OmniLight3D.new()
 	licht.position = Vector3(c.x, y + 2.8, c.y)
 	licht.omni_range = maxf(hl, hb) * 2.2
@@ -4293,6 +4363,24 @@ func _torturm_kammer(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, fb:
 	_klotz("holz", c, u, n, -bi, bi, -ti, ti, decke - 0.2, decke, true)
 	for e_: float in [-bi * 0.45, bi * 0.45]:
 		_klotz("holz", c, u, n, e_ - 0.14, e_ + 0.14, -ti, ti, decke - 0.45, decke - 0.2, true)
+	# Einrichtung als Wachstube (_raum): frei bleiben die Türen mit ihren Keilen und der Weg durch die Mitte
+	var frei_t: Array[Vector4] = [Vector4(c.x, c.y, 0.8, -1e4)]
+	for j in seiten.size():
+		var sd: Vector2 = seiten[j]
+		var mi: float = mitten[j]
+		var tp: Vector2
+		var ein: Vector2
+		if sd.y != 0.0:
+			tp = c + u * mi + n * sd.y * ti
+			ein = -n * sd.y
+		else:
+			tp = c + n * mi + u * sd.x * bi
+			ein = -u * sd.x
+		for d_: float in [0.4, 1.4]:
+			var fp := tp + ein * d_
+			frei_t.append(Vector4(fp.x, fp.y, 1.0, -1e4))
+	_raum(PackedFloat32Array([c.x, c.y, rad_to_deg(atan2(-u.y, u.x)), bi, ti, fb, decke - (0.45 if decke < oben else 0.0), 21]),
+		frei_t, false)
 	var licht := OmniLight3D.new()
 	var lm := Vector3(c.x, fb + 2.4, c.y)
 	licht.position = lm
