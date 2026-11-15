@@ -2870,11 +2870,14 @@ func _inseln(zweck: int, k: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float
 		3: personen = [Vector2(iL * 0.42 - 3.5, 1.6), Vector2(iL * 0.42 + 3.5, 1.6)]     # Standleuchter
 	var feuer := false
 	# zwei Bereiche: vor s = 1,8 links und rechts der Gasse von der Tür zur Treppe, dahinter die ganze Breite
+	# (im Palas liegt die ganze Länge entlang der Läufer zum Thron: dort immer zwei Hälften neben ihm)
 	var bereiche: Array = []                 # [s von, s bis, q von, q bis]
-	if s_a < 1.8:
-		bereiche.append([s_a, minf(1.8, s_b), 0.65, q_max])
-		bereiche.append([s_a, minf(1.8, s_b), -q_max, -0.65])
-	if s_b > 1.8:
+	var gasse := 1.95 if zweck == 3 else 0.65
+	var bis_gasse := s_b if zweck == 3 else minf(1.8, s_b)
+	if s_a < bis_gasse:
+		bereiche.append([s_a, bis_gasse, gasse, q_max])
+		bereiche.append([s_a, bis_gasse, -q_max, -gasse])
+	if s_b > 1.8 and zweck != 3:
 		bereiche.append([maxf(1.8, s_a), s_b, -q_max, q_max])
 	var laengen := {"esstisch": 2.8, "tafel": 2.8, "feuerstelle": 2.6, "schlafstelle": 2.3, "spinnen": 1.9, "webstuhl": 2.0,
 		"vorrat": 2.3, "waschen": 2.4, "werkbank": 2.4, "arbeitstisch": 2.4, "arbeitstisch_voll": 2.0, "hackplatz": 2.3,
@@ -2882,13 +2885,13 @@ func _inseln(zweck: int, k: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float
 		"schach": 1.7, "truhen": 2.1, "kohlebecken": 1.1, "heu": 2.0}
 	for ber: Array in bereiche:
 		var w: float = float(ber[3]) - float(ber[2])
-		if w < 1.7:
+		if w < 1.4:
 			continue
-		var spalten := maxi(1, int(w / 2.6))
+		var spalten := maxi(1, int(w / 2.3))
 		var bq := w / spalten
 		for sp in spalten:
 			var qm: float = float(ber[2]) + (sp + 0.5) * bq
-			var hq := minf(bq / 2.0 - 0.3, 1.3)
+			var hq := minf(bq / 2.0 - 0.25, 1.3)
 			# gesperrte Abschnitte entlang s für diese Spalte
 			var sperren: Array[Vector2] = []
 			if k == 0 and qm + hq > -0.1:
@@ -2897,8 +2900,6 @@ func _inseln(zweck: int, k: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float
 				sperren.append(Vector2(ankunft - 1.9, ankunft + 0.4))    # wo man von der Treppe kommt
 			if absf(qm) - hq < 2.1:
 				sperren.append(Vector2(ts - lang / 2.0 - 0.6, ts + lang / 2.0 + 0.6))   # Haupttisch
-			if zweck == 3 and absf(qm) - hq < 1.9:
-				continue                                                 # der Läufer zum Thron
 			for pp: Vector2 in personen:
 				if absf(pp.y - qm) < hq + 1.2:
 					sperren.append(Vector2(pp.x - 1.2, pp.x + 1.2))
@@ -2929,7 +2930,7 @@ func _inseln(zweck: int, k: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float
 				var m := c + uz * (sv + lg / 2.0) + nx * qm
 				var n := nx * (1.0 if qm < 0.0 else -1.0)      # zur Achse
 				_insel(art, m, uz, n, lg / 2.0, hq, y, zufall)
-				sv += lg + zufall.randf_range(0.6, 1.1)
+				sv += lg + zufall.randf_range(0.45, 0.8)
 
 
 ## Eine Möbelgruppe in der Raumfläche: Mitte m, u entlang des Baus, n quer (zur Achse); Ausdehnung ±hs entlang, ±hq quer.
