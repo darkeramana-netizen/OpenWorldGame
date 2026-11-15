@@ -3322,10 +3322,10 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 				var m := Vector2.ZERO
 				var hq_g := hq
 				var q_g := qm
-				for dq: float in [0.0, 0.35, -0.35, 0.7, -0.7, 1.05, -1.05]:
-					for f_h: float in [1.0, 0.75]:
+				for dq: float in [0.0, 0.35, -0.35, 0.7, -0.7, 1.05, -1.05, 1.4, -1.4]:
+					for f_h: float in [1.0, 0.75, 0.5]:
 						var hq_t := hq * f_h
-						if absf(qm + dq) + hq_t > hb - 0.9 and dq != 0.0:
+						if absf(qm + dq) + hq_t > hb - 0.85 and dq != 0.0:
 							continue
 						var m_t := c + u * (sv + lg / 2.0) + n * (qm + dq)
 						var ok_t := true
