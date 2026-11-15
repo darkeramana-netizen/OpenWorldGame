@@ -2896,8 +2896,8 @@ func _inseln(zweck: int, k: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float
 			var sperren: Array[Vector2] = []
 			if k == 0 and qm + hq > -0.1:
 				sperren.append(Vector2(-1.5, 1.5))                       # Weg von der Tür
-			if not is_nan(ankunft):
-				sperren.append(Vector2(ankunft - 1.9, ankunft + 0.4))    # wo man von der Treppe kommt
+			if not is_nan(ankunft) and k > 0:
+				sperren.append(Vector2(ankunft - 1.9, ankunft + 0.4))    # wo man von unten die Treppe heraufkommt
 			if absf(qm) - hq < 2.1:
 				sperren.append(Vector2(ts - lang / 2.0 - 0.6, ts + lang / 2.0 + 0.6))   # Haupttisch
 			for pp: Vector2 in personen:
