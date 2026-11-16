@@ -87,26 +87,54 @@ messen).
 
 **Sichtweiten-Wechsel** entlang der Fahrt: 9.734 Wechsel (89 je Sekunde), davon 49 näher als 50 m.
 
-## Ausgangswerte mit Grafik
+## Ausgangswerte mit Grafik (Referenzrechner)
 
-Diese Werte fehlen noch: Sie entstehen auf dem Rechner, auf dem das Spiel laufen soll (Aufruf oben, mit `--name` und
-der Zielauflösung). Die Datei kommt nach `docs/messungen/`, damit spätere Phasen dagegen vergleichen.
+Datei: `docs/messungen/messung_drachenstein_mein_rechner_2026-11-16T16-25-03.json`. Rechner: AMD Ryzen 7 9800X3D
+(8 Kerne, 16 Threads), NVIDIA GeForce RTX 5060 Ti, Windows, 1920×1080, Forward+, VSync aus. Strecke vollständig
+(69 von 69 Wegpunkten in 113 s).
+
+**Laden:** bis spielbar 14,9 s (Datei 0,8 s, `_ready()` 10,7 s, davon `burgbau` 6,2 s und allein die Einrichtung der
+Fachwerkhäuser 3,7 s; Stadthäuser 1,5 s, Felsmassiv 1,5 s). Direkt danach ein Bild von 3,1 s (Anlauf-Hänger).
+
+| Phase | fps | Frame p50 / p95 / p99 / Max | Draw Calls p50 / p95 / Max | Dreiecke je Bild p50 / p95 / Max | Objekte p95 | Hänger >33 / >50 ms |
+|---|---|---|---|---|---|---|
+| Anlauf | 82 | 8,2 / 9,2 / 9,8 / 3.092 ms | 3.517 | 4,7 Mio. | 4.231 | 2 / 2 |
+| Messfahrt | 92 | 10,6 / 13,6 / 15,7 / 38,6 ms | 7.370 / 13.550 / 14.825 | 12,3 / 16,9 / 18,7 Mio. | 14.627 | 2 / 0 |
+| Rundblick im Palas | 88 | 11,5 / 13,1 / 14,5 / 15,8 ms | 9.261 / 12.148 / 12.239 | 13,4 / 15,0 / 15,1 Mio. | 12.944 | 0 / 0 |
+
+Speicher 1,53 GB, Grafikspeicher 1,79 GB. Sichtweiten-Wechsel 90 je Sekunde, davon 45 näher als 50 m.
+
+**Einordnung:** Auf einem sehr schnellen Rechner läuft eine einzige Region mit 92 fps im Mittel und 74 fps im p95.
+Draw Calls (p95 13.550) liegen beim Viereinhalbfachen, Dreiecke je Bild (p95 16,9 Mio.) beim Doppelten des
+vorgeschlagenen Budgets. Für die ganze Welt und für schwächere Rechner reicht das nicht. Ob die Grafikkarte oder die
+CPU-Seite des Renderns bremst, zeigt die nächste Messung: Das Werkzeug misst seit dieser Auswertung auch die
+Renderzeit auf der CPU und auf der Grafikkarte (`render_cpu_ms`, `gpu_ms`).
+
+**Woher die Last kommt** (aus der Szenenzählung): Objekte je Bild (p95 14.627) entsprechen fast den Draw Calls; viele
+kleine Objekte, mehrfach gezeichnet (Schattenkaskaden der Sonne). Die größten Posten sind die 122 Personenfiguren
+(3,35 Mio. Dreiecke in 1.574 Meshes ohne Detailstufen), 2.348 MultiMesh-Knoten mit im Schnitt 10 Exemplaren und
+1.157 Meshes für Tauben, Möwen und Hühner (je ein Mesh pro Körperteil).
 
 ## Budgets (Vorschlag)
 
-Ziel 60 fps auf der Zielhardware. Die Zahlen sind Vorschläge; sie werden nach der ersten Messung mit Grafik auf der
-Zielhardware festgelegt.
+Zielhardware für 60 fps: ein Mittelklasse-Rechner (etwa RTX 3060 oder RX 6600, sechs Kerne der Klasse Ryzen 5 3600)
+in 1920×1080 mit hohen Einstellungen. Gemessen wird auf dem Referenzrechner oben; damit dort genug Reserve für die
+Zielhardware bleibt, gelten auf dem Referenzrechner die doppelten Bildraten (120 fps im p95).
 
-| Messwert | Budget |
-|---|---|
-| Ladezeit | bis spielbar ≤ 15 s (Ziel 10 s) von SSD; Kachelwechsel ohne Ladebildschirm |
-| Anlauf | kein Bild über 250 ms nach dem Laden (heute: ein Bild von etwa 4 s, Bewuchs und Ausstattung) |
-| Speicher | RAM ≤ 4 GB, Grafikspeicher ≤ 3 GB im Standard-Preset |
-| CPU | Hauptthread ≤ 8 ms (p95) in der Fahrt; Physik ≤ 2 ms; Skripte und KI ≤ 3 ms |
-| Draw Calls | Burg und Stadt ≤ 3.000 (p95), Landschaft ≤ 1.500 |
-| Dreiecke | ≤ 8 Mio. je Bild (p95, mit Schatten) |
-| LOD-Wechsel | keine Wechsel näher als 50 m; Fernmodelle erst ab etwa 150 m, mit Überblendung |
-| Hänger | in der Fahrt 0 Bilder über 50 ms, höchstens 1 je Minute über 33 ms |
+| Messwert | Budget auf dem Referenzrechner | heute |
+|---|---|---|
+| Ladezeit bis spielbar | ≤ 8 s | 14,9 s |
+| Anlauf nach dem Laden | kein Bild über 100 ms | 3.092 ms |
+| Frame (Fahrt und Rundblick) | p95 ≤ 8,3 ms (120 fps), p99 ≤ 11 ms | p95 13,6 ms, p99 15,7 ms |
+| Hänger in der Fahrt | 0 über 50 ms, höchstens 1 je Minute über 33 ms | 0 / 2 |
+| Draw Calls | p95 ≤ 3.000 | 13.550 |
+| Dreiecke je Bild (mit Schatten) | p95 ≤ 6 Mio. | 16,9 Mio. |
+| Arbeitsspeicher | ≤ 4 GB (ganze Welt mit Streaming) | 1,5 GB (eine Region) |
+| Grafikspeicher | ≤ 3 GB (Zielhardware hat 8 GB) | 1,8 GB |
+| Sichtweiten-Wechsel | 0 näher als 50 m, Fernmodelle mit Überblendung | 45 näher als 50 m |
+
+Die Budgets gelten für die Strecke Markt → Palas als härtesten Fall (Stadt, Burg, viele Personen). Für jede neue
+Region kommt eine eigene Messstrecke dazu.
 
 ## Was welche Maßnahme bewirkt
 
@@ -139,4 +167,6 @@ dahinter:
    Sichtweiten brauchen Überblendung (`visibility_range_fade_mode`) und größere Abstände für sichtbare Dinge.
 6. **CPU:** Im Mittel (7 ms je Bild ohne Grafik) ist Spielraum, aber die Spitzen (Prozess-Spitze 19 ms je Sekunde,
    12 Bilder über 33 ms in der Fahrt) müssen in Phase 1 nach Ursache aufgeschlüsselt werden.
-7. **Offen:** Draw Calls, Dreiecke je Bild und Grafikspeicher kann nur eine Messung mit Grafik zeigen.
+7. **Mit Grafik** (Referenzrechner, siehe oben): Draw Calls und Dreiecke je Bild sind die größten Abweichungen vom
+   Budget. Die wirksamsten Hebel nach der Zählung: Detailstufen und Sichtweiten für die Figuren, die vielen kleinen
+   MultiMesh-Knoten zusammenfassen, Tiere als ein Mesh statt eines pro Körperteil, kleine Dinge ohne Schatten.

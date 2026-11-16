@@ -7,7 +7,8 @@ extends SceneTree
 ##    Schatten), Kollisionskörper, Knoten mit Sichtweite (visibility_range), je Bauart.
 ## 3. Messfahrt: Die Spielfigur rennt eine feste Strecke ab (wie die Tests, mit echter Physik, mit Eid, damit die
 ##    Torwachen öffnen), am Ende ein Rundblick. Je Bild: echte Frametime (ohne Grafik ist das die CPU-Zeit des
-##    Hauptthreads), Draw Calls, Dreiecke, Objekte, Speicher und Grafikspeicher, Kameraposition; dazu Godots Prozess-
+##    Hauptthreads), Draw Calls, Dreiecke, Objekte, Speicher und Grafikspeicher, Renderzeit auf der CPU und auf der
+##    Grafikkarte (zeigt, wer bremst), Kameraposition; dazu Godots Prozess-
 ##    und Physikzeit, die Godot als Spitze der letzten Sekunde meldet (nicht je Bild).
 ## 4. Auswertung: p50/p95/p99/Max, Hänger über 33 ms und 50 ms (getrennt: Anlauf nach dem Laden und Fahrt),
 ##    Wechsel der Sichtweiten-Stufen entlang der Kamerafahrt (LOD-Wechsel; nahe Wechsel unter 50 m).
@@ -63,6 +64,8 @@ func _initialize() -> void:
 	_lies_args()
 	await process_frame
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	# Renderzeit je Bild messen: CPU-Seite des Renderns und Zeit auf der Grafikkarte (zeigt, wer bremst)
+	RenderingServer.viewport_set_measure_render_time(root.get_viewport_rid(), true)
 	Engine.max_fps = 0
 	if _args.has("aufloesung") and DisplayServer.get_name() != "headless":
 		var t: PackedStringArray = String(_args["aufloesung"]).split("x")
@@ -189,6 +192,8 @@ func _bild() -> void:
 		Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),
 		Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0,
 		Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
+		RenderingServer.viewport_get_measured_render_time_cpu(root.get_viewport_rid()) + RenderingServer.get_frame_setup_time_cpu(),
+		RenderingServer.viewport_get_measured_render_time_gpu(root.get_viewport_rid()),
 		kp])
 	_t_vorher = jetzt
 
@@ -312,7 +317,7 @@ func _langsamste(anzahl: int) -> Array:
 
 ## p50/p95/p99/Max je Messwert einer Phase, Hänger über 33 und 50 ms
 func _statistik(phase: String) -> Dictionary:
-	var spalten := ["frame_ms", "prozess_spitze_ms", "physik_spitze_ms", "draw_calls", "dreiecke", "objekte", "speicher_mb", "grafikspeicher_mb"]
+	var spalten := ["frame_ms", "prozess_spitze_ms", "physik_spitze_ms", "draw_calls", "dreiecke", "objekte", "speicher_mb", "grafikspeicher_mb", "render_cpu_ms", "gpu_ms"]
 	# (gepackte Arrays sind Werte: erst als Array sammeln, dann umwandeln)
 	var werte: Array = []
 	for i in spalten.size():
@@ -366,7 +371,7 @@ func _lod_wechsel() -> Dictionary:
 			continue
 		t += float(f[1])
 		if t >= 100.0 or bahn.is_empty():         # alle 0,1 s ein Punkt
-			bahn.append(f[9])
+			bahn.append(f[11])
 			t = 0.0
 	var wechsel := 0
 	var nah := 0
@@ -444,6 +449,9 @@ func _zusammenfassung(e: Dictionary) -> String:
 		z.append("%s: %d Bilder, %.1f fps; Frame p50 %.1f / p95 %.1f / p99 %.1f / max %.1f ms; Hänger >33 ms: %d, >50 ms: %d" % [
 			ph.capitalize(), s["bilder"], s["fps_mittel"], ft["p50"], ft["p95"], ft["p99"], ft["max"],
 			s["haenger_ueber_33ms"], s["haenger_ueber_50ms"]])
+		z.append("    Render-CPU p50 %.1f / p95 %.1f ms, Grafikkarte p50 %.1f / p95 %.1f ms" % [
+			(s["render_cpu_ms"] as Dictionary)["p50"], (s["render_cpu_ms"] as Dictionary)["p95"],
+			(s["gpu_ms"] as Dictionary)["p50"], (s["gpu_ms"] as Dictionary)["p95"]])
 		z.append("    Prozess-Spitze/s p50 %.1f ms, Physik-Spitze/s p50 %.1f ms, Draw Calls p95 %.0f, Dreiecke p95 %.0f, Objekte p95 %.0f, Speicher max %.0f MB, Grafikspeicher max %.0f MB" % [
 			(s["prozess_spitze_ms"] as Dictionary)["p50"], (s["physik_spitze_ms"] as Dictionary)["p50"], (s["draw_calls"] as Dictionary)["p95"],
 			(s["dreiecke"] as Dictionary)["p95"], (s["objekte"] as Dictionary)["p95"], (s["speicher_mb"] as Dictionary)["max"],
