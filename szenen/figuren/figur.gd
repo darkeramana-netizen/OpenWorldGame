@@ -93,9 +93,20 @@ var _einmal := ""        # laufende einmalige Animation (aktion)
 var _gehalten: Array[Node3D] = []   # Waffen in der rechten Hand (halte)
 var _blick: LookAtModifier3D
 var _blickziel: Marker3D
+var _anim_rest := 0.0      # noch nicht abgespielte Zeit (Animation in der Ferne seltener)
+var _anim_takt := 0
 
 const HUEFTE := 0.93
 const SCHULTER := 1.43
+## Sichtweiten (Phase 1, docs/03-messgrundlage.md): Körper und Kleidung blenden bis SICHT_GROSS aus, kleine Teile
+## (kürzer als KLEIN: Augen, Brauen, Gürtel, Armschienen, Hüte, Dinge in der Hand) schon bis SICHT_KLEIN und werfen
+## keinen Schatten. Die Animation läuft nah jedes Bild, weiter weg seltener (ANIM_STUFEN: bis Abstand → jedes n-te
+## Bild), außerhalb der Sichtweite gar nicht.
+const SICHT_GROSS := 130.0
+const SICHT_KLEIN := 35.0
+const SICHT_RAND := 10.0
+const KLEIN := 0.35
+const ANIM_STUFEN := [[25.0, 1], [60.0, 2], [SICHT_GROSS, 4]]
 
 var _teile := {}
 var _phase: float = 0.0
@@ -133,8 +144,10 @@ func _baue() -> void:
 	_blick = null
 	if not einfach and not Engine.is_editor_hint() and _baue_modell():
 		_faerben()
+		_sichtweiten()
 		return
 	_baue_einfach()
+	_sichtweiten()
 
 
 ## Erzeugt die Figur aus Formen. Aufbau: Glieder hängen an Gelenk-Knoten (Hüfte, Knie, Schulter, Ellbogen).
@@ -204,6 +217,7 @@ func _process(delta: float) -> void:
 		tempo = 0.0   # gesprungen (Laden, Reise): nicht gehen
 	if _anim != null:
 		_bewege_modell(delta, tempo)
+		_spiele_animation(delta)
 		return
 	_gang = lerpf(_gang, clampf(tempo / 1.6, 0.0, 1.6), clampf(delta * 8.0, 0.0, 1.0))
 	_phase = fmod(_phase + delta * (2.2 + tempo * 2.4) * minf(_gang * 4.0, 1.0), TAU)
@@ -416,7 +430,6 @@ func _haenge_an(skelett: Skeleton3D, pfad: String, filter := "", ohne := "") -> 
 		m.get_parent().remove_child(m)
 		skelett.add_child(m)
 		m.skeleton = NodePath("..")
-		m.visibility_range_end = 140.0
 	i.free()
 
 
@@ -433,7 +446,6 @@ func _baue_modell() -> bool:
 	add_child(_modell)
 	var skelett: Skeleton3D = _modell.get_node("Armature/Skeleton3D")
 	for m: MeshInstance3D in skelett.find_children("*", "MeshInstance3D", false, false):
-		m.visibility_range_end = 140.0
 		if m.name.begins_with("SuperHero") or m.name.begins_with("Superhero") or m.name.begins_with("Sphere"):
 			m.mesh = _nur_kopf(m.mesh, m.skin, skelett)   # der Rumpf steckt in der Kleidung
 	var g := "Female_" if w else "Male_"
@@ -465,6 +477,8 @@ func _baue_modell() -> bool:
 	_modell.add_child(_anim)
 	_anim.add_animation_library("", bib)
 	_anim.playback_default_blend_time = 0.25
+	_anim.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL   # siehe _spiele_animation
+	_anim_takt = absi(hash(_name_text + str(get_instance_id()))) % 4                    # nicht alle im selben Bild
 	_anim.play("Idle")
 	_anim.seek(fmod(absf(float(hash(_name_text))) * 0.001, 2.0), true)   # nicht alle im Gleichschritt
 	return true
@@ -482,7 +496,7 @@ static func _nur_kopf(mesh: Mesh, skin: Skin, skelett: Skeleton3D) -> Mesh:
 			name_ = skelett.get_bone_name(skin.get_bind_bone(b))
 		if name_ in ["Head", "neck_01"]:
 			behalten[b] = true
-	var neu := ArrayMesh.new()
+	var neu := ImporterMesh.new()     # damit die Köpfe Detailstufen bekommen wie die importierte Kleidung
 	for f in mesh.get_surface_count():
 		var arr := mesh.surface_get_arrays(f)
 		var knochen: PackedInt32Array = arr[Mesh.ARRAY_BONES]
@@ -500,10 +514,11 @@ static func _nur_kopf(mesh: Mesh, skin: Skin, skelett: Skeleton3D) -> Mesh:
 		for c in [Mesh.ARRAY_CUSTOM0, Mesh.ARRAY_CUSTOM1, Mesh.ARRAY_CUSTOM2, Mesh.ARRAY_CUSTOM3]:
 			arr[c] = null
 		var flags: int = mesh.surface_get_format(f) & Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS
-		neu.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, flags)
-		neu.surface_set_material(f, mesh.surface_get_material(f))
-	_koepfe[mesh] = neu
-	return neu
+		neu.add_surface(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, mesh.surface_get_material(f), "", flags)
+	neu.generate_lods(25.0, 60.0, [])
+	var fertig := neu.get_mesh()
+	_koepfe[mesh] = fertig
+	return fertig
 
 
 static func _am_kopf(v: int, je: int, knochen: PackedInt32Array, gewichte: PackedFloat32Array, behalten: Dictionary) -> bool:
@@ -558,6 +573,7 @@ func _setze_handding() -> void:
 	if haltung in ["fackel", "schwert"]:
 		_in_hand(skelett, haltung)
 		_faerben()
+		_sichtweiten()
 
 
 ## Fackel oder Schwert in der rechten Hand
@@ -623,7 +639,6 @@ func _anhaengen(skelett: Skeleton3D, knochen: String, mesh: Mesh, stoff: String,
 	m.mesh = mesh
 	m.set_meta("stoff", stoff)
 	m.transform = skelett.get_bone_global_rest(i).affine_inverse() * Transform3D(dreh, ort)
-	m.visibility_range_end = 120.0
 	halter.add_child(m)
 
 
@@ -800,6 +815,41 @@ func _faerbe_modell() -> void:
 
 func hat_modell() -> bool:
 	return _anim != null
+
+
+## Spielt die Animation weiter: nah jedes Bild, weiter weg nur jedes n-te Bild (mit der aufgelaufenen Zeit), außerhalb
+## der Sichtweite gar nicht (die Zeit läuft auf, damit die Bewegung beim Wiederauftauchen stimmt; höchstens 1 s).
+func _spiele_animation(delta: float) -> void:
+	_anim_rest = minf(_anim_rest + delta, 1.0)
+	var kamera := get_viewport().get_camera_3d()
+	var n := 1
+	if kamera != null:
+		var d := kamera.global_position.distance_to(global_position)
+		n = 0
+		for stufe: Array in ANIM_STUFEN:
+			if d < float(stufe[0]):
+				n = stufe[1]
+				break
+	if n == 0:
+		return
+	_anim_takt += 1
+	if _anim_takt % n == 0:
+		_anim.advance(_anim_rest)
+		_anim_rest = 0.0
+
+
+## Sichtweiten und Schatten aller Teile (nach jedem Bau): kleine Teile ohne Schatten und nur nah, große mit weichem
+## Ausblenden am Ende der Sichtweite.
+func _sichtweiten() -> void:
+	for m: MeshInstance3D in find_children("*", "MeshInstance3D", true, false):
+		if m.mesh == null:
+			continue
+		var klein := m.mesh.get_aabb().get_longest_axis_size() < KLEIN
+		m.visibility_range_end = SICHT_KLEIN if klein else SICHT_GROSS
+		m.visibility_range_end_margin = SICHT_RAND * (0.4 if klein else 1.0)
+		m.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		if klein:
+			m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 ## Einmalige Bewegung (z. B. "Sword_Attack", "Hit_Chest", "Interact", "PickUp_Table", "Death01"); danach geht es mit
