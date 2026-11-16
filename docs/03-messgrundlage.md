@@ -245,3 +245,11 @@ Datei: `docs/messungen/messung_drachenstein_aufschluesselung2_2026-11-16T18-18-0
 | SDFGI-Zellen doppelt | 0,15 / 0,18 ms | – | |
 | Schattenfilter niedrig | −0,20 / 0,11 ms | – | bringt nichts |
 | SSAO, Nebel, Glow, Figuren, Lampen | je unter 0,35 ms | | |
+
+### Übernommen: Grafik-Paket B
+
+Nach der Aufschlüsselung mit Vergleichsbildern übernommen (alle Regionen, `werkzeuge/bau/grundlage.py` und die
+Regionsszenen, `project.godot`): Schattenkarte 4096 statt 8192, Sonnenschatten in 2 statt 4 Stufen (erste Stufe bis
+30 m), SDFGI mit 4 statt 6 Stufen, Dinge unter 1 m ohne Sonnenschatten (`region.gd`, `ohne_schatten_unter`, gilt auch
+für alles, was später in die Region kommt). Erwartete Ersparnis auf der Grafikkarte etwa 2,5 ms; die Messfahrt auf dem
+Referenzrechner bestätigt sie noch.
