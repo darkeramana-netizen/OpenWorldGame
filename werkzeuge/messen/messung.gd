@@ -18,6 +18,11 @@ extends SceneTree
 ##
 ##   godot --path . --script res://werkzeuge/messen/messung.gd -- --name mein_rechner
 ##
+## GPU-Aufschlüsselung (--aufschluesselung ja, nach der Fahrt; mit --strecke keine allein): An festen Blickpunkten
+## wird je eine Sache abgeschaltet (Effekte, Sonnenschatten, Lampen, Objektgruppen) und gemessen, wie viel Zeit die
+## Grafikkarte und die CPU-Seite des Renderns dadurch sparen. Ergibt eine Rangliste der Kosten. --bilder N: Bilder je
+## Messung (Standard 60).
+##
 ## Weitere Angaben nach "--": --region drachenstein, --strecke stadt_palas|kurz|keine, --aufloesung 1920x1080,
 ## --ausgabe <Ordner> (Standard user://messungen/). Ergebnis: <Ordner>/messung_<region>_<name>_<Zeit>.json und .txt.
 
@@ -45,6 +50,9 @@ const STRECKEN := {
 	"kurz": {"region": "drachenstein", "start": Vector3(145.82, -14.0, 142.94), "punkte": [
 		Vector2(143.81, 147.13), Vector2(141.34, 166.16), Vector2(135.55, 185.79)]},
 }
+## Blickpunkte der Aufschlüsselung: [Name, Standort (x, z), Blickziel (x, z)]
+const BLICKPUNKTE := {"drachenstein": [["Markt", Vector2(145.82, 142.94), Vector2(128.88, 202.81)],
+	["Mittelburg", Vector2(40.83, 10.36), Vector2(-2.62, -76.85)]]}
 const ANLAUF_S := 10.0          # so lange nach dem Laden gilt als Anlauf (Shader, Bewuchs, Ausstattung)
 const RUNDBLICK_S := 8.0
 const ZEIT_PRO_PUNKT := 40.0
@@ -126,6 +134,9 @@ func _initialize() -> void:
 		fahrt = await _fahre(STRECKEN[strecke])
 	_phase = "ende"
 	process_frame.disconnect(_bild)
+	var aufschl := {}
+	if String(_args.get("aufschluesselung", "")) in ["ja", "1", "true"]:
+		aufschl = await _aufschluesselung(region)
 
 	# --- 4. Auswertung ---
 	var ergebnis := {
@@ -134,7 +145,7 @@ func _initialize() -> void:
 		"laden": laden, "ready_je_bauart": _ready_tabelle(), "langsamste_ready": _langsamste(15),
 		"szene": szene, "fahrt": fahrt,
 		"anlauf": _statistik("anlauf"), "messfahrt": _statistik("fahrt"), "rundblick": _statistik("rundblick"),
-		"lod": _lod_wechsel(),
+		"lod": _lod_wechsel(), "aufschluesselung": aufschl,
 	}
 	_schreibe(ergebnis)
 	quit(0)
@@ -245,6 +256,118 @@ func _fahre(s: Dictionary) -> Dictionary:
 		dreh.rotation.y = w0 + TAU * (Time.get_ticks_msec() - r0) / (RUNDBLICK_S * 1000.0)
 		await process_frame
 	return {"punkte": (s["punkte"] as Array).size(), "erreicht": erreicht, "dauer_s": dauer, "abbruch": abbruch}
+
+
+## Je Blickpunkt: alles an, dann je eine Sache aus (danach wieder an), am Ende noch einmal alles an (Drift)
+func _aufschluesselung(region: String) -> Dictionary:
+	var sp := current_scene.get_node("Spieler") as CharacterBody3D
+	var dreh := sp.get_node("KameraDrehpunkt") as Node3D
+	var g := current_scene.get_tree().get_first_node_in_group("gelaende")
+	var umg := current_scene.find_children("*", "WorldEnvironment", true, false)
+	var env: Environment = (umg[0] as WorldEnvironment).environment if not umg.is_empty() else null
+	var sonne := current_scene.find_child("Sonne", true, false) as DirectionalLight3D
+	var vp := root.get_viewport()
+	var mit_skript := func(namen: Array) -> Array:
+		var aus: Array = []
+		for n: Node in _instanz.find_children("*", "Node3D", true, false):
+			var s: Script = n.get_script()
+			if s != null and s.resource_path.get_file().get_basename() in namen:
+				aus.append(n)
+		return aus
+	var gruppen := {
+		"Figuren": _instanz.find_children("*", "Figur", true, false),
+		"Bewuchs": mit_skript.call(["bewuchs"]),
+		"Felsen": mit_skript.call(["felsen", "felsmassiv", "felssockel"]),
+		"Haeuser": mit_skript.call(["stadthaeuser"]),
+		"Burgbauten": mit_skript.call(["burgbau", "turm"]),
+		"Gelaende": current_scene.get_tree().get_nodes_in_group("gelaende"),
+		"Lampen": _instanz.find_children("*", "OmniLight3D", true, false) + _instanz.find_children("*", "SpotLight3D", true, false),
+	}
+	# [Name, abschalten, wieder an]
+	var varianten: Array = []
+	if env != null:
+		for e: Array in [["SDFGI", "sdfgi_enabled"], ["SSAO", "ssao_enabled"], ["SSIL", "ssil_enabled"],
+				["Glow", "glow_enabled"], ["Nebel", "fog_enabled"], ["Volumennebel", "volumetric_fog_enabled"]]:
+			var feld: String = e[1]
+			var vorher: bool = env.get(feld)
+			if vorher:
+				varianten.append([e[0], func() -> void: env.set(feld, false), func() -> void: env.set(feld, true)])
+	var msaa := vp.msaa_3d
+	if msaa != Viewport.MSAA_DISABLED:
+		varianten.append(["MSAA", func() -> void: vp.msaa_3d = Viewport.MSAA_DISABLED, func() -> void: vp.msaa_3d = msaa])
+	if sonne != null:
+		var weite := sonne.directional_shadow_max_distance
+		varianten.append(["Sonnenschatten", func() -> void:
+			sonne.process_mode = Node.PROCESS_MODE_DISABLED
+			sonne.shadow_enabled = false,
+			func() -> void:
+				sonne.shadow_enabled = true
+				sonne.process_mode = Node.PROCESS_MODE_INHERIT])
+		varianten.append(["Schatten_bis_150m", func() -> void: sonne.directional_shadow_max_distance = 150.0,
+			func() -> void: sonne.directional_shadow_max_distance = weite])
+	for name_: String in gruppen:
+		var knoten: Array = gruppen[name_]
+		if knoten.is_empty():
+			continue
+		varianten.append([name_, func() -> void:
+			for k: Node in knoten:
+				if is_instance_valid(k):
+					(k as Node3D).visible = false,
+			func() -> void:
+				for k: Node in knoten:
+					if is_instance_valid(k):
+						(k as Node3D).visible = true])
+	var aus := {}
+	for bp: Array in BLICKPUNKTE.get(region, []):
+		var ort: Vector2 = bp[1]
+		var ziel: Vector2 = bp[2]
+		var y := float(g.hoehe_bei(ort.x, ort.y)) + 0.3 if g != null else 0.0
+		sp.global_position = Vector3(ort.x, y, ort.y)
+		sp.velocity = Vector3.ZERO
+		dreh.rotation.y = atan2(-(ziel.x - ort.x), -(ziel.y - ort.y))
+		for i in 120:
+			await process_frame
+		var zeilen: Array = []
+		var basis := await _messe_bilder("alles")
+		zeilen.append(basis)
+		for v: Array in varianten:
+			(v[1] as Callable).call()
+			for i in 20:
+				await process_frame
+			var z := await _messe_bilder(v[0])
+			(v[2] as Callable).call()
+			for i in 60:                # SDFGI und Schatten bauen sich nach dem Wiedereinschalten erst auf
+				await process_frame
+			z["gpu_ersparnis_ms"] = snappedf(float(basis["gpu_ms"]) - float(z["gpu_ms"]), 0.01)
+			z["render_cpu_ersparnis_ms"] = snappedf(float(basis["render_cpu_ms"]) - float(z["render_cpu_ms"]), 0.01)
+			zeilen.append(z)
+		var ende := await _messe_bilder("alles_am_ende")
+		zeilen.append(ende)
+		aus[bp[0]] = zeilen
+	return aus
+
+
+## Medianwerte über N Bilder
+func _messe_bilder(name_: String) -> Dictionary:
+	var anzahl := int(_args.get("bilder", "60"))
+	var rid := root.get_viewport_rid()
+	var spalten := {"gpu_ms": [], "render_cpu_ms": [], "frame_ms": [], "draw_calls": [], "dreiecke": []}
+	var t := Time.get_ticks_usec()
+	for i in anzahl:
+		await process_frame
+		var jetzt := Time.get_ticks_usec()
+		(spalten["frame_ms"] as Array).append((jetzt - t) / 1000.0)
+		t = jetzt
+		(spalten["gpu_ms"] as Array).append(RenderingServer.viewport_get_measured_render_time_gpu(rid))
+		(spalten["render_cpu_ms"] as Array).append(RenderingServer.viewport_get_measured_render_time_cpu(rid) + RenderingServer.get_frame_setup_time_cpu())
+		(spalten["draw_calls"] as Array).append(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+		(spalten["dreiecke"] as Array).append(Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME))
+	var z := {"variante": name_}
+	for k: String in spalten:
+		var w := PackedFloat64Array(spalten[k] as Array)
+		w.sort()
+		z[k] = snappedf(_q(w, 0.5), 0.01)
+	return z
 
 
 func _zaehle_szene() -> Dictionary:
@@ -473,6 +596,18 @@ func _zusammenfassung(e: Dictionary) -> String:
 	var lo: Dictionary = e["lod"]
 	z.append("Sichtweiten-Wechsel (LOD): %d Knoten mit Sichtweite, %d Wechsel (%.2f/s), davon %d näher als 50 m, %d weich überblendet, %d hart und sichtbar (Aufploppen)" % [
 		lo["knoten_mit_sichtweite"], lo["wechsel"], lo["wechsel_pro_s"], lo["nahe_wechsel_unter_50m"], lo["weich_ueberblendet"], lo["sichtbar_hart"]])
+	var au: Dictionary = e.get("aufschluesselung", {})
+	for bp: String in au:
+		var zeilen: Array = au[bp]
+		var b: Dictionary = zeilen[0]
+		z.append("Aufschlüsselung %s: alles an: Grafikkarte %.2f ms, Render-CPU %.2f ms, Frame %.2f ms, %d Draw Calls, %.1f Mio. Dreiecke; am Ende wieder %.2f ms (Drift)" % [
+			bp, b["gpu_ms"], b["render_cpu_ms"], b["frame_ms"], b["draw_calls"], float(b["dreiecke"]) / 1e6, (zeilen[zeilen.size() - 1] as Dictionary)["gpu_ms"]])
+		var rang := zeilen.slice(1, zeilen.size() - 1)
+		rang.sort_custom(func(a: Dictionary, c: Dictionary) -> bool: return float(a["gpu_ersparnis_ms"]) > float(c["gpu_ersparnis_ms"]))
+		for r: Dictionary in rang:
+			z.append("    ohne %-18s Grafikkarte −%5.2f ms (%4.1f %%), Render-CPU −%5.2f ms, Draw Calls %6d, Dreiecke %5.1f Mio." % [
+				r["variante"], r["gpu_ersparnis_ms"], 100.0 * float(r["gpu_ersparnis_ms"]) / maxf(float(b["gpu_ms"]), 0.001),
+				r["render_cpu_ersparnis_ms"], r["draw_calls"], float(r["dreiecke"]) / 1e6])
 	if DisplayServer.get_name() == "headless":
 		z.append("Hinweis: ohne Grafik gemessen, Draw Calls, Dreiecke je Bild und Grafikspeicher sind 0.")
 	return "\n".join(z) + "\n"

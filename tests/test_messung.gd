@@ -1,6 +1,7 @@
 extends SceneTree
 ## Rauchtest für das Messwerkzeug (werkzeuge/messen/messung.gd): startet es als eigenen Prozess mit der kurzen
-## Strecke und prüft, dass die Ergebnisdatei alle Teile mit plausiblen Werten enthält.
+## Strecke und der GPU-Aufschlüsselung (wenige Bilder) und prüft, dass die Ergebnisdatei alle Teile mit plausiblen
+## Werten enthält.
 ## Starten: godot --headless --path . --script res://tests/test_messung.gd
 
 var fehler := 0
@@ -21,7 +22,8 @@ func _initialize() -> void:
 		DirAccess.remove_absolute(ordner.path_join(f))
 	var ausgabe: Array = []
 	var code := OS.execute(OS.get_executable_path(), ["--headless", "--path", ProjectSettings.globalize_path("res://"),
-		"--script", "res://werkzeuge/messen/messung.gd", "--", "--strecke", "kurz", "--name", "test", "--ausgabe", ordner],
+		"--script", "res://werkzeuge/messen/messung.gd", "--", "--strecke", "kurz", "--name", "test", "--ausgabe", ordner,
+		"--aufschluesselung", "ja", "--bilder", "5"],
 		ausgabe, true)
 	pruefe(code == 0, "Messwerkzeug läuft durch (Rückgabe %d)" % code)
 	var json := ""
@@ -50,5 +52,11 @@ func _initialize() -> void:
 	pruefe(int(mf.get("bilder", 0)) > 30 and float(ft.get("p95", 0.0)) > 0.0 and mf.has("haenger_ueber_50ms"),
 		"Frame-Werte der Fahrt (%d Bilder, p95 %.1f ms)" % [mf.get("bilder", 0), ft.get("p95", 0.0)])
 	pruefe(int(((e.get("lod", {}) as Dictionary).get("knoten_mit_sichtweite", 0))) > 0, "Sichtweiten-Knoten gezählt")
+	var au: Dictionary = e.get("aufschluesselung", {})
+	var markt: Array = au.get("Markt", [])
+	var namen: Array = markt.map(func(z: Dictionary) -> String: return z["variante"])
+	pruefe(au.size() == 2 and "alles" in namen and "SDFGI" in namen and "Sonnenschatten" in namen and "Figuren" in namen
+			and "Bewuchs" in namen and "alles_am_ende" in namen,
+		"GPU-Aufschlüsselung an %d Blickpunkten mit %d Varianten" % [au.size(), namen.size()])
 	print("\nFehler: %d" % fehler)
 	quit(1 if fehler > 0 else 0)
