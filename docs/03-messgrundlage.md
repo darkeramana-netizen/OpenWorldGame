@@ -170,3 +170,32 @@ dahinter:
 7. **Mit Grafik** (Referenzrechner, siehe oben): Draw Calls und Dreiecke je Bild sind die größten Abweichungen vom
    Budget. Die wirksamsten Hebel nach der Zählung: Detailstufen und Sichtweiten für die Figuren, die vielen kleinen
    MultiMesh-Knoten zusammenfassen, Tiere als ein Mesh statt eines pro Körperteil, kleine Dinge ohne Schatten.
+
+## Phase 1: Fortschritt
+
+### Figuren (burg-ausbau-9)
+
+Änderungen in `szenen/figuren/figur.gd`: kleine Teile (Augen, Brauen, Gürtel, Armschienen, Hüte, Dinge in der Hand)
+werfen keinen Schatten und blenden bis 35 m aus; Körper und Kleidung blenden weich bis 130 m aus (vorher hart bei
+140 m); die zur Laufzeit gebauten Köpfe haben Detailstufen; die Animation läuft nah jedes Bild, ab 25 m jedes zweite,
+ab 60 m jedes vierte, außerhalb der Sichtweite gar nicht. Schattenwerfer unter den Figurteilen: 858 statt 1.574.
+
+Messung auf dem Referenzrechner unter gleichen Bedingungen (Ladezeit 14,8 s wie in der Ausgangsmessung; ein erster
+Lauf mit 20,4 s Ladezeit lief unter Hintergrundlast und zählt nicht):
+`docs/messungen/messung_drachenstein_nach_figuren_retest_2026-11-16T17-56-02.json`.
+
+| Messfahrt | vorher | nach den Figuren |
+|---|---|---|
+| Frame p50 / p95 / p99 | 10,6 / 13,6 / 15,7 ms | 10,2 / 12,6 / 14,7 ms |
+| fps im Mittel | 92 | 97 |
+| Draw Calls p95 | 13.550 | 12.647 (−7 %) |
+| Dreiecke je Bild p95 | 16,9 Mio. | 16,4 Mio. (−3 %) |
+| Grafikkarte p50 / p95 | (nicht gemessen) | 9,9 / 11,5 ms |
+| Render-CPU p50 / p95 | (nicht gemessen) | 3,8 / 5,5 ms |
+| sichtbar hart aufploppend | (nicht gemessen) | 3.250 |
+
+**Erkenntnis:** Die Grafikkarte bestimmt die Bildzeit (9,9 ms von 10,2 ms im Median), nicht die CPU-Seite des
+Renderns (3,8 ms). Weniger Draw Calls helfen deshalb wenig; es zählt, was die Grafikkarte rechnet: Dreiecke,
+Schattenkaskaden (Sonne bis 500 m in vier Stufen), Effekte (SDFGI, SSAO, SSIL, MSAA, Nebel, Glow) und Überzeichnen.
+Die Figuren waren nicht der Hauptposten. Hinweis: Ohne Grafik (im Container) liefert `get_aabb()` von MultiMeshes
+leere Kästen; dort fehlt Aufploppen von Bewuchs, Felsen und Häusern in der Zählung. Gültig ist die Zählung mit Grafik.
