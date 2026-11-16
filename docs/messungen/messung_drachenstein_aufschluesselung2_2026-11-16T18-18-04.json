@@ -1,0 +1,1221 @@
+{
+	"anlauf": {
+		"bilder": 632,
+		"dauer_s": 10.0,
+		"draw_calls": {
+			"max": 7256.0,
+			"p50": 7256.0,
+			"p95": 7256.0,
+			"p99": 7256.0
+		},
+		"dreiecke": {
+			"max": 10773546.0,
+			"p50": 10773546.0,
+			"p95": 10773546.0,
+			"p99": 10773546.0
+		},
+		"fps_mittel": 63.2,
+		"frame_ms": {
+			"max": 3042.85,
+			"p50": 10.74,
+			"p95": 11.87,
+			"p99": 12.44
+		},
+		"gpu_ms": {
+			"max": 14.32,
+			"p50": 10.4,
+			"p95": 10.66,
+			"p99": 10.85
+		},
+		"grafikspeicher_mb": {
+			"max": 1764.97,
+			"p50": 1764.96,
+			"p95": 1764.96,
+			"p99": 1764.96
+		},
+		"haenger_ueber_33ms": 2,
+		"haenger_ueber_50ms": 2,
+		"objekte": {
+			"max": 8071.0,
+			"p50": 8071.0,
+			"p95": 8071.0,
+			"p99": 8071.0
+		},
+		"physik_spitze_ms": {
+			"max": 544.89,
+			"p50": 1.82,
+			"p95": 2.23,
+			"p99": 2.23
+		},
+		"prozess_spitze_ms": {
+			"max": 13908.19,
+			"p50": 10.95,
+			"p95": 11.57,
+			"p99": 11.57
+		},
+		"render_cpu_ms": {
+			"max": 146.8,
+			"p50": 3.99,
+			"p95": 4.35,
+			"p99": 4.69
+		},
+		"speicher_mb": {
+			"max": 1517.32,
+			"p50": 1517.2,
+			"p95": 1517.31,
+			"p99": 1517.32
+		}
+	},
+	"aufschluesselung": {
+		"Markt": [
+			{
+				"draw_calls": 5986.0,
+				"dreiecke": 11555443.0,
+				"frame_ms": 11.37,
+				"gpu_ms": 10.94,
+				"render_cpu_ms": 3.39,
+				"variante": "alles"
+			},
+			{
+				"draw_calls": 5986.0,
+				"dreiecke": 11555443.0,
+				"frame_ms": 9.83,
+				"gpu_ersparnis_ms": 1.46,
+				"gpu_ms": 9.51,
+				"render_cpu_ersparnis_ms": 0.09,
+				"render_cpu_ms": 3.28,
+				"variante": "SDFGI_aus"
+			},
+			{
+				"draw_calls": 5986.0,
+				"dreiecke": 11555443.0,
+				"frame_ms": 11.23,
+				"gpu_ersparnis_ms": 0.09,
+				"gpu_ms": 10.88,
+				"render_cpu_ersparnis_ms": 0.04,
+				"render_cpu_ms": 3.33,
+				"variante": "SSAO_aus"
+			},
+			{
+				"draw_calls": 5982.0,
+				"dreiecke": 11555259.0,
+				"frame_ms": 10.88,
+				"gpu_ersparnis_ms": 0.4,
+				"gpu_ms": 10.57,
+				"render_cpu_ersparnis_ms": 0.04,
+				"render_cpu_ms": 3.33,
+				"variante": "SSIL_aus"
+			},
+			{
+				"draw_calls": 5982.0,
+				"dreiecke": 11555259.0,
+				"frame_ms": 11.27,
+				"gpu_ersparnis_ms": 0.17,
+				"gpu_ms": 10.8,
+				"render_cpu_ersparnis_ms": 0.08,
+				"render_cpu_ms": 3.29,
+				"variante": "Glow_aus"
+			},
+			{
+				"draw_calls": 5982.0,
+				"dreiecke": 11555259.0,
+				"frame_ms": 11.32,
+				"gpu_ersparnis_ms": 0.06,
+				"gpu_ms": 10.91,
+				"render_cpu_ersparnis_ms": 0.04,
+				"render_cpu_ms": 3.33,
+				"variante": "Nebel_aus"
+			},
+			{
+				"draw_calls": 5982.0,
+				"dreiecke": 11555259.0,
+				"frame_ms": 10.57,
+				"gpu_ersparnis_ms": 0.77,
+				"gpu_ms": 10.2,
+				"render_cpu_ersparnis_ms": 0.0,
+				"render_cpu_ms": 3.37,
+				"variante": "MSAA_aus"
+			},
+			{
+				"draw_calls": 1549.0,
+				"dreiecke": 2684687.0,
+				"frame_ms": 7.96,
+				"gpu_ersparnis_ms": 3.48,
+				"gpu_ms": 7.49,
+				"render_cpu_ersparnis_ms": 1.21,
+				"render_cpu_ms": 2.16,
+				"variante": "Sonnenschatten_aus"
+			},
+			{
+				"draw_calls": 4955.0,
+				"dreiecke": 10616732.0,
+				"frame_ms": 10.97,
+				"gpu_ersparnis_ms": 0.33,
+				"gpu_ms": 10.64,
+				"render_cpu_ersparnis_ms": 0.4,
+				"render_cpu_ms": 2.98,
+				"variante": "Schatten_bis_150m"
+			},
+			{
+				"draw_calls": 3750.0,
+				"dreiecke": 7159537.0,
+				"frame_ms": 10.31,
+				"gpu_ersparnis_ms": 0.92,
+				"gpu_ms": 10.05,
+				"render_cpu_ersparnis_ms": 0.69,
+				"render_cpu_ms": 2.68,
+				"variante": "Schatten_2_Stufen"
+			},
+			{
+				"draw_calls": 5982.0,
+				"dreiecke": 11555259.0,
+				"frame_ms": 10.16,
+				"gpu_ersparnis_ms": 1.16,
+				"gpu_ms": 9.81,
+				"render_cpu_ersparnis_ms": 0.09,
+				"render_cpu_ms": 3.28,
+				"variante": "Schattenkarte_4096"
+			},
+			{
+				"draw_calls": 5982.0,
+				"dreiecke": 11555259.0,
+				"frame_ms": 11.36,
+				"gpu_ersparnis_ms": -0.2,
+				"gpu_ms": 11.17,
+				"render_cpu_ersparnis_ms": -0.69,
+				"render_cpu_ms": 4.06,
+				"variante": "Schattenfilter_niedrig"
+			},
+			{
+				"draw_calls": 5982.0,
+				"dreiecke": 11555259.0,
+				"frame_ms": 10.87,
+				"gpu_ersparnis_ms": 0.41,
+				"gpu_ms": 10.56,
+				"render_cpu_ersparnis_ms": 0.13,
+				"render_cpu_ms": 3.25,
+				"variante": "SDFGI_4_Stufen"
+			},
+			{
+				"draw_calls": 5982.0,
+				"dreiecke": 11555259.0,
+				"frame_ms": 11.2,
+				"gpu_ersparnis_ms": 0.15,
+				"gpu_ms": 10.82,
+				"render_cpu_ersparnis_ms": 0.08,
+				"render_cpu_ms": 3.29,
+				"variante": "SDFGI_Zelle_doppelt"
+			},
+			{
+				"draw_calls": 5304.0,
+				"dreiecke": 11337050.0,
+				"frame_ms": 11.25,
+				"gpu_ersparnis_ms": 0.1,
+				"gpu_ms": 10.87,
+				"render_cpu_ersparnis_ms": 0.23,
+				"render_cpu_ms": 3.14,
+				"variante": "Kleines_ohne_Schatten"
+			},
+			{
+				"draw_calls": 5860.0,
+				"dreiecke": 11470232.0,
+				"frame_ms": 11.31,
+				"gpu_ersparnis_ms": 0.08,
+				"gpu_ms": 10.89,
+				"render_cpu_ersparnis_ms": 0.42,
+				"render_cpu_ms": 2.96,
+				"variante": "Figuren_aus"
+			},
+			{
+				"draw_calls": 5970.0,
+				"dreiecke": 9611361.0,
+				"frame_ms": 10.88,
+				"gpu_ersparnis_ms": 0.57,
+				"gpu_ms": 10.4,
+				"render_cpu_ersparnis_ms": 0.06,
+				"render_cpu_ms": 3.31,
+				"variante": "Bewuchs_aus"
+			},
+			{
+				"draw_calls": 4849.0,
+				"dreiecke": 10658001.0,
+				"frame_ms": 11.05,
+				"gpu_ersparnis_ms": 0.33,
+				"gpu_ms": 10.64,
+				"render_cpu_ersparnis_ms": 0.42,
+				"render_cpu_ms": 2.96,
+				"variante": "Felsen_aus"
+			},
+			{
+				"draw_calls": 2565.0,
+				"dreiecke": 5891565.0,
+				"frame_ms": 9.44,
+				"gpu_ersparnis_ms": 1.9,
+				"gpu_ms": 9.07,
+				"render_cpu_ersparnis_ms": 1.06,
+				"render_cpu_ms": 2.31,
+				"variante": "Haeuser_aus"
+			},
+			{
+				"draw_calls": 4952.0,
+				"dreiecke": 9511477.0,
+				"frame_ms": 11.36,
+				"gpu_ersparnis_ms": 0.0,
+				"gpu_ms": 10.97,
+				"render_cpu_ersparnis_ms": 0.4,
+				"render_cpu_ms": 2.97,
+				"variante": "Burgbauten_aus"
+			},
+			{
+				"draw_calls": 5875.0,
+				"dreiecke": 10830235.0,
+				"frame_ms": 9.75,
+				"gpu_ersparnis_ms": 1.64,
+				"gpu_ms": 9.33,
+				"render_cpu_ersparnis_ms": 0.04,
+				"render_cpu_ms": 3.33,
+				"variante": "Gelaende_aus"
+			},
+			{
+				"draw_calls": 5982.0,
+				"dreiecke": 11555259.0,
+				"frame_ms": 11.23,
+				"gpu_ersparnis_ms": 0.04,
+				"gpu_ms": 10.94,
+				"render_cpu_ersparnis_ms": 0.17,
+				"render_cpu_ms": 3.2,
+				"variante": "Lampen_aus"
+			},
+			{
+				"draw_calls": 5982.0,
+				"dreiecke": 11555259.0,
+				"frame_ms": 11.35,
+				"gpu_ms": 11.01,
+				"render_cpu_ms": 3.36,
+				"variante": "alles_am_ende"
+			}
+		],
+		"Mittelburg": [
+			{
+				"draw_calls": 7520.0,
+				"dreiecke": 9048582.0,
+				"frame_ms": 10.23,
+				"gpu_ms": 9.67,
+				"render_cpu_ms": 3.9,
+				"variante": "alles"
+			},
+			{
+				"draw_calls": 7520.0,
+				"dreiecke": 9048582.0,
+				"frame_ms": 8.57,
+				"gpu_ersparnis_ms": 1.66,
+				"gpu_ms": 8.03,
+				"render_cpu_ersparnis_ms": 0.2,
+				"render_cpu_ms": 3.8,
+				"variante": "SDFGI_aus"
+			},
+			{
+				"draw_calls": 7520.0,
+				"dreiecke": 9048582.0,
+				"frame_ms": 9.89,
+				"gpu_ersparnis_ms": 0.14,
+				"gpu_ms": 9.54,
+				"render_cpu_ersparnis_ms": 0.13,
+				"render_cpu_ms": 3.87,
+				"variante": "SSAO_aus"
+			},
+			{
+				"draw_calls": 7520.0,
+				"dreiecke": 9048582.0,
+				"frame_ms": 9.66,
+				"gpu_ersparnis_ms": 0.36,
+				"gpu_ms": 9.33,
+				"render_cpu_ersparnis_ms": 0.17,
+				"render_cpu_ms": 3.83,
+				"variante": "SSIL_aus"
+			},
+			{
+				"draw_calls": 7520.0,
+				"dreiecke": 9048582.0,
+				"frame_ms": 9.99,
+				"gpu_ersparnis_ms": 0.2,
+				"gpu_ms": 9.49,
+				"render_cpu_ersparnis_ms": -0.03,
+				"render_cpu_ms": 4.03,
+				"variante": "Glow_aus"
+			},
+			{
+				"draw_calls": 7520.0,
+				"dreiecke": 9050526.0,
+				"frame_ms": 9.87,
+				"gpu_ersparnis_ms": 0.04,
+				"gpu_ms": 9.64,
+				"render_cpu_ersparnis_ms": 0.0,
+				"render_cpu_ms": 4.01,
+				"variante": "Nebel_aus"
+			},
+			{
+				"draw_calls": 7520.0,
+				"dreiecke": 9050526.0,
+				"frame_ms": 9.65,
+				"gpu_ersparnis_ms": 0.51,
+				"gpu_ms": 9.18,
+				"render_cpu_ersparnis_ms": 0.04,
+				"render_cpu_ms": 3.96,
+				"variante": "MSAA_aus"
+			},
+			{
+				"draw_calls": 2093.0,
+				"dreiecke": 2112141.0,
+				"frame_ms": 6.79,
+				"gpu_ersparnis_ms": 3.2,
+				"gpu_ms": 6.49,
+				"render_cpu_ersparnis_ms": 1.48,
+				"render_cpu_ms": 2.52,
+				"variante": "Sonnenschatten_aus"
+			},
+			{
+				"draw_calls": 5067.0,
+				"dreiecke": 7426523.0,
+				"frame_ms": 9.27,
+				"gpu_ersparnis_ms": 0.69,
+				"gpu_ms": 9.0,
+				"render_cpu_ersparnis_ms": 0.58,
+				"render_cpu_ms": 3.42,
+				"variante": "Schatten_bis_150m"
+			},
+			{
+				"draw_calls": 4578.0,
+				"dreiecke": 5523851.0,
+				"frame_ms": 9.14,
+				"gpu_ersparnis_ms": 0.85,
+				"gpu_ms": 8.84,
+				"render_cpu_ersparnis_ms": 0.76,
+				"render_cpu_ms": 3.24,
+				"variante": "Schatten_2_Stufen"
+			},
+			{
+				"draw_calls": 7523.0,
+				"dreiecke": 9058514.0,
+				"frame_ms": 8.91,
+				"gpu_ersparnis_ms": 1.11,
+				"gpu_ms": 8.58,
+				"render_cpu_ersparnis_ms": 0.01,
+				"render_cpu_ms": 3.99,
+				"variante": "Schattenkarte_4096"
+			},
+			{
+				"draw_calls": 7523.0,
+				"dreiecke": 9058946.0,
+				"frame_ms": 10.01,
+				"gpu_ersparnis_ms": 0.11,
+				"gpu_ms": 9.58,
+				"render_cpu_ersparnis_ms": -0.02,
+				"render_cpu_ms": 4.02,
+				"variante": "Schattenfilter_niedrig"
+			},
+			{
+				"draw_calls": 7523.0,
+				"dreiecke": 9058946.0,
+				"frame_ms": 9.63,
+				"gpu_ersparnis_ms": 0.39,
+				"gpu_ms": 9.29,
+				"render_cpu_ersparnis_ms": 0.13,
+				"render_cpu_ms": 3.87,
+				"variante": "SDFGI_4_Stufen"
+			},
+			{
+				"draw_calls": 7535.0,
+				"dreiecke": 9070610.0,
+				"frame_ms": 9.8,
+				"gpu_ersparnis_ms": 0.18,
+				"gpu_ms": 9.51,
+				"render_cpu_ersparnis_ms": 0.09,
+				"render_cpu_ms": 3.91,
+				"variante": "SDFGI_Zelle_doppelt"
+			},
+			{
+				"draw_calls": 5360.0,
+				"dreiecke": 8336933.0,
+				"frame_ms": 9.66,
+				"gpu_ersparnis_ms": 0.3,
+				"gpu_ms": 9.38,
+				"render_cpu_ersparnis_ms": 0.71,
+				"render_cpu_ms": 3.29,
+				"variante": "Kleines_ohne_Schatten"
+			},
+			{
+				"draw_calls": 6772.0,
+				"dreiecke": 8630775.0,
+				"frame_ms": 10.01,
+				"gpu_ersparnis_ms": 0.12,
+				"gpu_ms": 9.57,
+				"render_cpu_ersparnis_ms": 0.78,
+				"render_cpu_ms": 3.22,
+				"variante": "Figuren_aus"
+			},
+			{
+				"draw_calls": 7560.0,
+				"dreiecke": 7156020.0,
+				"frame_ms": 9.5,
+				"gpu_ersparnis_ms": 0.51,
+				"gpu_ms": 9.18,
+				"render_cpu_ersparnis_ms": 0.1,
+				"render_cpu_ms": 3.9,
+				"variante": "Bewuchs_aus"
+			},
+			{
+				"draw_calls": 5036.0,
+				"dreiecke": 8076336.0,
+				"frame_ms": 9.46,
+				"gpu_ersparnis_ms": 0.48,
+				"gpu_ms": 9.2,
+				"render_cpu_ersparnis_ms": 0.84,
+				"render_cpu_ms": 3.17,
+				"variante": "Felsen_aus"
+			},
+			{
+				"draw_calls": 6786.0,
+				"dreiecke": 8226617.0,
+				"frame_ms": 9.7,
+				"gpu_ersparnis_ms": 0.36,
+				"gpu_ms": 9.33,
+				"render_cpu_ersparnis_ms": 0.22,
+				"render_cpu_ms": 3.78,
+				"variante": "Haeuser_aus"
+			},
+			{
+				"draw_calls": 5247.0,
+				"dreiecke": 5622121.0,
+				"frame_ms": 9.57,
+				"gpu_ersparnis_ms": 0.75,
+				"gpu_ms": 8.94,
+				"render_cpu_ersparnis_ms": 0.63,
+				"render_cpu_ms": 3.38,
+				"variante": "Burgbauten_aus"
+			},
+			{
+				"draw_calls": 7480.0,
+				"dreiecke": 8255668.0,
+				"frame_ms": 9.07,
+				"gpu_ersparnis_ms": 1.39,
+				"gpu_ms": 8.29,
+				"render_cpu_ersparnis_ms": -0.03,
+				"render_cpu_ms": 4.03,
+				"variante": "Gelaende_aus"
+			},
+			{
+				"draw_calls": 7614.0,
+				"dreiecke": 9174131.0,
+				"frame_ms": 9.66,
+				"gpu_ersparnis_ms": 0.34,
+				"gpu_ms": 9.35,
+				"render_cpu_ersparnis_ms": 0.19,
+				"render_cpu_ms": 3.81,
+				"variante": "Lampen_aus"
+			},
+			{
+				"draw_calls": 7611.0,
+				"dreiecke": 9172059.0,
+				"frame_ms": 10.12,
+				"gpu_ms": 9.7,
+				"render_cpu_ms": 4.11,
+				"variante": "alles_am_ende"
+			}
+		],
+		"_info": {
+			"bilder": "user://messungen/bilder_aufschluesselung2_2026-11-16T18-16-50",
+			"kleine_schattenwerfer": 2408
+		}
+	},
+	"fahrt": {},
+	"laden": {
+		"bis_5_bilder_ms": 14867.226,
+		"datei_ms": 807.327,
+		"einhaengen_und_ready_ms": 10774.459,
+		"gesamt_bis_einhaengen_ms": 11600.851,
+		"instanziieren_ms": 19.065
+	},
+	"langsamste_ready": [
+		{
+			"bauart": "burgbau",
+			"knoten": "/root/Region/Drachenstein/Burgen/HofhausEinrichtung",
+			"ms": 3793.6
+		},
+		{
+			"bauart": "felsmassiv",
+			"knoten": "/root/Region/Drachenstein/Felsmassiv",
+			"ms": 1480.0
+		},
+		{
+			"bauart": "stadthaeuser",
+			"knoten": "/root/Region/Drachenstein/Stadthaeuser",
+			"ms": 815.1
+		},
+		{
+			"bauart": "stadthaeuser",
+			"knoten": "/root/Region/Drachenstein/Burgen/Hofhaeuser",
+			"ms": 705.7
+		},
+		{
+			"bauart": "gelaende",
+			"knoten": "/root/Region/Gelaende",
+			"ms": 641.3
+		},
+		{
+			"bauart": "felsen",
+			"knoten": "/root/Region/Drachenstein/Felsen",
+			"ms": 420.1
+		},
+		{
+			"bauart": "burgbau",
+			"knoten": "/root/Region/Drachenstein/Burgen/RingmauerBau",
+			"ms": 200.3
+		},
+		{
+			"bauart": "felssockel",
+			"knoten": "/root/Region/Drachenstein/Kuestenfels",
+			"ms": 171.9
+		},
+		{
+			"bauart": "burgbau",
+			"knoten": "/root/Region/Drachenstein/Burgen/Palas",
+			"ms": 123.5
+		},
+		{
+			"bauart": "burgbau",
+			"knoten": "/root/Region/Drachenstein/Burgen/KernburgBau",
+			"ms": 121.0
+		},
+		{
+			"bauart": "burgbau",
+			"knoten": "/root/Region/BurgHof/Mauern/Hofmauern",
+			"ms": 115.7
+		},
+		{
+			"bauart": "burgbau",
+			"knoten": "/root/Region/Drachenstein/Drachenhafen/Speicher",
+			"ms": 108.2
+		},
+		{
+			"bauart": "burgbau",
+			"knoten": "/root/Region/Drachenstein/Burgen/ZwingermauerBau",
+			"ms": 107.5
+		},
+		{
+			"bauart": "burgbau",
+			"knoten": "/root/Region/Drachenstein/Stadt/StadtmauerBau",
+			"ms": 102.2
+		},
+		{
+			"bauart": "burgbau",
+			"knoten": "/root/Region/Drachenstein/Stadt/StadtmauerTuerme",
+			"ms": 92.3
+		}
+	],
+	"lod": {
+		"bahnpunkte": 0,
+		"knoten_mit_sichtweite": 5405,
+		"nahe_wechsel_unter_50m": 0,
+		"sichtbar_hart": 0,
+		"wechsel": 0,
+		"wechsel_pro_s": 0.0,
+		"weich_ueberblendet": 0
+	},
+	"messfahrt": {
+		"bilder": 0
+	},
+	"name": "aufschluesselung2",
+	"ready_je_bauart": [
+		{
+			"anzahl": 64,
+			"bauart": "burgbau",
+			"ms": 6284.9
+		},
+		{
+			"anzahl": 2,
+			"bauart": "stadthaeuser",
+			"ms": 1520.8
+		},
+		{
+			"anzahl": 1,
+			"bauart": "felsmassiv",
+			"ms": 1480.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "gelaende",
+			"ms": 641.3
+		},
+		{
+			"anzahl": 3,
+			"bauart": "felsen",
+			"ms": 420.2
+		},
+		{
+			"anzahl": 2,
+			"bauart": "felssockel",
+			"ms": 244.8
+		},
+		{
+			"anzahl": 5,
+			"bauart": "turm",
+			"ms": 122.7
+		},
+		{
+			"anzahl": 19,
+			"bauart": "tier",
+			"ms": 35.8
+		},
+		{
+			"anzahl": 122,
+			"bauart": "person",
+			"ms": 4.0
+		},
+		{
+			"anzahl": 8,
+			"bauart": "huehner",
+			"ms": 2.8
+		},
+		{
+			"anzahl": 20,
+			"bauart": "tauben",
+			"ms": 2.7
+		},
+		{
+			"anzahl": 1,
+			"bauart": "spieler",
+			"ms": 1.4
+		},
+		{
+			"anzahl": 6,
+			"bauart": "moewen",
+			"ms": 1.1
+		},
+		{
+			"anzahl": 17,
+			"bauart": "Label",
+			"ms": 0.9
+		},
+		{
+			"anzahl": 467,
+			"bauart": "CSGBox3D",
+			"ms": 0.8
+		},
+		{
+			"anzahl": 197,
+			"bauart": "Label3D",
+			"ms": 0.6
+		},
+		{
+			"anzahl": 12,
+			"bauart": "ort",
+			"ms": 0.4
+		},
+		{
+			"anzahl": 158,
+			"bauart": "CollisionShape3D",
+			"ms": 0.4
+		},
+		{
+			"anzahl": 125,
+			"bauart": "figur",
+			"ms": 0.3
+		},
+		{
+			"anzahl": 1,
+			"bauart": "ordenswand",
+			"ms": 0.3
+		},
+		{
+			"anzahl": 1,
+			"bauart": "hud",
+			"ms": 0.2
+		},
+		{
+			"anzahl": 71,
+			"bauart": "Node3D",
+			"ms": 0.2
+		},
+		{
+			"anzahl": 55,
+			"bauart": "CSGCylinder3D",
+			"ms": 0.1
+		},
+		{
+			"anzahl": 76,
+			"bauart": "OmniLight3D",
+			"ms": 0.1
+		},
+		{
+			"anzahl": 2,
+			"bauart": "gegner",
+			"ms": 0.1
+		},
+		{
+			"anzahl": 6,
+			"bauart": "tor",
+			"ms": 0.1
+		},
+		{
+			"anzahl": 11,
+			"bauart": "MeshInstance3D",
+			"ms": 0.1
+		},
+		{
+			"anzahl": 1,
+			"bauart": "entwickler",
+			"ms": 0.1
+		},
+		{
+			"anzahl": 1,
+			"bauart": "Camera3D",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "Timer",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "SpringArm3D",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 2,
+			"bauart": "VScrollBar",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 5,
+			"bauart": "PanelContainer",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 4,
+			"bauart": "VBoxContainer",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "RichTextLabel",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 3,
+			"bauart": "TextureRect",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 3,
+			"bauart": "ColorRect",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "ProgressBar",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "CenterContainer",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "pausemenue",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "HScrollBar",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "ScrollContainer",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "region",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "WorldEnvironment",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "DirectionalLight3D",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "tageslicht",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 3,
+			"bauart": "aufhebbar",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "arbeitsstelle",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 3,
+			"bauart": "posten",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 2,
+			"bauart": "ausstattung",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 4,
+			"bauart": "StaticBody3D",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "MultiMeshInstance3D",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 2,
+			"bauart": "lesbar",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 31,
+			"bauart": "CSGCombiner3D",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 17,
+			"bauart": "CSGPolygon3D",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 2,
+			"bauart": "bedingt_sichtbar",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 2,
+			"bauart": "auf_gelaende",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "bewuchs",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "gespraech",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 29,
+			"bauart": "Marker3D",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 2,
+			"bauart": "uebergang",
+			"ms": 0.0
+		},
+		{
+			"anzahl": 1,
+			"bauart": "kampf",
+			"ms": 0.0
+		}
+	],
+	"region": "drachenstein",
+	"rundblick": {
+		"bilder": 0
+	},
+	"strecke": "keine",
+	"system": {
+		"anzeige": "Windows",
+		"cpu": "AMD Ryzen 7 9800X3D 8-Core Processor",
+		"fenster": "(1920, 1080)",
+		"godot": "4.7.2.stable",
+		"grafik": "NVIDIA GeForce RTX 5060 Ti",
+		"grafik_hersteller": "NVIDIA",
+		"kerne": 16,
+		"os": "Windows",
+		"renderer": "forward_plus"
+	},
+	"szene": {
+		"gesamt": {
+			"dreiecke": 5841577,
+			"exemplar_dreiecke": 13128122,
+			"exemplare": 24163,
+			"knoten": 12798,
+			"kollisionskoerper": 367,
+			"lichter": 373,
+			"lichter_mit_schatten": 1,
+			"meshes": 3388,
+			"mit_sichtweite": 5405,
+			"multimesh": 2348,
+			"oberflaechen": 4452
+		},
+		"je_herkunft": {
+			"arbeitsstelle": {
+				"dreiecke": 24,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 2,
+				"oberflaechen": 2
+			},
+			"auf_gelaende": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"aufhebbar": {
+				"dreiecke": 36,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 3,
+				"oberflaechen": 3
+			},
+			"ausstattung": {
+				"dreiecke": 0,
+				"exemplare": 293,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"bedingt_sichtbar": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"bewuchs": {
+				"dreiecke": 0,
+				"exemplare": 17435,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"burgbau": {
+				"dreiecke": 1236571,
+				"exemplare": 0,
+				"lichter": 124,
+				"meshes": 66,
+				"oberflaechen": 893
+			},
+			"entwickler": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"felsen": {
+				"dreiecke": 0,
+				"exemplare": 6179,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"felsmassiv": {
+				"dreiecke": 53866,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 67,
+				"oberflaechen": 67
+			},
+			"felssockel": {
+				"dreiecke": 54960,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 2,
+				"oberflaechen": 2
+			},
+			"figur": {
+				"dreiecke": 3350320,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 1574,
+				"oberflaechen": 1673
+			},
+			"fluegel": {
+				"dreiecke": 9072,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 42,
+				"oberflaechen": 84
+			},
+			"gegner": {
+				"dreiecke": 24,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 2,
+				"oberflaechen": 2
+			},
+			"gelaende": {
+				"dreiecke": 1032462,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 141,
+				"oberflaechen": 141
+			},
+			"gespraech": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"hud": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"huehner": {
+				"dreiecke": 6204,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 517,
+				"oberflaechen": 517
+			},
+			"kampf": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"lesbar": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"moewen": {
+				"dreiecke": 2400,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 200,
+				"oberflaechen": 200
+			},
+			"ohne Skript": {
+				"dreiecke": 24444,
+				"exemplare": 0,
+				"lichter": 77,
+				"meshes": 2,
+				"oberflaechen": 2
+			},
+			"ordenswand": {
+				"dreiecke": 840,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 70,
+				"oberflaechen": 70
+			},
+			"ort": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"pausemenue": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"person": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"posten": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"spieler": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"stadthaeuser": {
+				"dreiecke": 0,
+				"exemplare": 256,
+				"lichter": 107,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"tageslicht": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 1,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"tauben": {
+				"dreiecke": 7680,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 640,
+				"oberflaechen": 640
+			},
+			"tier": {
+				"dreiecke": 15982,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 23,
+				"oberflaechen": 50
+			},
+			"tor": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			},
+			"turm": {
+				"dreiecke": 46692,
+				"exemplare": 0,
+				"lichter": 64,
+				"meshes": 37,
+				"oberflaechen": 106
+			},
+			"uebergang": {
+				"dreiecke": 0,
+				"exemplare": 0,
+				"lichter": 0,
+				"meshes": 0,
+				"oberflaechen": 0
+			}
+		}
+	},
+	"uhrzeit": 10.0,
+	"zeit": "2026-11-16T18:18:04"
+}

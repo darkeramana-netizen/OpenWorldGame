@@ -224,3 +224,24 @@ nicht in der Ferne. Zusammen mit SDFGI (6 Stufen, Zellen 0,3 m) und dem Gelände
 Shader) liegen hier die fehlenden etwa 3 ms. Die nächste Aufschlüsselung prüft deshalb Einstellungen statt nur an/aus:
 Schattenkarte 4096 statt 8192, Schattenfilter niedrig, Sonnenschatten in 2 Stufen, SDFGI mit 4 Stufen oder doppelt
 groben Zellen, kleine Dinge (unter 1 m) ohne Schatten; zu jeder Variante ein Vergleichsbild.
+
+### GPU-Aufschlüsselung mit Einstellungs-Varianten (Uhrzeit 10, fest)
+
+Datei: `docs/messungen/messung_drachenstein_aufschluesselung2_2026-11-16T18-18-04.json`. Drift klein (Markt 10,94 →
+11,01 ms, Mittelburg 9,67 → 9,70 ms), die Werte sind verlässlich.
+
+| Variante | spart Grafikkarte Markt / Mittelburg | spart Render-CPU | Bild |
+|---|---|---|---|
+| Sonnenschatten aus | 3,48 / 3,20 ms | 1,2 / 1,5 ms | (keine Lösung) |
+| SDFGI aus | 1,46 / 1,66 ms | 0,1 / 0,2 ms | (keine Lösung) |
+| Gelände aus | 1,64 / 1,39 ms | – | (Gelände-Entscheidung) |
+| Häuser aus | 1,90 / 0,36 ms | 1,1 / 0,2 ms | |
+| **Schattenkarte 4096 statt 8192** | **1,16 / 1,11 ms** | – | kein Unterschied erkennbar |
+| **Sonnenschatten in 2 Stufen** | **0,92 / 0,85 ms** | 0,7 / 0,8 ms | nahe Schatten prüfen |
+| MSAA aus | 0,77 / 0,51 ms | – | Kanten flimmern |
+| Schatten nur bis 150 m | 0,33 / 0,69 ms | 0,4 / 0,6 ms | |
+| **SDFGI mit 4 statt 6 Stufen** | **0,41 / 0,39 ms** | 0,1 ms | Ferne prüfen |
+| Kleines (unter 1 m) ohne Schatten | 0,10 / 0,30 ms | 0,2 / 0,7 ms | |
+| SDFGI-Zellen doppelt | 0,15 / 0,18 ms | – | |
+| Schattenfilter niedrig | −0,20 / 0,11 ms | – | bringt nichts |
+| SSAO, Nebel, Glow, Figuren, Lampen | je unter 0,35 ms | | |
