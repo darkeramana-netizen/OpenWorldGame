@@ -23,9 +23,44 @@ extends Node3D
 @export var karte_entlang_z: bool = false
 
 
+## Dinge, deren größte Ausdehnung darunter liegt (Meter), werfen keinen Sonnenschatten (Phase 1, Grafik-Paket B,
+## docs/03-messgrundlage.md): kaum sichtbar, spart aber Zeichenaufrufe in den Schattenkaskaden. 0 schaltet das ab.
+@export var ohne_schatten_unter: float = 1.0
+
+
 func _enter_tree() -> void:
 	# Über den Pfad, weil Klassen mit class_name auch ohne geladene Autoloads übersetzt werden.
 	get_node("/root/Speicher").region = region_id
+	# Jedes Ding, das in die Region kommt (auch später gebaute: Figuren, Bewuchs, Ausstattung), wird geprüft
+	if ohne_schatten_unter > 0.0 and not get_tree().node_added.is_connected(_bei_knoten):
+		get_tree().node_added.connect(_bei_knoten)
+
+
+func _exit_tree() -> void:
+	if get_tree().node_added.is_connected(_bei_knoten):
+		get_tree().node_added.disconnect(_bei_knoten)
+
+
+func _bei_knoten(n: Node) -> void:
+	if n is GeometryInstance3D and is_ancestor_of(n):
+		_schatten_pruefen.call_deferred(n)     # Mesh und Lage stehen oft erst nach add_child fest
+
+
+func _schatten_pruefen(n: Node) -> void:
+	if not is_instance_valid(n) or not n.is_inside_tree():
+		return
+	var gi := n as GeometryInstance3D
+	if gi.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF:
+		return
+	var m: Mesh = null
+	var faktor := 1.0
+	if gi is MeshInstance3D:
+		m = (gi as MeshInstance3D).mesh
+		faktor = gi.global_basis.get_scale().abs().x
+	elif gi is MultiMeshInstance3D and (gi as MultiMeshInstance3D).multimesh != null:
+		m = (gi as MultiMeshInstance3D).multimesh.mesh
+	if m != null and m.get_aabb().get_longest_axis_size() * faktor < ohne_schatten_unter:
+		gi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 ## Bildpunkt auf der Sorrowland-Karte für eine Weltposition in dieser Region.
