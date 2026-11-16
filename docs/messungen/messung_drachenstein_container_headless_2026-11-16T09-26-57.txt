@@ -1,0 +1,24 @@
+Messung container_headless, Region drachenstein, Strecke stadt_palas, 2026-11-16T09:26:57
+System: Godot 4.7.2.stable, Linux, Intel(R) Xeon(R) Processor @ 2.10GHz (4 Kerne), Grafik: , Anzeige headless (0, 0)
+Laden: Datei 4207 ms, Instanziieren 15 ms, Einhängen+_ready 19992 ms, bis 5 Bilder 28334 ms
+  _ready je Bauart (die größten):
+    burgbau                   64 Knoten    9906.4 ms
+    felsen                     3 Knoten    3195.8 ms
+    stadthaeuser               2 Knoten    2738.5 ms
+    felsmassiv                 1 Knoten    2644.5 ms
+    gelaende                   1 Knoten     878.7 ms
+    felssockel                 2 Knoten     395.5 ms
+    turm                       5 Knoten     176.2 ms
+    tier                      19 Knoten      13.9 ms
+    person                   122 Knoten       6.7 ms
+    tauben                    20 Knoten       3.6 ms
+Szene: 12798 Knoten, 3388 Meshes (4452 Oberflächen, 5841577 Dreiecke), 2348 MultiMesh (24163 Exemplare, 13128122 Dreiecke), 373 Lichter (0 mit Schatten), 367 Kollisionskörper, 5335 mit Sichtweite
+Fahrt: 69 von 69 Wegpunkten in 113 s
+Anlauf: 855 Bilder, 85.5 fps; Frame p50 6.9 / p95 9.1 / p99 10.4 / max 3903.5 ms; Hänger >33 ms: 2, >50 ms: 2
+    Prozess-Spitze/s p50 10.3 ms, Physik-Spitze/s p50 3.7 ms, Draw Calls p95 0, Dreiecke p95 0, Objekte p95 0, Speicher max 2082 MB, Grafikspeicher max 0 MB
+Messfahrt: 16114 Bilder, 142.2 fps; Frame p50 6.9 / p95 9.5 / p99 11.3 / max 90.5 ms; Hänger >33 ms: 12, >50 ms: 2
+    Prozess-Spitze/s p50 19.4 ms, Physik-Spitze/s p50 3.8 ms, Draw Calls p95 0, Dreiecke p95 0, Objekte p95 0, Speicher max 2088 MB, Grafikspeicher max 0 MB
+Rundblick: 1159 Bilder, 144.7 fps; Frame p50 6.9 / p95 9.1 / p99 9.8 / max 11.1 ms; Hänger >33 ms: 0, >50 ms: 0
+    Prozess-Spitze/s p50 7.4 ms, Physik-Spitze/s p50 3.6 ms, Draw Calls p95 0, Dreiecke p95 0, Objekte p95 0, Speicher max 2088 MB, Grafikspeicher max 0 MB
+Sichtweiten-Wechsel (LOD): 5335 Knoten mit Sichtweite, 9734 Wechsel (89.22/s), davon 49 näher als 50 m
+Hinweis: ohne Grafik gemessen, Draw Calls, Dreiecke je Bild und Grafikspeicher sind 0.
