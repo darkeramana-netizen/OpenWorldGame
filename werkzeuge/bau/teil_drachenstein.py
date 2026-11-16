@@ -222,8 +222,13 @@ _s_oben = max(o_ for _, ax_, az_, bx_, bz_, o_, *_ in _st_ if min(math.dist((ax_
 _s_kante = min(_st_, key=lambda t_: abstand_linie([t_[1:3], t_[3:5]], _sx, _sz))
 _s_u = (_s_kante[3] - _s_kante[1], _s_kante[4] - _s_kante[2])
 _s_g = math.degrees(math.atan2(_s_u[0], _s_u[1]))
+# Begehbar (Art 4 + 10): sein Boden liegt auf der Höhe des Wegs über dem Bogen (wie burgbau._tor: mindestens 1 m über
+# dem Scheitel), seine Giebel stecken 0,5 m in den Tortürmen, deren Kammern Türen in die Stube bekommen
+_tb_ = min((t_ for t_ in TORBOEGEN_ALLE if t_[0] == "Oberburg"), key=lambda t_: math.dist(t_[1:3], (_sx, _sz)))
+_s_weg = max(_tb_[7], _tb_[5] + 3.4 + _tb_[6] / 2 + 1.0)
+_s_lang = 2 * ((_tb_[6] / 2 + 2.6) - 2.5 + 0.5)
 N("TorhausOberburg", "Node3D", BG, f"""script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array({_zahlen([round(_sx, 2), round(_sz, 2), round(_s_g, 2), 6.2, 9.0, round(_s_oben + 0.1, 2), round(_s_oben, 2), 4.2, 3.4, 3, 1, 0])})""")
+gebaeude = PackedFloat32Array({_zahlen([round(_tb_[1], 2), round(_tb_[2], 2), round(_s_g, 2), 6.2, round(_s_lang, 2), round(_s_weg + 0.03, 2), round(_s_oben, 2), 4.2, 3.4, 3, 1, 14])})""")
 # Der Durchgang zwischen den Toren von Oberburg und Palas: im Norden zu, im Süden die Mauer zum Ende des Zwingers
 mauerring("DurchgangNord", BG, WL(PD.DURCHGANG_NORD), 6.0, dicke=2.5, mitte=W(PD.TORE["Tor der Oberburg"]))
 mauerring("DurchgangSued", BG, WL(PD.DURCHGANG_SUED), 6.0, dicke=2.5, mitte=W(PD.TORE["Tor der Oberburg"]))

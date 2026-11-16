@@ -91,6 +91,9 @@ def _drin_poly(q, poly):
     return innen
 
 
+TORBOEGEN_ALLE = []      # (Ring, x, z, ux, uz, Boden, Breite, Krone, Dicke, mit Tortürmen) aller Tore aus mauerring
+
+
 def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=None, strassen=(), torbreite=6.0,
              turm_r=0.0, turm_extra=5.0, turm_dach=True, mitte=(0, 0), zinnen=True, mat="Material_mauer",
              torname="", hoehe_min=None, oben_fest=None, aussparen=(), tor_regel="offen"):
@@ -170,6 +173,7 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
         # Der Torbau reicht so hoch wie die Mauer daneben, sonst bleibt über dem Bogen eine Lücke
         oben_tor = max(boden + hoehe, max(rings) + hoehe)
         torboegen += [tx, tz, ux, uz, boden, breite, oben_tor, dicke]
+        TORBOEGEN_ALLE.append((name, tx, tz, ux, uz, boden, breite, oben_tor, dicke, mit_tuermen))
         for s_ in ((-1, 1) if mit_tuermen else ()):   # ein Wassertor unten in der Mauer hat keine Tortürme
             px, pz = tx + ux * (breite / 2 + 2.6) * s_, tz + uz * (breite / 2 + 2.6) * s_
             unten = min(H(px, pz), boden) - 2.5

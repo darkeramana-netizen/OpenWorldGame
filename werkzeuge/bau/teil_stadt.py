@@ -124,9 +124,15 @@ for s_ in (-1, 1):
     _tx, _tz = _wt[0] + _wu[0] * s_ * 7.8, _wt[1] + _wu[1] * s_ * 7.8
     _tt += [round(_tx, 2), round(_tz, 2), round(_wu[0], 4), round(_wu[1], 4), -21.0, round(_wt_oben + 7.0, 2), 5.0, 5.4, -1, 1.3]
 _tg = math.degrees(math.atan2(_wu[0], _wu[1]))
+# Begehbar (Art 4 + 10) wie das Torhaus der Oberburg: Boden auf dem Weg über dem Bogen des Wassertors, die Giebel 0,5 m
+# in den Türmen; die Türme bekommen ihre Kammern am Bogen der Ringmauer (nachbar_tore)
+_wtb = min(TORBOEGEN_ALLE, key=lambda t_: math.dist(t_[1:3], _wt))
+_w_weg = max(_wtb[7], _wtb[5] + 3.4 + _wtb[6] / 2 + 1.0)
+_w_lang = 2 * (7.8 - 2.5 + 0.5)
 N("HafenTorhaus", "Node3D", HF, f"""script = ExtResource("28_burgbau")
 torbauten = PackedFloat32Array({_zahlen(_tt)})
-gebaeude = PackedFloat32Array({_zahlen([round(_wt[0], 2), round(_wt[1], 2), round(_tg, 2), 6.2, 10.4, round(_wt_oben + 0.1, 2), round(_wt_oben, 2), 4.6, 3.6, 3, 1, 0])})""")
+nachbar_tore = PackedFloat32Array({_zahlen(list(_wtb[1:9]))})
+gebaeude = PackedFloat32Array({_zahlen([round(_wtb[1], 2), round(_wtb[2], 2), round(_tg, 2), 6.2, round(_w_lang, 2), round(_w_weg + 0.03, 2), round(_wt_oben, 2), 4.6, 3.6, 3, 1, 14])})""")
 schild("SchildWassertor", HF, round(_wt[0] + 4, 2), KAI_OBEN + 4, round(_wt[1] + 7, 2), "Zum Untergrundhafen", 40)
 # --- Meereshöhlen in der Klippe unter der Kernburg (wie im Referenzbild), mit Podest und Stufen ---
 _hl = []

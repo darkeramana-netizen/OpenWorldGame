@@ -226,7 +226,7 @@ func _initialize() -> void:
 					print("       Untergeschoss nicht hinauf: %s bei %s (stehe bei %s)" % [bau.name, cu, spieler().global_position.snapped(Vector3.ONE * 0.1)])
 			i += 7
 		# Tore mit hohlen Tortürmen: auf den Weg über dem Bogen, in beide Tortürme und durch ihre anderen Türen hinaus
-		var to: PackedFloat32Array = bau.tore
+		var to: PackedFloat32Array = bau.tore + bau.nachbar_tore
 		var tb: PackedFloat32Array = bau.torbauten
 		i = 0
 		while i + 7 < to.size():

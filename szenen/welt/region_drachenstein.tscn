@@ -403,7 +403,7 @@ stein = "mauer"
 
 [node name="TorhausOberburg" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
-gebaeude = PackedFloat32Array(28.69, -47.48, 10.63, 6.2, 9, 21.12, 21.02, 4.2, 3.4, 3, 1, 0)
+gebaeude = PackedFloat32Array(28.13, -47.37, 10.63, 6.2, 5.7, 21.03, 21.02, 4.2, 3.4, 3, 1, 14)
 
 [node name="DurchgangNordBau" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("28_burgbau")
@@ -936,7 +936,8 @@ outline_size = 14
 [node name="HafenTorhaus" type="Node3D" parent="Drachenstein/Drachenhafen"]
 script = ExtResource("28_burgbau")
 torbauten = PackedFloat32Array(91.12, -17.26, -0.1053, 0.9944, -21, 14.02, 5, 5.4, -1, 1.3, 89.48, -1.74, -0.1053, 0.9944, -21, 14.02, 5, 5.4, -1, 1.3)
-gebaeude = PackedFloat32Array(90.3, -9.5, -6.04, 6.2, 10.4, 7.12, 7.02, 4.6, 3.6, 3, 1, 0)
+nachbar_tore = PackedFloat32Array(90.358, -9.4875, 0.10529, -0.99444, -19.6, 10, 7.022, 3)
+gebaeude = PackedFloat32Array(90.36, -9.49, -6.04, 6.2, 11.6, 7.05, 7.02, 4.6, 3.6, 3, 1, 14)
 
 [node name="SchildWassertor" type="Label3D" parent="Drachenstein/Drachenhafen"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 94.3, -13.8, -2.5)

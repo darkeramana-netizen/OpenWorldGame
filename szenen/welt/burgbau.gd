@@ -26,6 +26,12 @@ extends Node3D
 	set(w):
 		tore = w
 		_neu_bauen()
+## Tore eines anderen Knotens (je 8 Werte wie tore), die hier nicht gebaut werden: an ihnen bekommen die Tortürme
+## dieses Knotens ihre Kammer mit der Tür zum Weg über den Bogen (z. B. das Hafentorhaus am Wassertor der Ringmauer)
+@export var nachbar_tore := PackedFloat32Array():
+	set(w):
+		nachbar_tore = w
+		_neu_bauen()
 ## Je Tor eine Regel für die Torflügel (szenen/welt/fluegel.gd), in der Reihenfolge der Tore: "offen", "tag" (nachts und
 ## bei Alarm zu) oder "zu", nach einem Doppelpunkt die Bedingung, unter der die Wache dem Spieler öffnet
 ## (z. B. "zu:eid_waechter"). Fehlt sie, stehen die Flügel offen.
@@ -1240,7 +1246,8 @@ func _sammle_nachbarn() -> void:
 			while j + 11 < gb.size():
 				var gg := deg_to_rad(gb[j + 2])
 				_nachbarn_bauten.append([Vector2(gb[j], gb[j + 1]), Vector2(cos(gg), -sin(gg)), Vector2(sin(gg), cos(gg)),
-					gb[j + 3] / 2.0, gb[j + 4] / 2.0, gb[j + 5], gb[j + 5] + gb[j + 7]])
+					gb[j + 3] / 2.0, gb[j + 4] / 2.0, gb[j + 5], gb[j + 5] + gb[j + 7],
+					int(gb[j + 11]) % 10 == 4 and (int(gb[j + 11]) / 10) % 10 >= 1])   # begehbares Torhaus
 				j += 12
 		var m: PackedFloat32Array = k.mauern
 		var i := 0
@@ -1273,7 +1280,7 @@ func _sammle_nachbarn() -> void:
 			var tn := Vector2(-tu.y, tu.x) * signf(tb[i + 8] if tb[i + 8] != 0.0 else 1.0)
 			_koerper.append(["eckig", tc, tu, Vector2(-tu.y, tu.x), tb[i + 6] / 2.0, tb[i + 7] / 2.0, tb[i + 4], tb[i + 5]])
 			if tb[i + 9] >= 1.0:
-				var zug := _torturm_zugang(tc, tu, tn, tb[i + 6] / 2.0, tb[i + 7] / 2.0, tb[i + 5], k.tore)
+				var zug := _torturm_zugang(tc, tu, tn, tb[i + 6] / 2.0, tb[i + 7] / 2.0, tb[i + 5], k.tore + k.nachbar_tore)
 				if not zug.is_empty():
 					_hohle_eckig.append([tc, tu, tn, tb[i + 6] / 2.0 - TORTURM_WAND, tb[i + 7] / 2.0 - TORTURM_WAND, float(zug["boden"])])
 			i += 10
@@ -1324,11 +1331,13 @@ func _torturm_zugang(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, obe
 			# der Weg über dem Bogen liegt mindestens 1 m über dem Scheitel (wie in _tor)
 			var lg := Vector2(l.dot(u), l.dot(n))
 			var weg_y := maxf(tore_[i + 6], tore_[i + 4] + KAEMPFER + tore_[i + 5] / 2.0 + 1.0)
-			# Steht ein Gebäude auf dem Torbogen (Torhaus), geht es dorthin nicht hinaus
+			# Steht ein Gebäude auf dem Torbogen (Torhaus), geht es dorthin nicht hinaus, außer es ist ein begehbares
+			# Torhaus: dann führt die Tür in seine Stube
 			var bebaut := false
 			for bt: Array in _nachbarn_bauten:
 				var lb: Vector2 = g - (bt[0] as Vector2)
-				if absf(lb.dot(bt[1])) < float(bt[3]) and absf(lb.dot(bt[2])) < float(bt[4]) and float(bt[5]) < weg_y + 2.0 and float(bt[6]) > weg_y:
+				if absf(lb.dot(bt[1])) < float(bt[3]) and absf(lb.dot(bt[2])) < float(bt[4]) and float(bt[5]) < weg_y + 2.0 and float(bt[6]) > weg_y \
+						and not bool(bt[7]):
 					bebaut = true
 			if not bebaut:
 				treffer.append([Vector2(signf(lg.x) * b, 0.0), weg_y, g, true])   # true: der Torweg
@@ -2417,9 +2426,10 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 	# Mauern mit echten Fensterlöchern; die Türseite (+B, bei der Kirche der Giebel +L) mit der Türöffnung
 	var tuer := [Rect2(-tb / 2.0, unten - 0.01, tb, fb + th - unten + 0.01)]
 	_klotz_mit_loechern(wand, c, uz, nx, -L, L, -B, -iB, unten, traufe, loecher.get("-B", []))
-	_klotz_mit_loechern(wand, c, uz, nx, -L, L, iB, B, unten, traufe, loecher.get("+B", []) + ([] if art == 1 else tuer))
-	_klotz_mit_loechern(wand, c, nx, uz, -iB, iB, -L, -iL, unten, traufe, loecher.get("-L", []))
-	_klotz_mit_loechern(wand, c, nx, uz, -iB, iB, iL, L, unten, traufe, loecher.get("+L", []) + (tuer if art == 1 else []))
+	# (das Torhaus hat seine Türen in beiden Giebeln, zu den Kammern der Tortürme)
+	_klotz_mit_loechern(wand, c, uz, nx, -L, L, iB, B, unten, traufe, loecher.get("+B", []) + ([] if art == 1 or art == 4 else tuer))
+	_klotz_mit_loechern(wand, c, nx, uz, -iB, iB, -L, -iL, unten, traufe, loecher.get("-L", []) + (tuer if art == 4 else []))
+	_klotz_mit_loechern(wand, c, nx, uz, -iB, iB, iL, L, unten, traufe, loecher.get("+L", []) + (tuer if art == 1 or art == 4 else []))
 	# Sockel außen nur bis Fußbodenhöhe (sonst stolpert man an der Tür), innen der Fußboden
 	_klotz("bruchstein", c, uz, nx, -L - 0.2, L + 0.2, -B - 0.2, B + 0.2, unten, boden + 0.01)
 	_klotz("boden", c, uz, nx, -iL, iL, -iB, iB, boden + 0.01, fb)
@@ -2500,6 +2510,8 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 					_klotz("holz", c, uz, nx, bs - 0.15, bs + 0.15, qa, qa + 0.1, y, y + 0.42)
 					_klotz("holz", c, uz, nx, bs - 0.15, bs + 0.15, qe - 0.1, qe, y, y + 0.42)
 				bs += 1.6
+		elif art == 4:
+			pass                                # Torstube: eigene Einrichtung (_torstube)
 		elif art == 2:
 			# Lager: Kistenstapel und Säcke an den Wänden, frei bleiben Tür und Treppen
 			var ks := -iL + lauf + 3.5          # hinter dem Treppenausgang
@@ -2545,7 +2557,9 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 					_klotz("holz", bm, uz, nx, 0.95, 1.05, -0.5, 0.5, y, y + 1.0)
 	if zweck > 0:
 		_einrichtung(zweck, c, uz, nx, iL, iB, fb, gh, stockwerke, lauf, traufe - 0.3)
-	if art != 1:
+	if art == 4:
+		_torstube(c, uz, nx, iL, iB, fb, traufe - 0.3)
+	elif art != 1:
 		_hausrat(zweck, art, c, uz, nx, L, iL, iB, fb, gh, stockwerke, lauf, traufe - 0.3)
 		_raum_fuellen(zweck, art, c, uz, nx, L, iL, iB, fb, gh, stockwerke, lauf, traufe - 0.3)
 	# Licht je Geschoss: Hängeleuchten etwa alle 9 m entlang des Baus (warm, ohne Schatten)
@@ -3471,6 +3485,45 @@ func _luecken_stueck(art: String, p: Vector2, u: Vector2, n: Vector2, y: float, 
 			_kleinkram(0, p - n * 0.28, u, n, y, zufall)
 
 
+## Stube eines begehbaren Torhauses über dem Torbogen: in der Mitte der Durchgang von Giebeltür zu Giebeltür (von
+## Torturm zu Torturm), an der einen Längswand die Winde des Fallgitters (Walze auf zwei Böcken, Haspelkreuze, Ketten
+## durch einen Schlitz im Boden), sonst eingerichtet als Wachstube (_raum, Art 21).
+func _torstube(c: Vector2, uz: Vector2, nx: Vector2, iL: float, iB: float, fb: float, decke: float) -> void:
+	var p := func(s: float, q: float, y: float) -> Vector3:
+		var w := c + uz * s + nx * q
+		return Vector3(w.x, y, w.y)
+	var qw := -(iB - 0.75)                   # Achse der Winde
+	var lw := minf(iL - 0.5, 1.5)
+	for e: float in [-1.0, 1.0]:
+		# Bock aus zwei schrägen Stielen und einer Schwelle
+		var sm := c + uz * e * lw + nx * qw
+		_klotz("holz", sm, uz, nx, -0.08, 0.08, -0.55, 0.55, fb, fb + 0.12)
+		for f: float in [-1.0, 1.0]:
+			var fuss: Vector3 = p.call(e * lw, qw + f * 0.5, fb + 0.1)
+			_balken("holz", fuss, p.call(e * lw, qw, fb + 1.0), 0.09, 0.09)
+		# Haspelkreuz an der Walze
+		_balken("holz", p.call(e * (lw - 0.25), qw - 0.75, fb + 0.95), p.call(e * (lw - 0.25), qw + 0.75, fb + 0.95), 0.07, 0.07)
+		_balken("holz", p.call(e * (lw - 0.25), qw, fb + 0.2), p.call(e * (lw - 0.25), qw, fb + 1.7), 0.07, 0.07)
+	_balken("holz", p.call(-lw - 0.1, qw, fb + 0.95), p.call(lw + 0.1, qw, fb + 0.95), 0.32, 0.32)
+	# zwei Ketten von der Walze durch den Schlitz im Boden zum Fallgitter
+	for e: float in [-0.6, 0.6]:
+		_klotz("zier_metall", c + uz * e + nx * (qw + 0.16), uz, nx, -0.025, 0.025, -0.025, 0.025, fb - 0.3, fb + 0.95)
+	_klotz("zier_dunkel", c + nx * (qw + 0.16), uz, nx, -1.0, 1.0, -0.08, 0.08, fb, fb + 0.005)
+	# Wachstube drumherum; frei bleiben der Weg zwischen den Türen und die Winde
+	var frei_t: Array[Vector4] = []
+	var s := -iL - 0.6
+	while s <= iL + 0.61:
+		var q := c + uz * s
+		frei_t.append(Vector4(q.x, q.y, 0.75, fb))
+		s += 0.6
+	var wm := c + nx * qw
+	frei_t.append(Vector4(wm.x, wm.y, maxf(lw + 0.5, 1.2), fb))
+	frei_t.append(Vector4((wm + uz * lw).x, (wm + uz * lw).y, 0.9, fb))
+	frei_t.append(Vector4((wm - uz * lw).x, (wm - uz * lw).y, 0.9, fb))
+	var gier := rad_to_deg(atan2(-nx.y, nx.x))
+	_raum(PackedFloat32Array([c.x, c.y, gier, iB, iL, fb, decke, 21]), frei_t, false)
+
+
 ## Hängestange entlang u von a bis b (quer bei q), auf Höhe hy, an Seilen von der Decke
 func _stange(c: Vector2, u: Vector2, n: Vector2, a: float, b: float, q: float, hy: float, decke: float) -> void:
 	if b - a < 0.6:
@@ -4298,9 +4351,16 @@ func _tor(c: Vector2, u: Vector2, boden: float, breite: float, oben: float, dick
 			_klotz("metall", lm + n * seite * 0.45, u, n * seite, -0.18, 0.18, -0.18, 0.18, y + 0.5, y + 0.56)
 			_klotz("glut", lm + n * seite * 0.45, u, n * seite, -0.13, 0.13, -0.13, 0.13, y, y + 0.5)
 			_klotz("metall", lm + n * seite * 0.45, u, n * seite, -0.17, 0.17, -0.17, 0.17, y - 0.06, y)
+	# Steht ein begehbares Torhaus auf dem Bogen, ist seine Stube der Weg über das Tor: kein Wehrgang, keine Brustwehr
+	var torhaus_drauf := false
+	for bt: Array in _nachbarn_bauten:
+		var lb: Vector2 = c - (bt[0] as Vector2)
+		if bool(bt[7]) and absf(lb.dot(bt[1])) < float(bt[3]) and absf(lb.dot(bt[2])) < float(bt[4]) and absf(float(bt[5]) - oben) < 1.0:
+			torhaus_drauf = true
 	# Wehrgang über dem Bogen (zwischen den Tortürmen), zur Hofseite eine niedrige Brüstung
-	_klotz("boden", c, u, n, -w - 1.1, w + 1.1, -d, d - BRUSTWEHR_DICKE, oben - 0.3, oben + 0.06, true)
-	_klotz(stein, c, u, n, -w - 0.8, w + 0.8, -d, -d + 0.35, oben + 0.06, oben + 0.6)
+	if not torhaus_drauf:
+		_klotz("boden", c, u, n, -w - 1.1, w + 1.1, -d, d - BRUSTWEHR_DICKE, oben - 0.3, oben + 0.06, true)
+		_klotz(stein, c, u, n, -w - 0.8, w + 0.8, -d, -d + 0.35, oben + 0.06, oben + 0.6)
 	# Liegt der Wehrgang der Mauer daneben höher (ohne Torturm dazwischen), führt eine Rampe hinauf: der Körper der
 	# Mauer reicht bis w über den Torweg
 	for sg: float in [-1.0, 1.0]:
@@ -4320,8 +4380,9 @@ func _tor(c: Vector2, u: Vector2, boden: float, breite: float, oben: float, dick
 					continue
 				_wehrgang_rampe(c, u, n, d, oben + 0.06, sg * (w - lang), sg * w, sg * (w + 1.1), float(mm[2]) + 0.06)
 	# Brustwehr und Zinnen auf dem Bogen
-	_klotz(stein, c, u, n, -w - 0.8, w + 0.8, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
-	_zinnen(c, u, n, breite + 1.6, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR)
+	if not torhaus_drauf:
+		_klotz(stein, c, u, n, -w - 0.8, w + 0.8, d - BRUSTWEHR_DICKE, d, oben, oben + BRUSTWEHR)
+		_zinnen(c, u, n, breite + 1.6, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR)
 	# Torflügel aus Bohlen mit Eisenbändern: an der Innenflucht der Mauer angeschlagen, oben dem Bogen nach geschnitten
 	# und etwas größer als die Öffnung; sie gehen in den Hof auf (bis an die Tortürme) und ragen nie in den Bogen.
 	var teile_ := regel.split(":", true, 1)
@@ -4393,7 +4454,7 @@ func _torturm(c: Vector2, u: Vector2, unten: float, oben: float, breite: float, 
 	var t := tiefe / 2.0
 	var h := oben - unten
 	var hohl := dach <= -1.5          # begehbarer Bergfried: Mauern mit Tür zur Hofseite (-n), innen baut turm.gd
-	var kammer := {} if hohl or dach < 1.0 else _torturm_zugang(c, u, n, b, t, oben, tore)
+	var kammer := {} if hohl or dach < 1.0 else _torturm_zugang(c, u, n, b, t, oben, tore + nachbar_tore)
 	if hohl:
 		_hohl(c, u, n, b, t, HOHL_WAND, unten, oben, hohl_boden)
 		# Zwei Türflügel innen in der Laibung der Tür zur Hofseite (-n), sie gehen nach innen auf
@@ -4712,10 +4773,10 @@ func _fensterliste(art: int, B: float, L: float, boden: float, gh: float, gescho
 			var anzahl := int((2.0 * L - 2.0) / (4.5 if art == 1 else 3.4))
 			for f in anzahl:
 				var pos := -L + 1.0 + (f + 0.5) * (2.0 * L - 2.0) / anzahl
-				if k == 0 and seite > 0 and absf(pos) < 1.8 and art != 1:
+				if k == 0 and seite > 0 and absf(pos) < 1.8 and art != 1 and art != 4:
 					continue
 				aus["+B" if seite > 0 else "-B"].append(Rect2(pos - fb / 2.0, ym - fh / 2.0, fb, fh))
-			var quer := int((2.0 * B - 1.5) / 3.4)
+			var quer := int((2.0 * B - 1.5) / 3.4) if art != 4 else 0
 			for f in quer:
 				var pos := -B + 0.75 + (f + 0.5) * (2.0 * B - 1.5) / quer
 				if art == 1 and seite > 0 and k == 0 and absf(pos) < 2.0:
@@ -4746,7 +4807,7 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 	if (roh / 10) % 10 == 2:               # Art + 20: ebenso, die Tür auf der anderen Seite (Bau um 180° gedreht)
 		nx = -nx
 		uz = -uz
-	var geschosse := 1 if art == 1 else maxi(1, int(w[7] / (4.6 if art == 3 else 3.6)))
+	var geschosse := 1 if art == 1 or art == 4 else maxi(1, int(w[7] / (4.6 if art == 3 else 3.6)))
 	var gh := w[7] / geschosse
 	# Körper und Sockel
 	if begehbar:
@@ -4773,14 +4834,14 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 			var anzahl := int((2.0 * L - 2.0) / (4.5 if art == 1 else 3.4))
 			for f in anzahl:
 				var pos := -L + 1.0 + (f + 0.5) * (2.0 * L - 2.0) / anzahl
-				if k == 0 and seite > 0 and absf(pos) < 1.8 and art != 1:
+				if k == 0 and seite > 0 and absf(pos) < 1.8 and art != 1 and art != 4:
 					continue   # dort ist die Tür
-				var tuer_frei := Vector2(-1.1, 1.1) if k == 0 and seite > 0 and art != 1 else Vector2(INF, -INF)
+				var tuer_frei := Vector2(-1.1, 1.1) if k == 0 and seite > 0 and art != 1 and art != 4 else Vector2(INF, -INF)
 				_fenster(c, uz, nx, pos, B * seite, seite, ym, fb, fh, art == 1, begehbar, tuer_frei)
 				if begehbar:
 					_fenster_innen(c, uz, nx, pos, (B - 0.6) * seite, -seite, ym, fb, fh)
-			# Giebelseiten
-			var quer := int((2.0 * B - 1.5) / 3.4)
+			# Giebelseiten (das Torhaus lehnt mit ihnen an den Tortürmen)
+			var quer := int((2.0 * B - 1.5) / 3.4) if art != 4 else 0
 			for f in quer:
 				var pos := -B + 0.75 + (f + 0.5) * (2.0 * B - 1.5) / quer
 				if art == 1 and seite > 0 and k == 0 and absf(pos) < 2.0:
@@ -4792,7 +4853,7 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 	var fb_ := boden + 0.03 if begehbar else boden
 	if art == 1:
 		_tuer(c, nx, uz, 0.0, L, 1.0, fb_, 2.4, 4.0, begehbar)   # Portal in der Giebelseite gegenüber dem Turm
-	else:
+	elif art != 4:                                             # das Torhaus betritt man aus den Tortürmen
 		_tuer(c, uz, nx, 0.0, B, 1.0, fb_, 1.6, 2.7, begehbar)
 	# Dach
 	var ue := 0.55
