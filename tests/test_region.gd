@@ -495,7 +495,8 @@ func _initialize() -> void:
 		if not is_instance_valid(bau) or not "gebaeude" in bau or not "hallen" in bau:
 			continue
 		var w: PackedFloat32Array = bau.gebaeude
-		if w.size() < 12 or int(w[11]) < 10:
+		# Torhäuser (Art 4) haben keine Tür unten: man betritt sie aus den Tortürmen (siehe "Tore" oben)
+		if w.size() < 12 or int(w[11]) < 10 or int(w[11]) % 10 == 4:
 			continue
 		gebaeude_alle += 1
 		var art := int(w[11]) % 10
