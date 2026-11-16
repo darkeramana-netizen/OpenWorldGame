@@ -3202,6 +3202,8 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 			if (f.w < -999.0 or absf(f.w - y) < 0.1) and p.distance_to(Vector2(f.x, f.y)) < f.z + rand:
 				return false
 		return true
+	# was schon auf dem Boden steht, als Rechtecke [Mitte, Richtung u, Richtung n, halbe Länge, halbe Tiefe]
+	var belegt: Array = []
 	# Wandhausrat [Name, Breite, Höhe], Raumgruppen, Zweck für Gehänge und Wandstücke (wie bei den Gebäuden)
 	var wand: Array = []
 	var mitte: Array = []
@@ -3275,11 +3277,13 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 						ok = false
 				if ok:
 					_hausrat_stueck(st[0], m, la, ri, br, y, decke, zufall)
+					belegt.append([m + ri * 0.4, la, ri, br / 2.0, 0.45])
 					if decke - y > 3.2 and zufall.randf() < 0.7:
 						_wandstueck(zweck_wand, false, m + la * zufall.randf_range(-0.3, 0.3), la, ri, y + 2.4, y + 3.1, zufall)
 					var lu := zufall.randf_range(0.15, 0.6)
 					if lu >= 0.45 and frei.call(m + la * (br / 2.0 + lu / 2.0) + ri * 0.3, 0.3):
 						_kleinkram(zweck_haenge if zweck_haenge > 0 else 5, wm + la * (sv + br + lu / 2.0), la, ri, y, zufall)
+						belegt.append([wm + la * (sv + br + lu / 2.0) + ri * 0.28, la, ri, 0.25, 0.25])
 					sv += br + lu
 				else:
 					sv += 0.5
@@ -3337,6 +3341,7 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 									ok_t = false
 						if ok_t:
 							_insel(gruppe, m_t, u, n * (1.0 if qm + dq < 0.0 else -1.0), lg / 2.0, tief, y, zufall)
+							belegt.append([m_t, u, n, lg / 2.0, tief])
 							sv += lg + zufall.randf_range(0.45, 0.8)
 							gesetzt = true
 							break
@@ -3344,6 +3349,8 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 						break
 				if not gesetzt:
 					sv += 0.5
+		if art in [28, 29]:
+			_luecken_fuellen(art, c, u, n, hl, hb, y, frei, belegt, zufall)
 		if art == 24:
 			# ein großer Teppich in der Mitte
 			_klotz("zier_teppich_rot", c, u, n, -hl * 0.45, hl * 0.45, -hb * 0.35, hb * 0.35, y + 0.004, y + 0.016)
@@ -3382,6 +3389,86 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 	licht.light_energy = 1.2
 	licht.light_color = Color(1.0, 0.8, 0.55)
 	add_child(licht)
+
+
+## Füllt die freien Stellen des Bodens zwischen Wandhausrat, Möbelgruppen und Wegen mit kleinen Stücken, wie man im
+## Mittelalter jeden Platz nutzte: Tischchen mit Schemel und Krug, Wiege, Butterfass, Säcke, Kiepe, Körbe, Eimer, Holz,
+## Schemel. Jedes Stück hält seinen Radius von den freien Wegen (frei) und von allem, was schon steht (belegt); zwischen
+## den Stücken bleiben 20 cm Luft.
+func _luecken_fuellen(art: int, c: Vector2, u: Vector2, n: Vector2, hl: float, hb: float, y: float, frei: Callable,
+		belegt: Array, zufall: RandomNumberGenerator) -> void:
+	var stuecke: Array = [["tischchen", 0.62], ["wiege", 0.55], ["butterfass", 0.25], ["saecke", 0.36], ["kiepe", 0.26],
+		["klein", 0.26], ["klein", 0.26], ["klein", 0.26]] if art == 28 else \
+		[["truhe", 0.5], ["schemel_kleid", 0.3], ["wiege", 0.55], ["saecke", 0.36], ["klein", 0.26], ["klein", 0.26]]
+	var ist_belegt := func(p: Vector2, r: float) -> bool:
+		for b: Array in belegt:
+			var d: Vector2 = p - (b[0] as Vector2)
+			if absf(d.dot(b[1] as Vector2)) < float(b[3]) + r and absf(d.dot(b[2] as Vector2)) < float(b[4]) + r:
+				return true
+		return false
+	var a := -hl + 0.3
+	while a <= hl - 0.3:
+		var q := -hb + 0.3
+		while q <= hb - 0.3:
+			var p := c + u * a + n * q
+			var st: Array = stuecke[zufall.randi() % stuecke.size()]
+			var r: float = st[1]
+			if absf(a) <= hl - r and absf(q) <= hb - r and frei.call(p, r) and not ist_belegt.call(p, r + 0.2):
+				# zur Raummitte gewandt (die Vorderseite eines Stücks zeigt dorthin)
+				var zu := (c - p).normalized() if p.distance_to(c) > 0.1 else n
+				var quer := Vector2(zu.y, -zu.x)
+				_luecken_stueck(st[0], p, quer, zu, y, zufall)
+				belegt.append([p, quer, zu, r, r])
+			q += 0.45
+		a += 0.45
+
+
+func _luecken_stueck(art: String, p: Vector2, u: Vector2, n: Vector2, y: float, zufall: RandomNumberGenerator) -> void:
+	match art:
+		"tischchen":
+			# kleiner Tisch mit Krug, Becher und Brot, ein Schemel davor
+			_klotz("holz", p + n * 0.12, u, n, -0.38, 0.38, -0.28, 0.28, y + 0.66, y + 0.72)
+			for su: float in [-1.0, 1.0]:
+				for sn: float in [-1.0, 1.0]:
+					_klotz("holz", p + n * 0.12 + u * su * 0.3 + n * sn * 0.2, u, n, -0.03, 0.03, -0.03, 0.03, y, y + 0.66)
+			_mantel("zier_ziegelton", p + n * 0.12 + u * 0.15, 0.08, 0.06, y + 0.72, y + 0.95, 8)
+			_mantel("zier_holz", p + n * 0.12 - u * 0.12, 0.04, 0.04, y + 0.72, y + 0.83, 6)
+			_klotz("zier_holz", p + n * 0.05 - u * 0.2, u, n, -0.1, 0.1, -0.07, 0.07, y + 0.72, y + 0.79)
+			_stuhl(p - n * 0.38, u, n, y, true)
+		"wiege":
+			# Wiege auf Kufen mit Decke
+			_klotz("holz", p, u, n, -0.42, 0.42, -0.24, 0.24, y + 0.12, y + 0.18)
+			for e: float in [-1.0, 1.0]:
+				_klotz("holz", p + n * e * 0.23, u, n, -0.42, 0.42, -0.02, 0.02, y + 0.18, y + 0.42)
+				_klotz("holz", p + u * e * 0.41, u, n, -0.02, 0.02, -0.24, 0.24, y + 0.18, y + 0.48)
+				_klotz("holz", p + u * e * 0.3, u, n, -0.04, 0.04, -0.28, 0.28, y, y + 0.12)
+			_klotz("zier_leinen", p + u * 0.05, u, n, -0.36, 0.36, -0.2, 0.2, y + 0.3, y + 0.36)
+			_klotz("zier_fell_hell", p - u * 0.25, u, n, -0.12, 0.12, -0.18, 0.18, y + 0.32, y + 0.4)
+		"butterfass":
+			_mantel("holz", p, 0.2, 0.16, y, y + 0.75, 10)
+			_mantel("zier_metall", p, 0.205, 0.205, y + 0.12, y + 0.16, 10)
+			_mantel("zier_metall", p, 0.17, 0.17, y + 0.6, y + 0.64, 10)
+			_klotz("zier_holz", p, u, n, -0.015, 0.015, -0.015, 0.015, y + 0.75, y + 1.15)
+		"saecke":
+			for i in 2:
+				var s := p + u * (i - 0.5) * 0.36
+				_klotz("zier_leinen", s, u, n, -0.17, 0.17, -0.14, 0.14, y, y + 0.48)
+				_klotz("zier_leinen", s, u, n, -0.12, 0.12, -0.1, 0.1, y + 0.48, y + 0.6)
+		"kiepe":
+			# Rückentragkorb mit Brennholz
+			_mantel("zier_stroh", p, 0.17, 0.24, y, y + 0.6, 8)
+			for i in 3:
+				_klotz("zier_holz", p + u * (i - 1) * 0.08, u, n, -0.03, 0.03, -0.03, 0.03, y + 0.45, y + 0.78)
+		"truhe":
+			_hausrat_klein_truhe(p, u, n, y)
+		"schemel_kleid":
+			# Schemel mit abgelegtem Kleid und Schuhen davor
+			_stuhl(p, u, n, y, true)
+			_klotz("zier_leinen" if zufall.randf() < 0.5 else "zier_teppich_blau", p, u, n, -0.2, 0.2, -0.22, 0.22, y + 0.48, y + 0.53)
+			for e: float in [-1.0, 1.0]:
+				_klotz("zier_dunkel", p + n * 0.3 + u * e * 0.06, u, n, -0.04, 0.04, -0.12, 0.12, y, y + 0.08)
+		_:
+			_kleinkram(0, p - n * 0.28, u, n, y, zufall)
 
 
 ## Hängestange entlang u von a bis b (quer bei q), auf Höhe hy, an Seilen von der Decke
