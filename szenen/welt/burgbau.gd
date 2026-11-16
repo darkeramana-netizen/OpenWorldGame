@@ -10,6 +10,9 @@ extends Node3D
 ## Gesims und entweder ein Kegeldach mit Traufe oder einen Zinnenkranz auf Kragsteinen (Pechnasen).
 ## Tore sind Rundbögen durch die Mauer mit halb hochgezogenem Fallgitter; die Tortürme sind eckig.
 
+## Schattenhülle (eine Oberfläche je Bau, nur für den Sonnenschatten)
+const Schattenhuelle := preload("res://szenen/welt/schattenhuelle.gd")
+
 ## Je Mauerstück 10 Werte: ax, az, bx, bz, unten, oben (Wehrgang), Dicke, außen x, außen z, Zinnen (0/1)
 @export var mauern := PackedFloat32Array():
 	set(w):
@@ -204,6 +207,7 @@ func _baue() -> void:
 
 	var mesh := ArrayMesh.new()
 	var fest := ArrayMesh.new()   # nur Stein und Boden: Fallgitter und Schießscharten halten niemanden auf
+	var namen := PackedStringArray()   # Material je Oberfläche (für die Schattenhülle)
 	for mat: String in _flach:
 		var st: SurfaceTool = _flach[mat]
 		if mat == "rampe":
@@ -214,6 +218,7 @@ func _baue() -> void:
 			st.generate_tangents()   # für die Normalenkarte der Dächer
 		st.commit(mesh)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
+		namen.append(mat)
 		if not mat.begins_with("metall") and mat != "dunkel" and not mat.begins_with("zier_"):
 			st.commit(fest)
 	for mat: String in _rund:
@@ -222,12 +227,18 @@ func _baue() -> void:
 			st.generate_tangents()   # Kegeldächer: ohne Tangenten wird die Schieferstruktur falsch schattiert
 		st.commit(mesh)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
+		namen.append(mat)
 		if not mat.begins_with("metall") and mat != "dunkel" and not mat.begins_with("zier_"):
 			st.commit(fest)
 	var anzeige := MeshInstance3D.new()
 	anzeige.name = "Mesh"
 	anzeige.mesh = mesh
 	add_child(anzeige)
+	# Schatten über eine Hülle aus einer Oberfläche statt je Material (Kleinkram, Glas und Glut werfen keinen)
+	var huelle: ArrayMesh = Schattenhuelle.aus(mesh, namen, func(m: String) -> bool:
+		return m.begins_with("zier_") or m.begins_with("glas") or m == "glut" or m == "fensterlicht")
+	if huelle != null:
+		add_child(Schattenhuelle.zwilling(anzeige, huelle))
 	if not kollision:
 		return
 	var koerper := StaticBody3D.new()

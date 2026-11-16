@@ -81,6 +81,8 @@ func _teil(eltern: Node3D, art: String, ort: Vector3, farbe: Color, g: float) ->
 	mi.scale = Vector3.ONE * g
 	mi.position = ort
 	mi.visibility_range_end = SICHT
+	mi.visibility_range_end_margin = 10.0
+	mi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if art != "koerper" else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	eltern.add_child(mi)
 	return mi

@@ -7,6 +7,9 @@ extends Node3D
 ## Ein Haus: Ort (x, y, z) ist die Mitte der Grundfläche auf Höhe des Erdgeschossbodens, die Vorderseite
 ## mit der Tür zeigt nach lokal +z, zur Straße.
 
+## Schattenhülle (eine Oberfläche je Bau, nur für den Sonnenschatten)
+const Schattenhuelle := preload("res://szenen/welt/schattenhuelle.gd")
+
 ## Je Haus (x, y, z, Gier in Grad)
 @export var haeuser: PackedVector4Array = PackedVector4Array():
 	set(wert):
@@ -70,7 +73,8 @@ const PUTZFARBEN := [Color(1.0, 0.97, 0.9), Color(0.98, 0.86, 0.66), Color(0.92,
 static var _mesh_cache := {}
 static var _schornsteine := {}   # Form → Oberkante des Schornsteins (lokal), für den Rauch
 static var _mat_cache := {}
-static var _form_cache := {}     # Schlüssel → Kollisionsform begehbarer Häuser
+static var _form_cache := {}
+static var _huellen_cache := {}     # Schlüssel → Schattenhülle (eine Oberfläche, nur Schatten)
 
 
 func _ready() -> void:
@@ -127,6 +131,9 @@ func _baue() -> void:
 		mmi.name = "Form%d_%d" % [f, fv % VARIANTEN]
 		mmi.multimesh = mm
 		add_child(mmi)
+		var huelle: ArrayMesh = _huellen_cache.get(_schluessel(f, fv % VARIANTEN))
+		if huelle != null:
+			add_child(Schattenhuelle.zwilling(mmi, huelle))
 		# Rauch aus etwa jedem dritten Schornstein (dort brennt ein Herdfeuer)
 		for k in je_form[fv].size():
 			if je_form[fv][k] % 3 != 1:
@@ -430,6 +437,7 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 
 	var mesh := ArrayMesh.new()
 	var fest := ArrayMesh.new()
+	var namen := PackedStringArray()
 	for mat: String in flaechen:
 		var st: SurfaceTool = flaechen[mat]
 		if mat == "rampe":
@@ -439,6 +447,7 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		st.generate_tangents()
 		st.commit(mesh)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
+		namen.append(mat)
 		if begehbar and mat not in ["glas", "glut", "fensterlicht", "laden"]:
 			st.commit(fest)
 	if begehbar:
@@ -447,6 +456,9 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		sh.backface_collision = true
 		_form_cache[schluessel] = sh
 	_mesh_cache[schluessel] = mesh
+	# Schattenhülle: eine Oberfläche statt eine je Material (Glas, Glut, Fensterlicht und Dielen innen ohne Schatten)
+	_huellen_cache[schluessel] = Schattenhuelle.aus(mesh, namen, func(m: String) -> bool:
+		return m in ["glas", "glut", "fensterlicht", "dielen"])
 	return mesh
 
 

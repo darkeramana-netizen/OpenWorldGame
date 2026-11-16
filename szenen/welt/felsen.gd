@@ -110,6 +110,10 @@ func _baue() -> void:
 			inst.multimesh = mm
 			inst.position = mitte
 			inst.visibility_range_end = sichtweite
+			if sichtweite < 1000.0:
+				# weich ausblenden statt aufploppen (Phase 1, docs/03-messgrundlage.md)
+				inst.visibility_range_end_margin = sichtweite * 0.12
+				inst.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 			add_child(inst)
 		if koerper != null and not m in ohne_kollision:
 			var form := _mesh(modelle[m], true)

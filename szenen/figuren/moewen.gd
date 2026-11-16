@@ -14,6 +14,7 @@ extends Node3D
 
 const SCHEU := 5.0
 const SICHT := 260.0
+const SICHT_BILD := 120.0
 
 static var _meshes := {}
 static var _mats := {}
@@ -74,7 +75,9 @@ func _teil(eltern: Node3D, art: String, ort: Vector3) -> Node3D:
 	mi.mesh = _meshes[art]
 	mi.material_override = _mats[art]
 	mi.position = ort + (Vector3(0, 0.1, 0) if art == "koerper" else Vector3.ZERO)
-	mi.visibility_range_end = SICHT
+	mi.visibility_range_end = SICHT_BILD   # eine Möwe ist in 120 m keine 3 Bildpunkte groß
+	mi.visibility_range_end_margin = 15.0
+	mi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	eltern.add_child(mi)
 	return mi

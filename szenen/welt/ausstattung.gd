@@ -161,6 +161,8 @@ func _baue() -> void:
 		inst.name = "Art%d" % art
 		inst.multimesh = mm
 		inst.visibility_range_end = 220.0
+		inst.visibility_range_end_margin = 25.0
+		inst.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 		add_child(inst)
 
 

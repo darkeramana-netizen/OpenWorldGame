@@ -88,7 +88,7 @@ func _setze_bewuchs() -> void:
 	var f: Node3D = (load("res://szenen/welt/felsen.gd") as GDScript).new()
 	f.name = "Bewuchs"
 	f.set("farben", PackedColorArray())
-	f.set("kachel", 48.0)
+	f.set("kachel", 96.0)       # groß genug, dass je Kachel und Modell mehrere Stücke zusammenkommen (Draw Calls)
 	f.set("sichtweite", 260.0)
 	var ohne := PackedInt32Array()
 	for m in bewuchs_modelle.size():
