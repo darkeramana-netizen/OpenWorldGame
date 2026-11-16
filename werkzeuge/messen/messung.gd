@@ -5,9 +5,10 @@ extends SceneTree
 ##    zusammengefasst je Bauart (Skript), dazu die ersten Bilder danach (Bewuchs und Ausstattung setzen sich erst dann).
 ## 2. Szene: Knoten, Meshes, Oberflächen (Obergrenze der Draw Calls), Dreiecke, MultiMesh-Exemplare, Lichter (mit
 ##    Schatten), Kollisionskörper, Knoten mit Sichtweite (visibility_range), je Bauart.
-## 3. Messfahrt: Die Spielfigur rennt eine feste Strecke ab (wie die Tests, mit echter Physik), am Ende ein
-##    Rundblick. Je Bild: echte Frametime, Prozess- und Physikzeit, Draw Calls, Dreiecke, Objekte, Speicher und
-##    Grafikspeicher, Kameraposition.
+## 3. Messfahrt: Die Spielfigur rennt eine feste Strecke ab (wie die Tests, mit echter Physik, mit Eid, damit die
+##    Torwachen öffnen), am Ende ein Rundblick. Je Bild: echte Frametime (ohne Grafik ist das die CPU-Zeit des
+##    Hauptthreads), Draw Calls, Dreiecke, Objekte, Speicher und Grafikspeicher, Kameraposition; dazu Godots Prozess-
+##    und Physikzeit, die Godot als Spitze der letzten Sekunde meldet (nicht je Bild).
 ## 4. Auswertung: p50/p95/p99/Max, Hänger über 33 ms und 50 ms (getrennt: Anlauf nach dem Laden und Fahrt),
 ##    Wechsel der Sichtweiten-Stufen entlang der Kamerafahrt (LOD-Wechsel; nahe Wechsel unter 50 m).
 ##
@@ -71,6 +72,8 @@ func _initialize() -> void:
 	var speicher: Node = root.get_node("Speicher")
 	speicher.ordner = "user://messung_speicher/"
 	root.get_node("Spielstand").zuruecksetzen("Messung")
+	# mit Eid, damit die Torwachen die Tore der Strecke öffnen (wie test_region)
+	root.get_node("Spielstand").setze_flag("eid_waechter", true)
 	root.get_node("Spielzeit").zuruecksetzen()
 	speicher.ausstehender_spieler = {}
 	speicher.region = region
@@ -309,7 +312,7 @@ func _langsamste(anzahl: int) -> Array:
 
 ## p50/p95/p99/Max je Messwert einer Phase, Hänger über 33 und 50 ms
 func _statistik(phase: String) -> Dictionary:
-	var spalten := ["frame_ms", "prozess_ms", "physik_ms", "draw_calls", "dreiecke", "objekte", "speicher_mb", "grafikspeicher_mb"]
+	var spalten := ["frame_ms", "prozess_spitze_ms", "physik_spitze_ms", "draw_calls", "dreiecke", "objekte", "speicher_mb", "grafikspeicher_mb"]
 	# (gepackte Arrays sind Werte: erst als Array sammeln, dann umwandeln)
 	var werte: Array = []
 	for i in spalten.size():
@@ -441,8 +444,8 @@ func _zusammenfassung(e: Dictionary) -> String:
 		z.append("%s: %d Bilder, %.1f fps; Frame p50 %.1f / p95 %.1f / p99 %.1f / max %.1f ms; Hänger >33 ms: %d, >50 ms: %d" % [
 			ph.capitalize(), s["bilder"], s["fps_mittel"], ft["p50"], ft["p95"], ft["p99"], ft["max"],
 			s["haenger_ueber_33ms"], s["haenger_ueber_50ms"]])
-		z.append("    Prozess p95 %.1f ms, Physik p95 %.1f ms, Draw Calls p95 %.0f, Dreiecke p95 %.0f, Objekte p95 %.0f, Speicher max %.0f MB, Grafikspeicher max %.0f MB" % [
-			(s["prozess_ms"] as Dictionary)["p95"], (s["physik_ms"] as Dictionary)["p95"], (s["draw_calls"] as Dictionary)["p95"],
+		z.append("    Prozess-Spitze/s p50 %.1f ms, Physik-Spitze/s p50 %.1f ms, Draw Calls p95 %.0f, Dreiecke p95 %.0f, Objekte p95 %.0f, Speicher max %.0f MB, Grafikspeicher max %.0f MB" % [
+			(s["prozess_spitze_ms"] as Dictionary)["p50"], (s["physik_spitze_ms"] as Dictionary)["p50"], (s["draw_calls"] as Dictionary)["p95"],
 			(s["dreiecke"] as Dictionary)["p95"], (s["objekte"] as Dictionary)["p95"], (s["speicher_mb"] as Dictionary)["max"],
 			(s["grafikspeicher_mb"] as Dictionary)["max"]])
 	var lo: Dictionary = e["lod"]
