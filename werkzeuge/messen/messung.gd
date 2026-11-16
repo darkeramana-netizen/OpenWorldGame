@@ -20,8 +20,11 @@ extends SceneTree
 ##
 ## GPU-Aufschlüsselung (--aufschluesselung ja, nach der Fahrt; mit --strecke keine allein): An festen Blickpunkten
 ## wird je eine Sache abgeschaltet (Effekte, Sonnenschatten, Lampen, Objektgruppen) und gemessen, wie viel Zeit die
-## Grafikkarte und die CPU-Seite des Renderns dadurch sparen. Ergibt eine Rangliste der Kosten. --bilder N: Bilder je
-## Messung (Standard 60).
+## Grafikkarte und die CPU-Seite des Renderns dadurch sparen, dazu Einstellungen (Schattenkarte 4096, Schattenfilter
+## niedrig, Sonnenschatten in 2 Stufen, SDFGI mit 4 Stufen oder doppelt groben Zellen, kleine Dinge ohne Schatten).
+## Ergibt eine Rangliste der Kosten; mit Grafik je Variante ein Vergleichsbild (JPG). Bezug ist das Mittel der Messung
+## „alles an“ am Anfang und am Ende. --bilder N: Bilder je Messung (Standard 60).
+## Die Uhrzeit steht während der ganzen Messung fest (--uhrzeit, Standard 10 Uhr).
 ##
 ## Weitere Angaben nach "--": --region drachenstein, --strecke stadt_palas|kurz|keine, --aufloesung 1920x1080,
 ## --ausgabe <Ordner> (Standard user://messungen/). Ergebnis: <Ordner>/messung_<region>_<name>_<Zeit>.json und .txt.
@@ -89,6 +92,11 @@ func _initialize() -> void:
 	# mit Eid, damit die Torwachen die Tore der Strecke öffnen (wie test_region)
 	root.get_node("Spielstand").setze_flag("eid_waechter", true)
 	root.get_node("Spielzeit").zuruecksetzen()
+	# feste Uhrzeit (Standard 10 Uhr), die Zeit steht: Sonnenstand, Schatten und Tagesablauf der Leute bleiben während der
+	# ganzen Messung gleich (um 6 Uhr, beim Spielstart, wirft die Sonne anfangs noch keine Schatten)
+	var spielzeit: Node = root.get_node("Spielzeit")
+	spielzeit.minuten = float(_args.get("uhrzeit", "10")) * 60.0
+	spielzeit.process_mode = Node.PROCESS_MODE_DISABLED
 	speicher.ausstehender_spieler = {}
 	speicher.region = region
 	var pfad: String = speicher.REGIONEN[region]
@@ -140,7 +148,7 @@ func _initialize() -> void:
 
 	# --- 4. Auswertung ---
 	var ergebnis := {
-		"region": region, "strecke": strecke, "name": _args.get("name", "ohne_name"),
+		"region": region, "strecke": strecke, "name": _args.get("name", "ohne_name"), "uhrzeit": float(_args.get("uhrzeit", "10")),
 		"zeit": Time.get_datetime_string_from_system(), "system": _system(),
 		"laden": laden, "ready_je_bauart": _ready_tabelle(), "langsamste_ready": _langsamste(15),
 		"szene": szene, "fahrt": fahrt,
@@ -291,13 +299,13 @@ func _aufschluesselung(region: String) -> Dictionary:
 			var feld: String = e[1]
 			var vorher: bool = env.get(feld)
 			if vorher:
-				varianten.append([e[0], func() -> void: env.set(feld, false), func() -> void: env.set(feld, true)])
+				varianten.append([e[0] + "_aus", func() -> void: env.set(feld, false), func() -> void: env.set(feld, true)])
 	var msaa := vp.msaa_3d
 	if msaa != Viewport.MSAA_DISABLED:
-		varianten.append(["MSAA", func() -> void: vp.msaa_3d = Viewport.MSAA_DISABLED, func() -> void: vp.msaa_3d = msaa])
+		varianten.append(["MSAA_aus", func() -> void: vp.msaa_3d = Viewport.MSAA_DISABLED, func() -> void: vp.msaa_3d = msaa])
 	if sonne != null:
 		var weite := sonne.directional_shadow_max_distance
-		varianten.append(["Sonnenschatten", func() -> void:
+		varianten.append(["Sonnenschatten_aus", func() -> void:
 			sonne.process_mode = Node.PROCESS_MODE_DISABLED
 			sonne.shadow_enabled = false,
 			func() -> void:
@@ -305,11 +313,55 @@ func _aufschluesselung(region: String) -> Dictionary:
 				sonne.process_mode = Node.PROCESS_MODE_INHERIT])
 		varianten.append(["Schatten_bis_150m", func() -> void: sonne.directional_shadow_max_distance = 150.0,
 			func() -> void: sonne.directional_shadow_max_distance = weite])
+		var modus := sonne.directional_shadow_mode
+		if modus == DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS:
+			varianten.append(["Schatten_2_Stufen", func() -> void: sonne.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS,
+				func() -> void: sonne.directional_shadow_mode = modus])
+	# Einstellungen statt nur an/aus: kleinere Schattenkarte, weicherer Filter, SDFGI gröber, kleine Dinge ohne Schatten
+	var karte := int(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/size", 4096))
+	var karte16 := bool(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/16_bits", true))
+	if karte > 4096:
+		varianten.append(["Schattenkarte_4096", func() -> void: RenderingServer.directional_shadow_atlas_set_size(4096, karte16),
+			func() -> void: RenderingServer.directional_shadow_atlas_set_size(karte, karte16)])
+	var filter := int(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality", 2))
+	if filter > RenderingServer.SHADOW_QUALITY_SOFT_LOW:
+		varianten.append(["Schattenfilter_niedrig", func() -> void: RenderingServer.directional_soft_shadow_filter_set_quality(RenderingServer.SHADOW_QUALITY_SOFT_LOW),
+			func() -> void: RenderingServer.directional_soft_shadow_filter_set_quality(filter as RenderingServer.ShadowQuality)])
+	if env != null and env.sdfgi_enabled:
+		var kaskaden := env.sdfgi_cascades
+		var zelle := env.sdfgi_min_cell_size
+		if kaskaden > 4:
+			varianten.append(["SDFGI_4_Stufen", func() -> void: env.sdfgi_cascades = 4, func() -> void: env.sdfgi_cascades = kaskaden])
+		varianten.append(["SDFGI_Zelle_doppelt", func() -> void: env.sdfgi_min_cell_size = zelle * 2.0,
+			func() -> void: env.sdfgi_min_cell_size = zelle])
+	var klein_schatten: Array = []      # [GeometryInstance3D, cast_shadow vorher]: Dinge unter 1 m mit Schatten
+	for n: Node in _instanz.find_children("*", "GeometryInstance3D", true, false):
+		var gi := n as GeometryInstance3D
+		if gi.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF:
+			continue
+		var m: Mesh = null
+		var faktor := 1.0
+		if gi is MeshInstance3D:
+			m = (gi as MeshInstance3D).mesh
+			faktor = gi.global_basis.get_scale().abs().x
+		elif gi is MultiMeshInstance3D and (gi as MultiMeshInstance3D).multimesh != null:
+			m = (gi as MultiMeshInstance3D).multimesh.mesh
+		if m != null and m.get_aabb().get_longest_axis_size() * faktor < 1.0:
+			klein_schatten.append([gi, gi.cast_shadow])
+	if not klein_schatten.is_empty():
+		varianten.append(["Kleines_ohne_Schatten", func() -> void:
+			for e: Array in klein_schatten:
+				if is_instance_valid(e[0]):
+					(e[0] as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF,
+			func() -> void:
+				for e: Array in klein_schatten:
+					if is_instance_valid(e[0]):
+						(e[0] as GeometryInstance3D).cast_shadow = e[1]])
 	for name_: String in gruppen:
 		var knoten: Array = gruppen[name_]
 		if knoten.is_empty():
 			continue
-		varianten.append([name_, func() -> void:
+		varianten.append([name_ + "_aus", func() -> void:
 			for k: Node in knoten:
 				if is_instance_valid(k):
 					(k as Node3D).visible = false,
@@ -318,6 +370,17 @@ func _aufschluesselung(region: String) -> Dictionary:
 					if is_instance_valid(k):
 						(k as Node3D).visible = true])
 	var aus := {}
+	var bilder_ordner := ""
+	if DisplayServer.get_name() != "headless":
+		var ordner: String = _args.get("ausgabe", "user://messungen/")
+		bilder_ordner = ordner.path_join("bilder_%s_%s" % [_args.get("name", "ohne_name"), Time.get_datetime_string_from_system().replace(":", "-")])
+		DirAccess.make_dir_recursive_absolute(bilder_ordner)
+	var nr := 0
+	var foto := func(punkt: String, variante: String) -> void:
+		if bilder_ordner == "":
+			return
+		nr += 1
+		vp.get_texture().get_image().save_jpg(bilder_ordner.path_join("%s_%02d_%s.jpg" % [punkt, nr, variante]), 0.9)
 	for bp: Array in BLICKPUNKTE.get(region, []):
 		var ort: Vector2 = bp[1]
 		var ziel: Vector2 = bp[2]
@@ -328,22 +391,30 @@ func _aufschluesselung(region: String) -> Dictionary:
 		for i in 120:
 			await process_frame
 		var zeilen: Array = []
+		nr = 0
 		var basis := await _messe_bilder("alles")
+		foto.call(bp[0], "alles")
 		zeilen.append(basis)
 		for v: Array in varianten:
 			(v[1] as Callable).call()
-			for i in 20:
+			for i in 30:                # Schatten und SDFGI bauen sich nach dem Umschalten erst auf
 				await process_frame
 			var z := await _messe_bilder(v[0])
+			foto.call(bp[0], v[0])
 			(v[2] as Callable).call()
-			for i in 60:                # SDFGI und Schatten bauen sich nach dem Wiedereinschalten erst auf
+			for i in 60:
 				await process_frame
-			z["gpu_ersparnis_ms"] = snappedf(float(basis["gpu_ms"]) - float(z["gpu_ms"]), 0.01)
-			z["render_cpu_ersparnis_ms"] = snappedf(float(basis["render_cpu_ms"]) - float(z["render_cpu_ms"]), 0.01)
 			zeilen.append(z)
 		var ende := await _messe_bilder("alles_am_ende")
 		zeilen.append(ende)
+		# Bezug: Mittel aus der Messung am Anfang und am Ende (gleicht langsame Drift aus)
+		var bezug_gpu := (float(basis["gpu_ms"]) + float(ende["gpu_ms"])) / 2.0
+		var bezug_cpu := (float(basis["render_cpu_ms"]) + float(ende["render_cpu_ms"])) / 2.0
+		for z: Dictionary in zeilen.slice(1, zeilen.size() - 1):
+			z["gpu_ersparnis_ms"] = snappedf(bezug_gpu - float(z["gpu_ms"]), 0.01)
+			z["render_cpu_ersparnis_ms"] = snappedf(bezug_cpu - float(z["render_cpu_ms"]), 0.01)
 		aus[bp[0]] = zeilen
+	aus["_info"] = {"kleine_schattenwerfer": klein_schatten.size(), "bilder": bilder_ordner}
 	return aus
 
 
@@ -598,16 +669,23 @@ func _zusammenfassung(e: Dictionary) -> String:
 		lo["knoten_mit_sichtweite"], lo["wechsel"], lo["wechsel_pro_s"], lo["nahe_wechsel_unter_50m"], lo["weich_ueberblendet"], lo["sichtbar_hart"]])
 	var au: Dictionary = e.get("aufschluesselung", {})
 	for bp: String in au:
+		if bp.begins_with("_"):
+			continue
 		var zeilen: Array = au[bp]
 		var b: Dictionary = zeilen[0]
-		z.append("Aufschlüsselung %s: alles an: Grafikkarte %.2f ms, Render-CPU %.2f ms, Frame %.2f ms, %d Draw Calls, %.1f Mio. Dreiecke; am Ende wieder %.2f ms (Drift)" % [
-			bp, b["gpu_ms"], b["render_cpu_ms"], b["frame_ms"], b["draw_calls"], float(b["dreiecke"]) / 1e6, (zeilen[zeilen.size() - 1] as Dictionary)["gpu_ms"]])
+		var e_: Dictionary = zeilen[zeilen.size() - 1]
+		z.append("Aufschlüsselung %s (Uhrzeit %.0f): alles an: Grafikkarte %.2f ms (am Ende %.2f ms, Bezug ist das Mittel), Render-CPU %.2f ms, Frame %.2f ms, %d Draw Calls, %.1f Mio. Dreiecke" % [
+			bp, e.get("uhrzeit", 10.0), b["gpu_ms"], e_["gpu_ms"], b["render_cpu_ms"], b["frame_ms"], b["draw_calls"], float(b["dreiecke"]) / 1e6])
+		b = {"gpu_ms": (float(b["gpu_ms"]) + float(e_["gpu_ms"])) / 2.0}
 		var rang := zeilen.slice(1, zeilen.size() - 1)
 		rang.sort_custom(func(a: Dictionary, c: Dictionary) -> bool: return float(a["gpu_ersparnis_ms"]) > float(c["gpu_ersparnis_ms"]))
 		for r: Dictionary in rang:
-			z.append("    ohne %-18s Grafikkarte −%5.2f ms (%4.1f %%), Render-CPU −%5.2f ms, Draw Calls %6d, Dreiecke %5.1f Mio." % [
+			z.append("    %-24s spart Grafikkarte %5.2f ms (%4.1f %%), Render-CPU %5.2f ms; Draw Calls %6d, Dreiecke %5.1f Mio." % [
 				r["variante"], r["gpu_ersparnis_ms"], 100.0 * float(r["gpu_ersparnis_ms"]) / maxf(float(b["gpu_ms"]), 0.001),
 				r["render_cpu_ersparnis_ms"], r["draw_calls"], float(r["dreiecke"]) / 1e6])
+	if au.has("_info"):
+		z.append("Kleine Schattenwerfer (unter 1 m): %d; Vergleichsbilder: %s" % [(au["_info"] as Dictionary)["kleine_schattenwerfer"],
+			(au["_info"] as Dictionary)["bilder"] if (au["_info"] as Dictionary)["bilder"] != "" else "keine (ohne Grafik)"])
 	if DisplayServer.get_name() == "headless":
 		z.append("Hinweis: ohne Grafik gemessen, Draw Calls, Dreiecke je Bild und Grafikspeicher sind 0.")
 	return "\n".join(z) + "\n"

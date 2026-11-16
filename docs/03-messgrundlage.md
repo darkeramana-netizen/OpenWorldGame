@@ -199,3 +199,28 @@ Renderns (3,8 ms). Weniger Draw Calls helfen deshalb wenig; es zählt, was die G
 Schattenkaskaden (Sonne bis 500 m in vier Stufen), Effekte (SDFGI, SSAO, SSIL, MSAA, Nebel, Glow) und Überzeichnen.
 Die Figuren waren nicht der Hauptposten. Hinweis: Ohne Grafik (im Container) liefert `get_aabb()` von MultiMeshes
 leere Kästen; dort fehlt Aufploppen von Bewuchs, Felsen und Häusern in der Zählung. Gültig ist die Zählung mit Grafik.
+
+### GPU-Aufschlüsselung (erste Messung)
+
+Datei: `docs/messungen/messung_drachenstein_aufschluesselung_2026-11-16T18-06-39.json`. An zwei Blickpunkten wurde je
+ein Effekt oder eine Objektgruppe abgeschaltet. Am Markt warf die Sonne zu Beginn noch keine Schatten (Spielstart um
+6 Uhr, die Zeit lief); dort gilt die Schlussmessung (10,13 ms) als Bezug. Seither steht die Uhrzeit beim Messen fest
+(Standard 10 Uhr), und Bezug ist das Mittel aus Anfangs- und Schlussmessung.
+
+| abgeschaltet | spart Grafikkarte (Mittelburg / Markt) |
+|---|---|
+| Sonnenschatten | 2,54 / 2,72 ms (etwa 28 %); in der Mittelburg 5.240 der 7.327 Draw Calls |
+| SDFGI | 1,75 / 1,72 ms (etwa 20 %) |
+| Gelände | 1,21 / 1,75 ms |
+| Häuser | 0,16 / 1,37 ms |
+| MSAA | 0,47 / 0,90 ms |
+| Bewuchs, Felsen | 0,36 / 0,64 ms und 0,38 / 0,54 ms |
+| SSIL, Glow, SSAO, Nebel | je unter 0,6 ms |
+| Figuren, Lampen | je unter 0,3 ms |
+| Schatten nur bis 150 m statt 500 m | 0,29 / 0,11 ms |
+
+**Erkenntnis:** Die Kosten der Sonnenschatten entstehen nah (viele kleine Schattenwerfer in den vorderen Stufen),
+nicht in der Ferne. Zusammen mit SDFGI (6 Stufen, Zellen 0,3 m) und dem Gelände (volle Auflösung überall, aufwendiger
+Shader) liegen hier die fehlenden etwa 3 ms. Die nächste Aufschlüsselung prüft deshalb Einstellungen statt nur an/aus:
+Schattenkarte 4096 statt 8192, Schattenfilter niedrig, Sonnenschatten in 2 Stufen, SDFGI mit 4 Stufen oder doppelt
+groben Zellen, kleine Dinge (unter 1 m) ohne Schatten; zu jeder Variante ein Vergleichsbild.
