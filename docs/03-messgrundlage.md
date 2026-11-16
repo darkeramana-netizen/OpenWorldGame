@@ -251,5 +251,23 @@ Datei: `docs/messungen/messung_drachenstein_aufschluesselung2_2026-11-16T18-18-0
 Nach der Aufschlüsselung mit Vergleichsbildern übernommen (alle Regionen, `werkzeuge/bau/grundlage.py` und die
 Regionsszenen, `project.godot`): Schattenkarte 4096 statt 8192, Sonnenschatten in 2 statt 4 Stufen (erste Stufe bis
 30 m), SDFGI mit 4 statt 6 Stufen, Dinge unter 1 m ohne Sonnenschatten (`region.gd`, `ohne_schatten_unter`, gilt auch
-für alles, was später in die Region kommt). Erwartete Ersparnis auf der Grafikkarte etwa 2,5 ms; die Messfahrt auf dem
-Referenzrechner bestätigt sie noch.
+für alles, was später in die Region kommt). Erwartete Ersparnis auf der Grafikkarte etwa 2,5 ms.
+
+Messfahrt auf dem Referenzrechner (`docs/messungen/messung_drachenstein_paket_b_2026-11-16T19-07-15.json`, Ladezeit
+14,8 s wie in den Vergleichsläufen):
+
+| Messfahrt | Ausgangsmessung | nach den Figuren | nach Paket B | Budget |
+|---|---|---|---|---|
+| fps im Mittel | 92 | 97 | **124** | |
+| Frame p50 / p95 / p99 | 10,6 / 13,6 / 15,7 ms | 10,2 / 12,6 / 14,7 ms | **7,8 / 10,5 / 12,5 ms** | p95 ≤ 8,3 ms |
+| Grafikkarte p50 / p95 | – | 9,9 / 11,5 ms | **7,5 / 9,1 ms** | |
+| Render-CPU p50 / p95 | – | 3,8 / 5,5 ms | **2,7 / 3,6 ms** | |
+| Draw Calls p95 | 13.550 | 12.647 | **5.969** | ≤ 3.000 |
+| Dreiecke je Bild p95 | 16,9 Mio. | 16,4 Mio. | **9,2 Mio.** | ≤ 6 Mio. |
+| Grafikspeicher | 1,79 GB | 1,79 GB | **1,53 GB** | ≤ 3 GB |
+| Hänger über 33 ms (Fahrt) | 2 | 2 | **0** | ≤ 1 je Minute |
+| sichtbar hart aufploppend | – | 3.250 | 3.209 | 0 näher als 50 m |
+
+Die Grafikkarte spart wie erwartet 2,4 ms im Median, Draw Calls und Dreiecke halbieren sich (die Schattenstufen zeichnen
+alles mehrfach). Offen bis zum Budget: Frame p95 um etwa 2,2 ms, Draw Calls um die Hälfte, Dreiecke um ein Drittel,
+dazu Ladezeit (14,8 s statt 8 s), der Anlauf-Hänger (3,1 s) und das harte Aufploppen von Bewuchs, Felsen und Häusern.
