@@ -48,7 +48,10 @@ const STRECKEN := {
 const ANLAUF_S := 10.0          # so lange nach dem Laden gilt als Anlauf (Shader, Bewuchs, Ausstattung)
 const RUNDBLICK_S := 8.0
 const ZEIT_PRO_PUNKT := 40.0
-const NAH := 50.0               # Sichtweiten-Wechsel näher als das gelten als sichtbares Aufploppen
+const NAH := 50.0               # Sichtweiten-Wechsel näher als das
+## Ein harter Wechsel (ohne Überblendung) gilt als sichtbares Aufploppen, wenn das Ding dabei größer als etwa 2 Bildpunkte
+## ist (1080 Zeilen auf rund 75° Blickwinkel: etwa 825 Bildpunkte je Bogenmaß)
+const SICHTBAR := 0.0025
 
 var _args := {}
 var _ready_zeiten := {}         # Kategorie → [Anzahl, µs]
@@ -363,7 +366,9 @@ func _lod_wechsel() -> Dictionary:
 	for n: Node in _instanz.find_children("*", "GeometryInstance3D", true, false):
 		var gi := n as GeometryInstance3D
 		if gi.visibility_range_end > 0.0 or gi.visibility_range_begin > 0.0:
-			knoten.append([gi.global_position, gi.visibility_range_begin, gi.visibility_range_end])
+			knoten.append([gi.global_position, gi.visibility_range_begin, gi.visibility_range_end,
+				gi.get_aabb().get_longest_axis_size() * gi.global_basis.get_scale().abs().x,
+				gi.visibility_range_fade_mode != GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED])
 	var bahn: Array = []
 	var t := 0.0
 	for f: Array in _frames:
@@ -375,11 +380,15 @@ func _lod_wechsel() -> Dictionary:
 			t = 0.0
 	var wechsel := 0
 	var nah := 0
+	var sichtbar_hart := 0       # ohne Überblendung und auf dem Bild größer als SICHTBAR (Bogenmaß): echtes Aufploppen
+	var weich := 0
 	if bahn.size() >= 2:
 		for k: Array in knoten:
 			var p: Vector3 = k[0]
 			var b: float = k[1]
 			var e: float = k[2]
+			var groesse: float = k[3]
+			var blendet: bool = k[4]
 			var vorher := -1
 			for c: Vector3 in bahn:
 				var d := c.distance_to(p)
@@ -388,10 +397,15 @@ func _lod_wechsel() -> Dictionary:
 					wechsel += 1
 					if d < NAH:
 						nah += 1
+					if blendet:
+						weich += 1
+					elif groesse / maxf(d, 0.1) > SICHTBAR:
+						sichtbar_hart += 1
 				vorher = an
 	var sek := bahn.size() * 0.1
 	return {"knoten_mit_sichtweite": knoten.size(), "bahnpunkte": bahn.size(), "wechsel": wechsel,
-		"wechsel_pro_s": snappedf(wechsel / maxf(sek, 0.1), 0.01), "nahe_wechsel_unter_50m": nah}
+		"wechsel_pro_s": snappedf(wechsel / maxf(sek, 0.1), 0.01), "nahe_wechsel_unter_50m": nah,
+		"weich_ueberblendet": weich, "sichtbar_hart": sichtbar_hart}
 
 
 func _system() -> Dictionary:
@@ -457,8 +471,8 @@ func _zusammenfassung(e: Dictionary) -> String:
 			(s["dreiecke"] as Dictionary)["p95"], (s["objekte"] as Dictionary)["p95"], (s["speicher_mb"] as Dictionary)["max"],
 			(s["grafikspeicher_mb"] as Dictionary)["max"]])
 	var lo: Dictionary = e["lod"]
-	z.append("Sichtweiten-Wechsel (LOD): %d Knoten mit Sichtweite, %d Wechsel (%.2f/s), davon %d näher als 50 m" % [
-		lo["knoten_mit_sichtweite"], lo["wechsel"], lo["wechsel_pro_s"], lo["nahe_wechsel_unter_50m"]])
+	z.append("Sichtweiten-Wechsel (LOD): %d Knoten mit Sichtweite, %d Wechsel (%.2f/s), davon %d näher als 50 m, %d weich überblendet, %d hart und sichtbar (Aufploppen)" % [
+		lo["knoten_mit_sichtweite"], lo["wechsel"], lo["wechsel_pro_s"], lo["nahe_wechsel_unter_50m"], lo["weich_ueberblendet"], lo["sichtbar_hart"]])
 	if DisplayServer.get_name() == "headless":
 		z.append("Hinweis: ohne Grafik gemessen, Draw Calls, Dreiecke je Bild und Grafikspeicher sind 0.")
 	return "\n".join(z) + "\n"
