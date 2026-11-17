@@ -335,3 +335,23 @@ Ursachen (gemessen im Container, je Schritt mit Zeitstempeln):
 Der erste Start nach einer Code-Änderung baut wie bisher (und speichert dabei, etwa 2 s mehr). Das Messwerkzeug schreibt
 jetzt die ersten 12 Bilder nach dem Laden einzeln mit (Dauer, Render-CPU, Grafikkarte, neu kompilierte Pipelines), damit
 sich auf dem Referenzrechner zeigt, ob der Rest des Hängers Shader-Kompilierung ist.
+
+**Gemessen auf dem Referenzrechner** (`docs/messungen/messung_drachenstein_punkt2_2026-11-17T18-35-16.json`; der Lauf
+`punkt2_erster` lud den Cache schon, beide gleichen sich auf wenige Hundertstel):
+
+| | mit Schattenhülle | Punkt 2 | Budget |
+|---|---|---|---|
+| Laden bis 5 Bilder | 16,0 s | **7,6 s** | ≤ 8 s ✔ |
+| davon Einhängen und _ready | 12,0 s | 4,5 s | |
+| Burgbau / Stadthäuser (_ready) | 6,8 / 2,2 s | 1,1 / 0,3 s | |
+| größtes Bild nach dem Laden | 2.974 ms | 2.123 ms | ≤ 100 ms ✘ |
+| Messfahrt fps im Mittel | 122 | 128 | |
+| Frame p50 / p95 / p99 | 8,0 / 10,9 / 13,0 ms | 7,6 / 10,4 / 12,3 ms | p95 ≤ 8,3 ms |
+| Grafikkarte p50 / p95 | 7,6 / 9,4 ms | 7,2 / 9,1 ms | |
+| Arbeitsspeicher max | 1.527 MB | **598 MB** | ≤ 4 GB ✔ |
+| Grafikspeicher max | 1.580 MB | 1.531 MB | ≤ 3 GB ✔ |
+
+Die ersten Bilder nach dem Laden: 2.123 ms (273 neue Pipelines), 178 ms (48), 86 ms, 35 ms (20), danach 10 ms. Der
+Hänger fällt also mit dem Erzeugen der Render-Pipelines (Shader-Varianten) zusammen und ist in beiden Läufen gleich
+groß, der Pipeline-Cache von Godot und Treiber nimmt ihn offenbar nicht weg. Die Render-CPU zählt davon nur 65 ms; das
+Messwerkzeug teilt die ersten Bilder deshalb jetzt in Skripte, Zeichnen und Physik/Rest auf.

@@ -71,6 +71,8 @@ var _letzt := 0
 var _frames: Array = []         # je Bild ein Array (siehe _bild)
 var _phase := "laden"
 var _t_vorher := 0
+var _t_vor_zeichnen := 0      # RenderingServer.frame_pre_draw / frame_post_draw: teilen ein Bild in Skripte, Zeichnen, Physik
+var _t_nach_zeichnen := 0
 var _instanz: Node = null
 
 
@@ -117,6 +119,8 @@ func _initialize() -> void:
 	root.add_child(_instanz)
 	current_scene = _instanz
 	var t3 := Time.get_ticks_usec()
+	RenderingServer.frame_pre_draw.connect(func() -> void: _t_vor_zeichnen = Time.get_ticks_usec())
+	RenderingServer.frame_post_draw.connect(func() -> void: _t_nach_zeichnen = Time.get_ticks_usec())
 	process_frame.connect(_bild)
 	_t_vorher = Time.get_ticks_usec()
 	_phase = "anlauf"
@@ -213,6 +217,16 @@ static func _pipelines() -> float:
 		+ Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_SPECIALIZATION))
 
 
+## Ein Bild (vom letzten process_frame bis zu diesem) in drei Teile: Skripte und verzögerte Aufrufe bis zum Zeichnen,
+## das Zeichnen selbst (dort fallen auch Shader und Pipelines an, die auf dem Hauptfaden entstehen), danach Physik und
+## alles bis zum nächsten Bild. -1, wenn das Zeichnen nicht in dieses Bild fiel.
+func _teile(jetzt: int) -> Array:
+	if _t_vor_zeichnen < _t_vorher or _t_nach_zeichnen < _t_vor_zeichnen or _t_nach_zeichnen > jetzt:
+		return [-1.0, -1.0, -1.0]
+	return [(_t_vor_zeichnen - _t_vorher) / 1000.0, (_t_nach_zeichnen - _t_vor_zeichnen) / 1000.0,
+		(jetzt - _t_nach_zeichnen) / 1000.0]
+
+
 ## Die ersten Bilder nach dem Laden einzeln: Dauer, Render-CPU, Grafikkarte und neu kompilierte Pipelines im Bild.
 func _erste_bilder(anzahl: int) -> Array:
 	var aus: Array = []
@@ -222,7 +236,9 @@ func _erste_bilder(anzahl: int) -> Array:
 			continue
 		var p := float(f[12])
 		aus.append({"frame_ms": snappedf(float(f[1]), 0.1), "render_cpu_ms": snappedf(float(f[9]), 0.1),
-			"gpu_ms": snappedf(float(f[10]), 0.1), "neue_pipelines": int(p - vorher) if vorher >= 0.0 else int(p)})
+			"gpu_ms": snappedf(float(f[10]), 0.1), "neue_pipelines": int(p - vorher) if vorher >= 0.0 else int(p),
+			"skripte_ms": snappedf(float(f[13]), 0.1), "zeichnen_ms": snappedf(float(f[14]), 0.1),
+			"physik_und_rest_ms": snappedf(float(f[15]), 0.1)})
 		vorher = p
 		if aus.size() >= anzahl:
 			break
@@ -243,7 +259,7 @@ func _bild() -> void:
 		Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
 		RenderingServer.viewport_get_measured_render_time_cpu(root.get_viewport_rid()) + RenderingServer.get_frame_setup_time_cpu(),
 		RenderingServer.viewport_get_measured_render_time_gpu(root.get_viewport_rid()),
-		kp, _pipelines()])
+		kp, _pipelines()] + _teile(jetzt))
 	_t_vorher = jetzt
 
 
@@ -726,7 +742,8 @@ func _zusammenfassung(e: Dictionary) -> String:
 	if not eb.is_empty():
 		var teile := PackedStringArray()
 		for b: Dictionary in eb:
-			teile.append("%.0f ms (CPU %.0f, GPU %.0f, %d Pipelines)" % [b["frame_ms"], b["render_cpu_ms"], b["gpu_ms"], b["neue_pipelines"]])
+			teile.append("%.0f ms (Skripte %.0f, Zeichnen %.0f, Physik/Rest %.0f; GPU %.0f, %d Pipelines)" % [b["frame_ms"],
+				b.get("skripte_ms", -1.0), b.get("zeichnen_ms", -1.0), b.get("physik_und_rest_ms", -1.0), b["gpu_ms"], b["neue_pipelines"]])
 		z.append("Erste Bilder nach dem Laden: " + ", ".join(teile))
 	var lo: Dictionary = e["lod"]
 	z.append("Sichtweiten-Wechsel (LOD): %d Knoten mit Sichtweite, %d Wechsel (%.2f/s), davon %d näher als 50 m, %d weich überblendet, %d hart und sichtbar (Aufploppen)" % [

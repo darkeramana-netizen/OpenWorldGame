@@ -53,7 +53,7 @@ func _initialize() -> void:
 		"Frame-Werte der Fahrt (%d Bilder, p95 %.1f ms)" % [mf.get("bilder", 0), ft.get("p95", 0.0)])
 	pruefe(int(((e.get("lod", {}) as Dictionary).get("knoten_mit_sichtweite", 0))) > 0, "Sichtweiten-Knoten gezählt")
 	var eb: Array = e.get("anlauf_erste_bilder", [])
-	pruefe(eb.size() == 12 and (eb[0] as Dictionary).has("neue_pipelines") and float((eb[0] as Dictionary).get("frame_ms", 0.0)) > 0.0,
+	pruefe(eb.size() == 12 and (eb[0] as Dictionary).has("neue_pipelines") and (eb[3] as Dictionary).has("zeichnen_ms") and float((eb[0] as Dictionary).get("frame_ms", 0.0)) > 0.0,
 		"Erste 12 Bilder nach dem Laden einzeln (Dauer, Pipelines)")
 	var au: Dictionary = e.get("aufschluesselung", {})
 	var markt: Array = au.get("Markt", [])
