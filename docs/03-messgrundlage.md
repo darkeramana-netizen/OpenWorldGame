@@ -294,3 +294,10 @@ aus, Möwen nur bis 120 m. Messung: `docs/messungen/messung_drachenstein_schatte
 Grafikkarte wird dadurch aber nicht schneller (eher 0,1 bis 0,3 ms langsamer): Draw Calls kosten vor allem CPU, und
 das weiche Ausblenden zeichnet die Dinge im Übergang durchsichtig. Das Bauen der Hüllen kostet beim Laden etwa 0,5 bis
 1 s (fällt mit dem Backen weg). Die nächste Aufschlüsselung misst, was Überblendung und Hülle auf der Grafikkarte kosten.
+
+**Nachgemessen** (`docs/messungen/messung_drachenstein_aufschluesselung3_2026-11-17T16-42-28.json`, Drift unter 0,03 ms):
+Die Überblendung kostet auf der Grafikkarte nichts (ohne sie −0,06 / −0,02 ms, also im Rauschen). Die Schattenhülle
+spart (ohne sie +0,15 / +0,05 ms Grafikkarte, +0,38 / +0,21 ms Render-CPU, 3.266 / 3.367 statt 1.735 / 2.436 Draw
+Calls). Beides bleibt. Die Grafikkarte braucht an den Blickpunkten jetzt 8,4 ms (Markt) und 7,5 ms (Mittelburg); die
+größten Posten sind Gelände (1,40 / 1,05 ms), Sonnenschatten (1,29 / 1,26 ms), SDFGI (1,19 / 1,46 ms), Häuser am Markt
+(0,98 ms) und MSAA (0,69 / 0,47 ms).
