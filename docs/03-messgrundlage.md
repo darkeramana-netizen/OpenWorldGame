@@ -271,3 +271,26 @@ Messfahrt auf dem Referenzrechner (`docs/messungen/messung_drachenstein_paket_b_
 Die Grafikkarte spart wie erwartet 2,4 ms im Median, Draw Calls und Dreiecke halbieren sich (die Schattenstufen zeichnen
 alles mehrfach). Offen bis zum Budget: Frame p95 um etwa 2,2 ms, Draw Calls um die Hälfte, Dreiecke um ein Drittel,
 dazu Ladezeit (14,8 s statt 8 s), der Anlauf-Hänger (3,1 s) und das harte Aufploppen von Bewuchs, Felsen und Häusern.
+
+### Schattenhülle, größere Natur-Kacheln, weiches Ausblenden
+
+Schattenhülle (`szenen/welt/schattenhuelle.gd`) für Burgbauten und Häuser: im Sonnenschatten eine Oberfläche je Bau
+statt eine je Material (Vergleichsfotos vorher/nachher: höchstens 0,46 % der Pixel verschieden, fast nur Rauch). Natur
+und Pflanzen am Fels in größeren Kacheln (128 m und 96 m statt 64 m und 48 m), Natur, Ausstattung und Vögel blenden weich
+aus, Möwen nur bis 120 m. Messung: `docs/messungen/messung_drachenstein_schattenhuelle_2026-11-17T16-19-15.json`.
+
+| Messfahrt | nach Paket B | mit Schattenhülle | Budget |
+|---|---|---|---|
+| fps im Mittel | 124 | 122 | |
+| Frame p50 / p95 / p99 | 7,8 / 10,5 / 12,5 ms | 8,0 / 10,9 / 13,0 ms | p95 ≤ 8,3 ms |
+| Grafikkarte p50 / p95 | 7,5 / 9,1 ms | 7,6 / 9,4 ms | |
+| Render-CPU p50 / p95 | 2,7 / 3,6 ms | 2,4 / 3,1 ms | |
+| Draw Calls p50 / p95 | 3.365 / 5.969 | **2.052 / 3.437** | ≤ 3.000 |
+| Dreiecke je Bild p95 | 9,2 Mio. | 8,6 Mio. | ≤ 6 Mio. |
+| hart aufploppend | 3.209 | **37** | 0 näher als 50 m |
+| Laden bis spielbar | 14,8 s | 16,2 s | ≤ 8 s |
+
+**Erkenntnis:** Draw Calls fast halbiert und Aufploppen praktisch weg; die CPU-Seite des Renderns wird leichter. Die
+Grafikkarte wird dadurch aber nicht schneller (eher 0,1 bis 0,3 ms langsamer): Draw Calls kosten vor allem CPU, und
+das weiche Ausblenden zeichnet die Dinge im Übergang durchsichtig. Das Bauen der Hüllen kostet beim Laden etwa 0,5 bis
+1 s (fällt mit dem Backen weg). Die nächste Aufschlüsselung misst, was Überblendung und Hülle auf der Grafikkarte kosten.
