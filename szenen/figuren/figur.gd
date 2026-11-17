@@ -143,7 +143,8 @@ static var _warteschlange: Array = []   # Figuren (Node3D) mit geplantem ersten 
 static func _bau_schritt() -> void:
 	var baum := Engine.get_main_loop() as SceneTree
 	var start := Time.get_ticks_usec()
-	_warteschlange = _warteschlange.filter(func(f: Node3D) -> bool: return is_instance_valid(f) and f._bau_geplant)
+	# ohne Typ: gelöschte Figuren ließen sich sonst nicht einmal übergeben
+	_warteschlange = _warteschlange.filter(func(f: Variant) -> bool: return is_instance_valid(f) and f._bau_geplant)
 	var kamera := baum.root.get_viewport().get_camera_3d()
 	if kamera != null and _warteschlange.size() > 1:
 		var k := kamera.global_position
