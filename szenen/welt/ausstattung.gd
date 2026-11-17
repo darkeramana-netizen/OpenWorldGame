@@ -86,8 +86,9 @@ func _setze_auf_boden() -> void:
 
 
 ## Oberfläche unter p (Strahl von oben bis unten), Personen, Tiere und bewegte Körper zählen nicht; NAN ohne Treffer
-static func boden_unter(raum: PhysicsDirectSpaceState3D, p: Vector3, oben: float, unten: float) -> float:
-	var abfrage := PhysicsRayQueryParameters3D.create(p + Vector3.UP * oben, p + Vector3.DOWN * unten, 1)
+static func boden_unter(raum: PhysicsDirectSpaceState3D, p: Vector3, oben: float, unten: float,
+		ohne: Array[RID] = []) -> float:
+	var abfrage := PhysicsRayQueryParameters3D.create(p + Vector3.UP * oben, p + Vector3.DOWN * unten, 1, ohne)
 	for versuch in 4:
 		var t := raum.intersect_ray(abfrage)
 		if t.is_empty():

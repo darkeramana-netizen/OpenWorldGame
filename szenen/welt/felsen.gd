@@ -14,7 +14,7 @@ extends Node3D
 @export var stuecke := PackedFloat32Array():
 	set(w):
 		stuecke = w
-		if is_inside_tree():
+		if is_inside_tree() and not _nur_hoehen:
 			_baue()
 ## Tönung je Modell (weiß = unverändert), damit Scans aus verschiedenen Gegenden zum grauen Fels passen
 @export var farben := PackedColorArray()
@@ -33,29 +33,59 @@ extends Node3D
 
 const SCHRITT := 7
 
+var _nur_hoehen := false
+var _wo := {}        # Nummer des Stücks → [MultiMesh, Exemplar, Lage] (zum Nachsetzen der Höhe)
+var _formen := {}    # Nummer des Stücks → CollisionShape3D
+var _koerper: StaticBody3D
+
 
 func _ready() -> void:
+	_baue()
 	if (not auf_boden.is_empty() or not heben.is_empty()) and not Engine.is_editor_hint():
+		# Erst wenn die Kollision der Umgebung steht, lässt sich der Boden darunter finden. Dann nur die betroffenen
+		# Stücke in der Höhe nachsetzen, statt alles neu zu bauen (das war ein langes Bild gleich nach dem Laden).
 		await get_tree().physics_frame
 		await get_tree().physics_frame
+		if not is_inside_tree():
+			return
 		var raum := get_world_3d().direct_space_state
 		var boden := load("res://szenen/welt/ausstattung.gd") as GDScript
+		# die eigene Kollision zählt nicht als Boden (sonst landete ein Fass auf sich selbst)
+		var ohne: Array[RID] = []
+		if _koerper != null and is_instance_valid(_koerper):
+			ohne.append(_koerper.get_rid())
 		var neu := stuecke.duplicate()
 		var i := 0
 		while i + SCHRITT - 1 < neu.size():
 			var m := int(neu[i])
 			if m in auf_boden or m in heben:
 				var p := global_transform * Vector3(neu[i + 1], neu[i + 2], neu[i + 3])
-				var y: float = boden.boden_unter(raum, p, 1.6 if m in auf_boden else 3.0, 3.0 if m in auf_boden else 0.2)
+				var y: float = boden.boden_unter(raum, p, 1.6 if m in auf_boden else 3.0, 3.0 if m in auf_boden else 0.2, ohne)
 				if not is_nan(y) and (m in auf_boden or y > p.y + 0.3):
 					neu[i + 2] = (global_transform.affine_inverse() * Vector3(p.x, y, p.z)).y
+					_versetze(i / SCHRITT, neu[i + 2] - stuecke[i + 2])
 			i += SCHRITT
-		stuecke = neu      # baut neu
+		_nur_hoehen = true
+		stuecke = neu
+		_nur_hoehen = false
+
+
+## Ein Stück um dy (lokal) anheben oder absenken: Exemplar im MultiMesh und seine Kollisionsform.
+func _versetze(nr: int, dy: float) -> void:
+	if absf(dy) < 0.0001:
 		return
-	_baue()
+	if _wo.has(nr):
+		var t: Transform3D = _wo[nr][2]
+		t.origin.y += dy
+		_wo[nr][2] = t
+		(_wo[nr][0] as MultiMesh).set_instance_transform(_wo[nr][1], t)
+	if _formen.has(nr):
+		(_formen[nr] as CollisionShape3D).position.y += dy
 
 
 func _baue() -> void:
+	_wo.clear()
+	_formen.clear()
 	for kind in get_children():
 		kind.queue_free()
 	var koerper: StaticBody3D = null
@@ -63,6 +93,7 @@ func _baue() -> void:
 		koerper = StaticBody3D.new()
 		koerper.name = "Kollision"
 		add_child(koerper)
+	_koerper = koerper
 	for m in modelle.size():
 		var teil_lage := _teil_lage(modelle[m])
 		var mesh := _mesh(modelle[m], false)
@@ -80,21 +111,27 @@ func _baue() -> void:
 					(mat as BaseMaterial3D).albedo_color = farben[m]
 				mesh.surface_set_material(f, mat)
 		var lagen: Array[Transform3D] = []
+		var nummern: Array[int] = []
 		var i := 0
 		while i + SCHRITT - 1 < stuecke.size():
 			if int(stuecke[i]) == m:
 				lagen.append(_lage(i) * teil_lage)
+				nummern.append(i / SCHRITT)
 			i += SCHRITT
 		if lagen.is_empty():
 			continue
 		var gruppen := {}
-		for lage in lagen:
+		var gruppen_nr := {}
+		for j in lagen.size():
+			var lage := lagen[j]
 			var schluessel := Vector2i(0, 0)
 			if kachel > 0.0:
 				schluessel = Vector2i(floori(lage.origin.x / kachel), floori(lage.origin.z / kachel))
 			if not gruppen.has(schluessel):
 				gruppen[schluessel] = []
+				gruppen_nr[schluessel] = []
 			gruppen[schluessel].append(lage)
+			gruppen_nr[schluessel].append(nummern[j])
 		for schluessel: Vector2i in gruppen:
 			var mitte := Vector3((schluessel.x + 0.5) * kachel, 0.0, (schluessel.y + 0.5) * kachel) if kachel > 0.0 else Vector3.ZERO
 			var teil: Array = gruppen[schluessel]
@@ -104,7 +141,9 @@ func _baue() -> void:
 			mm.instance_count = teil.size()
 			for k in teil.size():
 				var t: Transform3D = teil[k]
-				mm.set_instance_transform(k, Transform3D(t.basis, t.origin - mitte))
+				var lokal := Transform3D(t.basis, t.origin - mitte)
+				mm.set_instance_transform(k, lokal)
+				_wo[gruppen_nr[schluessel][k]] = [mm, k, lokal]
 			var inst := MultiMeshInstance3D.new()
 			inst.name = "Felsen%d_%d_%d" % [m, schluessel.x, schluessel.y]
 			inst.multimesh = mm
@@ -120,7 +159,8 @@ func _baue() -> void:
 			if form == null:
 				continue
 			var punkte := form.get_faces()
-			for lage in lagen:
+			for j in lagen.size():
+				var lage := lagen[j]
 				var shape := ConcavePolygonShape3D.new()
 				var flaechen := PackedVector3Array()
 				flaechen.resize(punkte.size())
@@ -130,6 +170,7 @@ func _baue() -> void:
 				var cs := CollisionShape3D.new()
 				cs.shape = shape
 				koerper.add_child(cs)
+				_formen[nummern[j]] = cs
 
 
 ## Lage eines Stücks: drehen (Front hangabwärts), nach hinten kippen, vergrößern

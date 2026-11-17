@@ -301,3 +301,37 @@ spart (ohne sie +0,15 / +0,05 ms Grafikkarte, +0,38 / +0,21 ms Render-CPU, 3.266
 Calls). Beides bleibt. Die Grafikkarte braucht an den Blickpunkten jetzt 8,4 ms (Markt) und 7,5 ms (Mittelburg); die
 größten Posten sind Gelände (1,40 / 1,05 ms), Sonnenschatten (1,29 / 1,26 ms), SDFGI (1,19 / 1,46 ms), Häuser am Markt
 (0,98 ms) und MSAA (0,69 / 0,47 ms).
+
+### Punkt 2: Laden und Hänger nach dem Laden (burg-ausbau-10)
+
+Ursachen (gemessen im Container, je Schritt mit Zeitstempeln):
+
+1. **Texturen ohne 3D-Import.** Alle Texturen unter `texturen/` und `modelle/` waren verlustfrei und ohne Mipmaps
+   importiert. Godot erkennt 3D-Texturen sonst erst, wenn der Editor sie in einem 3D-Material sieht; unsere Materialien
+   entstehen aber im Code. Folgen: Jede Textur wird beim Laden auf der CPU entpackt (96 % der Felsen-Bauzeit), liegt
+   unkomprimiert im Grafikspeicher (2k: 16 MB statt 2,7 bis 5,6 MB) und wird ohne Mipmaps auch in der Ferne in voller
+   Auflösung gelesen (langsamer, flimmert). `werkzeuge/texturen_3d.py` stellt 158 Texturen auf VRAM-Kompression mit
+   Mipmaps um (Normalen- und Höhenkarten in hoher Qualität, BC7). Daten-Texturen (Höhenkarten und Masken unter `daten/`,
+   Karte) und der Wolkenhimmel bleiben, wie sie sind. **Nach dem Umstellen muss Godot neu importieren** (Editor einmal
+   öffnen oder `godot --headless --path . --import`).
+2. **Burgbauten und Häuser werden bei jedem Start in GDScript gebaut** (574.000 Vierecke, 95.000 Quader; 6,8 s auf dem
+   Referenzrechner). Das Ergebnis hängt nur von Code und Daten ab. Der **Baucache** (`szenen/welt/baucache.gd`)
+   speichert es nach dem ersten Bau unter `user://baucache/` (35 MB) und lädt es danach nur noch. Schlüssel: Godot-
+   Version, alle Skripte, die Szenendatei, der Knotenpfad und die Eigenschaften des Baus; ändert sich etwas davon, wird
+   neu gebaut. Im Editor und mit `--ohne-baucache` wird immer gebaut. Test: `tests/test_baucache.gd` (frisch gebaut und
+   geladen gleichen sich Knoten für Knoten, gemeinsame Materialien, Schlüssel, Abschalten).
+3. **Natur und Hafenausstattung bauten im ersten Bild alles neu**, nur um Stücke auf den Boden zu setzen. Jetzt bauen sie
+   beim Laden und setzen danach nur die betroffenen Stücke in der Höhe nach (Lagen geprüft: 2.888 von 2.888 gleich).
+4. **125 Figuren bauten sich im selben Bild auf.** Jetzt über eine Warteschlange mit 4 ms je Bild, die nächsten zuerst.
+
+| Laden (Container, ohne Grafik) | vorher | Texturen | + Baucache (2. Start) |
+|---|---|---|---|
+| bis 5 Bilder | 31,3 s | 21,1 s | **9,5 s** |
+| davon Burgbau | 12,2 s | 11,5 s | 1,9 s |
+| Felsen | 3,5 s | 0,3 s | 0,3 s |
+| Stadthäuser | 3,1 s | 2,7 s | 0,6 s |
+| erstes Bild nach dem Laden | 3,4 s | 1,1 s | |
+
+Der erste Start nach einer Code-Änderung baut wie bisher (und speichert dabei, etwa 2 s mehr). Das Messwerkzeug schreibt
+jetzt die ersten 12 Bilder nach dem Laden einzeln mit (Dauer, Render-CPU, Grafikkarte, neu kompilierte Pipelines), damit
+sich auf dem Referenzrechner zeigt, ob der Rest des Hängers Shader-Kompilierung ist.

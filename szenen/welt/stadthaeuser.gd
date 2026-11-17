@@ -9,6 +9,7 @@ extends Node3D
 
 ## Schattenhülle (eine Oberfläche je Bau, nur für den Sonnenschatten)
 const Schattenhuelle := preload("res://szenen/welt/schattenhuelle.gd")
+const Baucache := preload("res://szenen/welt/baucache.gd")
 
 ## Je Haus (x, y, z, Gier in Grad)
 @export var haeuser: PackedVector4Array = PackedVector4Array():
@@ -86,6 +87,16 @@ func _baue() -> void:
 		k.free()
 	if haeuser.is_empty():
 		return
+	# Beim zweiten Start nur laden statt bauen (szenen/welt/baucache.gd)
+	var schl := Baucache.schluessel(self) if Baucache.an(self) else ""
+	if schl != "" and Baucache.lade(self, schl, _material):
+		return
+	_baue_neu()
+	if schl != "":
+		Baucache.speichere(self, schl)
+
+
+func _baue_neu() -> void:
 	# je Hausform drei Ausstattungen (Balkon, Schild, Laterne, Gaube, Schornstein gewürfelt), je Haus eine davon
 	var je_form := {}
 	for i in haeuser.size():
@@ -877,6 +888,7 @@ func _material(name_: String) -> Material:
 	if name_ == "fensterraum":
 		var fr := ShaderMaterial.new()
 		fr.shader = load("res://szenen/welt/fensterraum.gdshader")
+		fr.resource_name = name_    # für den Baucache (gemeinsames Material beim Laden)
 		_mat_cache[name_] = fr
 		return fr
 	var m := StandardMaterial3D.new()
@@ -939,5 +951,6 @@ func _material(name_: String) -> Material:
 			m.roughness = 0.15
 	if name_.begins_with("putz"):
 		m.albedo_color = PUTZFARBEN[int(name_.substr(4))]
+	m.resource_name = name_    # für den Baucache (gemeinsames Material beim Laden)
 	_mat_cache[name_] = m
 	return m

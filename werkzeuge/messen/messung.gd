@@ -152,7 +152,8 @@ func _initialize() -> void:
 		"zeit": Time.get_datetime_string_from_system(), "system": _system(),
 		"laden": laden, "ready_je_bauart": _ready_tabelle(), "langsamste_ready": _langsamste(15),
 		"szene": szene, "fahrt": fahrt,
-		"anlauf": _statistik("anlauf"), "messfahrt": _statistik("fahrt"), "rundblick": _statistik("rundblick"),
+		"anlauf": _statistik("anlauf"), "anlauf_erste_bilder": _erste_bilder(12),
+		"messfahrt": _statistik("fahrt"), "rundblick": _statistik("rundblick"),
 		"lod": _lod_wechsel(), "aufschluesselung": aufschl,
 	}
 	_schreibe(ergebnis)
@@ -202,6 +203,32 @@ func _herkunft(n: Node) -> String:
 	return "ohne Skript"
 
 
+## Bisher kompilierte Render-Pipelines (Shader-Varianten), alle Quellen zusammen; steigt beim ersten Zeichnen
+## neuer Materialien und kostet dann Zeit (Hänger nach dem Laden).
+static func _pipelines() -> float:
+	return (Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_CANVAS)
+		+ Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_MESH)
+		+ Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_SURFACE)
+		+ Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_DRAW)
+		+ Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_SPECIALIZATION))
+
+
+## Die ersten Bilder nach dem Laden einzeln: Dauer, Render-CPU, Grafikkarte und neu kompilierte Pipelines im Bild.
+func _erste_bilder(anzahl: int) -> Array:
+	var aus: Array = []
+	var vorher := -1.0
+	for f: Array in _frames:
+		if f[0] != "anlauf":
+			continue
+		var p := float(f[12])
+		aus.append({"frame_ms": snappedf(float(f[1]), 0.1), "render_cpu_ms": snappedf(float(f[9]), 0.1),
+			"gpu_ms": snappedf(float(f[10]), 0.1), "neue_pipelines": int(p - vorher) if vorher >= 0.0 else int(p)})
+		vorher = p
+		if aus.size() >= anzahl:
+			break
+	return aus
+
+
 func _bild() -> void:
 	var jetzt := Time.get_ticks_usec()
 	var kam := root.get_viewport().get_camera_3d()
@@ -216,7 +243,7 @@ func _bild() -> void:
 		Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
 		RenderingServer.viewport_get_measured_render_time_cpu(root.get_viewport_rid()) + RenderingServer.get_frame_setup_time_cpu(),
 		RenderingServer.viewport_get_measured_render_time_gpu(root.get_viewport_rid()),
-		kp])
+		kp, _pipelines()])
 	_t_vorher = jetzt
 
 
@@ -695,6 +722,12 @@ func _zusammenfassung(e: Dictionary) -> String:
 			(s["prozess_spitze_ms"] as Dictionary)["p50"], (s["physik_spitze_ms"] as Dictionary)["p50"], (s["draw_calls"] as Dictionary)["p95"],
 			(s["dreiecke"] as Dictionary)["p95"], (s["objekte"] as Dictionary)["p95"], (s["speicher_mb"] as Dictionary)["max"],
 			(s["grafikspeicher_mb"] as Dictionary)["max"]])
+	var eb: Array = e.get("anlauf_erste_bilder", [])
+	if not eb.is_empty():
+		var teile := PackedStringArray()
+		for b: Dictionary in eb:
+			teile.append("%.0f ms (CPU %.0f, GPU %.0f, %d Pipelines)" % [b["frame_ms"], b["render_cpu_ms"], b["gpu_ms"], b["neue_pipelines"]])
+		z.append("Erste Bilder nach dem Laden: " + ", ".join(teile))
 	var lo: Dictionary = e["lod"]
 	z.append("Sichtweiten-Wechsel (LOD): %d Knoten mit Sichtweite, %d Wechsel (%.2f/s), davon %d näher als 50 m, %d weich überblendet, %d hart und sichtbar (Aufploppen)" % [
 		lo["knoten_mit_sichtweite"], lo["wechsel"], lo["wechsel_pro_s"], lo["nahe_wechsel_unter_50m"], lo["weich_ueberblendet"], lo["sichtbar_hart"]])

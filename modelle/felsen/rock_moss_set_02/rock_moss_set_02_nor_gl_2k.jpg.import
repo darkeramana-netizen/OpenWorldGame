@@ -3,27 +3,28 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bi1r7vr6h6bqk"
-path="res://.godot/imported/rock_moss_set_02_nor_gl_2k.jpg-d2ef455a12a613ce28f99a78f6740e2e.ctex"
+path.bptc="res://.godot/imported/rock_moss_set_02_nor_gl_2k.jpg-d2ef455a12a613ce28f99a78f6740e2e.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://modelle/felsen/rock_moss_set_02/rock_moss_set_02_nor_gl_2k.jpg"
-dest_files=["res://.godot/imported/rock_moss_set_02_nor_gl_2k.jpg-d2ef455a12a613ce28f99a78f6740e2e.ctex"]
+dest_files=["res://.godot/imported/rock_moss_set_02_nor_gl_2k.jpg-d2ef455a12a613ce28f99a78f6740e2e.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

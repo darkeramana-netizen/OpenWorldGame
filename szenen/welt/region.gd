@@ -46,8 +46,9 @@ func _bei_knoten(n: Node) -> void:
 		_schatten_pruefen.call_deferred(n)     # Mesh und Lage stehen oft erst nach add_child fest
 
 
-func _schatten_pruefen(n: Node) -> void:
-	if not is_instance_valid(n) or not n.is_inside_tree():
+func _schatten_pruefen(n: Variant) -> void:
+	# ohne Typ: Ein inzwischen gelöschter Knoten (z. B. beim Umbau einer Figur) ließe sich sonst nicht einmal übergeben
+	if not is_instance_valid(n) or not (n as Node).is_inside_tree():
 		return
 	var gi := n as GeometryInstance3D
 	if gi.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF:

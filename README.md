@@ -6,7 +6,7 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 - Lore: [`docs/01-lore-bibel.md`](docs/01-lore-bibel.md)
 - Spielkonzept und Fahrplan: [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md)
-- Technik: Messgrundlage und Budgets (Phase 0): [`docs/03-messgrundlage.md`](docs/03-messgrundlage.md), Messwerkzeug `werkzeuge/messen/messung.gd`
+- Technik: Messgrundlage und Budgets (Phase 0): [`docs/03-messgrundlage.md`](docs/03-messgrundlage.md), Messwerkzeug `werkzeuge/messen/messung.gd`; Baucache für Burgbauten und Häuser (`szenen/welt/baucache.gd`, `user://baucache/`, abschaltbar mit `--ohne-baucache`)
 - Karten: [`docs/bilder/`](docs/bilder/)
 
 ![Die Region Drachenstein](docs/bilder/region-uebersicht.png)
@@ -17,7 +17,7 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 Weg vom Klötzchen-Look, Richtung Valheim:
 
-- **Fotogescannte Texturen** statt selbst erzeugter: Mauern, Bruchstein, Basalt, Putz, Holz, Ziegel und Schiefer, Pflaster, Fels, Gras, Erde, Sand, Schnee und Sumpf. Alle sind CC0 (frei nutzbar) von [Poly Haven](https://polyhaven.com) und [ambientCG](https://ambientcg.com). `werkzeuge/texturen_laden.py` lädt sie, `texturen/groessen.json` nennt Quelle, Autoren und echte Größe.
+- **Fotogescannte Texturen** statt selbst erzeugter: Mauern, Bruchstein, Basalt, Putz, Holz, Ziegel und Schiefer, Pflaster, Fels, Gras, Erde, Sand, Schnee und Sumpf. Alle sind CC0 (frei nutzbar) von [Poly Haven](https://polyhaven.com) und [ambientCG](https://ambientcg.com). `werkzeuge/texturen_laden.py` lädt sie, `texturen/groessen.json` nennt Quelle, Autoren und echte Größe. Neue Texturen danach mit `werkzeuge/texturen_3d.py` auf den 3D-Import stellen (VRAM-komprimiert, mit Mipmaps), sonst lädt Godot sie verlustfrei und ohne Mipmaps.
 - **Stein-Shader** (`szenen/welt/stein.gdshader`) für alle Steinmaterialien: keine sichtbare Wiederholung (zwei Maßstäbe, großflächige Farbschwankung), Moos und Flechten auf Mauerkronen, Zinnen und Gesimsen. Dazu Parallax aus den Höhenkarten (`texturen/<name>_hoehe.jpg`, Poly Haven, `texturen_laden.py --hoehen`): Fugen und Steinkanten liegen bis etwa 28 m Entfernung sichtbar zurück, tiefe Stellen sind dunkler (Fugenschatten). Verwitterung: Regenspuren auf senkrechten Flächen und Feuchte, Schmutz und Algen am Fuß jeder Wand über dem Gelände (die Geländehöhe liegt als globale Shader-Textur `gelaende_hoehe` vor, gesetzt von `gelaende.gd`). Dächer der Burg und alle Stadthäuser (Mauerwerk, Ziegel, Schiefer, Fachwerkbalken, Putz) bekommen ebenfalls Parallax-Tiefe.
 - **Burg-Baukasten** (`szenen/welt/burgbau.gd`): Mauern, Türme und Tore sind keine Quader mehr, sondern echte Geometrie:
   - Mauern mit schrägem Anlauf am Fuß und hellem Sockelband, Gesims, Wehrgang mit Plattenbelag, Brustwehr mit Abdeckplatten und Zinnen. Jede Zinne hat eine vorstehende Abdeckplatte, eine leicht eigene Höhe, auf der Feldseite eine Kreuzscharte mit Rundloch und Gewände, auf der Hofseite eine Nische. Gerüstlöcher in versetzten, lückenhaften Reihen auf beiden Seiten, steinerne Wasserspeier unter dem Wehrgang zur Hofseite.

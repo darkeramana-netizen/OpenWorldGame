@@ -12,6 +12,7 @@ extends Node3D
 
 ## Schattenhülle (eine Oberfläche je Bau, nur für den Sonnenschatten)
 const Schattenhuelle := preload("res://szenen/welt/schattenhuelle.gd")
+const Baucache := preload("res://szenen/welt/baucache.gd")
 
 ## Je Mauerstück 10 Werte: ax, az, bx, bz, unten, oben (Wehrgang), Dicke, außen x, außen z, Zinnen (0/1)
 @export var mauern := PackedFloat32Array():
@@ -155,6 +156,16 @@ func _baue() -> void:
 	_flach = {}
 	_rund = {}
 	_sammle_nachbarn()
+	# Beim zweiten Start nur laden statt bauen (szenen/welt/baucache.gd)
+	var schl := Baucache.schluessel(self) if Baucache.an(self) else ""
+	if schl != "" and Baucache.lade(self, schl, _material):
+		return
+	_baue_neu()
+	if schl != "":
+		Baucache.speichere(self, schl)
+
+
+func _baue_neu() -> void:
 	var i := 0
 	while i + 9 < mauern.size():
 		_mauerstueck(Vector2(mauern[i], mauern[i + 1]), Vector2(mauern[i + 2], mauern[i + 3]), mauern[i + 4],
@@ -5376,6 +5387,7 @@ func _material(name_: String) -> Material:
 	if name_ == "fensterraum_uv":
 		var fr := ShaderMaterial.new()
 		fr.shader = load("res://szenen/welt/fensterraum.gdshader")
+		fr.resource_name = name_
 		_materialien[name_] = fr
 		return fr
 	if name_.begins_with("zier_"):
@@ -5395,6 +5407,7 @@ func _material(name_: String) -> Material:
 			basis.heightmap_deep_parallax = true
 			basis.heightmap_min_layers = 6
 			basis.heightmap_max_layers = 16
+		basis.resource_name = name_
 		_materialien[name_] = basis
 		return basis
 	var m: Material
@@ -5464,5 +5477,7 @@ func _material(name_: String) -> Material:
 		m = load("res://material/dach.tres")
 	else:
 		m = load("res://material/%s.tres" % name_)
+	if m.resource_path == "":
+		m.resource_name = name_    # damit der Baucache es beim Laden wieder dem gemeinsamen Material zuordnet
 	_materialien[name_] = m
 	return m

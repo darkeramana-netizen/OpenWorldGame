@@ -117,15 +117,47 @@ static var _materialien := {}
 
 
 func _ready() -> void:
-	_plane_bau()
+	_plane_bau(true)
 
 
 ## Mehrere Eigenschaften ändern sich oft nacheinander (merkmale_aus, Tracht, Rock): einmal am Ende neu bauen.
-func _plane_bau() -> void:
+## Der erste Bau (aus _ready) kommt in eine Warteschlange, die je Bild nur BAU_JE_BILD_US abarbeitet, die nächsten
+## Figuren zuerst: Beim Laden einer Region sind es über hundert Figuren, alle in einem Bild gäbe einen Hänger
+## (Phase 1, Punkt 2, docs/03-messgrundlage.md).
+func _plane_bau(erstbau := false) -> void:
 	if _bau_geplant:
 		return
 	_bau_geplant = true
-	_baue.call_deferred()
+	if erstbau and not Engine.is_editor_hint() and is_inside_tree():
+		_warteschlange.append(self)
+		if not get_tree().process_frame.is_connected(_bau_schritt):
+			get_tree().process_frame.connect(_bau_schritt)
+	else:
+		_baue.call_deferred()
+
+
+const BAU_JE_BILD_US := 4000
+static var _warteschlange: Array = []   # Figuren (Node3D) mit geplantem ersten Bau
+
+
+static func _bau_schritt() -> void:
+	var baum := Engine.get_main_loop() as SceneTree
+	var start := Time.get_ticks_usec()
+	_warteschlange = _warteschlange.filter(func(f: Node3D) -> bool: return is_instance_valid(f) and f._bau_geplant)
+	var kamera := baum.root.get_viewport().get_camera_3d()
+	if kamera != null and _warteschlange.size() > 1:
+		var k := kamera.global_position
+		_warteschlange.sort_custom(func(a: Node3D, b: Node3D) -> bool:
+			return a.global_position.distance_squared_to(k) < b.global_position.distance_squared_to(k))
+	# mindestens eine je Bild, dann bis das Zeitbudget aufgebraucht ist
+	while not _warteschlange.is_empty():
+		var f = _warteschlange.pop_front()
+		if is_instance_valid(f) and f._bau_geplant:
+			f._baue()
+		if Time.get_ticks_usec() - start > BAU_JE_BILD_US:
+			break
+	if _warteschlange.is_empty() and baum.process_frame.is_connected(_bau_schritt):
+		baum.process_frame.disconnect(_bau_schritt)
 
 
 func _baue() -> void:
