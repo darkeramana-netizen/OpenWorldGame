@@ -157,6 +157,7 @@ func _initialize() -> void:
 		"laden": laden, "ready_je_bauart": _ready_tabelle(), "langsamste_ready": _langsamste(15),
 		"szene": szene, "fahrt": fahrt,
 		"anlauf": _statistik("anlauf"), "anlauf_erste_bilder": _erste_bilder(12),
+		"vorhang": _vorhang(laden),
 		"messfahrt": _statistik("fahrt"), "rundblick": _statistik("rundblick"),
 		"lod": _lod_wechsel(), "aufschluesselung": aufschl,
 	}
@@ -225,6 +226,41 @@ func _teile(jetzt: int) -> Array:
 		return [-1.0, -1.0, -1.0]
 	return [(_t_vor_zeichnen - _t_vorher) / 1000.0, (_t_nach_zeichnen - _t_vor_zeichnen) / 1000.0,
 		(jetzt - _t_nach_zeichnen) / 1000.0]
+
+
+## Wann der Ladebildschirm (autoload/ladevorhang.gd) fallen würde: nach derselben Regel (genug Bilder in Folge ohne neue
+## Pipelines und schneller als RUHIG_MS). spielbar_ms zählt vom Start des Ladens; das größte Bild danach (bis zum Ende
+## des Anlaufs) ist das, was man nach dem Laden noch als Hänger sähe.
+func _vorhang(laden: Dictionary) -> Dictionary:
+	var V := preload("res://autoload/ladevorhang.gd")
+	var t := float(laden["gesamt_bis_einhaengen_ms"])
+	var bilder := 0
+	var ruhig := 0
+	var vorher := -1.0
+	var fallen := -1
+	var groesstes := 0.0
+	var i := -1
+	for f: Array in _frames:
+		if f[0] != "anlauf":
+			continue
+		i += 1
+		var p := float(f[12])
+		if fallen >= 0:
+			groesstes = maxf(groesstes, float(f[1]))
+			continue
+		t += float(f[1])
+		bilder += 1
+		if vorher >= 0.0 and p == vorher and float(f[1]) < V.RUHIG_MS:
+			ruhig += 1
+		else:
+			ruhig = 0
+		vorher = p
+		if bilder >= V.MIN_BILDER and ruhig >= V.RUHIG_BILDER:
+			fallen = i
+	if fallen < 0:
+		return {"faellt_nach_bildern": -1}
+	return {"faellt_nach_bildern": fallen + 1, "spielbar_ms": snappedf(t + V.AUSBLENDEN_S * 1000.0, 1.0),
+		"groesstes_bild_danach_ms": snappedf(groesstes, 0.1)}
 
 
 ## Die ersten Bilder nach dem Laden einzeln: Dauer, Render-CPU, Grafikkarte und neu kompilierte Pipelines im Bild.
@@ -745,6 +781,10 @@ func _zusammenfassung(e: Dictionary) -> String:
 			teile.append("%.0f ms (Skripte %.0f, Zeichnen %.0f, Physik/Rest %.0f; GPU %.0f, %d Pipelines)" % [b["frame_ms"],
 				b.get("skripte_ms", -1.0), b.get("zeichnen_ms", -1.0), b.get("physik_und_rest_ms", -1.0), b["gpu_ms"], b["neue_pipelines"]])
 		z.append("Erste Bilder nach dem Laden: " + ", ".join(teile))
+	var vh: Dictionary = e.get("vorhang", {})
+	if int(vh.get("faellt_nach_bildern", -1)) > 0:
+		z.append("Ladebildschirm fiele nach %d Bildern: spielbar nach %.1f s, größtes Bild danach %.1f ms" % [
+			vh["faellt_nach_bildern"], float(vh["spielbar_ms"]) / 1000.0, vh["groesstes_bild_danach_ms"]])
 	var lo: Dictionary = e["lod"]
 	z.append("Sichtweiten-Wechsel (LOD): %d Knoten mit Sichtweite, %d Wechsel (%.2f/s), davon %d näher als 50 m, %d weich überblendet, %d hart und sichtbar (Aufploppen)" % [
 		lo["knoten_mit_sichtweite"], lo["wechsel"], lo["wechsel_pro_s"], lo["nahe_wechsel_unter_50m"], lo["weich_ueberblendet"], lo["sichtbar_hart"]])

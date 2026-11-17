@@ -55,6 +55,9 @@ func _initialize() -> void:
 	var eb: Array = e.get("anlauf_erste_bilder", [])
 	pruefe(eb.size() == 12 and (eb[0] as Dictionary).has("neue_pipelines") and (eb[3] as Dictionary).has("zeichnen_ms") and float((eb[0] as Dictionary).get("frame_ms", 0.0)) > 0.0,
 		"Erste 12 Bilder nach dem Laden einzeln (Dauer, Pipelines)")
+	var vh: Dictionary = e.get("vorhang", {})
+	pruefe(int(vh.get("faellt_nach_bildern", -1)) >= 5 and float(vh.get("spielbar_ms", 0.0)) > float(laden.get("einhaengen_und_ready_ms", 0.0)),
+		"Ladebildschirm: wann er fiele und das größte Bild danach (%s)" % str(vh))
 	var au: Dictionary = e.get("aufschluesselung", {})
 	var markt: Array = au.get("Markt", [])
 	var namen: Array = markt.map(func(z: Dictionary) -> String: return z["variante"])

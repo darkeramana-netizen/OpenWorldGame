@@ -178,12 +178,41 @@ func zum_hauptmenue() -> void:
 	_wechsle_zu(HAUPTMENUE)
 
 
+## Wechselt die Szene. Regionen mit Ladebildschirm (autoload/ladevorhang.gd): die Datei im Hintergrund laden, aufbauen
+## und den Vorhang erst heben, wenn die Darstellung ruhig läuft. Kehrt zurück, wenn der Vorhang weg ist.
 func _wechsle_zu(szene: String) -> void:
 	wechselt_szene = true
 	get_tree().paused = false
-	get_tree().change_scene_to_file(szene)
+	var vorhang := szene != HAUPTMENUE and not Ladevorhang.aus
+	if vorhang:
+		await Ladevorhang.zeige(REGIONEN.find_key(szene) if REGIONEN.find_key(szene) != null else "")
+	var ps := await _lade_im_hintergrund(szene, vorhang)
+	if vorhang:
+		Ladevorhang.schritt("Baue die Welt auf …", 0.3)
+		await get_tree().process_frame    # damit der Text auf dem Bild steht, bevor der Aufbau es anhält
+		await get_tree().process_frame
+	if ps != null:
+		get_tree().change_scene_to_packed(ps)
+	else:
+		get_tree().change_scene_to_file(szene)
 	await get_tree().scene_changed
 	wechselt_szene = false
+	if vorhang:
+		await Ladevorhang.warte_und_blende_aus()
+
+
+func _lade_im_hintergrund(szene: String, mit_fortschritt: bool) -> PackedScene:
+	if ResourceLoader.load_threaded_request(szene, "PackedScene", true) != OK:
+		return null
+	var fortschritt := []
+	while true:
+		var status := ResourceLoader.load_threaded_get_status(szene, fortschritt)
+		if status != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			break
+		if mit_fortschritt and not fortschritt.is_empty():
+			Ladevorhang.schritt("Lade die Karte …", 0.3 * float(fortschritt[0]))
+		await get_tree().process_frame
+	return ResourceLoader.load_threaded_get(szene) as PackedScene
 
 
 ## Bringt ältere Spielstände auf den aktuellen Aufbau der Welt.

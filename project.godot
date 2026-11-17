@@ -23,6 +23,7 @@ Spielstand="*res://autoload/spielstand.gd"
 Dialog="*res://autoload/dialog.gd"
 Speicher="*res://autoload/speicher.gd"
 Ereignisse="*res://autoload/ereignisse.gd"
+Ladevorhang="*res://autoload/ladevorhang.gd"
 
 [display]
 
