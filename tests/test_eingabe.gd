@@ -28,6 +28,8 @@ func druecke(code: Key) -> void:
 func _initialize() -> void:
 	var SP = root.get_node("Speicher"); var D = root.get_node("Dialog"); var S = root.get_node("Spielstand")
 	SP.ordner = "user://speicher_test_e/"
+	# ohne Ladebildschirm: hier zählt der Spielablauf gleich nach dem Wechsel (den Vorhang prüft test_ladevorhang)
+	root.get_node("Ladevorhang").aus = true
 	await process_frame
 	change_scene_to_file("res://szenen/oberflaeche/hauptmenue.tscn")
 	await scene_changed

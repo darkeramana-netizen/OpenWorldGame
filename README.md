@@ -6,7 +6,7 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 - Lore: [`docs/01-lore-bibel.md`](docs/01-lore-bibel.md)
 - Spielkonzept und Fahrplan: [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md)
-- Technik: Messgrundlage und Budgets (Phase 0): [`docs/03-messgrundlage.md`](docs/03-messgrundlage.md), Messwerkzeug `werkzeuge/messen/messung.gd`; Baucache für Burgbauten und Häuser (`szenen/welt/baucache.gd`, `user://baucache/`, abschaltbar mit `--ohne-baucache`)
+- Technik: Messgrundlage und Budgets (Phase 0): [`docs/03-messgrundlage.md`](docs/03-messgrundlage.md), Messwerkzeug `werkzeuge/messen/messung.gd`; Baucache für Burgbauten und Häuser (`szenen/welt/baucache.gd`, `user://baucache/`, abschaltbar mit `--ohne-baucache`); Ladebildschirm beim Regionswechsel (`autoload/ladevorhang.gd`)
 - Karten: [`docs/bilder/`](docs/bilder/)
 
 ![Die Region Drachenstein](docs/bilder/region-uebersicht.png)

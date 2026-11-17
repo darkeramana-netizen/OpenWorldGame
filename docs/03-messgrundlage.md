@@ -355,3 +355,25 @@ Die ersten Bilder nach dem Laden: 2.123 ms (273 neue Pipelines), 178 ms (48), 86
 Hänger fällt also mit dem Erzeugen der Render-Pipelines (Shader-Varianten) zusammen und ist in beiden Läufen gleich
 groß, der Pipeline-Cache von Godot und Treiber nimmt ihn offenbar nicht weg. Die Render-CPU zählt davon nur 65 ms; das
 Messwerkzeug teilt die ersten Bilder deshalb jetzt in Skripte, Zeichnen und Physik/Rest auf.
+
+### Ladebildschirm (burg-ausbau-11)
+
+Der Hänger im ersten Bild (gut 2 s für 273 Render-Pipelines) lässt sich in Godot 4.7 ohne Export nicht vorab wegbacken
+(den Shader Baker gibt es nur beim Export). Wie in den meisten Spielen fällt er deshalb hinter einen **Ladebildschirm**
+(`autoload/ladevorhang.gd`, Autoload `Ladevorhang`), der bei jedem Wechsel in eine Region steht (neues Spiel, Laden,
+Reisen; nicht im Hauptmenü):
+
+1. Der Vorhang deckt das Bild ab (Titel, Name der Region, ein Bedienhinweis, Fortschrittsbalken), die Eingabe ist gesperrt.
+2. Die Szene lädt im Hintergrund (`load_threaded_request`, Balken bis 30 %), dann wird sie aufgebaut.
+3. Die Welt läuft hinter dem Vorhang schon. Er bleibt, bis 5 Bilder in Folge keine neuen Pipelines brachten, schneller als
+   50 ms waren und alle Figuren gebaut sind (mindestens 5 Bilder, höchstens 15 s). Dann blendet er in 0,6 s aus und gibt
+   die Eingabe frei; erst danach kommt die Ankunftsblende der Reise.
+
+Der Spieler sieht so nach dem Laden nur noch flüssige Bilder. `Ladevorhang.aus = true` schaltet ihn ab (Tests, die den
+Spielablauf direkt nach dem Wechsel prüfen); `tests/test_ladevorhang.gd` prüft ihn selbst. Das Messwerkzeug wendet
+dieselbe Regel auf die ersten Bilder an und meldet, nach wie vielen Bildern der Vorhang fiele, wann das Spiel damit
+spielbar wäre und wie groß das größte Bild danach ist (Budget: kein Bild über 100 ms, nachdem der Spieler übernimmt).
+
+Außerdem: Ohne Grafik (Testläufe) lassen sich die Lagen in MultiMeshes nicht auslesen. Ein so angelegter Baucache hatte
+alle Stadthäuser im Ursprung. Die Bauten legen die Lagen deshalb zusätzlich in den Daten ab (Meta `lagen`), der Cache
+stellt sie beim Laden wieder her (Baucache-Version 2, geprüft in `tests/test_baucache.gd`).
