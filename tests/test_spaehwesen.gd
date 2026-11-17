@@ -196,6 +196,8 @@ func _initialize() -> void:
 	await process_frame
 	D = root.get_node("Dialog"); S = root.get_node("Spielstand"); SP = root.get_node("Speicher"); Z = root.get_node("Spielzeit")
 	SP.ordner = "user://speicher_test_spaehwesen/"
+	# ohne Ladebildschirm: hier zählt der Spielablauf gleich nach dem Wechsel (den Vorhang prüft test_ladevorhang)
+	root.get_node("Ladevorhang").aus = true
 	var zeilen: Array = []
 	S.belauscht.connect(func(t): zeilen.append(t))
 	S.meldung.connect(func(t): meldungen.append(t))

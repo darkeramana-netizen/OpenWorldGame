@@ -16,7 +16,11 @@ extends Resource
 ## Materialien aus Dateien bleiben Verweise. Im Code erzeugte Materialien tragen ihren Namen (resource_name) und werden
 ## beim Laden wieder gegen das gemeinsame Material getauscht, damit nicht jeder Bau eigene Kopien hat.
 
-const VERSION := 1     # erhöhen, wenn sich das Dateiformat ändert
+const VERSION := 2     # erhöhen, wenn sich das Dateiformat ändert
+## Metadaten eines MultiMeshInstance3D mit den Lagen seiner Exemplare (Array[Transform3D]). Die Lagen liegen sonst nur im
+## RenderingServer; ohne Grafik (Tests, Werkzeuge) behält Godot sie nicht, und ein Cache aus einem solchen Lauf hätte
+## alle Exemplare im Ursprung. Wer MultiMeshes baut, setzt diese Metadaten; beim Laden werden die Lagen daraus gesetzt.
+const LAGEN := "lagen"
 
 static var ordner := "user://baucache/"   # Tests nehmen einen eigenen
 static var aus := false                    # true: immer bauen (wie --ohne-baucache)
@@ -75,6 +79,8 @@ static func speichere(knoten: Node, schl: String) -> void:
 	var daten := (load("res://szenen/welt/baucache.gd") as GDScript).new() as Resource
 	for kind in knoten.get_children():
 		var gesetzt: Array[Node] = []
+		if kind is MultiMeshInstance3D and not kind.has_meta(LAGEN):
+			push_warning("Baucache: %s ist ein MultiMesh ohne Lagen in den Metadaten (LAGEN)" % kind.get_path())
 		if kind.get_script() == null:    # Torflügel, Tiere: nur sie selbst, ihre Kinder bauen sie in _ready
 			for k in kind.get_children():
 				_besitzer(k, kind, gesetzt)
@@ -99,6 +105,8 @@ static func speichere(knoten: Node, schl: String) -> void:
 
 
 static func _besitzer(n: Node, wurzel: Node, gesetzt: Array[Node]) -> void:
+	if n is MultiMeshInstance3D and not n.has_meta(LAGEN):
+		push_warning("Baucache: %s ist ein MultiMesh ohne Lagen in den Metadaten (LAGEN)" % n.get_path())
 	n.owner = wurzel
 	gesetzt.append(n)
 	if n.get_script() != null:
@@ -107,7 +115,15 @@ static func _besitzer(n: Node, wurzel: Node, gesetzt: Array[Node]) -> void:
 		_besitzer(k, wurzel, gesetzt)
 
 
+## Nach dem Laden: Lagen der MultiMeshes aus den Metadaten setzen, eingebettete Materialien gegen die gemeinsamen tauschen.
 static func _materialien_zurueck(n: Node, material: Callable) -> void:
+	if n is MultiMeshInstance3D and n.has_meta(LAGEN) and (n as MultiMeshInstance3D).multimesh != null:
+		var mm := (n as MultiMeshInstance3D).multimesh
+		var lagen: Array = n.get_meta(LAGEN)
+		mm.instance_count = 0
+		mm.instance_count = lagen.size()
+		for i in lagen.size():
+			mm.set_instance_transform(i, lagen[i])
 	var mesh: Mesh = null
 	if n is MeshInstance3D:
 		mesh = (n as MeshInstance3D).mesh

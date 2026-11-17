@@ -62,6 +62,18 @@ func _initialize() -> void:
 			if erste == "":
 				erste = "\n       frisch: %s\n       Cache:  %s" % [bild_bau[i].left(240), bild_cache[i].left(240)]
 	pruefe(abweichend == 0, "Bau aus dem Cache gleicht dem frisch gebauten (Lagen, Meshes, Materialien, Kollision, Licht)%s" % erste)
+	var ohne_lagen := 0
+	var mmis := 0
+	for n in r2.find_children("*", "MultiMeshInstance3D", true, false):
+		var eltern: Script = n.get_parent().get_script()
+		if eltern != null and eltern.resource_path.ends_with("stadthaeuser.gd"):
+			mmis += 1
+			var lagen: Array = n.get_meta("lagen", [])
+			if lagen.size() != (n as MultiMeshInstance3D).multimesh.instance_count or lagen.is_empty() \
+					or lagen.all(func(t: Transform3D) -> bool: return t.origin == Vector3.ZERO):
+				ohne_lagen += 1
+	pruefe(mmis > 0 and ohne_lagen == 0,
+		"Häuser (MultiMesh) tragen ihre Lagen in den Daten, auch ohne Grafik (%d MultiMeshes, %d ohne)" % [mmis, ohne_lagen])
 	pruefe(_gemeinsame_materialien(r2), "Im Code erzeugte Materialien sind nach dem Laden wieder die gemeinsamen (keine Kopien je Bau)")
 	var pferde := 0
 	var doppelt := 0
@@ -129,7 +141,8 @@ func _bild(r: Node) -> PackedStringArray:
 			elif k is MultiMeshInstance3D and (k as MultiMeshInstance3D).multimesh != null:
 				var mm := (k as MultiMeshInstance3D).multimesh
 				m = mm.mesh
-				z += " n=%d" % mm.instance_count
+				var lagen: Array = k.get_meta("lagen", [])
+				z += " n=%d lagen=%d %s" % [mm.instance_count, lagen.size(), str(lagen.hash())]
 			if m != null:
 				for i in m.get_surface_count():
 					var mt := m.surface_get_material(i)

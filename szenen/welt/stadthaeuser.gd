@@ -115,10 +115,12 @@ func _baue_neu() -> void:
 		var form: Array = FORMEN[f]
 		var kiste := BoxShape3D.new()
 		kiste.size = Vector3(form[0] + 2 * VORKRAGUNG, EG + OG * form[2], form[1] + 2 * VORKRAGUNG)
+		var lagen: Array[Transform3D] = []
 		for k in je_form[fv].size():
 			var h: Vector4 = haeuser[je_form[fv][k]]
 			var t := Transform3D(Basis(Vector3.UP, deg_to_rad(h.w)), Vector3(h.x, h.y, h.z))
 			mm.set_instance_transform(k, t)
+			lagen.append(t)
 			var form_k := CollisionShape3D.new()
 			if begehbar:
 				form_k.shape = _form_cache[_schluessel(f, fv % VARIANTEN)]
@@ -141,6 +143,7 @@ func _baue_neu() -> void:
 		var mmi := MultiMeshInstance3D.new()
 		mmi.name = "Form%d_%d" % [f, fv % VARIANTEN]
 		mmi.multimesh = mm
+		mmi.set_meta(Baucache.LAGEN, lagen)    # die Lagen gehören in die Daten (siehe baucache.gd)
 		add_child(mmi)
 		var huelle: ArrayMesh = _huellen_cache.get(_schluessel(f, fv % VARIANTEN))
 		if huelle != null:

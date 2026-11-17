@@ -38,10 +38,14 @@ static func zwilling(anzeige: GeometryInstance3D, huelle: ArrayMesh) -> Geometry
 		mm.transform_format = MultiMesh.TRANSFORM_3D
 		mm.mesh = huelle
 		mm.instance_count = mm_alt.instance_count
+		# Lagen aus den Daten der Anzeige, wenn sie sie trägt: Ohne Grafik (Tests) merkt sich Godot keine Lagen im MultiMesh
+		var lagen: Variant = anzeige.get_meta("lagen", null)
 		for i in mm_alt.instance_count:
-			mm.set_instance_transform(i, mm_alt.get_instance_transform(i))
+			mm.set_instance_transform(i, lagen[i] if lagen != null else mm_alt.get_instance_transform(i))
 		var mmi := MultiMeshInstance3D.new()
 		mmi.multimesh = mm
+		if lagen != null:
+			mmi.set_meta("lagen", lagen)
 		z = mmi
 	else:
 		var mi := MeshInstance3D.new()

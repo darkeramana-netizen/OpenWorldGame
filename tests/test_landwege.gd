@@ -129,6 +129,8 @@ func _initialize() -> void:
 	await process_frame
 	D = root.get_node("Dialog"); S = root.get_node("Spielstand"); SP = root.get_node("Speicher"); Z = root.get_node("Spielzeit")
 	SP.ordner = "user://speicher_test_landwege/"
+	# ohne Ladebildschirm: hier zählt der Spielablauf gleich nach dem Wechsel (den Vorhang prüft test_ladevorhang)
+	root.get_node("Ladevorhang").aus = true
 	S.ort_betreten.connect(func(n, _u): orte.append(n))
 	S.meldung.connect(func(t): meldungen.append(t))
 	D.zeile_gezeigt.connect(func(_s, _t, o): optionen = o)
