@@ -55,7 +55,7 @@ func _initialize() -> void:
 	var au: Dictionary = e.get("aufschluesselung", {})
 	var markt: Array = au.get("Markt", [])
 	var namen: Array = markt.map(func(z: Dictionary) -> String: return z["variante"])
-	pruefe(au.size() == 3 and au.has("_info") and "SDFGI_Zelle_doppelt" in namen and "Schatten_bis_150m" in namen and "alles" in namen and "SDFGI_aus" in namen and "Sonnenschatten_aus" in namen and "Figuren_aus" in namen
+	pruefe(au.size() == 3 and au.has("_info") and "SDFGI_Zelle_doppelt" in namen and "Schatten_bis_150m" in namen and "Ueberblendung_aus" in namen and "Schattenhuelle_aus" in namen and "alles" in namen and "SDFGI_aus" in namen and "Sonnenschatten_aus" in namen and "Figuren_aus" in namen
 			and "Bewuchs_aus" in namen and "alles_am_ende" in namen,
 		"GPU-Aufschlüsselung an %d Blickpunkten mit %d Varianten" % [au.size(), namen.size()])
 	print("\nFehler: %d" % fehler)

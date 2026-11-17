@@ -334,6 +334,37 @@ func _aufschluesselung(region: String) -> Dictionary:
 			varianten.append(["SDFGI_4_Stufen", func() -> void: env.sdfgi_cascades = 4, func() -> void: env.sdfgi_cascades = kaskaden])
 		varianten.append(["SDFGI_Zelle_doppelt", func() -> void: env.sdfgi_min_cell_size = zelle * 2.0,
 			func() -> void: env.sdfgi_min_cell_size = zelle])
+	# Überblendung aus: alle Dinge, die weich ausblenden, blenden hart (zeigt, was die Durchsichtigkeit im Übergang kostet)
+	var blendende: Array = []
+	for n: Node in _instanz.find_children("*", "GeometryInstance3D", true, false):
+		if (n as GeometryInstance3D).visibility_range_fade_mode != GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED:
+			blendende.append([n, (n as GeometryInstance3D).visibility_range_fade_mode])
+	if not blendende.is_empty():
+		varianten.append(["Ueberblendung_aus", func() -> void:
+			for e: Array in blendende:
+				if is_instance_valid(e[0]):
+					(e[0] as GeometryInstance3D).visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED,
+			func() -> void:
+				for e: Array in blendende:
+					if is_instance_valid(e[0]):
+						(e[0] as GeometryInstance3D).visibility_range_fade_mode = e[1]])
+	# Schattenhülle aus: die Hüllen (Knoten „…_Schatten“, nur Schatten) weg, die Bauten werfen wieder selbst Schatten
+	var huellen: Array = []
+	for n: Node in _instanz.find_children("*_Schatten", "GeometryInstance3D", true, false):
+		var gi := n as GeometryInstance3D
+		if gi.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY:
+			var bau := gi.get_parent().get_node_or_null(NodePath(String(gi.name).trim_suffix("_Schatten"))) as GeometryInstance3D
+			if bau != null:
+				huellen.append([gi, bau])
+	if not huellen.is_empty():
+		varianten.append(["Schattenhuelle_aus", func() -> void:
+			for e: Array in huellen:
+				(e[0] as GeometryInstance3D).visible = false
+				(e[1] as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON,
+			func() -> void:
+				for e: Array in huellen:
+					(e[0] as GeometryInstance3D).visible = true
+					(e[1] as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF])
 	var klein_schatten: Array = []      # [GeometryInstance3D, cast_shadow vorher]: Dinge unter 1 m mit Schatten
 	for n: Node in _instanz.find_children("*", "GeometryInstance3D", true, false):
 		var gi := n as GeometryInstance3D
