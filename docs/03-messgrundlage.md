@@ -451,7 +451,7 @@ Eingebaut zum Vergleich, ohne das eigene Gelände anzutasten:
   `werkzeuge/gelaende_t3d_shader.gd` aus dem Shader von Terrain3D (Gitter, Detailstufen, Löcher, Normalen aus den
   Höhen) und unserem Material; nach einem Update von Terrain3D neu erzeugen.
 - Das Messwerkzeug schreibt mit, welches Gelände gemessen wurde (`Gelände eigen` / `Gelände terrain3d`).
-- `tests/test_terrain3d.gd` (15 Punkte): Standard bleibt eigen; mit Terrain3D gleiche Höhen an 4.000 Rasterpunkten,
+- `tests/test_terrain3d.gd` (14 Punkte): Standard bleibt eigen; mit Terrain3D gleiche Höhen an 4.000 Rasterpunkten,
   gleiche Löcher, Rand, Kollision, das Gitter folgt der Kamera.
 
 | Container, ohne Grafik, je 2 Läufe | eigenes Gelände | Terrain3D |
