@@ -104,6 +104,8 @@ immer geladen.
      Jetzt baut die Zellwelt beim Neuberechnen kurz alle Zellen (`Zellwelt.baue_alle()`), die Bäume stehen genau wie
      vor den Zellen (1.411 Nadel-, 396 Laubbäume, 473 Büsche, 50 Felsen), und `test_baucache` prüft das (frisch,
      aus dem Cache und ohne eine geladene Zelle: dieselben Bäume).
+     Container, ohne Grafik: erstes Bild nach dem Laden 950 ms ohne und 341 ms mit Baum-Cache, bis 5 Bilder 9,6 statt
+     9,2 s.
 4. **Spielstand je Zelle** für veränderliche Dinge.
 5. **Fernmodelle** für Burg, Gravecrest und Gravemarch, danach auch diese in Zellen.
 6. **Entscheidung** zusammenhängende Welt ja oder nein.
