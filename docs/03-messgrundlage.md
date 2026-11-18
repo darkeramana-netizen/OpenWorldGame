@@ -395,3 +395,34 @@ Aufteilung der ersten Bilder (hinter dem Vorhang):
 Das Zeichnen im ersten Bild ist die Pipeline-Erzeugung. Die übrigen gut 0,9 s (Skripte in Bild 1 und 2, Physik/Rest in
 Bild 1, 3 und 4) verlängern nur die Zeit hinter dem Vorhang; wer die Zeit bis spielbar unter 8 s drücken will, findet
 sie dort.
+
+### Punkt 3: Gelände – Terrain3D im Vergleich (burg-ausbau-12)
+
+Das eigene Gelände (`szenen/welt/gelaende.gd`) zeichnet alle 881 × 581 Rasterpunkte (2,5 m Abstand) in voller
+Auflösung: 140 Kacheln mit zusammen gut 1 Mio. Dreiecken, auch weit hinten und ohne Detailstufen. **Terrain3D 1.1.0**
+(`addons/terrain_3d`, MIT, läuft mit Godot 4.5 bis 4.8, kein eigener Engine-Build) zeichnet stattdessen ein Gitter um
+die Kamera, das nach außen gröber wird (Clipmap, Übergänge stufenlos auf der Grafikkarte); die Höhen liegen als
+Texturen auf der Grafikkarte.
+
+Eingebaut zum Vergleich, ohne das eigene Gelände anzutasten:
+
+- `gelaende.gd` hat die Einstellung `darstellung` ("eigen" oder "terrain3d"), Standard bleibt "eigen". Die
+  Startargumente `--terrain3d` und `--eigenes-gelaende` gehen vor, auch beim Messwerkzeug.
+- Nur die Fläche zeichnet Terrain3D (`szenen/welt/gelaende_terrain3d.gd`). Kollision, `hoehe_bei()` und die Löcher
+  (Tunnel) baut weiter `gelaende.gd`, damit Personen, Tiere und alles, was auf den Boden gesetzt wird, genau wie bisher
+  funktionieren. Außerhalb der Daten ist in Terrain3D Loch (sonst stünde dort Gelände auf Höhe 0).
+- Beide zeichnen mit demselben Geländematerial: Es steht jetzt in `szenen/welt/gelaende_material.gdshaderinc` und wird
+  von `gelaende.gdshader` (eigen) und `gelaende_t3d.gdshader` (Terrain3D) eingebunden. Den Terrain3D-Shader erzeugt
+  `werkzeuge/gelaende_t3d_shader.gd` aus dem Shader von Terrain3D (Gitter, Detailstufen, Löcher, Normalen aus den
+  Höhen) und unserem Material; nach einem Update von Terrain3D neu erzeugen.
+- Das Messwerkzeug schreibt mit, welches Gelände gemessen wurde (`Gelände eigen` / `Gelände terrain3d`).
+- `tests/test_terrain3d.gd` (15 Punkte): Standard bleibt eigen; mit Terrain3D gleiche Höhen an 4.000 Rasterpunkten,
+  gleiche Löcher, Rand, Kollision, das Gitter folgt der Kamera.
+
+| Container, ohne Grafik, je 2 Läufe | eigenes Gelände | Terrain3D |
+|---|---|---|
+| `_ready` des Geländes | 1.247 / 1.369 ms | **357 / 255 ms** |
+| Dreiecke in Gelände-Meshes | 1,02 Mio. | 0 (Gitter auf der Grafikkarte) |
+
+Was auf dem Referenzrechner zählt (Grafikkarte, Draw Calls, Dreiecke je Bild, Aufploppen am Horizont), zeigen nur
+Messungen mit Grafik: einmal mit `--eigenes-gelaende`, einmal mit `--terrain3d`.
