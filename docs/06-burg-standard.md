@@ -87,7 +87,11 @@ Die Burg wird so realistisch und detailreich gebaut, wie Godot es hergibt. Dafü
 
 1. Alle Testreihen grün (Begehbarkeit, Platzierung, Zellen, Baucache).
 2. Foto-Rundgang mit festen Blickpunkten (Gesamtansicht wie Referenzbild, jedes Tor, jeder Hof, Wehrgänge, Türme,
-   Innenräume, Hafen), ohne offene Mängel.
+   Innenräume, Hafen), ohne offene Mängel. Werkzeug: `werkzeuge/rundgang/rundgang.gd`, Blickpunkte je Burg in
+   `werkzeuge/rundgang/<region>.json` (Kamera, Ziel, Uhrzeit). Aufruf mit Grafik:
+   `godot --path . --script res://werkzeuge/rundgang/rundgang.gd -- --grafik episch` (Fotos und `inhalt.txt` unter
+   `user://rundgang/`; `--nur 08` für einzelne Blickpunkte). Im Container lässt sich nicht fotografieren (ohne
+   Grafikkarte dauern schon die ersten Bilder eine Viertelstunde), der Rundgang läuft auf dem Referenzrechner.
 3. Messung auf dem Referenzrechner innerhalb der Budgets.
 4. Begehung durch dich im Spiel, ohne offene Mängel.
 

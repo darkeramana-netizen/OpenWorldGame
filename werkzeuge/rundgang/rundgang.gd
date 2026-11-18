@@ -71,7 +71,11 @@ func _initialize() -> void:
 			await process_frame
 			bilder += 1
 		var datei: String = ausgabe.path_join(String(p["name"]) + ".png")
-		root.get_viewport().get_texture().get_image().save_png(datei)
+		var bild := root.get_viewport().get_texture().get_image()
+		if bild == null:
+			printerr("Rundgang: kein Bild (ohne Grafik gestartet? Bitte ohne --headless)")
+			continue
+		bild.save_png(datei)
 		liste.append("%s  (Uhr %.1f, Kamera %s → %s)" % [p["name"], float(p.get("uhr", 10.0)), str(p["von"]), str(p["auf"])])
 		print("FOTO ", ProjectSettings.globalize_path(datei))
 	var info := FileAccess.open(ausgabe.path_join("inhalt.txt"), FileAccess.WRITE)
