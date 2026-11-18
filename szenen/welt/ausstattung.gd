@@ -125,6 +125,11 @@ func _baue() -> void:
 		i += 5
 	_baue_arten(je_art, self)
 	var nachladen := Zellteil.nachladen_an(self)
+	# Formen aller Arten jetzt bauen (beim Laden), nicht erst in der ersten Zelle, die eine Art braucht: Das wäre mitten
+	# im Spiel ein langes Bild (gemessen 144 ms)
+	for k: Vector2i in je_zelle:
+		for art: int in je_zelle[k]:
+			_mesh(art)
 	for k: Vector2i in je_zelle:
 		var name_ := "Zelle_%d_%d" % [k.x, k.y]
 		if nachladen:
