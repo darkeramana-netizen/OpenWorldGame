@@ -83,7 +83,27 @@ immer geladen.
    - **Bäume** bleiben immer sichtbar; nur ihre **Stammkollision** liegt in 53 Zellen à 128 m (Ladeabstand 150 m).
      Am Ursprung haben 43 von 1.807 Stämmen Kollision.
    - `tests/test_zellen_bau.gd` jetzt 17 Punkte (Natur, Stämme dazu).
-   - Offen: Das Pflanzen der Bäume (386 ms über Strahlen) ist immer gleich und könnte in den Baucache.
+   - **Referenzrechner** (1280 × 720, `docs/messungen/messung_drachenstein_zellen3_2026-11-18T20-12-58.json` und
+     `…_ohne_zellen3_2026-11-18T20-15-40.json`), Stadtstrecke:
+
+     | | ohne Zellen | mit Zellen |
+     |---|---|---|
+     | spielbar nach | 8,1 s | 8,0 s |
+     | Arbeitsspeicher Anlauf / Fahrt | 584 / 600 MB | 547 / 581 MB |
+     | Draw Calls p95 Fahrt | 3.901 | 3.708 |
+     | Knoten / MultiMeshes in der Szene | 12.191 / 1.429 | 9.899 / 721 |
+     | Frame p95, Grafikkarte p50 | 7,6 / 5,0 ms | 7,6 / 5,0 ms |
+     | Hänger in der Fahrt | 0 | 0 |
+     | längster Aufbau einer Zelle | – | 13,9 ms (117 gebaut, 44 freigegeben) |
+
+     Beim Spielen keine Fehler. Die im Container gemessenen Hänger (6 statt 3 über 50 ms) waren Rauschen.
+   - **Bäume im Baucache:** Das Pflanzen über Strahlen (386 ms) hängt nur von Code, Szene und Geländedaten ab
+     (Schlüssel: Baucache-Schlüssel plus MD5 von `hoehen.r32` und der Maske) und liegt ab dem zweiten Start als
+     `<schlüssel>.bewuchs` im Baucache. Gefunden dabei: Seit Ausstattung und Natur in Zellen liegen, trafen die Strahlen
+     sie nur in den Zellen, die beim Start schon geladen waren; wo Bäume wuchsen, hing damit leicht vom Startpunkt ab.
+     Jetzt baut die Zellwelt beim Neuberechnen kurz alle Zellen (`Zellwelt.baue_alle()`), die Bäume stehen genau wie
+     vor den Zellen (1.411 Nadel-, 396 Laubbäume, 473 Büsche, 50 Felsen), und `test_baucache` prüft das (frisch,
+     aus dem Cache und ohne eine geladene Zelle: dieselben Bäume).
 4. **Spielstand je Zelle** für veränderliche Dinge.
 5. **Fernmodelle** für Burg, Gravecrest und Gravemarch, danach auch diese in Zellen.
 6. **Entscheidung** zusammenhängende Welt ja oder nein.
