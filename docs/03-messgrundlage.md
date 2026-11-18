@@ -377,3 +377,21 @@ spielbar wäre und wie groß das größte Bild danach ist (Budget: kein Bild üb
 Außerdem: Ohne Grafik (Testläufe) lassen sich die Lagen in MultiMeshes nicht auslesen. Ein so angelegter Baucache hatte
 alle Stadthäuser im Ursprung. Die Bauten legen die Lagen deshalb zusätzlich in den Daten ab (Meta `lagen`), der Cache
 stellt sie beim Laden wieder her (Baucache-Version 2, geprüft in `tests/test_baucache.gd`).
+
+**Gemessen auf dem Referenzrechner** (`docs/messungen/messung_drachenstein_vorhang_2026-11-18T16-13-45.json`, Strecke
+kurz): Der Vorhang fiele nach 10 Bildern, das Spiel ist nach **8,4 s** spielbar, das größte Bild danach dauert
+**11,5 ms** (Budget kein Bild über 100 ms nach dem Laden: ✔). Das Laden selbst liegt bei 7,7 s.
+
+Aufteilung der ersten Bilder (hinter dem Vorhang):
+
+| Bild | Dauer | Skripte | Zeichnen | Physik/Rest | neue Pipelines |
+|---|---|---|---|---|---|
+| 1 | 2.143 ms | 165 | 1.425 | 553 | 273 |
+| 2 | 181 ms | 160 | 11 | 10 | 48 |
+| 3 | 85 ms | 2 | 5 | 78 | 0 |
+| 4 | 34 ms | 1 | 5 | 28 | 20 |
+| ab 5 | 9 bis 13 ms | 1 | 4 bis 7 | 4 bis 6 | 0 bis 2 |
+
+Das Zeichnen im ersten Bild ist die Pipeline-Erzeugung. Die übrigen gut 0,9 s (Skripte in Bild 1 und 2, Physik/Rest in
+Bild 1, 3 und 4) verlängern nur die Zeit hinter dem Vorhang; wer die Zeit bis spielbar unter 8 s drücken will, findet
+sie dort.
