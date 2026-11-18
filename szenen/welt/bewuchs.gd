@@ -26,6 +26,12 @@ extends Node3D
 @export var bereich: Rect2 = Rect2()
 ## Zusätzlich fest gesetzte Bäume (x, y, z, Größe), z. B. die Waldstücke an den Landstraßen; negative Größe: Laubbaum.
 @export var feste_baeume: PackedVector4Array = PackedVector4Array()
+## > 0: Kollision der Stämme nach Zellen dieser Größe (Meter) trennen; mit zell_laden_ab > 0 entsteht sie erst, wenn
+## der Spieler nah ist (autoload/zellwelt.gd). Die Bäume selbst bleiben immer sichtbar (von weit her zu sehen).
+@export var zellgroesse := 0.0
+@export var zell_laden_ab := 0.0
+
+const Zellteil := preload("res://szenen/welt/zellteil.gd")
 
 const RASTER := 4.0             # Prüfraster für Bäume in m
 const GRAS_ZELLE := 12.0
@@ -235,22 +241,49 @@ func _zeige(name_: String, mesh: Mesh, exemplare: Array, material: Material, sch
 	add_child(mmi)
 
 
-## Stämme sind fest: ein Körper mit einem Zylinder je Baum.
+## Stämme sind fest: ein Körper mit einem Zylinder je Baum (mit zellgroesse ein Körper je Zelle).
 func _baue_stammkollision(baeume: Array) -> void:
 	if baeume.is_empty():
 		return
+	var orte := PackedVector3Array()
+	for b in baeume:
+		orte.append((b[0] as Transform3D).origin)
+	if zellgroesse <= 0.0:
+		add_child(_staemme(orte))
+		return
+	var je_zelle := {}     # Zelle → Orte (gepackte Arrays werden kopiert: daher zurückschreiben)
+	for p in orte:
+		var w := global_transform * p
+		var k := Vector2i(floori(w.x / zellgroesse), floori(w.z / zellgroesse))
+		var liste: PackedVector3Array = je_zelle.get(k, PackedVector3Array())
+		liste.append(p)
+		je_zelle[k] = liste
+	var nachladen := Zellteil.nachladen_an(self)
+	var zellen := Node3D.new()
+	zellen.name = "StammZellen"
+	add_child(zellen)
+	for k: Vector2i in je_zelle:
+		var name_ := "Zelle_%d_%d" % [k.x, k.y]
+		if nachladen:
+			zellen.add_child(Zellteil.mit_bauer(name_, k, zellgroesse, zell_laden_ab, _staemme.bind(je_zelle[k])))
+		else:
+			var z := _staemme(je_zelle[k])
+			z.name = name_
+			zellen.add_child(z)
+
+
+func _staemme(orte: PackedVector3Array) -> StaticBody3D:
 	var koerper := StaticBody3D.new()
 	koerper.name = "Staemme"
 	var form := CylinderShape3D.new()
 	form.radius = 0.35
 	form.height = 4.0
-	for b in baeume:
-		var t: Transform3D = b[0]
+	for p in orte:
 		var k := CollisionShape3D.new()
 		k.shape = form
-		k.position = t.origin + Vector3(0, 2.0, 0)
+		k.position = p + Vector3(0, 2.0, 0)
 		koerper.add_child(k)
-	add_child(koerper)
+	return koerper
 
 
 func _material(biegsam: float, detail: float, spitze: float, rau: float) -> ShaderMaterial:

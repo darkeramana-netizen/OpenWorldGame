@@ -30,13 +30,20 @@ extends Node3D
 ## Modelle, deren Stücke beim Start nur dann angehoben werden, wenn sie unter einer Oberfläche begraben sind (z. B.
 ## Pflanzen, über die sich das Felsmassiv legt); was richtig liegt (ein Pilz auf einem Stamm), bleibt
 @export var heben := PackedInt32Array()
+## > 0: Stücke nach Zellen dieser Größe (Meter, Welt-x/z) trennen; mit zell_laden_ab > 0 wird jede Zelle (Bild und
+## Kollision) erst gebaut, wenn der Spieler nah ist (autoload/zellwelt.gd). Der Ladeabstand muss über der Sichtweite
+## liegen, sonst ploppen die Stücke auf.
+@export var zellgroesse := 0.0
+@export var zell_laden_ab := 0.0
 
 const SCHRITT := 7
+const Zellteil := preload("res://szenen/welt/zellteil.gd")
 
 var _nur_hoehen := false
 var _wo := {}        # Nummer des Stücks → [MultiMesh, Exemplar, Lage] (zum Nachsetzen der Höhe)
 var _formen := {}    # Nummer des Stücks → CollisionShape3D
 var _koerper: StaticBody3D
+var _modelle := {}   # Nummer des Modells → [Mesh (getönt), Lage im Modell, Flächen der Kollisionsform oder leer]
 
 
 func _ready() -> void:
@@ -52,8 +59,8 @@ func _ready() -> void:
 		var boden := load("res://szenen/welt/ausstattung.gd") as GDScript
 		# die eigene Kollision zählt nicht als Boden (sonst landete ein Fass auf sich selbst)
 		var ohne: Array[RID] = []
-		if _koerper != null and is_instance_valid(_koerper):
-			ohne.append(_koerper.get_rid())
+		for k in find_children("*", "StaticBody3D", true, false):
+			ohne.append((k as StaticBody3D).get_rid())
 		var neu := stuecke.duplicate()
 		var i := 0
 		while i + SCHRITT - 1 < neu.size():
@@ -86,16 +93,11 @@ func _versetze(nr: int, dy: float) -> void:
 func _baue() -> void:
 	_wo.clear()
 	_formen.clear()
+	_modelle.clear()
 	for kind in get_children():
 		kind.queue_free()
-	var koerper: StaticBody3D = null
-	if not Engine.is_editor_hint():
-		koerper = StaticBody3D.new()
-		koerper.name = "Kollision"
-		add_child(koerper)
-	_koerper = koerper
+	_koerper = null
 	for m in modelle.size():
-		var teil_lage := _teil_lage(modelle[m])
 		var mesh := _mesh(modelle[m], false)
 		if mesh == null:
 			continue
@@ -110,57 +112,68 @@ func _baue() -> void:
 				if m < farben.size() and farben[m] != Color.WHITE:
 					(mat as BaseMaterial3D).albedo_color = farben[m]
 				mesh.surface_set_material(f, mat)
-		var lagen: Array[Transform3D] = []
+		var punkte := PackedVector3Array()
+		if not Engine.is_editor_hint() and not m in ohne_kollision:
+			var form := _mesh(modelle[m], true)
+			if form != null:
+				punkte = form.get_faces()
+		_modelle[m] = [mesh, _teil_lage(modelle[m]), punkte]
+	var alle: Array[int] = []
+	for i in stuecke.size() / SCHRITT:
+		if _modelle.has(int(stuecke[i * SCHRITT])):
+			alle.append(i)
+	if zellgroesse <= 0.0:
+		_koerper = _baue_stuecke(alle, self)
+		return
+	# in Zellen: Stücke nach der Zelle ihres Ortes (Welt)
+	var je_zelle := {}
+	for i in alle:
+		var w := Vector3(stuecke[i * SCHRITT + 1], stuecke[i * SCHRITT + 2], stuecke[i * SCHRITT + 3])
+		if is_inside_tree():
+			w = global_transform * w
+		(je_zelle.get_or_add(Vector2i(floori(w.x / zellgroesse), floori(w.z / zellgroesse)), []) as Array).append(i)
+	var nachladen := Zellteil.nachladen_an(self)
+	for k: Vector2i in je_zelle:
+		var name_ := "Zelle_%d_%d" % [k.x, k.y]
 		var nummern: Array[int] = []
-		var i := 0
-		while i + SCHRITT - 1 < stuecke.size():
-			if int(stuecke[i]) == m:
-				lagen.append(_lage(i) * teil_lage)
-				nummern.append(i / SCHRITT)
-			i += SCHRITT
-		if lagen.is_empty():
-			continue
+		nummern.assign(je_zelle[k])
+		if nachladen:
+			add_child(Zellteil.mit_bauer(name_, k, zellgroesse, zell_laden_ab, _zellinhalt.bind(nummern)))
+		else:
+			var z := _zellinhalt(nummern)
+			z.name = name_
+			add_child(z)
+
+
+## Inhalt einer Zelle: ihre Stücke (aus den aktuellen Höhen) mit eigener Kollision
+func _zellinhalt(nummern: Array[int]) -> Node3D:
+	var z := Node3D.new()
+	_baue_stuecke(nummern, z)
+	return z
+
+
+## MultiMeshes (je Modell und Kachel) und Kollision für die Stücke mit diesen Nummern unter ziel
+func _baue_stuecke(nummern: Array[int], ziel: Node3D) -> StaticBody3D:
+	var koerper: StaticBody3D = null
+	if not Engine.is_editor_hint():
+		koerper = StaticBody3D.new()
+		koerper.name = "Kollision"
+		ziel.add_child(koerper)
+	var je_modell := {}
+	for nr in nummern:
+		(je_modell.get_or_add(int(stuecke[nr * SCHRITT]), []) as Array).append(nr)
+	for m: int in je_modell:
+		var mesh: Mesh = _modelle[m][0]
+		var teil_lage: Transform3D = _modelle[m][1]
+		var punkte: PackedVector3Array = _modelle[m][2]
 		var gruppen := {}
-		var gruppen_nr := {}
-		for j in lagen.size():
-			var lage := lagen[j]
+		for nr: int in je_modell[m]:
+			var lage := _lage(nr * SCHRITT) * teil_lage
 			var schluessel := Vector2i(0, 0)
 			if kachel > 0.0:
 				schluessel = Vector2i(floori(lage.origin.x / kachel), floori(lage.origin.z / kachel))
-			if not gruppen.has(schluessel):
-				gruppen[schluessel] = []
-				gruppen_nr[schluessel] = []
-			gruppen[schluessel].append(lage)
-			gruppen_nr[schluessel].append(nummern[j])
-		for schluessel: Vector2i in gruppen:
-			var mitte := Vector3((schluessel.x + 0.5) * kachel, 0.0, (schluessel.y + 0.5) * kachel) if kachel > 0.0 else Vector3.ZERO
-			var teil: Array = gruppen[schluessel]
-			var mm := MultiMesh.new()
-			mm.transform_format = MultiMesh.TRANSFORM_3D
-			mm.mesh = mesh
-			mm.instance_count = teil.size()
-			for k in teil.size():
-				var t: Transform3D = teil[k]
-				var lokal := Transform3D(t.basis, t.origin - mitte)
-				mm.set_instance_transform(k, lokal)
-				_wo[gruppen_nr[schluessel][k]] = [mm, k, lokal]
-			var inst := MultiMeshInstance3D.new()
-			inst.name = "Felsen%d_%d_%d" % [m, schluessel.x, schluessel.y]
-			inst.multimesh = mm
-			inst.position = mitte
-			inst.visibility_range_end = sichtweite
-			if sichtweite < 1000.0:
-				# weich ausblenden statt aufploppen (Phase 1, docs/03-messgrundlage.md)
-				inst.visibility_range_end_margin = sichtweite * 0.12
-				inst.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-			add_child(inst)
-		if koerper != null and not m in ohne_kollision:
-			var form := _mesh(modelle[m], true)
-			if form == null:
-				continue
-			var punkte := form.get_faces()
-			for j in lagen.size():
-				var lage := lagen[j]
+			(gruppen.get_or_add(schluessel, []) as Array).append([nr, lage])
+			if koerper != null and not punkte.is_empty():
 				var shape := ConcavePolygonShape3D.new()
 				var flaechen := PackedVector3Array()
 				flaechen.resize(punkte.size())
@@ -170,7 +183,30 @@ func _baue() -> void:
 				var cs := CollisionShape3D.new()
 				cs.shape = shape
 				koerper.add_child(cs)
-				_formen[nummern[j]] = cs
+				_formen[nr] = cs
+		for schluessel: Vector2i in gruppen:
+			var mitte := Vector3((schluessel.x + 0.5) * kachel, 0.0, (schluessel.y + 0.5) * kachel) if kachel > 0.0 else Vector3.ZERO
+			var teil: Array = gruppen[schluessel]
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.mesh = mesh
+			mm.instance_count = teil.size()
+			for k in teil.size():
+				var t: Transform3D = teil[k][1]
+				var lokal := Transform3D(t.basis, t.origin - mitte)
+				mm.set_instance_transform(k, lokal)
+				_wo[teil[k][0]] = [mm, k, lokal]
+			var inst := MultiMeshInstance3D.new()
+			inst.name = "Felsen%d_%d_%d" % [m, schluessel.x, schluessel.y]
+			inst.multimesh = mm
+			inst.position = mitte
+			inst.visibility_range_end = sichtweite
+			if sichtweite < 1000.0:
+				# weich ausblenden statt aufploppen (Phase 1, docs/03-messgrundlage.md)
+				inst.visibility_range_end_margin = sichtweite * 0.12
+				inst.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			ziel.add_child(inst)
+	return koerper
 
 
 ## Lage eines Stücks: drehen (Front hangabwärts), nach hinten kippen, vergrößern

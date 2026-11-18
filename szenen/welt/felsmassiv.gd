@@ -90,6 +90,8 @@ func _setze_bewuchs() -> void:
 	f.set("farben", PackedColorArray())
 	f.set("kachel", 96.0)       # groß genug, dass je Kachel und Modell mehrere Stücke zusammenkommen (Draw Calls)
 	f.set("sichtweite", 260.0)
+	f.set("zellgroesse", 96.0)      # erst gebaut, wenn der Spieler nah ist (Phase 2, docs/05-phase2-zellen.md)
+	f.set("zell_laden_ab", 320.0)
 	var ohne := PackedInt32Array()
 	for m in bewuchs_modelle.size():
 		ohne.append(m)

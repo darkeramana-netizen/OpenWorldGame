@@ -8,6 +8,7 @@ const Baucache := preload("res://szenen/welt/baucache.gd")
 const REGION := "res://szenen/welt/region_drachenstein.tscn"
 const BAU := "Drachenstein/Burgen/HofhausEinrichtung"
 const AUSSTATTUNG := "Drachenstein/Burgen/BurgAusstattung"
+const NATUR := "Drachenstein/Natur"
 
 var fehler := 0
 var Z: Node
@@ -105,6 +106,50 @@ func _initialize() -> void:
 	await _warte(func() -> bool: return Z.wartend() == 0)
 	var nah_a := _stuecke(aus_)
 	pruefe(nah_a["exemplare"] > 0, "Am Ursprung gebaut: %d Stücke" % nah_a["exemplare"])
+	r.free()
+
+	# 6. Natur (felsen.gd): in Zellen dieselben Stücke und Kollisionsformen, nur Nahes gebaut, nachher frei
+	Z.aus = true
+	r = await _lade(0.0, NATUR)
+	var n_stueck := _stuecke(r.get_node(NATUR))
+	r.free()
+	r = await _lade(-1.0)
+	var n_zellen := _stuecke(r.get_node(NATUR))
+	var n_namen := r.get_node(NATUR).get_children().filter(func(k: Node) -> bool: return k.name.begins_with("Zelle_")).size()
+	r.free()
+	pruefe(n_stueck["exemplare"] > 1000 and n_zellen == n_stueck and n_namen >= 10,
+		"Natur in %d Zellen: dieselben Stücke (%s / %s)" % [n_namen, str(n_stueck), str(n_zellen)])
+	Z.aus = false
+	Z.ziel_position = Vector3(5000, 0, 5000)
+	r = await _lade(-1.0)
+	var natur := r.get_node(NATUR)
+	pruefe(_stuecke(natur)["exemplare"] == 0, "Natur weit weg: nichts gebaut")
+	Z.ziel_position = Vector3(0, 0, 0)
+	Z.pruefe_sofort()
+	await _warte(func() -> bool: return Z.wartend() == 0)
+	var n_nah := _stuecke(natur)
+	pruefe(n_nah["exemplare"] > 0 and n_nah["exemplare"] < n_stueck["exemplare"], "Natur am Ursprung: %d von %d Stücken gebaut" % [n_nah["exemplare"], n_stueck["exemplare"]])
+	r.free()
+
+	# 7. Stämme der Bäume: Kollision in Zellen, alle Stämme da (wenn alles geladen), die Bäume selbst immer sichtbar
+	Z.aus = true
+	r = await _lade(-1.0)
+	var bw := r.get_node("Bewuchs")
+	await _warte(func() -> bool: return bw.get_node_or_null("StammZellen") != null)
+	var staemme_alle := bw.find_children("*", "CollisionShape3D", true, false).size()
+	var baeume: int = bw.anzahl.get("nadel", 0) + bw.anzahl.get("laub", 0)
+	pruefe(staemme_alle == baeume and baeume > 500, "Alle %d Stämme haben Kollision (in %d Zellen)" % [baeume, bw.get_node("StammZellen").get_child_count()])
+	r.free()
+	Z.aus = false
+	Z.ziel_position = Vector3(0, 0, 0)
+	r = await _lade(-1.0)
+	bw = r.get_node("Bewuchs")
+	await _warte(func() -> bool: return bw.get_node_or_null("StammZellen") != null)
+	Z.pruefe_sofort()
+	await _warte(func() -> bool: return Z.wartend() == 0)
+	var staemme_nah := bw.find_children("*", "CollisionShape3D", true, false).size()
+	var sichtbar := bw.find_children("*", "MultiMeshInstance3D", false, false).size()
+	pruefe(staemme_nah < staemme_alle and sichtbar >= 2, "Am Ursprung nur nahe Stämme mit Kollision (%d von %d), Bäume sichtbar (%d Arten)" % [staemme_nah, staemme_alle, sichtbar])
 	r.free()
 	Z.ziel_position = null
 	print("\nFehler: %d" % fehler)
