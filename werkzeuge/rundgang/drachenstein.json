@@ -1,0 +1,27 @@
+{
+	"region": "drachenstein",
+	"beschreibung": "Foto-Rundgang der Burgfeste Drachenstein (docs/06-burg-standard.md, Abnahme). Je Blickpunkt: von (Kamera), auf (Ziel), Uhrzeit (Stunden).",
+	"punkte": [
+		{"name": "01_luft_wie_referenzbild", "von": [330, 150, 330], "auf": [40, -10, 40], "uhr": 10},
+		{"name": "02_luft_nordost", "von": [320, 180, -300], "auf": [40, 0, 20], "uhr": 10},
+		{"name": "03_luft_suedwest", "von": [-260, 170, 360], "auf": [40, 0, 20], "uhr": 10},
+		{"name": "04_luft_nordwest", "von": [-260, 180, -300], "auf": [40, 0, 20], "uhr": 10},
+		{"name": "05_draufsicht", "von": [60, 650, 40.5], "auf": [60, 0, 40], "uhr": 12},
+		{"name": "06_luft_abendlicht", "von": [330, 150, 330], "auf": [40, -10, 40], "uhr": 18.5},
+		{"name": "07_bergfried_dach_auf_burg", "von": [505, 52.3, 107.3], "auf": [40, 0, 40], "uhr": 10},
+		{"name": "08_markt", "von": [151, -13.8, 111.5], "auf": [136, -12, 170], "uhr": 10},
+		{"name": "09_st_marien", "von": [130, -13.2, 140], "auf": [136, -6, 172], "uhr": 10},
+		{"name": "10_suedtor", "von": [196, -13.6, 94], "auf": [218, -11, 102], "uhr": 10},
+		{"name": "11_nordtor", "von": [-2, -9.5, 172], "auf": [-13.5, -8, 188], "uhr": 10},
+		{"name": "12_drachenkai", "von": [105, -15.6, 15], "auf": [150, -14, -5], "uhr": 10},
+		{"name": "13_untergrundhafen", "von": [75, -15.5, -9.5], "auf": [55, -15, -2], "uhr": 10},
+		{"name": "14_fuss_der_rampe", "von": [79.2, 2.2, 15.3], "auf": [20, 10, 50], "uhr": 10},
+		{"name": "15_vorburg", "von": [34.5, -5.8, 158.8], "auf": [14.8, 8, 83], "uhr": 10},
+		{"name": "16_mittelburg", "von": [14.8, 8.2, 83.1], "auf": [1, 16, -3], "uhr": 10},
+		{"name": "17_oberburg", "von": [1.1, 16.2, -3.2], "auf": [-5.8, 19, -106], "uhr": 10},
+		{"name": "18_palas_vorhof", "von": [-5.8, 18.2, -90], "auf": [-5.8, 22, -125], "uhr": 10},
+		{"name": "19_uebungsplatz", "von": [14.4, 18.2, -114.9], "auf": [-12, 20, -115], "uhr": 10},
+		{"name": "20_ordensvorwerk", "von": [121, 3.2, 490], "auf": [95, 3, 490], "uhr": 10},
+		{"name": "21_markt_nacht", "von": [151, -13.8, 111.5], "auf": [136, -12, 170], "uhr": 22.5}
+	]
+}
