@@ -2,8 +2,9 @@ extends Node3D
 ## Platzhalter für eine Zelle eines Baus (docs/05-phase2-zellen.md). Hängt seinen Inhalt ("Inhalt") ein, sobald der
 ## Spieler näher als der Ladeabstand ist, und gibt ihn mit Abstand wieder frei (autoload/zellwelt.gd).
 ##
-## Der Inhalt kommt entweder aus dem Baucache (eigene Datei je Zelle, wird im Hintergrund vorgeladen und beim Entladen
-## freigegeben) oder ist beim ersten Start frisch gebaut (dann bleibt er abgehängt im Speicher).
+## Der Inhalt kommt aus dem Baucache (eigene Datei je Zelle, wird im Hintergrund vorgeladen und beim Entladen
+## freigegeben), ist beim ersten Start frisch gebaut (dann bleibt er abgehängt im Speicher) oder wird bei Bedarf von
+## einer Funktion des Baus erzeugt (bauer, z. B. ausstattung.gd) und beim Entladen freigegeben.
 
 ## Metadaten am Knoten einer Zelle: ihre Nummer im Raster (Vector2i)
 const ZELLE := "zelle"
@@ -16,6 +17,8 @@ var datei := ""
 var material: Callable
 ## Frisch gebauter Inhalt, solange er abgehängt ist
 var vorrat: Node = null
+## Oder: Funktion, die den Inhalt erzeugt (liefert einen Node3D)
+var bauer: Callable
 
 var _inhalt: Node = null
 
@@ -42,6 +45,16 @@ static func mit_vorrat(zelle: Node, groesse: float, laden_ab: float) -> Node3D:
 	p.abstand = laden_ab
 	zelle.name = "Inhalt"
 	p.vorrat = zelle
+	return p
+
+
+## Platzhalter, dessen Inhalt bauer() bei Bedarf erzeugt
+static func mit_bauer(name_: String, k: Vector2i, groesse: float, laden_ab: float, bauer_: Callable) -> Node3D:
+	var p: Node3D = (load("res://szenen/welt/zellteil.gd") as GDScript).new()
+	p.name = name_
+	p.rechteck = rechteck_fuer(k, groesse)
+	p.abstand = laden_ab
+	p.bauer = bauer_
 	return p
 
 
@@ -93,6 +106,11 @@ func zell_bauen() -> void:
 	if vorrat != null:
 		_inhalt = vorrat
 		add_child(vorrat)
+		return
+	if bauer.is_valid():
+		_inhalt = bauer.call()
+		_inhalt.name = "Inhalt"
+		add_child(_inhalt)
 		return
 	var daten: Resource = null
 	if ResourceLoader.load_threaded_get_status(datei) == ResourceLoader.THREAD_LOAD_LOADED:

@@ -709,6 +709,7 @@ Elf automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstän
 | `tests/test_ladevorhang.gd` | Ladebildschirm, 11 Punkte: steht bei neuem Spiel und Reise, sperrt die Eingabe, fällt erst nach ruhigen Bildern, nicht im Hauptmenü |
 | `tests/test_terrain3d.gd` | Gelände mit Terrain3D, 16 Punkte: Standard bleibt das eigene Gelände; mit Terrain3D dieselben Höhen, Löcher und Kollision, kein Gelände außerhalb der Daten, das Gitter folgt der Kamera, unser Material ohne Karomuster |
 | `tests/test_zellwelt.gd` | Nachlader der Zellen, 14 Punkte: nah zuerst, Zeitbudget je Bild, Entladen erst hinter dem Puffer, Vorladen im Hintergrund, Abschalten |
+| `tests/test_zellen_bau.gd` | Bauten und Ausstattung in Zellen, 12 Punkte: in Zellen dasselbe wie am Stück (frisch und aus dem Baucache, eine Datei je Zelle), nah geladen, fern wieder frei, Tiere immer da |
 
 ```
 godot --headless --path . --script res://tests/test_akt1.gd

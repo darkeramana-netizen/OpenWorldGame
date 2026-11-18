@@ -38,8 +38,23 @@ immer geladen.
 1. ✔ **Zellwelt-Kern** mit Test, unabhängig vom Inhalt: Ladeabstände mit Puffer, Reihenfolge nach Abstand,
    Zeitbudget, Vorladen im Hintergrund (`autoload/zellwelt.gd`, `tests/test_zellwelt.gd`); der Ladebildschirm
    wartet auf die nahen Zellen.
-2. **Erster Inhalt:** Einrichtung der Fachwerkhäuser (`HofhausEinrichtung`, von außen nicht zu sehen) und Ausstattung.
-   Messen: Ladezeit, Speicher, Hänger beim Gehen durch die Stadt.
+2. ✔ **Erster Inhalt:** Einrichtung der Fachwerkhäuser (`HofhausEinrichtung`, 10 Zellen à 64 m, Ladeabstand 90 m)
+   und Ausstattung von Stadt und Burg (64 m, Ladeabstand 240 m, über der Sichtweite der Stücke von 220 m).
+   - `burgbau.gd`: `zellgroesse` trennt Geometrie, Lichter und Kollision nach Zellen (Knoten `Zelle_x_z`);
+     `zell_laden_ab` lässt sie nachladen. Der Baucache legt jede Zelle in eine eigene Datei
+     (`<schlüssel>.Zelle_x_z.res`), die im Hintergrund vorgeladen wird. Lesen ist bei der Einrichtung gut 60 % der
+     Ladezeit (62 ms Datei, 38 ms Instanziieren, gemessen).
+   - `ausstattung.gd`: dieselben Einstellungen; die Zellen werden bei Bedarf aus den Daten gebaut, lebende Tiere
+     bleiben immer da.
+   - `szenen/welt/zellteil.gd`: Platzhalter je Zelle (Inhalt aus Datei, frisch gebaut oder über eine Funktion).
+   - Tests: `tests/test_zellen_bau.gd` (12 Punkte: in Zellen dasselbe wie am Stück, frisch und aus dem Baucache,
+     nah geladen, fern frei), `test_baucache` baut alle Zellen sofort und vergleicht sie.
+   - Messwerkzeug: Zeile „Zellen“ (gebaut, freigegeben, längster Aufbau); Vergleich mit `--ohne-zellen`.
+     Behoben dabei: Das Messwerkzeug lud den Ladebildschirm per `preload`, dadurch lief er in Messungen ohne Skript.
+
+   Container, ohne Grafik, nur mit der Einrichtung (Stadtstrecke Markt → Palas): Speicher 834 statt 855 MB,
+   6,40 statt 6,64 Mio. Dreiecke beim Start, längster Aufbau einer Zelle 9,7 ms, 11 Zellen gebaut und 4 freigegeben
+   auf der Strecke; Ladezeit und Hänger im Rauschen. Der Gewinn wächst mit dem Inhalt (Schritt 3).
 3. **Weiterer Inhalt:** Felsen, Natur und Bewuchs in Zellen (heute ein Knoten je Art für die ganze Region).
 4. **Spielstand je Zelle** für veränderliche Dinge.
 5. **Fernmodelle** für Burg, Gravecrest und Gravemarch, danach auch diese in Zellen.

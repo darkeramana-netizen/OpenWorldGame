@@ -7,6 +7,7 @@ extends SceneTree
 const Baucache := preload("res://szenen/welt/baucache.gd")
 const REGION := "res://szenen/welt/region_drachenstein.tscn"
 const BAU := "Drachenstein/Burgen/HofhausEinrichtung"
+const AUSSTATTUNG := "Drachenstein/Burgen/BurgAusstattung"
 
 var fehler := 0
 var Z: Node
@@ -78,16 +79,43 @@ func _initialize() -> void:
 	var leer := platzhalter.filter(func(p: Node) -> bool: return p.get_child_count() == 0).size()
 	pruefe(_geladen(bau) == 0 and leer == platzhalter.size(), "Weit weg wieder freigegeben (%d leer)" % leer)
 	r.free()
+
+	# 5. Ausstattung: in Zellen dieselben Stücke und Kollisionen, Tiere immer da, Fernes nicht gebaut
+	Z.aus = true
+	r = await _lade(0.0, AUSSTATTUNG)
+	await _warte(func() -> bool: return r.get_node(AUSSTATTUNG).get_child_count() > 0)
+	var a_stueck := _stuecke(r.get_node(AUSSTATTUNG))
+	r.free()
+	r = await _lade(-1.0)
+	await _warte(func() -> bool: return r.get_node(AUSSTATTUNG).get_child_count() > 0)
+	var a_zellen := _stuecke(r.get_node(AUSSTATTUNG))
+	var a_namen := r.get_node(AUSSTATTUNG).get_children().filter(func(k: Node) -> bool: return k.name.begins_with("Zelle_")).size()
+	r.free()
+	pruefe(a_stueck["exemplare"] > 100 and a_zellen == a_stueck and a_namen >= 4,
+		"Ausstattung in %d Zellen: dieselben Stücke (%s / %s)" % [a_namen, str(a_stueck), str(a_zellen)])
+	Z.aus = false
+	Z.ziel_position = Vector3(5000, 0, 5000)
+	r = await _lade(-1.0)
+	var aus_ := r.get_node(AUSSTATTUNG)
+	await _warte(func() -> bool: return aus_.get_child_count() > 0)
+	var fern := _stuecke(aus_)
+	pruefe(fern["exemplare"] == 0 and fern["tiere"] == a_stueck["tiere"], "Weit weg: keine Stücke gebaut, die %d Tiere sind da" % fern["tiere"])
+	Z.ziel_position = Vector3(0, 0, 0)
+	Z.pruefe_sofort()
+	await _warte(func() -> bool: return Z.wartend() == 0)
+	var nah_a := _stuecke(aus_)
+	pruefe(nah_a["exemplare"] > 0, "Am Ursprung gebaut: %d Stücke" % nah_a["exemplare"])
+	r.free()
 	Z.ziel_position = null
 	print("\nFehler: %d" % fehler)
 	quit(1 if fehler > 0 else 0)
 
 
 ## Region laden; zellgroesse >= 0 setzt die Zellgröße der Einrichtung vor dem Aufbau (0: am Stück), -1 lässt sie.
-func _lade(zellgroesse: float) -> Node:
+func _lade(zellgroesse: float, pfad := BAU) -> Node:
 	var r: Node = (load(REGION) as PackedScene).instantiate()
 	if zellgroesse >= 0.0:
-		r.get_node(BAU).set("zellgroesse", zellgroesse)
+		r.get_node(pfad).set("zellgroesse", zellgroesse)
 	root.add_child(r)
 	for i in 4:
 		await process_frame
@@ -125,6 +153,21 @@ func _inhalt(bau: Node) -> Dictionary:
 			kollision += ((n as CollisionShape3D).shape as ConcavePolygonShape3D).get_faces().size() / 3
 	lichter.sort()
 	return {"flaechen": flaechen, "je_material": je_mat, "lichter": lichter.size(), "lichtlagen": lichter, "kollision": kollision}
+
+
+## Stücke einer Ausstattung: Exemplare in MultiMeshes, Kollisionsformen, lebende Tiere
+func _stuecke(a: Node) -> Dictionary:
+	var ex := 0
+	var formen := 0
+	var tiere := 0
+	for n in a.find_children("*", "", true, false):
+		if n is MultiMeshInstance3D:
+			ex += (n as MultiMeshInstance3D).multimesh.instance_count
+		elif n is CollisionShape3D:
+			formen += 1
+		elif n.get_script() != null and String(n.get_script().resource_path).ends_with("tier.gd"):
+			tiere += 1
+	return {"exemplare": ex, "formen": formen, "tiere": tiere}
 
 
 func _unterschied(a: Dictionary, b: Dictionary) -> String:

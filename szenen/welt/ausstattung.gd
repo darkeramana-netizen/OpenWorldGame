@@ -23,7 +23,13 @@ extends Node3D
 ## Beim Start jedes Stück auf die Oberfläche darunter setzen (Gelände, Kai, Hof, Boden eines Baus), damit nichts im
 ## Boden steckt oder schwebt. Schiffe, Tiere, Wandlaternen, Tauben und die Schmiede behalten ihre Höhe.
 @export var auf_boden := true
+## > 0: Stücke nach Zellen dieser Größe (Meter, Welt-x/z) trennen, jede Zelle mit eigenen MultiMeshes und eigener
+## Kollision. Mit zell_laden_ab > 0 werden die Zellen erst gebaut, wenn der Spieler nah ist (autoload/zellwelt.gd);
+## lebende Tiere bleiben immer da. Der Ladeabstand muss über der Sichtweite der Stücke (220 m) liegen.
+@export var zellgroesse := 0.0
+@export var zell_laden_ab := 0.0
 const OHNE_BODEN := [5, 6, 7, 9, 19, 20, 21, 22, 23, 24, 25, 26, 31]
+const Zellteil := preload("res://szenen/welt/zellteil.gd")
 var _bereit := false
 
 ## Ausdehnung der Kollisionsbox je Art (halbe Breite, Höhe, halbe Tiefe)
@@ -105,14 +111,44 @@ func _baue() -> void:
 	for k in get_children():
 		k.free()
 	var je_art := {}
+	var je_zelle := {}     # Zelle → Art → Lagen (nur mit zellgroesse; Tiere bleiben in je_art)
 	var i := 0
 	while i + 4 < stuecke.size():
-		je_art.get_or_add(int(stuecke[i]), []).append(Transform3D(Basis(Vector3.UP, deg_to_rad(stuecke[i + 4])),
-			Vector3(stuecke[i + 1], stuecke[i + 2], stuecke[i + 3])))
+		var art := int(stuecke[i])
+		var lage := Transform3D(Basis(Vector3.UP, deg_to_rad(stuecke[i + 4])), Vector3(stuecke[i + 1], stuecke[i + 2], stuecke[i + 3]))
+		if zellgroesse > 0.0 and not TIERE.has(art):
+			var w := global_transform * lage.origin if is_inside_tree() else lage.origin
+			var k := Vector2i(floori(w.x / zellgroesse), floori(w.z / zellgroesse))
+			(je_zelle.get_or_add(k, {}) as Dictionary).get_or_add(art, []).append(lage)
+		else:
+			je_art.get_or_add(art, []).append(lage)
 		i += 5
+	_baue_arten(je_art, self)
+	var nachladen := Zellteil.nachladen_an(self)
+	for k: Vector2i in je_zelle:
+		var name_ := "Zelle_%d_%d" % [k.x, k.y]
+		if nachladen:
+			add_child(Zellteil.mit_bauer(name_, k, zellgroesse, zell_laden_ab, _zellinhalt.bind(je_zelle[k])))
+		else:
+			var z := _zellinhalt(je_zelle[k])
+			z.name = name_
+			add_child(z)
+
+
+## Inhalt einer Zelle: ihre Stücke mit eigener Kollision
+func _zellinhalt(je_art: Dictionary) -> Node3D:
+	var z := Node3D.new()
+	_baue_arten(je_art, z)
+	return z
+
+
+## MultiMeshes, Tiere und Kollision für die Stücke je Art unter ziel
+func _baue_arten(je_art: Dictionary, ziel: Node3D) -> void:
+	if je_art.is_empty():
+		return
 	var koerper := StaticBody3D.new()
 	koerper.name = "Kollision"
-	add_child(koerper)
+	ziel.add_child(koerper)
 	for art: int in je_art:
 		var lagen: Array = je_art[art]
 		var e_: Vector3 = KASTEN[art]
@@ -122,7 +158,7 @@ func _baue() -> void:
 				var tier: Node3D = load("res://szenen/figuren/tier.gd").new()
 				tier.art = TIERE[art]
 				tier.transform = lagen[k] * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
-				add_child(tier)
+				ziel.add_child(tier)
 				if e_ != Vector3.ZERO:
 					var form_t := CollisionShape3D.new()
 					var box_t := BoxShape3D.new()
@@ -157,14 +193,14 @@ func _baue() -> void:
 			koerper.add_child(form)
 		if art == 21:
 			for lage: Transform3D in lagen:
-				add_child(Rauch.erzeuge(lage * Vector3(-2.2, 6.95, -2.85), 1.8))   # die Esse brennt immer
+				ziel.add_child(Rauch.erzeuge(lage * Vector3(-2.2, 6.95, -2.85), 1.8))   # die Esse brennt immer
 		var inst := MultiMeshInstance3D.new()
 		inst.name = "Art%d" % art
 		inst.multimesh = mm
 		inst.visibility_range_end = 220.0
 		inst.visibility_range_end_margin = 25.0
 		inst.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-		add_child(inst)
+		ziel.add_child(inst)
 
 
 # ---------- Formen ----------
