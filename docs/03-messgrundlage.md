@@ -181,7 +181,8 @@ Die Reihenfolge der Technik-Arbeit; jeder Punkt in einem eigenen Branch, mit Tes
    Schattenhülle, weiches Ausblenden (burg-ausbau-9/10)
 2. ✔ Laden und Hänger nach dem Laden: Texturen mit 3D-Import, Baucache, Arbeit verteilt (burg-ausbau-10);
    Ladebildschirm (burg-ausbau-11)
-3. ◐ Gelände: Terrain3D gegen das eigene Gelände (burg-ausbau-12, wartet auf die Messung mit Grafik)
+3. ✔ Gelände: Terrain3D gegen das eigene Gelände gemessen, Gewinn 1 bis 2 %; eigenes Gelände bleibt, Terrain3D als
+   Schalter (burg-ausbau-12/13)
 
 **Phase 2: Welt in Zellen nachladen (Streaming)**
 
@@ -488,3 +489,20 @@ gerechnet; die Zahlen für Terrain3D sind daher eher zu günstig und werden mit 
 Gelände von Drachenstein war nie der Engpass (2,2 × 1,45 km, Kacheln außerhalb des Blickfelds fallen schon weg). Was
 beim Laden im Gelände gespart wird (0,4 s), kostet das erste Bild wieder (11 Pipelines mehr). Für die heutige Region
 lohnt der Umstieg nicht; interessant wird Terrain3D erst bei einer viel größeren Welt (Phase 2).
+
+**Nachmessung mit behobenem Material** (`docs/messungen/messung_drachenstein_t3d2_2026-11-18T17-20-06.json`, Boden
+sieht aus wie beim eigenen Gelände):
+
+| Messfahrt Markt → Palas | eigenes Gelände | Terrain3D (behoben) |
+|---|---|---|
+| fps im Mittel | 167 | 168 |
+| Frame p50 / p95 / p99 | 5,8 / 7,5 / 9,6 ms | 5,8 / 7,5 / 9,5 ms |
+| Grafikkarte p50 / p95 | 5,05 / 6,07 ms | 5,00 / 5,99 ms |
+| Rundblick: Grafikkarte p50 / p95 | 5,26 / 6,76 ms | 5,16 / 6,68 ms |
+| `_ready` des Geländes | 658 ms | 179 ms |
+| erstes Bild nach dem Laden | 2.824 ms | 3.069 ms |
+| spielbar nach | 9,1 s | 8,7 s |
+
+**Entscheidung (18.11.2026):** Die Grafikkarte spart mit Terrain3D 1 bis 2 %, die Bildzeit bleibt gleich. Das
+Gelände bleibt das eigene; Terrain3D bleibt als Schalter (`--terrain3d`) mit Test im Projekt und wird wieder geprüft,
+wenn die Welt in Phase 2 deutlich größer wird. Punkt 3 ist damit abgeschlossen.
