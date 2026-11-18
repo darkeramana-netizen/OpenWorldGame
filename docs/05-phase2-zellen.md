@@ -35,7 +35,7 @@ immer geladen.
 
 ## Schritte
 
-1. **Zellwelt-Kern** mit Test, unabhängig vom Inhalt: Raster, Ladeabstände mit Puffer, Reihenfolge nach Abstand,
+1. ✔ **Zellwelt-Kern** (`autoload/zellwelt.gd`, `tests/test_zellwelt.gd`, Ladebildschirm wartet auf die nahen Zellen) mit Test, unabhängig vom Inhalt: Raster, Ladeabstände mit Puffer, Reihenfolge nach Abstand,
    Zeitbudget, Vorladen im Hintergrund.
 2. **Erster Inhalt:** Einrichtung der Fachwerkhäuser (`HofhausEinrichtung`, von außen nicht zu sehen) und Ausstattung.
    Messen: Ladezeit, Speicher, Hänger beim Gehen durch die Stadt.

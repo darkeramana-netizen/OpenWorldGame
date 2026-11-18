@@ -7,7 +7,7 @@ extends CanvasLayer
 ## 3. warte_und_blende_aus(): Die Welt läuft hinter dem Vorhang schon. In den ersten Bildern entstehen die
 ##    Render-Pipelines (Shader-Varianten); das kostet auf dem Referenzrechner gut 2 s in einem Bild. Der Vorhang bleibt,
 ##    bis RUHIG_BILDER Bilder in Folge keine neuen Pipelines brachten und schneller als RUHIG_MS waren, die Figuren
-##    gebaut sind und mindestens MIN_BILDER Bilder gezeichnet wurden (höchstens MAX_S). Dann blendet er aus.
+##    und die nahen Zellen (autoload/zellwelt.gd) gebaut sind und mindestens MIN_BILDER Bilder gezeichnet wurden (höchstens MAX_S). Dann blendet er aus.
 
 const MIN_BILDER := 5
 const RUHIG_BILDER := 5
@@ -88,7 +88,7 @@ func warte_und_blende_aus() -> void:
 		var jetzt := Time.get_ticks_usec()
 		var p := pipelines_bisher()
 		bilder += 1
-		if p == pipelines and (jetzt - t) / 1000.0 < RUHIG_MS and figuren_wartend() == 0:
+		if p == pipelines and (jetzt - t) / 1000.0 < RUHIG_MS and figuren_wartend() == 0 and Zellwelt.wartend() == 0:
 			ruhig += 1
 		else:
 			ruhig = 0
