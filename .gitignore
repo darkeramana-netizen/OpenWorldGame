@@ -11,3 +11,6 @@ Thumbs.db
 
 # Python
 __pycache__/
+
+# Vorübergehende Hilfsskripte (Fotos, Proben), gehören nicht ins Repository
+tests/_*
