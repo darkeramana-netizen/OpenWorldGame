@@ -171,6 +171,41 @@ dahinter:
    Budget. Die wirksamsten Hebel nach der Zählung: Detailstufen und Sichtweiten für die Figuren, die vielen kleinen
    MultiMesh-Knoten zusammenfassen, Tiere als ein Mesh statt eines pro Körperteil, kleine Dinge ohne Schatten.
 
+## Plan
+
+Die Reihenfolge der Technik-Arbeit; jeder Punkt in einem eigenen Branch, mit Tests und Messung auf dem Referenzrechner.
+
+**Phase 1: Leistung der bestehenden Region**
+
+1. ✔ Figuren: Detailstufen, Sichtweiten, Schatten, Animation in der Ferne (burg-ausbau-9); Grafik-Paket B,
+   Schattenhülle, weiches Ausblenden (burg-ausbau-9/10)
+2. ✔ Laden und Hänger nach dem Laden: Texturen mit 3D-Import, Baucache, Arbeit verteilt (burg-ausbau-10);
+   Ladebildschirm (burg-ausbau-11)
+3. ◐ Gelände: Terrain3D gegen das eigene Gelände (burg-ausbau-12, wartet auf die Messung mit Grafik)
+
+**Phase 2: Welt in Zellen nachladen (Streaming)**
+
+Statt ganzer Regionen mit Ladebildschirm werden Zellen um den Spieler nachgeladen. Grundlage sind die Verfahren aus
+Sorrow-Engine (`docs/04-sorrow-engine-auswertung.md`, Abschnitte 1 bis 3), in GDScript nachgebaut:
+
+- Ladeliste nach Abstand, nur bei Zellwechsel neu; Zeitbudget je Bild für Laden und Einhängen; Entladen mit Puffer
+  hinter der Sichtweite, geprüft alle 0,2 s; Kollision ein paar Bilder nach dem Mesh; Vorrang und Entdoppeln der
+  Aufträge.
+- Hintergrund-Threads nur für Daten (`WorkerThreadPool`), Dateien und Knoten auf dem Hauptthread, Schnappschuss vor
+  dem Start, Ergebnisse über eine gesperrte Warteschlange.
+- Spielstand je Zelle: nur Änderungen gegenüber den Grunddaten (Türen, aufgehobene Dinge, Gegner), gespeichert beim
+  Entladen, mit Versionsnummer.
+- Messung: Hänger an Zellgrenzen (siehe Messwerte), Speicher für die ganze Welt ≤ 4 GB.
+
+**Später**
+
+- Wetter: Regen, Schnee und Sturm nach dem Vorbild von `weather_system.gd` aus Sorrow-Engine (Teilchen folgen der
+  Kamera, weiche Übergänge), angepasst an Aussehen, Regionen, Spielzeit und Jahreszeit; kein Regen unter Dächern und
+  in Innenräumen.
+- Himmel und Jahreszeiten: `PhysicalSkyMaterial` mit Jahreszeiten (Sorrow-Engine, `physical_sky.gd`) gegen unseren
+  Himmel (`szenen/welt/tageslicht.gd`) mit Fotos vergleichen.
+- Für den Export: Shader Baker von Godot, damit die Shader-Varianten nicht beim ersten Laden entstehen.
+
 ## Phase 1: Fortschritt
 
 ### Figuren (burg-ausbau-9)
