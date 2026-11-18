@@ -25,6 +25,7 @@ Speicher="*res://autoload/speicher.gd"
 Ereignisse="*res://autoload/ereignisse.gd"
 Ladevorhang="*res://autoload/ladevorhang.gd"
 Zellwelt="*res://autoload/zellwelt.gd"
+Grafik="*res://autoload/grafik.gd"
 
 [display]
 

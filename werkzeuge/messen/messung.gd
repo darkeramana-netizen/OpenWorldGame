@@ -154,6 +154,7 @@ func _initialize() -> void:
 	var ergebnis := {
 		"region": region, "strecke": strecke, "name": _args.get("name", "ohne_name"), "uhrzeit": float(_args.get("uhrzeit", "10")),
 		"zeit": Time.get_datetime_string_from_system(), "system": _system(), "gelaende": _gelaende_art(),
+		"grafik": root.get_node("Grafik").name_(),
 		"laden": laden, "ready_je_bauart": _ready_tabelle(), "langsamste_ready": _langsamste(15),
 		"szene": szene, "fahrt": fahrt,
 		"anlauf": _statistik("anlauf"), "anlauf_erste_bilder": _erste_bilder(12),
@@ -753,8 +754,8 @@ func _schreibe(e: Dictionary) -> void:
 func _zusammenfassung(e: Dictionary) -> String:
 	var z: PackedStringArray = []
 	var sy: Dictionary = e["system"]
-	z.append("Messung %s, Region %s, Strecke %s, Gelände %s, %s" % [e["name"], e["region"], e["strecke"],
-		e.get("gelaende", "?"), e["zeit"]])
+	z.append("Messung %s, Region %s, Strecke %s, Gelände %s, Grafik %s, %s" % [e["name"], e["region"], e["strecke"],
+		e.get("gelaende", "?"), e.get("grafik", "?"), e["zeit"]])
 	z.append("System: Godot %s, %s, %s (%d Kerne), Grafik: %s, Anzeige %s %s" % [sy["godot"], sy["os"], sy["cpu"],
 		sy["kerne"], sy["grafik"], sy["anzeige"], sy["fenster"]])
 	var l: Dictionary = e["laden"]

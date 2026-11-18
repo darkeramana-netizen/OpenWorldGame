@@ -6,7 +6,7 @@ Ein Open-World-Rollenspiel im Sorrowland des Jahres 1750: Du trittst als Vertrie
 
 - Lore: [`docs/01-lore-bibel.md`](docs/01-lore-bibel.md)
 - Spielkonzept und Fahrplan: [`docs/02-spielkonzept.md`](docs/02-spielkonzept.md)
-- Technik: Messgrundlage und Budgets (Phase 0): [`docs/03-messgrundlage.md`](docs/03-messgrundlage.md), Messwerkzeug `werkzeuge/messen/messung.gd`; Baucache für Burgbauten und Häuser (`szenen/welt/baucache.gd`, `user://baucache/`, abschaltbar mit `--ohne-baucache`); Ladebildschirm beim Regionswechsel (`autoload/ladevorhang.gd`); Nachladen in Zellen (`autoload/zellwelt.gd`, `docs/05-phase2-zellen.md`)
+- Technik: Messgrundlage und Budgets (Phase 0): [`docs/03-messgrundlage.md`](docs/03-messgrundlage.md), Messwerkzeug `werkzeuge/messen/messung.gd`; Baucache für Burgbauten und Häuser (`szenen/welt/baucache.gd`, `user://baucache/`, abschaltbar mit `--ohne-baucache`); Ladebildschirm beim Regionswechsel (`autoload/ladevorhang.gd`); Nachladen in Zellen (`autoload/zellwelt.gd`, `docs/05-phase2-zellen.md`); Grafikstufen Niedrig bis Episch (`autoload/grafik.gd`, Menü „Grafik“, `--grafik episch`); Standard für eine fertige Burg (`docs/06-burg-standard.md`)
 - Karten: [`docs/bilder/`](docs/bilder/)
 
 ![Die Region Drachenstein](docs/bilder/region-uebersicht.png)
@@ -710,6 +710,7 @@ Elf automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstän
 | `tests/test_terrain3d.gd` | Gelände mit Terrain3D, 16 Punkte: Standard bleibt das eigene Gelände; mit Terrain3D dieselben Höhen, Löcher und Kollision, kein Gelände außerhalb der Daten, das Gitter folgt der Kamera, unser Material ohne Karomuster |
 | `tests/test_zellwelt.gd` | Nachlader der Zellen, 14 Punkte: nah zuerst, Zeitbudget je Bild, Entladen erst hinter dem Puffer, Vorladen im Hintergrund, Abschalten |
 | `tests/test_zellen_bau.gd` | Bauten, Ausstattung, Natur und Stämme in Zellen, 17 Punkte: in Zellen dasselbe wie am Stück (frisch und aus dem Baucache, eine Datei je Zelle), nah geladen, fern wieder frei, Tiere und Bäume immer da |
+| `tests/test_grafik.gd` | Grafikstufen, 7 Punkte: Hoch lässt die Szene unverändert, Episch schaltet alles ein, Niedrig spart, zurück auf Hoch stellt die Szene wieder her, Wahl gespeichert, Region bekommt die Stufe beim Laden |
 
 ```
 godot --headless --path . --script res://tests/test_akt1.gd

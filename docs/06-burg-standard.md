@@ -52,6 +52,31 @@ prüft der Foto-Rundgang.
 - Fenster mit Läden oder Glas, Türen mit Beschlägen, Dächer mit Firsten und Schornsteinen.
 - Fels und Gelände ohne Zacken, Streifen oder schwarze Stellen.
 
+## Grafik: realistisch und detailreich
+
+Die Burg wird so realistisch und detailreich gebaut, wie Godot es hergibt. Dafür gibt es Grafikstufen
+(`autoload/grafik.gd`, Menü „Grafik“, Startargument `--grafik niedrig|mittel|hoch|episch`):
+
+| | Niedrig | Mittel | Hoch | Episch |
+|---|---|---|---|---|
+| Kantenglättung | FXAA | MSAA 2× | MSAA 2× | MSAA 4× |
+| Globale Beleuchtung (SDFGI) | aus | aus | 4 Stufen | 6 Stufen, 64 Strahlen |
+| SSAO / SSIL | aus | SSAO | beide | beide in höchster Qualität |
+| Sonnenschatten | 2048, bis 200 m | 4096, bis 300 m | 4096, 2 Stufen, bis 500 m | 8192, 4 Stufen, bis 800 m |
+| Schatten kleiner Dinge | ab 2 m | ab 1 m | ab 1 m | alle |
+| Spiegelungen (SSR), Lichtnebel | – | – | – | an |
+
+- **Hoch** ist der Stand der Szenen; für Hoch gilt das Budget aus `docs/03-messgrundlage.md` (60 fps auf der
+  Zielhardware).
+- **Episch** hat kein Budget, soll auf dem Referenzrechner aber mindestens 30 fps halten. Das ist der Maßstab für „so
+  gut, wie es geht“.
+- Grenzen von Godot 4.7: keine virtuelle Geometrie (wie Nanite), kein Raytracing auf der Grafikkarte, keine
+  Tessellation. Feine Details entstehen über Normalen- und Höhenkarten (Parallax), Decals, Detailstufen je Mesh und
+  viele gleiche Exemplare.
+- Der größere Hebel sind die Modelle: Figuren (Gesichter, Kleidung nach Stand, Animationen für Arbeit, Sitzen,
+  Gesten), Tiere, Gegenstände aus Fotoscans (CC0), Mauerwerk mit sichtbaren Steinkanten, Verwitterung als Decals.
+  Alles nur mit freien Lizenzen (CC0 oder gleichwertig).
+
 ## H. Technik
 
 - Bauten aus dem Baucache, Einrichtung, Ausstattung und Natur in Zellen (`docs/05-phase2-zellen.md`).

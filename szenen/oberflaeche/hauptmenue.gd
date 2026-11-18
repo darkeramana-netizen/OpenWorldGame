@@ -16,6 +16,12 @@ func _zeige_start() -> void:
 		_liste.add_child(MenueStil.knopf("Fortsetzen", func() -> void: Speicher.laden(neuester)))
 	_liste.add_child(MenueStil.knopf("Neues Spiel", _zeige_neues_spiel))
 	_liste.add_child(MenueStil.knopf("Laden", _zeige_laden, neuester != ""))
+	# Grafikstufe (autoload/grafik.gd): jeder Druck schaltet eine Stufe weiter
+	var grafik := MenueStil.knopf("Grafik: " + Grafik.name_(), func() -> void: pass)
+	grafik.pressed.connect(func() -> void:
+		Grafik.naechste()
+		grafik.text = "Grafik: " + Grafik.name_())
+	_liste.add_child(grafik)
 	_liste.add_child(MenueStil.knopf("Beenden", func() -> void: get_tree().quit()))
 	_liste.get_child(0).grab_focus()
 

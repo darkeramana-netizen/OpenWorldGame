@@ -39,6 +39,12 @@ func _zeige_start() -> void:
 	_liste.add_child(MenueStil.knopf("Weiter", _schliessen))
 	_liste.add_child(MenueStil.knopf("Speichern", _zeige_speichern))
 	_liste.add_child(MenueStil.knopf("Laden", _zeige_laden))
+	# Grafikstufe (autoload/grafik.gd): jeder Druck schaltet eine Stufe weiter
+	var grafik := MenueStil.knopf("Grafik: " + Grafik.name_(), func() -> void: pass)
+	grafik.pressed.connect(func() -> void:
+		Grafik.naechste()
+		grafik.text = "Grafik: " + Grafik.name_())
+	_liste.add_child(grafik)
 	_liste.add_child(MenueStil.knopf("Hauptmenü", Speicher.zum_hauptmenue))
 	_liste.add_child(MenueStil.knopf("Beenden", func() -> void: get_tree().quit()))
 
