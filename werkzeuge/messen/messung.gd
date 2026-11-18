@@ -160,6 +160,7 @@ func _initialize() -> void:
 		"vorhang": _vorhang(laden),
 		"messfahrt": _statistik("fahrt"), "rundblick": _statistik("rundblick"),
 		"lod": _lod_wechsel(), "aufschluesselung": aufschl,
+		"zellen": root.get_node("Zellwelt").zahlen(),
 	}
 	_schreibe(ergebnis)
 	quit(0)
@@ -797,6 +798,10 @@ func _zusammenfassung(e: Dictionary) -> String:
 	var lo: Dictionary = e["lod"]
 	z.append("Sichtweiten-Wechsel (LOD): %d Knoten mit Sichtweite, %d Wechsel (%.2f/s), davon %d näher als 50 m, %d weich überblendet, %d hart und sichtbar (Aufploppen)" % [
 		lo["knoten_mit_sichtweite"], lo["wechsel"], lo["wechsel_pro_s"], lo["nahe_wechsel_unter_50m"], lo["weich_ueberblendet"], lo["sichtbar_hart"]])
+	var ze: Dictionary = e.get("zellen", {})
+	if not ze.is_empty():
+		z.append("Zellen: %d nachladbare Inhalte, %d gebaut, %d freigegeben, längster Aufbau %.1f ms, zusammen %.0f ms" % [
+			ze["gemeldet"], ze["gebaut"], ze["geleert"], ze["groesster_bau_ms"], ze["bau_ms_summe"]])
 	var au: Dictionary = e.get("aufschluesselung", {})
 	for bp: String in au:
 		if bp.begins_with("_"):

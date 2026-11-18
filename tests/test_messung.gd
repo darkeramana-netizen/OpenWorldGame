@@ -58,6 +58,8 @@ func _initialize() -> void:
 	var vh: Dictionary = e.get("vorhang", {})
 	pruefe(int(vh.get("faellt_nach_bildern", -1)) >= 5 and float(vh.get("spielbar_ms", 0.0)) > float(laden.get("einhaengen_und_ready_ms", 0.0)),
 		"Ladebildschirm: wann er fiele und das größte Bild danach (%s)" % str(vh))
+	var ze: Dictionary = e.get("zellen", {})
+	pruefe(int(ze.get("gemeldet", 0)) > 0 and ze.has("groesster_bau_ms"), "Zellen gezählt (%s)" % str(ze))
 	var au: Dictionary = e.get("aufschluesselung", {})
 	var markt: Array = au.get("Markt", [])
 	var namen: Array = markt.map(func(z: Dictionary) -> String: return z["variante"])

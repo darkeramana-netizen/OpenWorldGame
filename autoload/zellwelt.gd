@@ -30,6 +30,9 @@ var ziel_position: Variant = null
 ## Zähler für Tests und Messungen
 var gebaut := 0
 var geleert := 0
+## Längster Aufbau eines einzelnen Inhalts und Summe aller Aufbauten (ms), für die Messung
+var groesster_bau_ms := 0.0
+var bau_ms_summe := 0.0
 
 enum { LEER, VORLADEN, BEREIT, GEBAUT }
 
@@ -192,9 +195,19 @@ func _baue_mit_budget() -> void:
 
 
 func _baue(n: Node) -> void:
+	var t := Time.get_ticks_usec()
 	n.zell_bauen()
+	var ms := (Time.get_ticks_usec() - t) / 1000.0
+	groesster_bau_ms = maxf(groesster_bau_ms, ms)
+	bau_ms_summe += ms
 	_stufe[n.get_instance_id()] = GEBAUT
 	gebaut += 1
+
+
+## Zahlen für die Messung
+func zahlen() -> Dictionary:
+	return {"gemeldet": _inhalte.size(), "gebaut": gebaut, "geleert": geleert,
+		"groesster_bau_ms": snappedf(groesster_bau_ms, 0.1), "bau_ms_summe": snappedf(bau_ms_summe, 0.1)}
 
 
 func _leere(n: Node) -> void:
