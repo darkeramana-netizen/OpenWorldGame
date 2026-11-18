@@ -20,6 +20,7 @@ func pruefe(bed: bool, was: String) -> void:
 
 func _initialize() -> void:
 	Baucache.ordner = "user://baucache_test/"
+	root.get_node("Zellwelt").aus = true    # alle Zellen sofort bauen, damit der Vergleich alles sieht
 	DirAccess.make_dir_recursive_absolute(Baucache.ordner)
 	for f in DirAccess.get_files_at(Baucache.ordner):
 		DirAccess.remove_absolute(Baucache.ordner.path_join(f))
@@ -36,7 +37,7 @@ func _initialize() -> void:
 	for f in DirAccess.get_files_at(Baucache.ordner):
 		if f.contains(".tmp."):
 			tmp += 1
-		elif f.ends_with(".res"):
+		elif f.ends_with(".res") and not f.contains(".Zelle_"):   # Zellen haben eigene Dateien daneben
 			res += 1
 	pruefe(res == gebaut, "Je Bau eine Datei (%d)" % res)
 	pruefe(tmp == 0, "Keine halb geschriebenen Dateien übrig")

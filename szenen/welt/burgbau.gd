@@ -13,6 +13,7 @@ extends Node3D
 ## Schattenhülle (eine Oberfläche je Bau, nur für den Sonnenschatten)
 const Schattenhuelle := preload("res://szenen/welt/schattenhuelle.gd")
 const Baucache := preload("res://szenen/welt/baucache.gd")
+const Zellteil := preload("res://szenen/welt/zellteil.gd")
 
 ## Je Mauerstück 10 Werte: ax, az, bx, bz, unten, oben (Wehrgang), Dicke, außen x, außen z, Zinnen (0/1)
 @export var mauern := PackedFloat32Array():
@@ -136,6 +137,18 @@ var _koerper: Array = []            # Baukörper der Region, vor denen kein Fens
 var _nachbarn_bauten: Array = []    # [Mitte, nx, uz, halbe Breite, halbe Länge, Boden, Traufe] der Gebäude der Geschwister
 var _riegel: Array[Vector2] = []    # riegel_tuerme aller Bauten der Region
 var _rund := {}    # Material → SurfaceTool, Normalen von Hand (glatte Rundungen)
+## > 0: Geometrie, Lichter und Kollision zusätzlich nach Zellen dieser Größe trennen (Meter, Welt-x/z), jede Zelle
+## ein eigener Knoten "Zelle_x_z". Mit zell_laden_ab > 0 werden die Zellen nach Abstand zum Spieler nachgeladen
+## (autoload/zellwelt.gd, szenen/welt/zellteil.gd, docs/05-phase2-zellen.md).
+@export var zellgroesse := 0.0
+## Ladeabstand der Zellen in Metern; 0: Zellen nur getrennt, immer geladen
+@export var zell_laden_ab := 0.0
+## Zelle für alles, was keinem Bauteil gehört (Fahnen)
+const REST := Vector2i(-2147483648, 0)
+var _zelle := REST
+var _zellen_flach := {}   # Zelle → Material → SurfaceTool
+var _zellen_rund := {}
+var _zellen_knoten := {}  # Zelle → Node3D
 var _bereit := false
 
 
@@ -155,24 +168,31 @@ func _baue() -> void:
 		k.free()
 	_flach = {}
 	_rund = {}
+	_zellen_flach = {REST: _flach}
+	_zellen_rund = {REST: _rund}
+	_zellen_knoten = {}
+	_zelle = REST
 	_sammle_nachbarn()
-	# Beim zweiten Start nur laden statt bauen (szenen/welt/baucache.gd)
+	# Beim zweiten Start nur laden statt bauen (szenen/welt/baucache.gd); Zellen kommen dort als Platzhalter
 	var schl := Baucache.schluessel(self) if Baucache.an(self) else ""
 	if schl != "" and Baucache.lade(self, schl, _material):
 		return
 	_baue_neu()
 	if schl != "":
 		Baucache.speichere(self, schl)
+	_zerlege()
 
 
 func _baue_neu() -> void:
 	var i := 0
 	while i + 9 < mauern.size():
+		_setze_zelle(Vector2(mauern[i], mauern[i + 1]))
 		_mauerstueck(Vector2(mauern[i], mauern[i + 1]), Vector2(mauern[i + 2], mauern[i + 3]), mauern[i + 4],
 			mauern[i + 5], mauern[i + 6], Vector2(mauern[i + 7], mauern[i + 8]), mauern[i + 9] > 0.5)
 		i += 10
 	i = 0
 	while i + 6 < tuerme.size():
+		_setze_zelle(Vector2(tuerme[i], tuerme[i + 1]))
 		if int(tuerme[i + 5]) == 2:
 			_schalenturm(Vector2(tuerme[i], tuerme[i + 1]), tuerme[i + 2], tuerme[i + 3], tuerme[i + 4], deg_to_rad(tuerme[i + 6]))
 		else:
@@ -184,43 +204,61 @@ func _baue_neu() -> void:
 		i += 7
 	i = 0
 	while i + 7 < tore.size():
+		_setze_zelle(Vector2(tore[i], tore[i + 1]))
 		var regel_ := tor_regeln[i / 8] if i / 8 < tor_regeln.size() else "offen"
 		_tor(Vector2(tore[i], tore[i + 1]), Vector2(tore[i + 2], tore[i + 3]), tore[i + 4], tore[i + 5], tore[i + 6], tore[i + 7], regel_)
 		i += 8
 	i = 0
 	while i + 9 < torbauten.size():
+		_setze_zelle(Vector2(torbauten[i], torbauten[i + 1]))
 		_torturm(Vector2(torbauten[i], torbauten[i + 1]), Vector2(torbauten[i + 2], torbauten[i + 3]), torbauten[i + 4],
 			torbauten[i + 5], torbauten[i + 6], torbauten[i + 7], torbauten[i + 8], torbauten[i + 9])
 		i += 10
 	i = 0
 	while i + 6 < treppen.size():
+		_setze_zelle(Vector2(treppen[i], treppen[i + 1]))
 		_treppe(Vector3(treppen[i], treppen[i + 2], treppen[i + 1]), Vector3(treppen[i + 3], treppen[i + 5], treppen[i + 4]), treppen[i + 6])
 		i += 7
 	i = 0
 	while i + 11 < gebaeude.size():
+		_setze_zelle(Vector2(gebaeude[i], gebaeude[i + 1]))
 		_gebaeude(gebaeude.slice(i, i + 12))
 		i += 12
 	i = 0
 	while i + 12 < hallen.size():
+		_setze_zelle(Vector2(hallen[i], hallen[i + 1]))
 		_halle(hallen.slice(i, i + 13))
 		i += 13
 	i = 0
 	while i + 7 < raeume.size():
+		_setze_zelle(Vector2(raeume[i], raeume[i + 1]))
 		_raum(raeume.slice(i, i + 8))
 		i += 8
 	i = 0
 	while i + 6 < hoehlen.size():
+		_setze_zelle(Vector2(hoehlen[i], hoehlen[i + 1]))
 		_hoehle(hoehlen.slice(i, i + 7))
 		i += 7
+	_waehle_zelle(REST)
 	_fahnen_bauen()
-	if _flach.is_empty() and _rund.is_empty():
+	if zellgroesse <= 0.0:
+		_fertige(_flach, _rund, self)
+		return
+	for k: Vector2i in _zellen_flach:
+		if not (_zellen_flach[k] as Dictionary).is_empty() or not (_zellen_rund[k] as Dictionary).is_empty():
+			_fertige(_zellen_flach[k], _zellen_rund[k], self if k == REST else _zellknoten(k))
+
+
+## Mesh, Schattenhülle und Kollision aus den gesammelten Flächen (je Material) unter ziel.
+func _fertige(flach: Dictionary, rund: Dictionary, ziel: Node3D) -> void:
+	if flach.is_empty() and rund.is_empty():
 		return
 
 	var mesh := ArrayMesh.new()
 	var fest := ArrayMesh.new()   # nur Stein und Boden: Fallgitter und Schießscharten halten niemanden auf
 	var namen := PackedStringArray()   # Material je Oberfläche (für die Schattenhülle)
-	for mat: String in _flach:
-		var st: SurfaceTool = _flach[mat]
+	for mat: String in flach:
+		var st: SurfaceTool = flach[mat]
 		if mat == "rampe":
 			st.commit(fest)   # unsichtbare Lauffläche über Treppenstufen, nur Kollision
 			continue
@@ -232,8 +270,8 @@ func _baue_neu() -> void:
 		namen.append(mat)
 		if not mat.begins_with("metall") and mat != "dunkel" and not mat.begins_with("zier_"):
 			st.commit(fest)
-	for mat: String in _rund:
-		var st: SurfaceTool = _rund[mat]
+	for mat: String in rund:
+		var st: SurfaceTool = rund[mat]
 		if mat.ends_with("_uv"):
 			st.generate_tangents()   # Kegeldächer: ohne Tangenten wird die Schieferstruktur falsch schattiert
 		st.commit(mesh)
@@ -244,12 +282,12 @@ func _baue_neu() -> void:
 	var anzeige := MeshInstance3D.new()
 	anzeige.name = "Mesh"
 	anzeige.mesh = mesh
-	add_child(anzeige)
+	ziel.add_child(anzeige)
 	# Schatten über eine Hülle aus einer Oberfläche statt je Material (Kleinkram, Glas und Glut werfen keinen)
 	var huelle: ArrayMesh = Schattenhuelle.aus(mesh, namen, func(m: String) -> bool:
 		return m.begins_with("zier_") or m.begins_with("glas") or m == "glut" or m == "fensterlicht")
 	if huelle != null:
-		add_child(Schattenhuelle.zwilling(anzeige, huelle))
+		ziel.add_child(Schattenhuelle.zwilling(anzeige, huelle))
 	if not kollision:
 		return
 	var koerper := StaticBody3D.new()
@@ -257,7 +295,7 @@ func _baue_neu() -> void:
 	var form := CollisionShape3D.new()
 	form.shape = fest.create_trimesh_shape()
 	koerper.add_child(form)
-	add_child(koerper)
+	ziel.add_child(koerper)
 
 
 ## Fahnen: Mast (Holz, mit Knauf) in die Mauerteile, das Tuch als eigenes Mesh mit dem Wind-Shader.
@@ -324,6 +362,53 @@ func _fahnen_bauen() -> void:
 		mi.material_override = mat
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED
 		add_child(mi)
+
+
+## Zelle des Bauteils an p (Koordinaten dieses Knotens); ohne zellgroesse ohne Wirkung.
+func _setze_zelle(p: Vector2) -> void:
+	if zellgroesse <= 0.0:
+		return
+	var w := (global_transform * Vector3(p.x, 0.0, p.y)) if is_inside_tree() else Vector3(p.x, 0.0, p.y)
+	_waehle_zelle(Vector2i(floori(w.x / zellgroesse), floori(w.z / zellgroesse)))
+
+
+func _waehle_zelle(k: Vector2i) -> void:
+	if zellgroesse <= 0.0:
+		return
+	_zelle = k
+	if not _zellen_flach.has(k):
+		_zellen_flach[k] = {}
+		_zellen_rund[k] = {}
+	_flach = _zellen_flach[k]
+	_rund = _zellen_rund[k]
+
+
+func _zellknoten(k: Vector2i) -> Node3D:
+	if not _zellen_knoten.has(k):
+		var z := Node3D.new()
+		z.name = "Zelle_%d_%d" % [k.x, k.y]
+		z.set_meta(Zellteil.ZELLE, k)
+		add_child(z)
+		_zellen_knoten[k] = z
+	return _zellen_knoten[k]
+
+
+## Knoten eines Bauteils (Licht, Rauch, Pferd ...) anhängen: in die Zelle des Bauteils, sonst an diesen Knoten.
+func _haenge_an(n: Node) -> void:
+	if zellgroesse <= 0.0 or _zelle == REST:
+		add_child(n)
+	else:
+		_zellknoten(_zelle).add_child(n)
+
+
+## Frisch gebaute Zellen gegen Platzhalter tauschen, die sie nach Abstand ein- und aushängen.
+func _zerlege() -> void:
+	if not Zellteil.nachladen_an(self):
+		return
+	for kind in get_children():
+		if kind.has_meta(Zellteil.ZELLE) and not kind is Zellteil:
+			remove_child(kind)
+			add_child(Zellteil.mit_vorrat(kind, zellgroesse, zell_laden_ab))
 
 
 # ---------- Grundformen ----------
@@ -1702,7 +1787,7 @@ func _rundturm_hohl(c: Vector2, unten: float, oben: float, r: float, dach: int, 
 	licht.omni_range = ri * 2.4
 	licht.light_energy = 0.7
 	licht.light_color = Color(1.0, 0.82, 0.6)
-	add_child(licht)
+	_haenge_an(licht)
 	# Dach oder Zinnenkranz
 	if dach == 1:
 		_ring("dach", c, r - 0.1, r + 0.35, oben, teile, false)
@@ -2051,7 +2136,7 @@ func _untergeschoss(c: Vector2, r: float, ri: float, teile: int, fu: float, fb: 
 		licht.omni_range = ri * 2.4
 		licht.light_energy = 0.6
 		licht.light_color = Color(1.0, 0.82, 0.6)
-		add_child(licht)
+		_haenge_an(licht)
 
 
 ## Keil (kurze Rampe) im Rahmen m, u, n: quer u0..u1, von n0 (Oberkante y0) nach n1 (Oberkante y1), unten flach auf
@@ -2602,7 +2687,7 @@ func _innenraum(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden:
 			l.omni_range = clampf(B * 2.2, 8.0, 16.0)
 			l.omni_attenuation = 0.8
 			l.position = Vector3(lp.x, hoehe - 0.3, lp.y)
-			add_child(l)
+			_haenge_an(l)
 
 
 ## Einrichtung nach dem Zweck des Baus (Gebäudewert Art // 100): 1 Küche, 2 Zeughaus, 3 Palas (oben der Rittersaal), 4 Stall,
@@ -2738,7 +2823,7 @@ func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, i
 							kl.light_energy = 2.2
 							kl.omni_range = 11.0
 							kl.position = Vector3(lm.x, ly - 0.2, lm.y)
-							add_child(kl)
+							_haenge_an(kl)
 			6:   # Kapelle: Altarbild, zwei Kerzenleuchter am Altar, Taufstein beim Eingang, Banner an den Wänden
 				var am := c + uz * (-iL + 0.08)
 				_klotz("stoff", am, uz, nx, -0.04, 0.04, -1.6, 1.6, y + 1.8, y + 4.6)
@@ -2775,7 +2860,7 @@ func _einrichtung(zweck: int, c: Vector2, uz: Vector2, nx: Vector2, iL: float, i
 							var pm := bm + uz * 1.4 + nx * 0.3
 							pferd.position = Vector3(pm.x, y, pm.y)
 							pferd.rotation.y = atan2(nx.x, nx.y)    # Blick (lokal -z) zur Wand -B
-							add_child(pferd)
+							_haenge_an(pferd)
 						box += 1
 						s_ += 2.8
 					# Heuballen in den Ecken an der Türseite, nicht vor der Tür
@@ -3424,7 +3509,7 @@ func _raum(w: PackedFloat32Array, extra: Array[Vector4] = [], mit_licht := true)
 	licht.omni_range = maxf(hl, hb) * 2.2
 	licht.light_energy = 1.2
 	licht.light_color = Color(1.0, 0.8, 0.55)
-	add_child(licht)
+	_haenge_an(licht)
 
 
 ## Füllt die freien Stellen des Bodens zwischen Wandhausrat, Möbelgruppen und Wegen mit kleinen Stücken, wie man im
@@ -3600,7 +3685,7 @@ func _insel(art: String, m: Vector2, u: Vector2, n: Vector2, hs: float, hq: floa
 			licht.light_color = Color(1.0, 0.6, 0.3)
 			licht.light_energy = 1.2
 			licht.omni_range = 6.0
-			add_child(licht)
+			_haenge_an(licht)
 		"schlafstelle":
 			for e: float in [-1.0, 1.0]:
 				var b := m + n * e * 0.55
@@ -4465,7 +4550,7 @@ func _setze(k: Node3D, p: Vector2, y: float, u: Vector2, z_richtung: Vector2) ->
 	if x3.cross(Vector3.UP).dot(z3) < 0.0:
 		x3 = -x3                      # rechtshändig: x × y = z
 	k.transform = Transform3D(Basis(x3, Vector3.UP, z3), Vector3(p.x, y, p.y))
-	add_child(k)
+	_haenge_an(k)
 
 
 ## Eckiger Torturm mit Anlauf, Gesims, Pechnasen zur Feldseite und Zeltdach oder Zinnen.
@@ -4642,7 +4727,7 @@ func _torturm_kammer(c: Vector2, u: Vector2, n: Vector2, b: float, t: float, fb:
 	licht.omni_range = maxf(bi, ti) * 2.6
 	licht.light_energy = 0.6
 	licht.light_color = Color(1.0, 0.82, 0.6)
-	add_child(licht)
+	_haenge_an(licht)
 
 
 ## Krone eines Bergfrieds (dach < 0): Zinnenplattform, vier Ecktürmchen mit Kegeldach auf Kragsteinen, Reihen von
@@ -4918,7 +5003,7 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 			var tm := sm + uz * e
 			_mantel("ziegelton", tm, 0.12, 0.09, first + 1.2, first + 1.6, 8)
 			_ring("dunkel", tm, 0.0, 0.085, first + 1.59, 8)
-		add_child(Rauch.erzeuge(Vector3(sm.x, first + 1.65, sm.y)))
+		_haenge_an(Rauch.erzeuge(Vector3(sm.x, first + 1.65, sm.y)))
 		# Verwahrung aus Blech, wo der Schornstein das Dach durchstößt
 		_klotz("metall", sm, uz, nx, -0.47, 0.47, -0.47, 0.47, first - absf(sn) * (first - traufe) / B - 0.05,
 			first - absf(sn) * (first - traufe) / B + 0.18)
