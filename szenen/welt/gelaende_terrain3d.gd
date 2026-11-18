@@ -30,7 +30,7 @@ static func baue(g: Node3D) -> Node3D:
 	t.set("region_size", REGION)
 	t.set("vertex_spacing", g.abstand)
 	t.set("free_editor_textures", false)
-	t.set("assets", ClassDB.instantiate("Terrain3DAssets"))
+	t.set("assets", _assets_mit_platzhalter())
 	var m: Resource = t.get("material")
 	m.set("world_background", 0)              # NONE: außerhalb der Daten kein Gelände
 	m.set("auto_shader_enabled", false)
@@ -42,6 +42,24 @@ static func baue(g: Node3D) -> Node3D:
 	_lade_hoehen(t, g)
 	_folge_kamera.call_deferred(t)
 	return t
+
+
+## Terrain3D legt ein Karomuster über das Gelände, solange seine Texturliste leer ist, auch über einen eigenen
+## Shader. Wir zeichnen mit unserem Material und brauchen die Liste nicht; ein winziger Platzhalter hält sie besetzt.
+static func _assets_mit_platzhalter() -> Resource:
+	var assets: Resource = ClassDB.instantiate("Terrain3DAssets")
+	var farbe := Image.create(4, 4, true, Image.FORMAT_RGBA8)
+	farbe.fill(Color(0.5, 0.5, 0.5, 0.5))
+	farbe.generate_mipmaps()
+	var normale := Image.create(4, 4, true, Image.FORMAT_RGBA8)
+	normale.fill(Color(0.5, 0.5, 1.0, 0.8))
+	normale.generate_mipmaps()
+	var platzhalter: Resource = ClassDB.instantiate("Terrain3DTextureAsset")
+	platzhalter.set("name", "Platzhalter")
+	platzhalter.set("albedo_texture", ImageTexture.create_from_image(farbe))
+	platzhalter.set("normal_texture", ImageTexture.create_from_image(normale))
+	assets.call("set_texture_asset", 0, platzhalter)
+	return assets
 
 
 ## Die Parameter unseres Geländematerials (Texturen, Maske, Pflasterflächen, Färbung) in das Terrain3D-Material

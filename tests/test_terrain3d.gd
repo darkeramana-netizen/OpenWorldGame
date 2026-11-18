@@ -96,6 +96,10 @@ func _initialize() -> void:
 		await process_frame
 	pruefe(kamera != null and t.call("get_camera") == kamera, "Terrain3D folgt der aktiven Kamera")
 	pruefe(int(t.get("collision_mode")) == 0, "Terrain3D baut keine eigene Kollision")
+	var mat: Resource = t.get("material")
+	pruefe(bool(mat.get("shader_override_enabled")) and (mat.get("shader_override") as Shader).resource_path.ends_with("gelaende_t3d.gdshader"),
+		"Unser Geländematerial als Shader von Terrain3D")
+	pruefe(not bool(mat.get("show_checkered")), "Kein Karomuster (Platzhalter von Terrain3D ohne Texturen)")
 	r.free()
 	Gelaende.darstellung_vorgabe = ""
 	_ende()

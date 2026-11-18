@@ -451,7 +451,7 @@ Eingebaut zum Vergleich, ohne das eigene Gelände anzutasten:
   `werkzeuge/gelaende_t3d_shader.gd` aus dem Shader von Terrain3D (Gitter, Detailstufen, Löcher, Normalen aus den
   Höhen) und unserem Material; nach einem Update von Terrain3D neu erzeugen.
 - Das Messwerkzeug schreibt mit, welches Gelände gemessen wurde (`Gelände eigen` / `Gelände terrain3d`).
-- `tests/test_terrain3d.gd` (14 Punkte): Standard bleibt eigen; mit Terrain3D gleiche Höhen an 4.000 Rasterpunkten,
+- `tests/test_terrain3d.gd` (16 Punkte): Standard bleibt eigen; mit Terrain3D gleiche Höhen an 4.000 Rasterpunkten,
   gleiche Löcher, Rand, Kollision, das Gitter folgt der Kamera.
 
 | Container, ohne Grafik, je 2 Läufe | eigenes Gelände | Terrain3D |
@@ -461,3 +461,30 @@ Eingebaut zum Vergleich, ohne das eigene Gelände anzutasten:
 
 Was auf dem Referenzrechner zählt (Grafikkarte, Draw Calls, Dreiecke je Bild, Aufploppen am Horizont), zeigen nur
 Messungen mit Grafik: einmal mit `--eigenes-gelaende`, einmal mit `--terrain3d`.
+
+**Erste Messung auf dem Referenzrechner** (1280 × 720, beide Läufe gleich eingestellt;
+`docs/messungen/messung_drachenstein_eigen_2026-11-18T17-08-28.json` und `…_t3d_2026-11-18T17-11-15.json`):
+
+| Messfahrt Markt → Palas | eigenes Gelände | Terrain3D |
+|---|---|---|
+| fps im Mittel | 167 | 168 |
+| Frame p50 / p95 / p99 | 5,8 / 7,5 / 9,6 ms | 5,8 / 7,5 / 9,5 ms |
+| Grafikkarte p50 / p95 | 5,1 / 6,1 ms | 4,9 / 5,9 ms |
+| Dreiecke je Bild p95 | 8,58 Mio. | 8,19 Mio. |
+| Draw Calls p95 | 3.425 | 3.374 |
+| Rundblick: Grafikkarte p50 / p95 | 5,3 / 6,8 ms | 4,9 / 6,5 ms |
+| `_ready` des Geländes | 658 ms | 267 ms |
+| erstes Bild nach dem Laden | 2.824 ms (273 Pipelines) | 3.303 ms (284 Pipelines) |
+| spielbar nach | 9,1 s | 9,1 s |
+| Arbeits- / Grafikspeicher | 603 / 1.351 MB | 623 / 1.363 MB |
+
+**Fehler in diesem Lauf:** Mit Terrain3D lag ein Karomuster auf dem Boden. Terrain3D schaltet es als Platzhalter
+ein, solange seine eigene Texturliste leer ist, und legt es auch über einen eigenen Shader. Behoben mit einer
+winzigen Platzhaltertextur in der Liste (`gelaende_terrain3d.gd`), geprüft in `test_terrain3d.gd`. Weil das Muster
+die Farbe unseres Materials ersetzte, hat die Grafikkarte dabei vermutlich einen Teil unseres Materials gar nicht
+gerechnet; die Zahlen für Terrain3D sind daher eher zu günstig und werden mit dem behobenen Stand wiederholt.
+
+**Zwischenstand:** Auf der Grafikkarte bringt Terrain3D hier nur 3 bis 7 %, die Bildzeit bleibt gleich. Das
+Gelände von Drachenstein war nie der Engpass (2,2 × 1,45 km, Kacheln außerhalb des Blickfelds fallen schon weg). Was
+beim Laden im Gelände gespart wird (0,4 s), kostet das erste Bild wieder (11 Pipelines mehr). Für die heutige Region
+lohnt der Umstieg nicht; interessant wird Terrain3D erst bei einer viel größeren Welt (Phase 2).

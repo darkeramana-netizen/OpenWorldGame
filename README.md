@@ -707,7 +707,7 @@ Elf automatische Tests, alle mit eigenem Speicherordner, sodass deine Spielstän
 | `tests/test_region.gd` | die Region, 38 Punkte: Gelände, Gehen durch das Tor und über Rampen und Brücken, vom Markt durch Stadt, Vorburg, Mittelburg, Zwinger und Oberburg hinauf in den Palas, außen um den Palas hinab zur Rampe, der Zwingerweg um die Oberburg, über den Kai auf den Landungssteg, durch den Untergrundhafen auf den Ostkai zu den Kränen, in alle begehbaren Gebäude und ihre Treppen hinauf, durch die Tür in jedes fünfte Fachwerkhaus der Höfe und die Treppe hinauf, durch die Molenpforte auf die Mole, die Landwege durch Nordtor und Südtor in die Stadt, durch das Labyrinth von Gravemarch, Ortsnamen, Meer und Rand, alle fünf neuen Personen, Karte, Speichern und Laden, Umzug alter Spielstände |
 | `tests/test_baucache.gd` | Baucache, 14 Punkte: Bau aus dem Zwischenspeicher gleicht dem frisch gebauten Knoten für Knoten (mit Lagen der Häuser), Schlüssel, Abschalten |
 | `tests/test_ladevorhang.gd` | Ladebildschirm, 11 Punkte: steht bei neuem Spiel und Reise, sperrt die Eingabe, fällt erst nach ruhigen Bildern, nicht im Hauptmenü |
-| `tests/test_terrain3d.gd` | Gelände mit Terrain3D, 14 Punkte: Standard bleibt das eigene Gelände; mit Terrain3D dieselben Höhen, Löcher und Kollision, kein Gelände außerhalb der Daten, das Gitter folgt der Kamera |
+| `tests/test_terrain3d.gd` | Gelände mit Terrain3D, 16 Punkte: Standard bleibt das eigene Gelände; mit Terrain3D dieselben Höhen, Löcher und Kollision, kein Gelände außerhalb der Daten, das Gitter folgt der Kamera, unser Material ohne Karomuster |
 
 ```
 godot --headless --path . --script res://tests/test_akt1.gd
