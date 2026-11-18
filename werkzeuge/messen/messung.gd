@@ -153,7 +153,7 @@ func _initialize() -> void:
 	# --- 4. Auswertung ---
 	var ergebnis := {
 		"region": region, "strecke": strecke, "name": _args.get("name", "ohne_name"), "uhrzeit": float(_args.get("uhrzeit", "10")),
-		"zeit": Time.get_datetime_string_from_system(), "system": _system(),
+		"zeit": Time.get_datetime_string_from_system(), "system": _system(), "gelaende": _gelaende_art(),
 		"laden": laden, "ready_je_bauart": _ready_tabelle(), "langsamste_ready": _langsamste(15),
 		"szene": szene, "fahrt": fahrt,
 		"anlauf": _statistik("anlauf"), "anlauf_erste_bilder": _erste_bilder(12),
@@ -187,6 +187,14 @@ func _bei_ready(n: Node) -> void:
 	_ready_zeiten[k] = e
 	if dauer > 20000:
 		_einzeln.append([dauer, k, str(n.get_path())])
+
+
+## Wer das Gelände zeichnet: "eigen" oder "terrain3d" (szenen/welt/gelaende.gd, Startargument --terrain3d)
+func _gelaende_art() -> String:
+	for g in root.get_tree().get_nodes_in_group("gelaende"):
+		if g.has_method("mit_terrain3d"):
+			return "terrain3d" if g.get_node_or_null("Terrain3D") != null else "eigen"
+	return "?"
 
 
 ## Bauart eines Knotens: Name seines Skripts, sonst seine Klasse
@@ -742,7 +750,8 @@ func _schreibe(e: Dictionary) -> void:
 func _zusammenfassung(e: Dictionary) -> String:
 	var z: PackedStringArray = []
 	var sy: Dictionary = e["system"]
-	z.append("Messung %s, Region %s, Strecke %s, %s" % [e["name"], e["region"], e["strecke"], e["zeit"]])
+	z.append("Messung %s, Region %s, Strecke %s, Gelände %s, %s" % [e["name"], e["region"], e["strecke"],
+		e.get("gelaende", "?"), e["zeit"]])
 	z.append("System: Godot %s, %s, %s (%d Kerne), Grafik: %s, Anzeige %s %s" % [sy["godot"], sy["os"], sy["cpu"],
 		sy["kerne"], sy["grafik"], sy["anzeige"], sy["fenster"]])
 	var l: Dictionary = e["laden"]

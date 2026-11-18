@@ -8,6 +8,7 @@ extends Node3D
 const KACHEL := 64
 ## Bis zu dieser Höhe reichen die Wände am Rand des Geländes hinunter.
 const RAND_UNTEN := -45.0
+const Terrain3DBau := preload("res://szenen/welt/gelaende_terrain3d.gd")
 
 @export var material: Material
 ## Ordner mit hoehen.r32 und hoehen.json, für jede Region ein eigener.
@@ -15,6 +16,12 @@ const RAND_UNTEN := -45.0
 ## Löcher im Gelände, je Rechteck x0, z0, x1, z1 (Welt): Rasterpunkte darin bekommen weder Fläche noch Kollision,
 ## z. B. wo ein Tunnel durch einen Steilhang in den Berg führt (darüber und darunter bleibt das Gelände).
 @export var loecher := PackedVector4Array()
+## Wer die Fläche zeichnet: "eigen" (Kacheln aus diesem Skript) oder "terrain3d" (addons/terrain_3d: feines Gitter
+## um die Kamera, nach außen gröber). Kollision, hoehe_bei() und Löcher sind in beiden Fällen dieselben.
+## Startargumente --terrain3d und --eigenes-gelaende gehen vor (für Vergleichsmessungen).
+@export_enum("eigen", "terrain3d") var darstellung := "eigen"
+## Gilt für alle Gelände, wenn gesetzt ("eigen" oder "terrain3d"), z. B. in Tests
+static var darstellung_vorgabe := ""
 
 var breite: int = 0
 var tiefe: int = 0
@@ -30,7 +37,11 @@ func _ready() -> void:
 	if _lade():
 		_setze_hoehen_global()
 		_markiere_loecher()
-		_baue_kacheln()
+		if mit_terrain3d() and not Engine.is_editor_hint():
+			if Terrain3DBau.baue(self) == null:
+				_baue_kacheln()
+		else:
+			_baue_kacheln()
 		_baue_rand()
 		_baue_kollision()
 
@@ -58,6 +69,16 @@ func am_loch(x: float, z: float, rand: float = 3.0) -> bool:
 		if x > r.x - rand and x < r.z + rand and z > r.y - rand and z < r.w + rand:
 			return true
 	return false
+
+
+## Ob die Fläche von Terrain3D gezeichnet wird (Einstellung oder Startargument)
+func mit_terrain3d() -> bool:
+	var args := OS.get_cmdline_user_args()
+	if darstellung_vorgabe != "":
+		return darstellung_vorgabe == "terrain3d"
+	if "--eigenes-gelaende" in args:
+		return false
+	return darstellung == "terrain3d" or "--terrain3d" in args
 
 
 func groesse() -> Vector2:

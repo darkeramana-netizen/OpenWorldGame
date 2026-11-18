@@ -7,3 +7,5 @@
 *.ogg binary
 *.wav binary
 *.r32 binary
+*.dll binary
+*.so binary
