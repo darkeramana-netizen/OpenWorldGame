@@ -32,6 +32,9 @@ extends Node3D
 @export var zell_laden_ab := 0.0
 
 const Zellteil := preload("res://szenen/welt/zellteil.gd")
+const Baucache := preload("res://szenen/welt/baucache.gd")
+## Für Tests: ob die Pflanzen beim letzten Aufbau aus dem Baucache kamen
+var aus_cache := false
 
 const RASTER := 4.0             # Prüfraster für Bäume in m
 const GRAS_ZELLE := 12.0
@@ -67,7 +70,7 @@ func _ready() -> void:
 	_rauschen.seed = saat
 	_rauschen.frequency = 0.004
 	_rauschen.fractal_octaves = 3
-	_pflanze()
+	await _pflanze()
 	_gras_mesh = _grasbueschel()
 	_gras_material = _material(0.12, 0.0, 0.0, 0.95)
 	_gras_material.set_shader_parameter("spitze_hoehe", 0.5)
@@ -162,7 +165,60 @@ func _platz(x: float, z: float, steil_max: float, raum: float) -> float:
 
 # ---------- Bäume, Büsche, Felsen ----------
 
+## Bäume, Büsche und Felsen setzen. Das Ergebnis hängt nur von Code, Szene und Geländedaten ab und kommt ab dem
+## zweiten Start aus dem Baucache (das Berechnen mit den Strahlen kostet sonst gut 0,4 s im ersten Bild).
 func _pflanze() -> void:
+	var datei := _cache_datei()
+	var listen := {}
+	aus_cache = false
+	if datei != "" and FileAccess.file_exists(datei):
+		var f := FileAccess.open(datei, FileAccess.READ)
+		var gelesen: Variant = f.get_var() if f != null else null
+		if gelesen is Dictionary and (gelesen as Dictionary).has("nadel"):
+			listen = gelesen
+			aus_cache = true
+	if listen.is_empty():
+		# Neu berechnen (nur nach einer Änderung an Code, Szene oder Gelände): Erst alles bauen, was in Zellen nachgeladen
+		# wird (Ausstattung, Natur), damit die Strahlen es treffen wie ohne Zellen; die Bäume stehen dann überall gleich,
+		# egal wo der Spieler startet. Danach gibt die Zellwelt das Ferne wieder frei.
+		var zw := get_node_or_null("/root/Zellwelt")
+		if zw != null and zw.baue_alle() > 0:
+			for i in 2:
+				await get_tree().physics_frame
+		listen = _berechne_pflanzen()
+		if zw != null:
+			zw.pruefe_sofort()
+		if datei != "":
+			DirAccess.make_dir_recursive_absolute(Baucache.ordner)
+			Baucache.aufraeumen(self, datei.get_file().get_basename())
+			var tmp := datei + ".%d.tmp" % OS.get_process_id()
+			var f := FileAccess.open(tmp, FileAccess.WRITE)
+			if f != null:
+				f.store_var(listen)
+				f.close()
+				DirAccess.rename_absolute(tmp, datei)
+	_zeige("Nadelbaeume", _nadelbaum(), listen["nadel"], _material(0.012, 0.6, 0.0, 0.85), true)
+	_zeige("Laubbaeume", _laubbaum(), listen["laub"], _material(0.015, 0.6, 0.0, 0.85), true)
+	_zeige("Buesche", _busch(), listen["busch"], _material(0.04, 0.6, 0.0, 0.9), false)
+	_zeige("Felsen", _fels(), listen["fels"], load("res://material/fels.tres"), false)
+	for art in listen:
+		anzahl[art] = (listen[art] as Array).size()
+	_baue_stammkollision(listen["nadel"] + listen["laub"])
+
+
+## Datei im Baucache: Schlüssel aus Code, Szene und Eigenschaften (Baucache) und den Geländedaten (Höhen, Maske)
+func _cache_datei() -> String:
+	if not Baucache.an(self):
+		return ""
+	var zusatz := FileAccess.get_md5(String(_gelaende.get("daten")).path_join("hoehen.r32"))
+	var material := _gelaende.get("material") as ShaderMaterial
+	var maske := material.get_shader_parameter("maske") as Texture2D if material != null else null
+	if maske != null and maske.resource_path != "":
+		zusatz += FileAccess.get_md5(maske.resource_path)
+	return Baucache.ordner + (Baucache.schluessel(self) + zusatz).md5_text() + ".bewuchs"
+
+
+func _berechne_pflanzen() -> Dictionary:
 	var zufall := RandomNumberGenerator.new()
 	zufall.seed = saat
 	var flaeche := bereich
@@ -205,13 +261,7 @@ func _pflanze() -> void:
 		# negative Größe: sicher ein Laubbaum (z. B. die Hoflinden der Burg)
 		var ex := _exemplar(zufall, b.x, b.y, b.z, absf(b.w), absf(b.w))
 		listen["laub" if b.w < 0.0 or zufall.randf() >= nadel_anteil else "nadel"].append(ex)
-	_zeige("Nadelbaeume", _nadelbaum(), listen["nadel"], _material(0.012, 0.6, 0.0, 0.85), true)
-	_zeige("Laubbaeume", _laubbaum(), listen["laub"], _material(0.015, 0.6, 0.0, 0.85), true)
-	_zeige("Buesche", _busch(), listen["busch"], _material(0.04, 0.6, 0.0, 0.9), false)
-	_zeige("Felsen", _fels(), listen["fels"], load("res://material/fels.tres"), false)
-	for art in listen:
-		anzahl[art] = listen[art].size()
-	_baue_stammkollision(listen["nadel"] + listen["laub"])
+	return listen
 
 
 func _exemplar(zufall: RandomNumberGenerator, x: float, h: float, z: float, s_min: float, s_max: float) -> Array:

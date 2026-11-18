@@ -76,6 +76,20 @@ func wartend() -> int:
 	return _laden.size()
 
 
+## Alle gemeldeten Inhalte sofort bauen (ohne Budget); gibt zurück, wie viele es waren. Für Berechnungen, die die
+## ganze Welt sehen müssen (Pflanzen der Bäume, bewuchs.gd); die nächste Prüfung gibt Fernes wieder frei.
+func baue_alle() -> int:
+	_aufraeumen()
+	var n := 0
+	for k: Node in _inhalte:
+		if _stufe.get(k.get_instance_id(), LEER) != GEBAUT:
+			_verwerfe_vorrat(k)
+			_baue(k)
+			n += 1
+	_laden.clear()
+	return n
+
+
 ## Alles neu bewerten (z. B. nach einem Sprung des Spielers)
 func pruefe_sofort() -> void:
 	_pruefe()

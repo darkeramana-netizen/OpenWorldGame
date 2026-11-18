@@ -135,7 +135,7 @@ static func speichere(knoten: Node, schl: String) -> void:
 		else:
 			daten.teile.append(ps)
 	DirAccess.make_dir_recursive_absolute(ordner)
-	_aufraeumen(knoten, schl)
+	aufraeumen(knoten, schl)
 	# Zellen zuerst, die Hauptdatei zuletzt: Wer sie findet, findet auch alle Zellen
 	for z: String in einzeln:
 		if not _schreibe(einzeln[z], zelldatei(schl, z)):
@@ -194,13 +194,13 @@ static func nachbereite(n: Node, material: Callable) -> void:
 
 ## Je Knoten bleibt nur die neueste Datei; sonst sammeln sich bei jeder Änderung am Code alte an. Ein Merker je Knoten
 ## (Szene und Pfad) hält fest, welcher Schlüssel zuletzt gespeichert wurde.
-static func _aufraeumen(knoten: Node, schl: String) -> void:
+static func aufraeumen(knoten: Node, schl: String) -> void:
 	var merker := ordner + "%s.knoten" % String(knoten.owner.scene_file_path + "|" + str(knoten.owner.get_path_to(knoten))).md5_text()
 	if FileAccess.file_exists(merker):
 		var alt := FileAccess.get_file_as_string(merker).strip_edges()
 		if alt != "" and alt != schl:
 			for f in DirAccess.get_files_at(ordner):
-				if f == alt + ".res" or (f.begins_with(alt + ".Zelle_") and f.ends_with(".res")):
+				if f.begins_with(alt + ".") and not f.ends_with(".knoten"):   # Hauptdatei, Zellen, Pflanzen
 					DirAccess.remove_absolute(ordner + f)
 	var f := FileAccess.open(merker, FileAccess.WRITE)
 	if f:

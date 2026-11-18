@@ -30,6 +30,7 @@ func _initialize() -> void:
 	var r1 := await _lade()
 	var t_bau := Time.get_ticks_msec() - t0
 	var bild_bau := _bild(r1)
+	var b1: Array = await _baeume(r1)
 	var gebaut := Baucache.gebaut
 	pruefe(gebaut >= 60 and Baucache.treffer == 0, "Erster Start: %d Bauten gebaut und gespeichert, keiner geladen" % gebaut)
 	var res := 0
@@ -50,6 +51,9 @@ func _initialize() -> void:
 	var r2 := await _lade()
 	var t_cache := Time.get_ticks_msec() - t0
 	var bild_cache := _bild(r2)
+	var b2: Array = await _baeume(r2)
+	pruefe(not b1[2] and b2[2] and b1[0] == b2[0] and b1[1] == b2[1] and b1[1].size() > 500,
+		"Bäume beim zweiten Start aus dem Baucache, an denselben Stellen (%s, %d Stämme)" % [str(b2[0]), b1[1].size()])
 	pruefe(Baucache.treffer == gebaut and Baucache.gebaut == gebaut,
 		"Zweiter Start: alle %d Bauten geladen, keiner neu gebaut" % Baucache.treffer)
 	pruefe(t_cache < t_bau, "Zweiter Start schneller (%d ms statt %d ms)" % [t_cache, t_bau])
@@ -109,8 +113,40 @@ func _initialize() -> void:
 	pruefe(not Baucache.an(lose), "Knoten ohne Szenendatei werden immer gebaut")
 	r2.free()
 
+	# 4. Bäume unabhängig davon, was gerade nachgeladen ist: frisch berechnet, ohne eine einzige geladene Zelle
+	var bewuchs_datei := ""
+	for f in DirAccess.get_files_at(Baucache.ordner):
+		if f.ends_with(".bewuchs"):
+			bewuchs_datei = Baucache.ordner + f
+	var md5_alle := FileAccess.get_md5(bewuchs_datei)
+	DirAccess.remove_absolute(bewuchs_datei)
+	var Z := root.get_node("Zellwelt")
+	Z.aus = false
+	Z.ziel_position = Vector3(5000, 0, 5000)
+	var r3 := await _lade()
+	var b3: Array = await _baeume(r3)
+	pruefe(not b3[2] and b3[0] == b1[0] and FileAccess.get_md5(bewuchs_datei) == md5_alle,
+		"Ohne geladene Zellen frisch berechnet: dieselben Bäume (%s)" % str(b3[0]))
+	r3.free()
+	Z.ziel_position = null
+	Z.aus = true
+
 	print("\nFehler: %d" % fehler)
 	quit(1 if fehler > 0 else 0)
+
+
+## Bäume einer Region: [Anzahl je Art, Lagen der Stämme (sortiert), aus dem Baucache?]
+func _baeume(r: Node) -> Array:
+	var bw: Node = r.get_node("Bewuchs")
+	var ende := Time.get_ticks_msec() + 20000
+	while (bw.anzahl as Dictionary).is_empty() and Time.get_ticks_msec() < ende:
+		await process_frame
+	await process_frame
+	var lagen: Array[String] = []
+	for k in bw.find_children("*", "CollisionShape3D", true, false):
+		lagen.append(str(((k as Node3D).global_position * 100.0).round()))
+	lagen.sort()
+	return [bw.anzahl.duplicate(), lagen, bw.aus_cache]
 
 
 func _lade() -> Node:
