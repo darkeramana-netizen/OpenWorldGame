@@ -23,8 +23,9 @@ const BUDGET_VORHANG_MS := 40.0
 ## Höchstens so viele Dateien gleichzeitig im Hintergrund
 const MAX_VORLADEN := 4
 
-## true: alle gemeldeten Inhalte werden sofort gebaut (wie ohne Zellen), z. B. für Werkzeuge
-var aus := false
+## true: alle gemeldeten Inhalte werden sofort gebaut (wie ohne Zellen), z. B. für Werkzeuge und Vergleichsmessungen
+## (Startargument --ohne-zellen)
+var aus := "--ohne-zellen" in OS.get_cmdline_user_args()
 ## Feste Position statt der Kamera (für Tests); null: aktive Kamera
 var ziel_position: Variant = null
 ## Zähler für Tests und Messungen
@@ -162,7 +163,8 @@ func _verwerfe_vorrat(n: Node) -> void:
 func _baue_mit_budget() -> void:
 	if _laden.is_empty():
 		return
-	var budget := BUDGET_VORHANG_MS if Ladevorhang.sichtbar else BUDGET_MS
+	var vorhang := get_node_or_null("/root/Ladevorhang")
+	var budget := BUDGET_VORHANG_MS if vorhang != null and vorhang.get("sichtbar") == true else BUDGET_MS
 	var start := Time.get_ticks_usec()
 	var laufend := 0
 	for n: Variant in _laden:

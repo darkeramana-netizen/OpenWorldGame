@@ -241,7 +241,9 @@ func _teile(jetzt: int) -> Array:
 ## Pipelines und schneller als RUHIG_MS). spielbar_ms zählt vom Start des Ladens; das größte Bild danach (bis zum Ende
 ## des Anlaufs) ist das, was man nach dem Laden noch als Hänger sähe.
 func _vorhang(laden: Dictionary) -> Dictionary:
-	var V := preload("res://autoload/ladevorhang.gd")
+	# zur Laufzeit holen, nicht mit preload: sonst übersetzt Godot ladevorhang.gd vor den Autoloads, und der
+	# Ladebildschirm liefe in der Messung ohne Skript
+	var V = root.get_node("Ladevorhang").get_script()
 	var t := float(laden["gesamt_bis_einhaengen_ms"])
 	var bilder := 0
 	var ruhig := 0
