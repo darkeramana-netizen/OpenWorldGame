@@ -55,7 +55,35 @@ immer geladen.
    Container, ohne Grafik, nur mit der Einrichtung (Stadtstrecke Markt → Palas): Speicher 834 statt 855 MB,
    6,40 statt 6,64 Mio. Dreiecke beim Start, längster Aufbau einer Zelle 9,7 ms, 11 Zellen gebaut und 4 freigegeben
    auf der Strecke; Ladezeit und Hänger im Rauschen. Der Gewinn wächst mit dem Inhalt (Schritt 3).
-3. **Weiterer Inhalt:** Felsen, Natur und Bewuchs in Zellen (heute ein Knoten je Art für die ganze Region).
+
+   **Referenzrechner** (1280 × 720, `docs/messungen/messung_drachenstein_zellen_2026-11-18T19-04-45.json` und
+   `…_ohne_zellen_2026-11-18T19-07-32.json`), Stadtstrecke Markt → Palas:
+
+   | | ohne Zellen | mit Zellen |
+   |---|---|---|
+   | spielbar nach | 8,3 s | 8,1 s |
+   | Draw Calls p95 Fahrt / Rundblick | 3.902 / 4.166 | 3.709 / 4.072 |
+   | Objekte p95 Fahrt | 4.767 | 4.577 |
+   | Knoten in der Szene | 12.040 | 11.619 |
+   | Frame p95, Grafikkarte p50 | 7,6 / 5,0 ms | 7,5 / 5,0 ms |
+   | Hänger in der Fahrt | 0 | 0 |
+   | längster Aufbau einer Zelle | – | 144,5 ms (im Anlauf, hinter dem Ladebildschirm) |
+
+   Beim Spielen keine Fehler gesehen. Die 144,5 ms kamen daher, dass die Ausstattung die Form einer Art erst in der
+   ersten Zelle baute, die sie braucht; mitten im Spiel wäre das ein Hänger gewesen. Jetzt baut sie alle Formen beim
+   Laden.
+3. ✔ **Weiterer Inhalt:** gemessen, wofür die Zeit draufgeht (Container): Natur 342 ms Aufbau mit 2.836 Stücken,
+   742 MultiMeshes und 205 Kollisionsformen; Klippenfelsen 236 ms mit 195 Stücken und 15 Formen; Bäume 386 ms für
+   das Pflanzen über Strahlen und 1.807 Stammzylinder.
+   - **Natur** (`felsen.gd`, Sichtweite 300 m) ganz in Zellen: 40 Zellen à 128 m, Ladeabstand 364 m. Ebenso die
+     Pflanzen auf dem Felsmassiv (96 m, Ladeabstand 320 m). Die Modelle werden einmal beim Laden vorbereitet, je
+     Zelle entstehen nur MultiMeshes und Kollision; die Höhen nach dem Nachsetzen auf den Boden gelten auch für
+     Zellen, die erst später gebaut werden.
+   - **Klippenfelsen** bleiben, wie sie sind: 2,5 km Sichtweite, kaum Kollision.
+   - **Bäume** bleiben immer sichtbar; nur ihre **Stammkollision** liegt in 53 Zellen à 128 m (Ladeabstand 150 m).
+     Am Ursprung haben 43 von 1.807 Stämmen Kollision.
+   - `tests/test_zellen_bau.gd` jetzt 17 Punkte (Natur, Stämme dazu).
+   - Offen: Das Pflanzen der Bäume (386 ms über Strahlen) ist immer gleich und könnte in den Baucache.
 4. **Spielstand je Zelle** für veränderliche Dinge.
 5. **Fernmodelle** für Burg, Gravecrest und Gravemarch, danach auch diese in Zellen.
 6. **Entscheidung** zusammenhängende Welt ja oder nein.
