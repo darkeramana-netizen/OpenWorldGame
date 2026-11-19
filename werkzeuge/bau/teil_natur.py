@@ -140,6 +140,8 @@ for gx in range(-360, 330, 3):
 NATUR = [n_ for n_ in NATUR if all(math.dist((n_[1], n_[3]), (ix_, iz_)) > ir_ for ix_, iz_, ir_ in
                                    [(300, -15, 11.0), (382, 22, 10.0), (462.4, 60.4, 10.0)])]
 N("Natur", "Node3D", DS, f"""script = ExtResource("30_felsen")
+zellgroesse = 128.0
+zell_laden_ab = 364.0
 modelle = PackedStringArray({", ".join(f'"{p}"' for p in NATURMODELLE)})
 stuecke = PackedFloat32Array({", ".join(f"{v:.6g}" for st in NATUR for v in st)})
 sichtweite = 300.0

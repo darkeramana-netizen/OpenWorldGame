@@ -57,12 +57,14 @@ height = {h}
 sides = {seiten}
 material = SubResource("{mat}")""")
 
-def schild(name, parent, x, y, z, text, groesse=64):
+def schild(name, parent, x, y, z, text, groesse=64, sicht_ab=0.0):
+    """sicht_ab: erst ab diesem Abstand sichtbar (z. B. nicht direkt unter einem hohen Schild)."""
+    ab = f"\nvisibility_range_begin = {sicht_ab}\nvisibility_range_begin_margin = 5.0" if sicht_ab else ""
     N(name, "Label3D", parent, f"""{T(x,y,z)}
 billboard = 1
 visibility_range_end = 70.0
 visibility_range_end_margin = 10.0
-visibility_range_fade_mode = 1
+visibility_range_fade_mode = 1{ab}
 pixel_size = 0.02
 text = "{text}"
 font_size = {groesse}
@@ -266,8 +268,12 @@ def gebaeude_lokal(name, eltern, x, z, sx, sz, hoehe, mat="Material_hell", gier=
 
 
 def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", wasser_hoehe=-20,
-                 wasser_groesse=(2600, 2200), wasser_parameter="", nebel=0.0006, gelaende_parameter="", gelaende_extra=""):
-    """Gemeinsame Ressourcen und die Wurzel einer Region: Himmel, Licht, Gelände und Wasserfläche."""
+                 wasser_groesse=(2600, 2200), wasser_parameter="", nebel=0.0006, gelaende_parameter="", gelaende_extra="",
+                 nebel_hoehe=0.0008, boden_farbe="0.1, 0.1, 0.1", wasser_ohne_schatten=False, fernmeer=None):
+    """Gemeinsame Ressourcen und die Wurzel einer Region: Himmel, Licht, Gelände und Wasserfläche.
+    boden_farbe: Himmel unter dem Horizont (am Meer meerfarben, sonst ein brauner Streifen hinter der Sichtweite).
+    fernmeer: (Größe, Aussparung x min, z min, x max, z max): zweite Meeresfläche bis zum Horizont, 0,5 m unter dem
+    Wasser, ohne die Fläche des nahen Meeres."""
     E("Script", "res://szenen/welt/tageslicht.gd", "1_tageslicht")
     E("Script", "res://szenen/welt/gelaende.gd", "2_gelaende")
     E("PackedScene", "res://szenen/welt/burg_hof.tscn", "3_hof")
@@ -296,13 +302,13 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     albedo_color = Color(1, 0.62, 0.18, 1)''')
 
     E("Texture2D", "res://texturen/wolken.png", "25_wolken")
-    S('''[sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
+    S(f'''[sub_resource type="ProceduralSkyMaterial" id="Himmel_material"]
     sky_top_color = Color(0.22, 0.38, 0.62, 1)
     sky_horizon_color = Color(0.74, 0.73, 0.7, 1)
     sky_curve = 0.12
     sky_cover = ExtResource("25_wolken")
     sky_cover_modulate = Color(1, 1, 1, 0.9)
-    ground_bottom_color = Color(0.1, 0.1, 0.1, 1)
+    ground_bottom_color = Color({boden_farbe}, 1)
     ground_horizon_color = Color(0.74, 0.73, 0.7, 1)
     sun_angle_max = 20.0
     sun_curve = 0.08''')
@@ -344,7 +350,7 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     fog_aerial_perspective = 0.3
     fog_sky_affect = 0.25
     fog_height = 0.0
-    fog_height_density = 0.0008
+    fog_height_density = {nebel_hoehe}
     adjustment_enabled = true
     adjustment_saturation = 1.08
     adjustment_contrast = 1.04''')
@@ -366,6 +372,18 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     size = Vector2({wasser_groesse[0]}, {wasser_groesse[1]})
     subdivide_width = 120
     subdivide_depth = 100''')
+    if fernmeer:
+        g, ax, az, bx, bz = fernmeer
+        S(f'''[sub_resource type="ShaderMaterial" id="Material_fernmeer"]
+    shader = ExtResource("10_wasser")
+    shader_parameter/wellenhoehe = 0.0
+    shader_parameter/halbe_groesse = Vector2({g // 2}, {g // 2})
+    shader_parameter/aussparung = Vector4({ax}, {az}, {bx}, {bz})''')
+        S(f'''[sub_resource type="PlaneMesh" id="Mesh_fernmeer"]
+    material = SubResource("Material_fernmeer")
+    size = Vector2({g}, {g})
+    subdivide_width = 8
+    subdivide_depth = 8''')
     # Texturierte Materialien aus material/ (werkzeuge/texturen_erzeugen.py); in der Szene als ExtResource.
     for name in TEXTUR_MATERIALIEN:
         E("Material", f"res://material/{name}.tres", f"Material_{name}")
@@ -400,7 +418,11 @@ def grundgeruest(gelaende_ordner, region_eigenschaften="", wasser_name="Meer", w
     material = SubResource("Material_gelaende")
     daten = "res://daten/{gelaende_ordner}/"{gelaende_extra}''')
     N(wasser_name, "MeshInstance3D", ".", f'''transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, {wasser_hoehe}, 0)
-    mesh = SubResource("Mesh_meer")''')
+    {"cast_shadow = 0" + chr(10) if wasser_ohne_schatten else ""}mesh = SubResource("Mesh_meer")''')
+    if fernmeer:
+        N("Fernmeer", "MeshInstance3D", ".", f'''transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, {wasser_hoehe - 0.5}, 0)
+    cast_shadow = 0
+    mesh = SubResource("Mesh_fernmeer")''')
 
 
 def spieler_und_oberflaeche(x, y, z):

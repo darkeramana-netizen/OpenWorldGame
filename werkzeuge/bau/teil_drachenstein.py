@@ -1394,6 +1394,8 @@ for hx_, hy_, hz_, hg_, hf_ in HOFHAEUSER:
         _raeume_hh += [round(hx_, 3), round(hz_, 3), round(hg_, 2), round(hb_ / 2 - _WAND, 3), round(ht_ / 2 + aus_ - _WAND, 3),
                        round(boden_, 3), round(decke_, 3), 28 if g_ == 0 else 29]
 N("HofhausEinrichtung", "Node3D", BG, f"""script = ExtResource("28_burgbau")
+zellgroesse = 64.0
+zell_laden_ab = 90.0
 raeume = PackedFloat32Array({_zahlen(_raeume_hh)})
 raum_frei = PackedVector4Array({", ".join(f"{a_:.3f}, {b_:.3f}, {c_:.2f}, {d_:.3f}" for a_, b_, c_, d_ in _frei_hh)})""")
 print("Fachwerkhäuser begehbar und eingerichtet: %d Räume" % (len(_raeume_hh) // 8))
@@ -1441,7 +1443,7 @@ kollision = false""")
 
 # --- Stadt und Hafen ---
 teil("teil_stadt.py")
-N("BurgAusstattung", "Node3D", BG, "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
+N("BurgAusstattung", "Node3D", BG, "script = ExtResource(\"29_ausstattung\")\nzellgroesse = 64.0\nzell_laden_ab = 240.0\nstuecke = PackedFloat32Array("
   + ", ".join(f"{v:.5g}" for st_ in BURG_AUSSTATTUNG for v in st_) + ")")
 E("Script", "res://szenen/figuren/tauben.gd", "42_tauben")
 N("Tauben", "Node3D", BG)

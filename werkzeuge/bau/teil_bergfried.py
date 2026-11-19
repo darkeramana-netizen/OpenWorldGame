@@ -125,4 +125,4 @@ _dg = polar(30.05, BF_WINKEL, 2.5)
 N("Durchgang", "CSGBox3D", BF + "/AeussereMauer", f"""{T(_dg[0], 2.5, _dg[2], -BF_WINKEL)}
 operation = 2
 size = Vector3(6, 5, 6)""")
-schild("Schild", BF, 0, 76, 0, "Schwarzer Bergfried", 96)
+schild("Schild", BF, 0, 76, 0, "Schwarzer Bergfried", 96, sicht_ab=35.0)   # nicht riesig über dem Dach (M31)

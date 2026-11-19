@@ -7,7 +7,10 @@ grundgeruest("gelaende", region_eigenschaften="grenze_min = Vector2(-880, -680)\
              wasser_groesse=(2800, 1800),
              # Loch im Steilhang hinter dem Wassertor (Rasterpunkte am Fuß, x 92,5): Dort führt der Gang unter dem Zwinger
              # in den Untergrundhafen (teil_stadt.py); die Ringmauer und die Kanalmauern decken die Ränder.
-             gelaende_extra="\nloecher = PackedVector4Array(91.5, -13.5, 93.5, -4.0)")
+             gelaende_extra="\nloecher = PackedVector4Array(91.5, -13.5, 93.5, -4.0)",
+             # Mängelliste M1, M3: Fernmeer bis zum Horizont, halber Dunst, Himmel unter dem Horizont meerfarben
+             nebel=0.00025, nebel_hoehe=0.0004, boden_farbe="0.1, 0.2, 0.23", wasser_ohne_schatten=True,
+             fernmeer=(16000, -1350, -850, 1350, 850))
 
 # ---------- Burgfeste Drachenstein ----------
 import sys
@@ -114,6 +117,7 @@ untertitel = "{untertitel}"''')
 bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG),
                        WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG), WL(PD.ZWINGER_III), WL(PD.BURGBEZIRK), WL(PD.RINGMAUER)],   # im Burgbezirk Felsgrund
         frei_rechtecke=[(BF_X_NEU, BF_Z_NEU, 90, 90), (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24,
+        zellgroesse=128.0, zell_laden_ab=150.0,
         feste_baeume=STADTBAEUME + BURGBAEUME)   # Hausbäume in den Höfen der Stadt (teil_stadt.py)
 
 # ---------- Personen der Region ----------

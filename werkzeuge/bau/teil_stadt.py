@@ -532,7 +532,7 @@ script = ExtResource("41_tier")
 art = {art_}
 revier = PackedVector2Array({", ".join(f"{a:.5g}, {b:.5g}" for a, b in rev_)})""")
 print("Stadt: Taubenschwärme", len(TAUBEN_STADT), "Tiere", len(TIERE_STADT), "Pfützen", _stadt_klein.get(30, 0))
-N("Ausstattung", "Node3D", ST, "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
+N("Ausstattung", "Node3D", ST, "script = ExtResource(\"29_ausstattung\")\nzellgroesse = 64.0\nzell_laden_ab = 240.0\nstuecke = PackedFloat32Array("
   + ", ".join(f"{v:.5g}" for st_ in AUSSTATTUNG for v in st_) + ")")
 
 if os.environ.get("BAU_KARTE"):
