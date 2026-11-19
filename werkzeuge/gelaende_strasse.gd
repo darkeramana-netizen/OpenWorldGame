@@ -28,6 +28,8 @@ var moor_ab: float
 
 func _init(name: String = "nordstrasse") -> void:
 	super()
+	fernberge = Rect2()
+	erosion_winkel = 0.0
 	strasse = name
 	var werte: Dictionary = STRASSEN[name]
 	laenge = werte["laenge"]

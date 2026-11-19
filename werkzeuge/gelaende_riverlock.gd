@@ -25,6 +25,8 @@ const WEG_SUED := [Vector2(-150, 106), Vector2(-165, 150), Vector2(-160, 200)]
 
 func _init() -> void:
 	super()
+	fernberge = Rect2()
+	erosion_winkel = 0.0
 	zielordner = "res://daten/gelaende_riverlock/"
 	ursprung = Vector2(-300, -200)
 	groesse = Vector2(600, 400)

@@ -33,7 +33,7 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | M2 | 01–05 | Meer mit regelmäßigen schrägen Streifen | Farbe aus einer einzigen Sinuswelle | behoben: Wellen aus vier Rauschlagen in verschiedenen Richtungen, große weiche Farbflecken statt Bänder |
 | M9 | 04 | großer weißer Sonnenfleck auf glattem Wasser | glatte Fläche, Rauheit 0,12 | behoben: gekräuselte Oberfläche, die Sonne glitzert als Bahn |
 | M3 | 01–05 | milchiger, beiger Dunst, flaue Farben (Hoch genauso wie Episch) | Tiefennebel 0,0006 und Höhennebel 0,0008, nicht der Lichtnebel von Episch | behoben: halbiert (0,00025 / 0,0004); im Rundgang bestätigen |
-| M5 | 01–04 | Gebirgsrahmen wirkt wie senkrechte Kulissenwände mit Schneekante | Felsmassiv als steile Wand ohne Vorberge und Staffelung | offen |
+| M5 | 01–04 | Gebirgsrahmen wirkt wie senkrechte Kulissenwände mit Schneekante | Geländeerzeuger: gerades Band von 130–230 m, darin der Anstieg auf eine fast flache Hochfläche (120–210 m); am Kartenrand brach der Nordzug ab, dahinter leerer Himmel | behoben: Fuß unregelmäßig (springt bis 90 m zurück), Vorberge, dahinter Bergstöcke mit geschwungenen Graten und Tälern (Gratrauschen mit verzerrten Koordinaten), volle Höhe erst am Rand der Region, steile Hänge per Erosion abgetragen (über 45°); Sättel an beiden Pässen; der Nordzug taucht im Osten ins Meer ab. Neu: **Fernberge** (`szenen/welt/fernberge.gd`) bis 3,5 km hinter dem Rand, nach außen höher (bis 600 m), Kamera-Sichtweite 8 km; Schnee erst ab 190 m |
 | M6 | 01–05 | Landschaft gleichförmig grün, wenige kegelförmige Bäume | einfache Baummodelle, kaum Wiesen-, Feld- und Bodenunterschiede | offen |
 | M8 | 01–04 | Küste als glatte Kante mit Sandstreifen | im Referenzbild Felsküste und Klippen | offen |
 

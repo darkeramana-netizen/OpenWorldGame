@@ -92,6 +92,21 @@ var _rauschen := FastNoiseLite.new()
 var _fein := FastNoiseLite.new()
 var _grat := FastNoiseLite.new()
 var _zacken := FastNoiseLite.new()   # zerklüftete Klippen
+var _kamm := FastNoiseLite.new()     # Grate auf dem Hauptkamm (Mängelliste M5)
+var _massiv := FastNoiseLite.new()   # große Bergstöcke und Täler dazwischen
+var _huegel := FastNoiseLite.new()   # Vorberge
+var _versatz := FastNoiseLite.new()  # unregelmäßiger Fuß des Gebirges
+
+## Hänge im Gebirge, die steiler sind als dieser Winkel, rutschen ab (Schutthalden statt Wänden und Nadeln).
+## Regionen, die diesen Erzeuger erweitern, schalten das aus.
+var erosion_winkel := 45.0
+const EROSION_SCHRITTE := 40
+var _abtrag := 0.0   # von hoehe(): wie stark die letzte Stelle abgetragen werden darf (0 bis 1)
+
+## Fernberge hinter dem Rand der Region (szenen/welt/fernberge.gd): Bereich (Welt x, z) und Rasterabstand. Leer: keine.
+## Regionen, die diesen Erzeuger erweitern, setzen ihn leer.
+var fernberge := Rect2(-3600, -3400, 6000, 6800)
+const FERN_ABSTAND := 40.0
 
 
 func _init() -> void:
@@ -135,6 +150,19 @@ func _init() -> void:
 	_zacken.frequency = 0.07
 	_zacken.fractal_octaves = 3
 	_zacken.fractal_type = FastNoiseLite.FRACTAL_RIDGED
+	_kamm.seed = 2207
+	_kamm.frequency = 0.0042
+	_kamm.fractal_octaves = 3
+	_massiv.seed = 4409
+	_massiv.frequency = 0.0017
+	_massiv.fractal_octaves = 4
+	_massiv.fractal_type = FastNoiseLite.FRACTAL_RIDGED
+	_kamm.fractal_type = FastNoiseLite.FRACTAL_RIDGED
+	_huegel.seed = 77
+	_huegel.frequency = 0.009
+	_huegel.fractal_octaves = 3
+	_versatz.seed = 3301
+	_versatz.frequency = 0.003
 
 
 ## Erzeugt alle Dateien und gibt die Anzahl der Höhenpunkte zurück.
@@ -146,11 +174,20 @@ func erzeuge() -> int:
 	var maske := Image.create(breite, tiefe, false, Image.FORMAT_RGB8)
 	var vorschau := Image.create(breite, tiefe, false, Image.FORMAT_RGB8)
 
+	var abtrag := PackedFloat32Array()
+	abtrag.resize(breite * tiefe)
 	for iz in tiefe:
 		for ix in breite:
 			var p := ursprung + Vector2(ix, iz) * abstand
-			var h := hoehe(p)
-			hoehen[iz * breite + ix] = h
+			_abtrag = 0.0
+			hoehen[iz * breite + ix] = hoehe(p)
+			abtrag[iz * breite + ix] = _abtrag
+	if erosion_winkel > 0.0:
+		hoehen = _erodiere(hoehen, abtrag, breite, tiefe)   # Packed-Arrays kommen als Kopie an
+	for iz in tiefe:
+		for ix in breite:
+			var p := ursprung + Vector2(ix, iz) * abstand
+			var h := hoehen[iz * breite + ix]
 			var m := maske_bei(p)
 			maske.set_pixel(ix, iz, m)
 			vorschau.set_pixel(ix, iz, _vorschaufarbe(h, m))
@@ -169,7 +206,99 @@ func erzeuge() -> int:
 	datei.close()
 	maske.save_png(zielordner + "maske.png")
 	vorschau.save_png(zielordner + "vorschau.png")
+	if fernberge.has_area():
+		_erzeuge_fernberge(hoehen, breite, tiefe)
 	return breite * tiefe
+
+
+## Thermische Erosion: Wo zwei Nachbarpunkte steiler als erosion_winkel zueinander stehen, rutscht Material hinab, bis
+## der Hang flacher ist. Nur im Gebirge (abtrag > 0), nicht an Wegen, Pässen und Burgen.
+func _erodiere(h: PackedFloat32Array, w: PackedFloat32Array, breite: int, tiefe: int) -> PackedFloat32Array:
+	var grenze := tan(deg_to_rad(erosion_winkel)) * abstand
+	var stellen := PackedInt32Array()
+	for iz in range(1, tiefe - 1):
+		for ix in range(1, breite - 1):
+			if w[iz * breite + ix] > 0.0:
+				stellen.append(iz * breite + ix)
+	var nachbarn := [1, -1, breite, -breite]
+	var rueckwaerts := stellen.duplicate()
+	rueckwaerts.reverse()
+	for schritt in EROSION_SCHRITTE:
+		# abwechselnd vorwärts und rückwärts, sonst zieht die Reihenfolge Streifen
+		for i in (stellen if schritt % 2 == 0 else rueckwaerts):
+			for d: int in nachbarn:
+				var j := i + d
+				var unterschied := h[i] - h[j]
+				if unterschied > grenze:
+					# nur zwischen zwei Stellen im Gebirge, sonst häuft sich das Material am Fuß zu einem Wall
+					var menge := (unterschied - grenze) * 0.25 * minf(w[i], w[j])
+					h[i] -= menge
+					h[j] += menge
+	return h
+
+
+## Höhen der Fernberge (fernberge.r32, fernberge.json): ein grobes Raster rund um die Region. Auf dem Rand der Region
+## gilt die Höhe des Geländes, damit die Fernberge ohne Spalt anschließen; innen wird nichts gezeichnet.
+func _erzeuge_fernberge(raster: PackedFloat32Array, breite: int, tiefe: int) -> void:
+	var nx := int(fernberge.size.x / FERN_ABSTAND) + 1
+	var nz := int(fernberge.size.y / FERN_ABSTAND) + 1
+	var werte := PackedFloat32Array()
+	werte.resize(nx * nz)
+	var innen := Rect2(ursprung, groesse)
+	for iz in nz:
+		for ix in nx:
+			var p := fernberge.position + Vector2(ix, iz) * FERN_ABSTAND
+			# innen: Höhe am nächsten Punkt des Rands (dorthin rückt fernberge.gd den Rasterpunkt)
+			if innen.has_point(p):
+				# Höhe des fertigen Geländes (nach der Erosion) am Rand
+				var r := (_auf_rand(p, innen) - ursprung) / abstand
+				werte[iz * nx + ix] = raster[clampi(roundi(r.y), 0, tiefe - 1) * breite + clampi(roundi(r.x), 0, breite - 1)]
+			else:
+				werte[iz * nx + ix] = fernhoehe(p)
+	var datei := FileAccess.open(zielordner + "fernberge.r32", FileAccess.WRITE)
+	datei.store_buffer(werte.to_byte_array())
+	datei.close()
+	datei = FileAccess.open(zielordner + "fernberge.json", FileAccess.WRITE)
+	datei.store_string(JSON.stringify({"breite": nx, "tiefe": nz, "abstand": FERN_ABSTAND,
+		"ursprung_x": fernberge.position.x, "ursprung_z": fernberge.position.y,
+		"innen": [innen.position.x, innen.position.y, innen.end.x, innen.end.y]}, "\t"))
+	datei.close()
+
+
+## Höhe außerhalb der Region: die Gebirgszüge laufen weiter und werden nach außen höher (Staffelung zum Horizont);
+## im Osten liegt das Meer, dorthin tauchen die Züge ab.
+func fernhoehe(p: Vector2) -> float:
+	var n := _rauschen.get_noise_2dv(p)
+	var b := _gebirgsfaktor(p)
+	var land := 3.0 + n * 7.0
+	var h := _gebirgshoehe(p, b, n, land)
+	# Weiter draußen größere Berge: dieselben Grate dreimal so weit auseinander und höher (das Raster ist dort grob)
+	var aussen := maxf(maxf(ursprung.x - p.x, ursprung.y - p.y), p.y - (ursprung.y + groesse.y))
+	var gross := clampf(_massiv.get_noise_2dv(p * 0.45 + Vector2(517.0, -311.0)) * 0.5 + 0.5, 0.0, 1.0)
+	var grat := clampf(_kamm.get_noise_2dv(p * 0.35 + Vector2(-203.0, 911.0)) * 0.5 + 0.5, 0.0, 1.0)
+	var fern := 130.0 + pow(gross, 1.3) * 430.0 + grat * grat * 70.0 + n * 25.0
+	h = lerpf(h, maxf(h, fern), smoothstep(100.0, 1100.0, aussen) * b)
+	# Ostseite: Meer (wie in der Region östlich der Küste)
+	var meer := smoothstep(KUESTE_X - 60.0, KUESTE_X + 140.0, p.x) * (1.0 - b)
+	h = lerpf(h, -40.0, meer)
+	# Die Passwege laufen hinter dem Rand weiter durch ihr Tal
+	for pass_daten: Array in [PASS_NORD, PASS_SUED]:
+		var linie: Array = pass_daten[0]
+		var ende: Vector2 = linie[-1]
+		var richtung: Vector2 = (ende - (linie[-2] as Vector2)).normalized()
+		h = _pass(h, p, [[ende, ende + richtung * 900.0], pass_daten[2], float(pass_daten[2]) + 45.0])
+	return h
+
+
+static func _auf_rand(p: Vector2, r: Rect2) -> Vector2:
+	var m := minf(minf(p.x - r.position.x, r.end.x - p.x), minf(p.y - r.position.y, r.end.y - p.y))
+	if m == p.x - r.position.x:
+		return Vector2(r.position.x, p.y)
+	if m == r.end.x - p.x:
+		return Vector2(r.end.x, p.y)
+	if m == p.y - r.position.y:
+		return Vector2(p.x, r.position.y)
+	return Vector2(p.x, r.end.y)
 
 
 ## Höhe an einer Stelle der Welt (x, z).
@@ -180,23 +309,24 @@ func hoehe(p: Vector2) -> float:
 	# Hügeliges Land um Drachenstein.
 	var h := 3.0 + n * 7.0 + fein * 0.8
 
-	# Gebirge: Eisgrat im Westen, Ränder der Region im Norden und Süden.
-	var grat := 1.0 - absf(_grat.get_noise_2dv(p))
-	var gebirge := 120.0 + grat * 70.0 + n * 20.0
-	var berg := smoothstep(-330.0, -560.0, p.x)
-	berg = maxf(berg, smoothstep(-470.0, -600.0, p.y))
-	berg = maxf(berg, smoothstep(600.0, 700.0, p.y) * smoothstep(760.0, 560.0, p.x))
-	berg = maxf(berg, smoothstep(-800.0, -880.0, p.x))
+	# Gebirge: Eisgrat im Westen, Ränder der Region im Norden und Süden (Vorberge, dahinter der Hauptkamm).
+	var berg := _gebirgsfaktor(p)
 
 	# Das Tal nach Gravemarch hält das Gebirge zurück.
 	var tal_abstand := _abstand_zu([Vector2(-200, 190), Vector2(-300, 80), Vector2(-380, -20), Vector2(-460, -150), GRAVEMARCH], p)
 	# Das Tal zieht sich bis unter den Felssporn von Gravecrest.
 	tal_abstand = minf(tal_abstand, _abstand_zu([GRAVEMARCH, Vector2(-560, -300), Vector2(-660, -380), Vector2(-740, -420)], p))
-	var tal := 1.0 - smoothstep(70.0, 170.0, tal_abstand)
+	var tal := 1.0 - smoothstep(60.0, 240.0, tal_abstand)
 	var talboden := lerpf(0.0, -8.0, smoothstep(-260.0, -560.0, p.x)) + n * 2.0
 	berg *= 1.0 - tal
 	h = lerpf(h, talboden, tal)
-	h = lerpf(h, gebirge, berg)
+	h = _gebirgshoehe(p, berg, n, h)
+	# Erosion nur im Gebirge, nicht an Pässen, am Weg nach Gravecrest und am Felssporn
+	_abtrag = smoothstep(0.25, 0.7, berg)
+	if _abtrag > 0.0:
+		var frei := minf(minf(_abstand_zu(PASS_NORD[0], p), _abstand_zu(PASS_SUED[0], p)), _abstand_zu(WEG_GRAVECREST, p))
+		frei = minf(frei, Vector2(clampf(p.x, -860.0, -600.0), -365.0).distance_to(p) - 30.0)
+		_abtrag *= smoothstep(45.0, 90.0, frei)
 
 	# Felssporn von Gravecrest: schmaler Grat mit flacher Krone auf Höhe 70.
 	if p.x < -625.0 and p.x > -860.0:
@@ -287,6 +417,44 @@ func hoehe(p: Vector2) -> float:
 	if p.x > -629.0 and p.x < -613.0 and absf(p.y + 364.0) < 30.0:
 		h = minf(h, 10.0)
 	return h
+
+
+## Wie weit eine Stelle im Gebirge liegt (0 Land, 1 Hauptkamm). Der Fuß läuft nicht gerade: Er springt um bis zu
+## 90 m nach innen zurück (nie nach außen, dort liegen die Wege).
+func _gebirgsfaktor(p: Vector2) -> float:
+	var v := (_versatz.get_noise_2dv(p) * 0.5 + 0.5) * 90.0
+	# Volle Höhe erst am Rand der Region: So steigen die Berge über die ganze Breite an statt als Wand
+	var b := smoothstep(-330.0 - v, -830.0 - v * 0.3, p.x)
+	# Der Nordzug taucht im Osten ins Meer ab, statt am Rand der Region abzubrechen
+	b = maxf(b, smoothstep(-470.0 - v * 0.6, -705.0 - v * 0.2, p.y) * (1.0 - smoothstep(700.0 + v * 3.0, 1250.0 + v * 3.0, p.x)))
+	b = maxf(b, smoothstep(600.0 + v * 0.8, 755.0 + v * 0.1, p.y) * smoothstep(760.0 - v * 2.5, 560.0 - v * 2.5, p.x))
+	b = maxf(b, smoothstep(-800.0, -880.0, p.x))
+	return b
+
+
+## Höhe im Gebirge (Mängelliste M5): statt einer gleich hohen Hochfläche hinter einer geraden Wand erst Vorberge
+## (10 bis 70 m), dahinter der Hauptkamm mit einzelnen Gipfeln und Graten (120 bis 380 m), der nach außen noch
+## ansteigt. An den Pässen senkt er sich zu einem Sattel. land: Höhe ohne Gebirge.
+func _gebirgshoehe(p: Vector2, b: float, n: float, land: float) -> float:
+	if b <= 0.0:
+		return land
+	var huegel := _huegel.get_noise_2dv(p) * 0.5 + 0.5
+	var vorberge := 8.0 + huegel * 40.0 + n * 6.0
+	# Grate und Täler mit geschwungenem Verlauf: die Koordinaten großräumig verzerrt
+	var q := p + Vector2(_versatz.get_noise_2dv(p * 2.5), _versatz.get_noise_2dv(p * 2.5 + Vector2(733.0, 151.0))) * 140.0
+	var massiv := clampf(_massiv.get_noise_2dv(q) * 0.5 + 0.5, 0.0, 1.0)
+	var grat := clampf(_kamm.get_noise_2dv(q) * 0.5 + 0.5, 0.0, 1.0)
+	var aussen := maxf(maxf(-830.0 - p.x, -705.0 - p.y), p.y - 755.0)   # Meter hinter der vollen Höhe
+	# In der Region bleibt der Kamm mittelhoch (der Streifen für das Gebirge ist nur 130 bis 230 m breit, höher gäbe
+	# eine Wand); nach außen steigt er weiter an, die hohen Gipfel stehen in den Fernbergen.
+	var kamm := 45.0 + pow(massiv, 1.3) * 125.0 + grat * grat * 25.0 + clampf(aussen, 0.0, 400.0) * 0.25 + n * 8.0
+	# Sättel an den Pässen
+	var pass_nah := minf(_abstand_zu(PASS_NORD[0], p), _abstand_zu(PASS_SUED[0], p))
+	var sattel := 1.0 - smoothstep(40.0, 260.0, pass_nah)
+	kamm = lerpf(kamm, 50.0 + huegel * 40.0, sattel * 0.85)
+	vorberge = lerpf(vorberge, 25.0 + huegel * 20.0, sattel * 0.6)
+	var h := lerpf(land, vorberge, smoothstep(0.0, 0.3, b))
+	return lerpf(h, kamm, smoothstep(0.15, 1.0, b))
 
 
 ## Die Burgfeste nach dem Grundriss: Der Burgberg steigt von Stadt und Hafen nach Osten bis zur Kernburg an der Klippe

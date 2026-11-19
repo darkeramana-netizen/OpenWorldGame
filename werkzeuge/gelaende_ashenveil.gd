@@ -30,6 +30,8 @@ const UNTERBAU_SOHLE := -7.3
 
 func _init() -> void:
 	super()
+	fernberge = Rect2()
+	erosion_winkel = 0.0
 	zielordner = "res://daten/gelaende_ashenveil/"
 	ursprung = Vector2(-250, -200)
 	groesse = Vector2(500, 400)

@@ -50,7 +50,7 @@ func _initialize() -> void:
 	var gelaende := szene.get_node_or_null("Gelaende")
 	var kamera := Camera3D.new()
 	kamera.fov = 70.0
-	kamera.far = 4000.0
+	kamera.far = 8000.0
 	szene.add_child(kamera)
 	kamera.make_current()
 	var zw := root.get_node("Zellwelt")

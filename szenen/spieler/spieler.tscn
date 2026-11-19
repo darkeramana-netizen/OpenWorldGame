@@ -87,3 +87,4 @@ margin = 0.2
 [node name="Kamera" type="Camera3D" parent="KameraDrehpunkt/Federarm"]
 current = true
 fov = 70.0
+far = 8000.0

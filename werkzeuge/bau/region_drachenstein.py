@@ -10,7 +10,13 @@ grundgeruest("gelaende", region_eigenschaften="grenze_min = Vector2(-880, -680)\
              gelaende_extra="\nloecher = PackedVector4Array(91.5, -13.5, 93.5, -4.0)",
              # Mängelliste M1, M3: Fernmeer bis zum Horizont, halber Dunst, Himmel unter dem Horizont meerfarben
              nebel=0.00025, nebel_hoehe=0.0004, boden_farbe="0.1, 0.2, 0.23", wasser_ohne_schatten=True,
-             fernmeer=(16000, -1350, -850, 1350, 850))
+             fernmeer=(16000, -1350, -850, 1350, 850),
+             # Schnee nur auf den hohen Gipfeln des Hauptkamms und der Fernberge (M5)
+             gelaende_parameter="\nshader_parameter/schneegrenze = 190.0")
+# Fernberge hinter dem Rand der Region (Mängelliste M5; Höhen aus werkzeuge/gelaende_erzeuger.gd)
+E("Script", "res://szenen/welt/fernberge.gd", "47_fernberge")
+N("Fernberge", "MeshInstance3D", ".", '''script = ExtResource("47_fernberge")
+gelaende = NodePath("../Gelaende")''')
 
 # ---------- Burgfeste Drachenstein ----------
 import sys
