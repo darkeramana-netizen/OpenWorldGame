@@ -7,8 +7,13 @@ extends MeshInstance3D
 ## Geländes (gelaende.gd, RAND_UNTEN) decken die feinen Unterschiede zwischen beiden Rastern ab.
 
 @export var gelaende: NodePath
+## Schnee erst ab dieser Höhe: Die Fernberge sind höher als die Berge der Region, sonst wären sie ganz weiß
+@export var schnee_ab := 380.0
 ## Die Fernberge am Rand der Region um so viel tiefer legen (unter die Kante des Geländes)
 const RAND_TIEFER := 1.5
+## Normalen steiler als die Fläche: Im groben Raster sind die Hänge geglättet und bekämen sonst Gras statt Fels;
+## so trägt der Shader Fels auf und Licht und Schatten zeichnen die Grate kräftiger.
+const STEILER := 2.4
 ## Ganz unter Wasser: nicht zeichnen
 const UNTER_WASSER := -23.0
 
@@ -37,6 +42,7 @@ func _ready() -> void:
 		mat = mat.duplicate()
 		var schwarz := Image.create(1, 1, false, Image.FORMAT_RGB8)
 		mat.set_shader_parameter("maske", ImageTexture.create_from_image(schwarz))
+		mat.set_shader_parameter("schneegrenze", schnee_ab)
 		material_override = mat
 
 
@@ -61,7 +67,7 @@ func _baue(nx: int, nz: int, ab: float, anfang: Vector2, innen: Rect2, h: Packed
 		for x in nx:
 			var hx := h[z * nx + mini(x + 1, nx - 1)] - h[z * nx + maxi(x - 1, 0)]
 			var hz := h[mini(z + 1, nz - 1) * nx + x] - h[maxi(z - 1, 0) * nx + x]
-			normalen[z * nx + x] = Vector3(-hx, 2.0 * ab, -hz).normalized()
+			normalen[z * nx + x] = Vector3(-hx * STEILER, 2.0 * ab, -hz * STEILER).normalized()
 	var indizes := PackedInt32Array()
 	for z in nz - 1:
 		for x in nx - 1:
