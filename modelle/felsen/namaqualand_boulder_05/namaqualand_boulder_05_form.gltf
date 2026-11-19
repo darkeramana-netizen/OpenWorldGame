@@ -1,0 +1,78 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.2.60",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "namaqualand_boulder_05"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "Boulder",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 312,
+   "type": "VEC3",
+   "min": [
+    -0.6330849528312683,
+    -0.005229324102401733,
+    -0.39385664463043213
+   ],
+   "max": [
+    0.702412486076355,
+    0.510790228843689,
+    0.35002079606056213
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 1200,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 3744,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 3744,
+   "byteLength": 4800,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "namaqualand_boulder_05_form.bin",
+   "byteLength": 8544
+  }
+ ]
+}

@@ -25,6 +25,13 @@ extends Node3D
 		if is_inside_tree():
 			_baue()
 
+## Fels-Haut aus Fotoscans (Mängelliste M17): Felswand-Stücke liegen in Reihen übereinander vor der Wand und verdecken
+## deren glatte Flächen. Modelle wie bei felsen.gd, Front nach lokal +z; je Modell Breite, Höhe und wie weit die Front
+## vor dem Ursprung liegt (Meter), dazu eine Tönung. Leer: keine Haut.
+@export var haut_modelle := PackedStringArray()
+@export var haut_masse := PackedVector3Array()
+@export var haut_farben := PackedColorArray()
+
 const SCHRITT := 7
 const ZEILE := 0.7          # Höhe einer Zeile im Gitter (Meter)
 const ABSTAND := 1.6        # so weit steht die Wand oben vor der Mauerlinie (die Mauer ist 3 m dick)
@@ -99,6 +106,56 @@ func _baue() -> void:
 		form.shape = mesh.create_trimesh_shape()
 		koerper.add_child(form)
 		add_child(koerper)
+	_baue_haut(n)
+
+
+## Die Fels-Haut als felsen.gd-Kind: an jeder zweiten Säule eines Abschnitts Stücke von unten nach oben gestapelt, die
+## Front knapp vor der Wand; das oberste endet unter der Hofkante, an den Enden eines Abschnitts (Tore, Wege) bleibt frei.
+func _baue_haut(n: int) -> void:
+	if haut_modelle.is_empty() or haut_masse.size() < haut_modelle.size():
+		return
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = 9090
+	var stuecke := PackedFloat32Array()
+	for k in range(2, n - 2, 2):
+		var i := k * SCHRITT
+		var abschnitt := saeulen[i + 6]
+		if saeulen[i - 2 * SCHRITT + 6] != abschnitt or saeulen[i + 2 * SCHRITT + 6] != abschnitt:
+			continue
+		var oben := saeulen[i + 4]
+		var unten := saeulen[i + 5]
+		if oben - unten < 2.0:
+			continue
+		var nx := saeulen[i + 2]
+		var nz := saeulen[i + 3]
+		var gier := rad_to_deg(atan2(nx, nz))
+		var y := unten
+		while y < oben - 0.8:
+			var m := zufall.randi() % haut_modelle.size()
+			var mass: Vector3 = haut_masse[m]
+			var groesse := zufall.randf_range(1.0, 1.35) * 3.2 / mass.x      # etwa 3,2 bis 4,3 m breit
+			# nicht über die Hofkante
+			groesse = minf(groesse, (oben - 0.15 - y) / mass.y)
+			if groesse * mass.y < 0.8:
+				break
+			var t := clampf((oben - (y + mass.y * groesse * 0.5)) / maxf(oben - unten, 0.01), 0.0, 1.0)
+			var wand := _punkt(i, t)
+			# Front 0,2 m vor der mittleren Wandfläche (ohne die Blöcke der erzeugten Wand)
+			var vor := ABSTAND + (oben - (y + mass.y * groesse * 0.5)) * 0.1 + 0.2 - mass.z * groesse
+			stuecke.append_array([m, saeulen[i] + nx * vor, y, saeulen[i + 1] + nz * vor,
+				gier + zufall.randf_range(-10.0, 10.0), zufall.randf_range(-4.0, 8.0), groesse])
+			y += mass.y * groesse * 0.8
+			if wand.y < unten:
+				break
+	if stuecke.is_empty():
+		return
+	var f: Node3D = (load("res://szenen/welt/felsen.gd") as GDScript).new()
+	f.name = "Haut"
+	f.set("farben", haut_farben)
+	f.set("sichtweite", 600.0)
+	f.set("modelle", haut_modelle)
+	f.set("stuecke", stuecke)
+	add_child(f)
 
 
 ## Seitliche Kappe einer Säule: Fläche zwischen der Felsfront und der Mauerlinie über die ganze Höhe

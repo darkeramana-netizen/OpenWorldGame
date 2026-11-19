@@ -230,7 +230,10 @@ _zahl = _Zaehler(_SOCKEL[k_ + 6] for k_ in range(0, len(_SOCKEL), 7))
 _SOCKEL = [v_ for k_ in range(0, len(_SOCKEL), 7) if _zahl[_SOCKEL[k_ + 6]] > 1 for v_ in _SOCKEL[k_:k_ + 7]]   # einzelne Säulen bilden keine Wand
 N("Felssockel", "Node3D", DS, f"""script = ExtResource("31_felssockel")
 saeulen = PackedFloat32Array({", ".join(f"{v:.6g}" for v in _SOCKEL)})
-material = ExtResource("32_felssockel_mat")""")
+material = ExtResource("32_felssockel_mat")
+haut_modelle = PackedStringArray("res://modelle/felsen/rock_face_02/rock_face_02.gltf")
+haut_masse = PackedVector3Array(2.7, 2.5, 0.9)
+haut_farben = PackedColorArray(1.4, 1.44, 1.5, 1)""")
 print("Felssockel unter den Hofmauern:", len(_SOCKEL) // 7, "Säulen in", _abschnitt, "Abschnitten")
 
 # Küstenfels (wie im Referenzbild): Wo vor der Ringmauer das Meer liegt, steht dieselbe zerklüftete, hellgraue
@@ -370,13 +373,20 @@ _frei_fels += [_bfm[0], _bfm[1], 9.6]
 # Bewuchs auf den Absätzen des Felsmassivs (setzt felsmassiv.gd selbst, es kennt die Felsoberfläche): Grasbüschel
 # und Moospolster. Kein Farn: auf dem trockenen, offenen Fels stand er als einzelner dunkler Wedel wie ein Fremdkörper.
 _BEWUCHS_MASSIV = list(range(GRAS, GRAS + 17)) + list(range(MOOS, MOOS + 12))
+# Felsbrocken aus Fotoscans vor den Stufen des Felsmassivs (Mängelliste M7, M18): Modell, größte Ausdehnung (m), Tönung
+# (Farbtexturen beim Laden entsättigt: werkzeuge/felsen_laden.py --grau 0.15; die Tönung hellt wie bei den übrigen Brocken auf)
+BROCKEN_MASSIV = [("boulder_01", 1.4, "1.2, 1.19, 1.17, 1"), ("rock_07", 0.3, "1.45, 1.44, 1.42, 1"),
+                  ("namaqualand_boulder_03", 2.6, "1.45, 1.44, 1.42, 1"), ("namaqualand_boulder_05", 1.2, "1.15, 1.14, 1.12, 1")]
 N("Felsmassiv", "Node3D", DS, f"""script = ExtResource("33_felsmassiv")
 gelaende = NodePath("../../Gelaende")
 bereich = Rect2({min(_rx) - 2:.1f}, {min(_rz) - 2:.1f}, {max(_rx) - min(_rx) + 4:.1f}, {max(_rz) - min(_rz) + 4:.1f})
 material = ExtResource("34_felsmassiv_mat")
 frei = PackedVector3Array({", ".join(f"{v:.2f}" for v in _frei_fels)})
 bewuchs_modelle = PackedStringArray({", ".join(f'"{FELSMODELLE[m_][0]}"' for m_ in _BEWUCHS_MASSIV)})
-bewuchs_arten = PackedInt32Array({", ".join("0" if GRAS <= m_ < MOOS else ("1" if m_ >= MOOS else "2") for m_ in _BEWUCHS_MASSIV)})""")   # gelaende ist ein NodePath (kein Node-Export)
+bewuchs_arten = PackedInt32Array({", ".join("0" if GRAS <= m_ < MOOS else ("1" if m_ >= MOOS else "2") for m_ in _BEWUCHS_MASSIV)})
+brocken_modelle = PackedStringArray({", ".join(f'"res://modelle/felsen/{n_}/{n_}.gltf"' for n_, _, _ in BROCKEN_MASSIV)})
+brocken_masse = PackedFloat32Array({", ".join(f"{m_}" for _, m_, _ in BROCKEN_MASSIV)})
+brocken_farben = PackedColorArray({", ".join(f_ for _, _, f_ in BROCKEN_MASSIV)})""")   # gelaende ist ein NodePath (kein Node-Export)
 _vorher = len(FELSSTUECKE)
 FELSSTUECKE = [f_ for f_ in FELSSTUECKE if not im_vieleck((f_[1], f_[3]), _ring_flaeche)]
 # Vor dem Küstenfels keine Klippenscans und kein Geröll (Pflanzen bleiben)

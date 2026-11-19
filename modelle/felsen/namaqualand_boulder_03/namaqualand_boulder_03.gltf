@@ -1,0 +1,170 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.2.57",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "boulder_03_LOD0"
+  }
+ ],
+ "materials": [
+  {
+   "doubleSided": true,
+   "name": "boulder_03",
+   "normalTexture": {
+    "index": 0
+   },
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 1
+    },
+    "metallicFactor": 0,
+    "metallicRoughnessTexture": {
+     "index": 2
+    }
+   }
+  }
+ ],
+ "meshes": [
+  {
+   "name": "realCap_Model_2",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TEXCOORD_0": 2
+     },
+     "indices": 3,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "sampler": 0,
+   "source": 0
+  },
+  {
+   "sampler": 0,
+   "source": 1
+  },
+  {
+   "sampler": 0,
+   "source": 2
+  }
+ ],
+ "images": [
+  {
+   "mimeType": "image/jpeg",
+   "name": "boulder_03_nor_gl",
+   "uri": "namaqualand_boulder_03_nor_gl_2k.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "boulder_03_diff",
+   "uri": "namaqualand_boulder_03_diff_2k.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "boulder_03_rough",
+   "uri": "namaqualand_boulder_03_arm_2k.jpg"
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 4301,
+   "type": "VEC3",
+   "min": [
+    -1.051232933998108,
+    -0.014703452587127686,
+    -1.3895807266235352
+   ],
+   "max": [
+    1.3522862195968628,
+    1.4584896564483643,
+    1.6756941080093384
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 4301,
+   "type": "VEC3",
+   "min": [
+    -0.9993455410003662,
+    -0.9999620914459229,
+    -0.9993205666542053
+   ],
+   "max": [
+    0.9998409748077393,
+    0.9997438788414001,
+    0.991122841835022
+   ]
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 4301,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5125,
+   "count": 23991,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 51612,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 51612,
+   "byteLength": 51612,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 103224,
+   "byteLength": 34408,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 137632,
+   "byteLength": 95964,
+   "target": 34963
+  }
+ ],
+ "samplers": [
+  {
+   "magFilter": 9729,
+   "minFilter": 9987
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "namaqualand_boulder_03.bin",
+   "byteLength": 233596
+  }
+ ]
+}

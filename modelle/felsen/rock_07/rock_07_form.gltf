@@ -1,0 +1,78 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.0.44",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "rock_07"
+  }
+ ],
+ "meshes": [
+  {
+   "name": "realCap_Model_3",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0
+     },
+     "indices": 1
+    }
+   ]
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 289,
+   "type": "VEC3",
+   "min": [
+    -0.08655917644500732,
+    -0.0010038092732429504,
+    -0.17746654152870178
+   ],
+   "max": [
+    0.07952791452407837,
+    0.13930091261863708,
+    0.14198321104049683
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5125,
+   "count": 1197,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 3468,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 3468,
+   "byteLength": 4788,
+   "target": 34963
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "rock_07_form.bin",
+   "byteLength": 8256
+  }
+ ]
+}

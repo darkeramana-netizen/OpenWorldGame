@@ -18,6 +18,8 @@ const DUNST_TAG := Color(0.76, 0.7, 0.6)
 ## Mauern im Schatten fast schwarzblau; nachts kühl.
 const SCHATTEN_TAG := Color(0.7, 0.62, 0.52)
 const SCHATTEN_NACHT := Color(0.12, 0.15, 0.22)
+## Farbe des Himmels unter dem Horizont: fernes Meer
+const MEER_FERN := Color(0.1, 0.2, 0.23)
 
 var _himmel: ProceduralSkyMaterial
 
@@ -59,3 +61,5 @@ func _process(_delta: float) -> void:
 			else:
 				_himmel.sky_horizon_color = farbe
 				_himmel.ground_horizon_color = farbe
+		# Unter dem Horizont (hinter der Sichtweite der Kamera) liegt Meer, kein brauner Boden
+		_himmel.ground_bottom_color = MEER_FERN.lerp(Color(0.02, 0.03, 0.05), clampf(-hoehe * 4.0, 0.0, 1.0))

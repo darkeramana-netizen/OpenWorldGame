@@ -1,0 +1,170 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v4.0.44",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "boulder_01"
+  }
+ ],
+ "materials": [
+  {
+   "doubleSided": true,
+   "name": "boulder_01",
+   "normalTexture": {
+    "index": 0
+   },
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 1
+    },
+    "metallicFactor": 0,
+    "metallicRoughnessTexture": {
+     "index": 2
+    }
+   }
+  }
+ ],
+ "meshes": [
+  {
+   "name": "rock_PROXY_5m.002",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TEXCOORD_0": 2
+     },
+     "indices": 3,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "sampler": 0,
+   "source": 0
+  },
+  {
+   "sampler": 0,
+   "source": 1
+  },
+  {
+   "sampler": 0,
+   "source": 2
+  }
+ ],
+ "images": [
+  {
+   "mimeType": "image/jpeg",
+   "name": "boulder_01_nor_gl",
+   "uri": "boulder_01_nor_gl_2k.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "boulder_01_diff",
+   "uri": "boulder_01_diff_2k.jpg"
+  },
+  {
+   "mimeType": "image/jpeg",
+   "name": "boulder_01_rough",
+   "uri": "boulder_01_arm_2k.jpg"
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 58546,
+   "type": "VEC3",
+   "min": [
+    -0.7480385899543762,
+    -0.07364296913146973,
+    -0.9457283616065979
+   ],
+   "max": [
+    0.5239759087562561,
+    0.9301872253417969,
+    0.8818937540054321
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 58546,
+   "type": "VEC3",
+   "min": [
+    -0.9996541142463684,
+    -0.9997233152389526,
+    -0.9999121427536011
+   ],
+   "max": [
+    0.9998989105224609,
+    0.9999544620513916,
+    0.9999576807022095
+   ]
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 58546,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5125,
+   "count": 169644,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 702552,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 702552,
+   "byteLength": 702552,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 1405104,
+   "byteLength": 468368,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 1873472,
+   "byteLength": 678576,
+   "target": 34963
+  }
+ ],
+ "samplers": [
+  {
+   "magFilter": 9729,
+   "minFilter": 9987
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "boulder_01.bin",
+   "byteLength": 2552048
+  }
+ ]
+}

@@ -4,8 +4,8 @@ extends SceneTree
 ##
 ## Aufruf aus dem Projektordner (mit Grafik, also ohne --headless):
 ##   godot --path . --script res://werkzeuge/rundgang/rundgang.gd -- --grafik episch
-## Weitere Angaben nach --: --region drachenstein, --nur 08_markt (nur Blickpunkte, deren Name so beginnt),
-## --aufloesung 1920x1080, --ausgabe <Ordner>. Die Fotos landen in user://rundgang/<region>_<Zeit>/ (unter Windows
+## Weitere Angaben nach --: --region drachenstein, --nur 08_markt (nur Blickpunkte, deren Name so beginnt;
+## mehrere mit Komma: --nur 14,15), --aufloesung 1920x1080, --ausgabe <Ordner>. Die Fotos landen in user://rundgang/<region>_<Zeit>/ (unter Windows
 ## %APPDATA%\Godot\app_userdata\Sorrowland_ In Silentio\rundgang\); der Ordner steht am Ende der Ausgabe.
 
 const WARTEN_MIN := 90       # so viele Bilder je Blickpunkt mindestens (SDFGI, Schatten und Ausblenden setzen sich)
@@ -58,7 +58,7 @@ func _initialize() -> void:
 	var nur: String = _args.get("nur", "")
 	var liste := PackedStringArray()
 	for p: Dictionary in daten["punkte"]:
-		if nur != "" and not String(p["name"]).begins_with(nur):
+		if nur != "" and not Array(nur.split(",")).any(func(v: String) -> bool: return String(p["name"]).begins_with(v)):
 			continue
 		spielzeit.minuten = float(p.get("uhr", 10.0)) * 60.0
 		kamera.global_position = _v(p["von"])
@@ -69,6 +69,11 @@ func _initialize() -> void:
 					% [p["name"], kamera.global_position.y, boden])
 		var ziel := _v(p["auf"])
 		var oben := Vector3.UP if absf((ziel - kamera.global_position).normalized().y) < 0.99 else Vector3.FORWARD
+		var verdeckt := kamera.get_world_3d().direct_space_state.intersect_ray(
+			PhysicsRayQueryParameters3D.create(kamera.global_position, ziel))
+		if not verdeckt.is_empty() and kamera.global_position.distance_to(verdeckt["position"]) < 6.0:
+			printerr("Rundgang: %s blickt nach %.1f m auf %s (steht die Kamera in einem Gebäude?)"
+				% [p["name"], kamera.global_position.distance_to(verdeckt["position"]), verdeckt["collider"].name])
 		kamera.look_at(ziel, oben)
 		zw.pruefe_sofort()
 		var ende := Time.get_ticks_msec() + int(WARTEN_MAX_S * 1000.0)

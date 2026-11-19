@@ -21,6 +21,14 @@ extends Node3D
 @export var bewuchs_arten := PackedInt32Array()
 ## Anteil der Absatzfläche (je m²) mit einer Pflanze, in den Flecken
 @export var bewuchs_dichte := 0.6
+## Felsbrocken aus Fotoscans (Mängelliste M7, M18): Sie liegen halb eingegraben vor den Stufen zwischen den Felsbänken
+## und verdecken deren glatte, kantige Flächen; vereinzelt liegen kleinere auf den Absätzen. Modelle wie bei felsen.gd,
+## je Modell seine größte Ausdehnung in Metern (zum Skalieren) und eine Tönung.
+@export var brocken_modelle := PackedStringArray()
+@export var brocken_masse := PackedFloat32Array()
+@export var brocken_farben := PackedColorArray()
+## Wahrscheinlichkeit für einen Brocken je Rasterfeld (2,6 m) an einer Stufe
+@export var brocken_dichte := 0.55
 
 var _g: Node
 var _maske: Image
@@ -34,6 +42,9 @@ var _naht := FastNoiseLite.new()      # Zellgrenzen: dort reißt eine Kluft ein
 var _flecken := FastNoiseLite.new()   # wo auf den Absätzen etwas wächst
 var _zufall := RandomNumberGenerator.new()
 var _pflanzen := PackedFloat32Array() # für felsen.gd: Modell, x, y, z, Gier, Neigung, Größe
+var _brocken := PackedFloat32Array()  # ebenso, für die Felsbrocken
+var _brocken_felder := {}             # belegte Rasterfelder (je Feld höchstens ein Brocken)
+var _zufall_brocken := RandomNumberGenerator.new()   # eigener Zufall: der Bewuchs bleibt, wie er war
 
 
 func _ready() -> void:
@@ -73,12 +84,60 @@ func _ready() -> void:
 	_flecken.seed = 515
 	_flecken.frequency = 0.07
 	_zufall.seed = 8080
+	_zufall_brocken.seed = 4711
 	var nx := ceili(bereich.size.x / (kachel * raster))
 	var nz := ceili(bereich.size.y / (kachel * raster))
 	for kx in nx:
 		for kz in nz:
 			_baue_kachel(bereich.position + Vector2(kx, kz) * kachel * raster)
 	_setze_bewuchs()
+	_setze_brocken()
+
+
+## Die Brocken als felsen.gd-Kind, mit Kollision (vereinfachte Form der Scans)
+func _setze_brocken() -> void:
+	if _brocken.is_empty() or brocken_modelle.is_empty():
+		return
+	var f: Node3D = (load("res://szenen/welt/felsen.gd") as GDScript).new()
+	f.name = "Brocken"
+	f.set("farben", brocken_farben)
+	f.set("kachel", 96.0)
+	f.set("sichtweite", 450.0)      # prägen auch die Ansicht aus der Ferne (der Fels wirkte von oben wie Kies)
+	f.set("zellgroesse", 96.0)
+	f.set("zell_laden_ab", 520.0)   # über der Sichtweite, sonst ploppen sie auf
+	f.set("modelle", brocken_modelle)
+	f.set("stuecke", _brocken)
+	add_child(f)
+
+
+## Vor einer steilen Stufe (Dreieck abc) vielleicht ein Brocken, halb im Fels; auf flachen Absätzen selten ein kleiner
+func _brocken_auf(a: Vector3, b: Vector3, c: Vector3, w: float) -> void:
+	if brocken_modelle.is_empty() or w < 0.85:
+		return
+	var n := (b - a).cross(c - a).normalized()
+	var m_ := (a + b + c) / 3.0
+	var feld := Vector2i(floori(m_.x / 2.6), floori(m_.z / 2.6))
+	if _brocken_felder.has(feld):
+		return
+	var steil := absf(n.y) < 0.6
+	var chance := brocken_dichte if steil else (brocken_dichte * 0.05 if absf(n.y) > 0.85 else brocken_dichte * 0.25)
+	if _zufall_brocken.randf() > chance:
+		return
+	_brocken_felder[feld] = true
+	var groesse := _zufall_brocken.randf_range(1.3, 2.6) if steil else _zufall_brocken.randf_range(0.6, 1.3)
+	var lage := m_
+	var waag := Vector3(n.x, 0.0, n.z)
+	if waag.length() > 0.05:
+		# in den Fels hinein: zur höheren Seite der Stufe
+		waag = waag.normalized()
+		if _punkt(m_.x + waag.x * 1.5, m_.z + waag.z * 1.5).y < _punkt(m_.x - waag.x * 1.5, m_.z - waag.z * 1.5).y:
+			waag = -waag
+		lage += waag * groesse * 0.3
+	lage.y -= groesse * 0.3
+	var modell := _zufall_brocken.randi() % brocken_modelle.size()
+	var mass := brocken_masse[modell] if modell < brocken_masse.size() else 1.0
+	_brocken.append_array([modell, lage.x, lage.y, lage.z, _zufall_brocken.randf_range(0.0, 360.0),
+		_zufall_brocken.randf_range(-15.0, 25.0), groesse / maxf(mass, 0.01)])
 
 
 ## Die Pflanzen als felsen.gd-Kind (MultiMesh je Modell, ohne Kollision, in Kacheln für die Sichtweite)
@@ -240,6 +299,8 @@ func _baue_kachel(start: Vector2) -> void:
 			dreiecke += 2
 			_bewuchs_auf(punkte[a], punkte[b], punkte[d], minf(gew[a], minf(gew[b], gew[d])))
 			_bewuchs_auf(punkte[a], punkte[d], punkte[c], minf(gew[a], minf(gew[d], gew[c])))
+			_brocken_auf(punkte[a], punkte[b], punkte[d], minf(gew[a], minf(gew[b], gew[d])))
+			_brocken_auf(punkte[a], punkte[d], punkte[c], minf(gew[a], minf(gew[d], gew[c])))
 	if dreiecke == 0:
 		return
 	st.generate_normals()

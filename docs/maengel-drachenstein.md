@@ -18,17 +18,18 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | Nr. | Foto | Befund | Ursache | Stand |
 |---|---|---|---|---|
 | M11 | alle | Entwickler-Einblendung („Ort … Blick …“) unten links in jedem Foto | Rundgang blendete nur das HUD aus | behoben: alle Bildschirmebenen aus |
-| M27 | 11_nordtor | Bild fast schwarz | Kamera 0,6 m **unter** dem Gelände (Kamera −9,5, Boden −8,9) | behoben: Kamera auf −7,2; das Werkzeug warnt jetzt, wenn eine Kamera unter dem Gelände steht |
+| M27 | 10_suedtor, 11_nordtor | Bilder fast schwarz (auch im zweiten Rundgang) | Kameras standen unter dem Gelände bzw. 15–20 m neben der Gasse **in Häusern** | behoben: Standpunkte per Sonde gesucht (mitten in der Gasse, freie Sicht aufs Tor); das Werkzeug warnt jetzt bei Kamera unter dem Gelände und bei Blick, der nach weniger als 6 m verdeckt ist |
 | M28 | 19_uebungsplatz | Übungspuppe füllt das Bild, riesiges Namensschild | Kamera 2 m vor der Puppe; Namensschilder der Gegner ohne Sichtweite | behoben: Kamera höher; Namensschilder der Gegner wie bei Personen nur bis 14 m |
 | M29 | 07_bergfried_dach | Brüstung verdeckt den Blick auf die Burg | Kamera knapp über dem Feuerbecken | behoben: Kamera 2 m höher |
+| M31 | 07_bergfried_dach | riesiges Schild „Schwarzer Bergfried“ über dem Kopf | Ortsschild 76 m hoch, sichtbar bis 70 m, also auch auf dem Dach | behoben: erst ab 35 m Abstand sichtbar |
 | M25 | 06_luft_abendlicht | Bild ist schon Nacht statt Abendlicht | Die Sonne geht um 18 Uhr unter, der Blickpunkt stand auf 18:30 | behoben: 17 Uhr |
-| M26 | 10_suedtor | Torweg und Fassaden tagsüber fast schwarz | Gegenlicht im Schatten; möglicherweise hatte sich die globale Beleuchtung (SDFGI) nach dem Kamerasprung noch nicht gesetzt | prüfen: Rundgang wartet jetzt 90 statt 45 Bilder |
+| M26 | 10_suedtor | Torweg und Fassaden tagsüber fast schwarz | nicht die Beleuchtung, sondern M27 (Kamera im Haus) | behoben mit M27 |
 
 ## B. Welt, Meer und Fernsicht
 
 | Nr. | Foto | Befund | Ursache | Stand |
 |---|---|---|---|---|
-| M1 | 03, 04 | Weltrand: Das Meer endet, dahinter brauner Abgrund | Meeresfläche nur 2800×1800 m | behoben: Fernmeer 16 km bis zum Horizont (spart die nahe Fläche aus, die Wellen laufen zum Rand hin aus) |
+| M1 | 03, 04 | Weltrand: Das Meer endet, dahinter brauner Abgrund | Meeresfläche nur 2800×1800 m | bestätigt behoben: Fernmeer 16 km bis zum Horizont. Nachgebessert: gepunktete Naht (beide Flächen gleich hoch; das Fernmeer liegt jetzt 0,5 m tiefer und überlappt) und brauner Streifen am Horizont hinter der Sichtweite (Himmel unter dem Horizont jetzt meerfarben) |
 | M2 | 01–05 | Meer mit regelmäßigen schrägen Streifen | Farbe aus einer einzigen Sinuswelle | behoben: Wellen aus vier Rauschlagen in verschiedenen Richtungen, große weiche Farbflecken statt Bänder |
 | M9 | 04 | großer weißer Sonnenfleck auf glattem Wasser | glatte Fläche, Rauheit 0,12 | behoben: gekräuselte Oberfläche, die Sonne glitzert als Bahn |
 | M3 | 01–05 | milchiger, beiger Dunst, flaue Farben (Hoch genauso wie Episch) | Tiefennebel 0,0006 und Höhennebel 0,0008, nicht der Lichtnebel von Episch | behoben: halbiert (0,00025 / 0,0004); im Rundgang bestätigen |
@@ -51,9 +52,9 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 
 | Nr. | Foto | Befund | Ursache | Stand |
 |---|---|---|---|---|
-| M7 | 01–05 | Fels zwischen den Burgmauern wirkt wie grauer Kies | Felsen und Bewuchs am Burgberg aus der Ferne zu kleinteilig und grau | offen |
-| M17 | 15_vorburg | graue Felsflächen über der Mauer am Tor Vorburg → Mittelburg | Felssockel ragt dort bis 5 m über den Mauerfuß (Treffer bei (23–37, 3–5, 113–122)) | offen |
-| M18 | 14_fuss_der_rampe | Felsen grob facettiert, flächig | wenige große Dreiecke, Textur 6 m | offen: Felsmodelle aus Fotoscans (CC0) |
+| M7 | 01–05 | Fels zwischen den Burgmauern wirkt wie grauer Kies | Felsmassiv: 1-m-Netz aus kantigen Felsbänken | in Arbeit: 2400 Brocken aus Fotoscans vor den Stufen (siehe M18), bis 450 m sichtbar |
+| M17 | 14, 15 | glatte, graue Felsflächen am Sockel unter den Hofmauern | Felssockel: erzeugte Wand mit großen flachen Dreiecken | in Arbeit: Fels-Haut aus 800 Felswand-Scans (rock_face_02) in Reihen vor der Wand |
+| M18 | 14_fuss_der_rampe | Felsen grob facettiert, flächig | Felsmassiv: Stufen zwischen den Felsbänken als große Dreiecke | in Arbeit: Brocken aus Fotoscans (boulder_01, rock_07, zwei Namaqualand-Findlinge; entsättigt) halb eingegraben vor den Stufen, kleinere auf den Absätzen |
 | M19 | 14_fuss_der_rampe | Stützmauer: Textur gestreckt und verwaschen | Abwicklung der Mauerkrone und Seiten | offen |
 | M20 | 15, 20 | Laubbäume als Low-Poly-Klumpen | einfache Baummodelle | offen (mit M6) |
 | M21 | 16, 17, 18 | Höfe groß und leer | Belebung fehlt | offen: Aufgabe „Höfe beleben“ |
