@@ -1,4 +1,4 @@
-[gd_scene load_steps=107 format=3]
+[gd_scene load_steps=109 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -117,11 +117,11 @@ fog_enabled = true
 fog_mode = 0
 fog_light_color = Color(0.76, 0.7, 0.6, 1)
 fog_sun_scatter = 0.3
-fog_density = 0.0006
+fog_density = 0.00025
 fog_aerial_perspective = 0.3
 fog_sky_affect = 0.25
 fog_height = 0.0
-fog_height_density = 0.0008
+fog_height_density = 0.0004
 adjustment_enabled = true
 adjustment_saturation = 1.08
 adjustment_contrast = 1.04
@@ -157,6 +157,18 @@ material = SubResource("Material_wasser")
 size = Vector2(2800, 1800)
 subdivide_width = 120
 subdivide_depth = 100
+
+[sub_resource type="ShaderMaterial" id="Material_fernmeer"]
+shader = ExtResource("10_wasser")
+shader_parameter/wellenhoehe = 0.0
+shader_parameter/halbe_groesse = Vector2(8000, 8000)
+shader_parameter/aussparung = Vector4(-1399, -899, 1399, 899)
+
+[sub_resource type="PlaneMesh" id="Mesh_fernmeer"]
+material = SubResource("Material_fernmeer")
+size = Vector2(16000, 16000)
+subdivide_width = 8
+subdivide_depth = 8
 
 [sub_resource type="StandardMaterial3D" id="Material_feuer"]
 albedo_color = Color(0.85, 0.45, 0.15, 1)
@@ -305,7 +317,13 @@ loecher = PackedVector4Array(91.5, -13.5, 93.5, -4.0)
 
 [node name="Meer" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -20, 0)
+cast_shadow = 0
 mesh = SubResource("Mesh_meer")
+
+[node name="Fernmeer" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -20, 0)
+cast_shadow = 0
+mesh = SubResource("Mesh_fernmeer")
 
 [node name="BurgHof" parent="." instance=ExtResource("3_hof")]
 transform = Transform3D(6.1232e-17, 0, 1, 0, 1, 0, -1, 0, 6.1232e-17, 75, 1, 490)

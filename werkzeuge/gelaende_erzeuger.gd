@@ -226,9 +226,19 @@ func hoehe(p: Vector2) -> float:
 	h = _weg_einebnen(h, p, WEG_NORD)
 	h = _weg_einebnen(h, p, WEG_KUESTE)
 	h = _vorwerk(h, p)
-	if p.x > -100.0 and p.x < 300.0 and absf(p.y - 60.0) < 300.0:
-		for linie: Array in stadt_strassen:
-			h = _weg_einebnen(h, p, linie)
+	if p.x > -100.0 and p.x < 300.0 and absf(p.y - 60.0) < 300.0 and not stadt_strassen.is_empty():
+		if Geometry2D.is_point_in_polygon(p, _stadt):
+			# In der Stadt nur einmal glätten, nach der nächsten Gasse: Je Gasse erneut geglättet, zog jede Kreuzung das
+			# feine Rauschen mehrfach ab und hob die Gasse an (Buckel von 1,5 m auf der Marktstraße). Die Stadthöhe ist
+			# ohnehin glatt; die Gasse nimmt nur das feine Rauschen aus _drachenstein heraus.
+			var naechste := INF
+			for linie: Array in stadt_strassen:
+				naechste = minf(naechste, _abstand_zu(linie, p))
+			h -= _fein.get_noise_2dv(p) * 0.25 * (1.0 - smoothstep(4.0, 14.0, naechste))
+		else:
+			# außerhalb wie bisher (darauf stehen Vorburg, Wege und Rampen)
+			for linie: Array in stadt_strassen:
+				h = _weg_einebnen(h, p, linie)
 	# Bucht vor dem Hafen: offenes Wasser, außerhalb der Mauern
 	if not _bucht.is_empty() and p.x > -320.0:
 		var db := _polygon_abstand(p, _bucht)
@@ -509,7 +519,10 @@ func _vorwerk(h: float, p: Vector2) -> float:
 
 
 func _weg_einebnen(h: float, p: Vector2, linie: Array) -> float:
-	var abstand := _abstand_zu(linie, p)
+	return _einebnen_bei(h, p, _abstand_zu(linie, p))
+
+
+func _einebnen_bei(h: float, p: Vector2, abstand: float) -> float:
 	if abstand > 14.0:
 		return h
 	# Auf dem Weg wird das Gelände geglättet: Höhe ohne feines Rauschen.

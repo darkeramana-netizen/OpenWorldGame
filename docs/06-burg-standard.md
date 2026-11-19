@@ -70,6 +70,8 @@ Die Burg wird so realistisch und detailreich gebaut, wie Godot es hergibt. Dafü
   Zielhardware).
 - **Episch** hat kein Budget, soll auf dem Referenzrechner aber mindestens 30 fps halten. Das ist der Maßstab für „so
   gut, wie es geht“.
+  Gemessen (19.11.2026, 1280×720): 89 fps, Grafikkarte 10,4 ms (Hoch etwa 5 ms). Im Rundgang sieht Episch kaum anders
+  aus als Hoch; der größere Hebel sind die Modelle (siehe `docs/maengel-drachenstein.md`).
 - Grenzen von Godot 4.7: keine virtuelle Geometrie (wie Nanite), kein Raytracing auf der Grafikkarte, keine
   Tessellation. Feine Details entstehen über Normalen- und Höhenkarten (Parallax), Decals, Detailstufen je Mesh und
   viele gleiche Exemplare.

@@ -506,3 +506,22 @@ sieht aus wie beim eigenen Gelände):
 **Entscheidung (18.11.2026):** Die Grafikkarte spart mit Terrain3D 1 bis 2 %, die Bildzeit bleibt gleich. Das
 Gelände bleibt das eigene; Terrain3D bleibt als Schalter (`--terrain3d`) mit Test im Projekt und wird wieder geprüft,
 wenn die Welt in Phase 2 deutlich größer wird. Punkt 3 ist damit abgeschlossen.
+
+### Grafikstufe Episch (burg-ausbau-18)
+
+Referenzrechner, 1280×720, Strecke stadt_palas, Zellen an
+(`docs/messungen/messung_drachenstein_episch_2026-11-19T16-45-32.txt`):
+
+| | Hoch (Zellen Schritt 3) | Episch |
+|---|---|---|
+| Messfahrt fps | – | 89,0 |
+| Frame p50 / p95 | – | 10,9 / 15,4 ms |
+| Grafikkarte p50 / p95 | etwa 5,0 / 6,0 ms | 10,4 / 14,6 ms |
+| Draw Calls p95 | 3708 | 6566 |
+| Dreiecke p95 | – | 14,8 Mio. |
+| Grafikspeicher max | etwa 1380 MB | 1770 MB |
+| Spielbar nach | 8,0 s | 8,0 s |
+| Hänger > 33 ms | 0 | 0 |
+
+Episch hält das Ziel von 30 fps mit großem Abstand. Auf den Fotos des Rundgangs ist der Unterschied zu Hoch aber klein:
+Der Engpass für „realistisch und detailreich“ ist der Inhalt, nicht die Einstellung (`docs/maengel-drachenstein.md`).

@@ -212,6 +212,8 @@ static func _code_md5() -> String:
 		var dateien := PackedStringArray()
 		for wurzel in ["res://szenen", "res://autoload"]:
 			_sammle(wurzel, dateien)
+		# Gelände und Pläne: Bauten richten sich nach den Höhen, ein neues Gelände braucht neue Bauten
+		_sammle(String("res://daten"), dateien, [".r32", ".json"])
 		dateien.sort()
 		var ctx := HashingContext.new()
 		ctx.start(HashingContext.HASH_MD5)
@@ -221,12 +223,13 @@ static func _code_md5() -> String:
 	return _code
 
 
-static func _sammle(verz: String, dateien: PackedStringArray) -> void:
+static func _sammle(verz: String, dateien: PackedStringArray, endungen: Array = [".gd", ".gdc"]) -> void:
 	for d in DirAccess.get_directories_at(verz):
-		_sammle(verz.path_join(d), dateien)
+		_sammle(verz.path_join(d), dateien, endungen)
 	for f in DirAccess.get_files_at(verz):
-		if f.ends_with(".gd") or f.ends_with(".gdc"):
-			dateien.append(verz.path_join(f))
+		for e: String in endungen:
+			if f.ends_with(e):
+				dateien.append(verz.path_join(f))
 
 
 static func _szene_md5(pfad: String) -> String:

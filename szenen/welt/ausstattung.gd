@@ -25,7 +25,8 @@ extends Node3D
 @export var auf_boden := true
 ## > 0: Stücke nach Zellen dieser Größe (Meter, Welt-x/z) trennen, jede Zelle mit eigenen MultiMeshes und eigener
 ## Kollision. Mit zell_laden_ab > 0 werden die Zellen erst gebaut, wenn der Spieler nah ist (autoload/zellwelt.gd);
-## lebende Tiere bleiben immer da. Der Ladeabstand muss über der Sichtweite der Stücke (220 m) liegen.
+## lebende Tiere und große Stücke (FERNSICHT) bleiben immer da. Der Ladeabstand muss über der Sichtweite der Stücke
+## (220 m) liegen.
 @export var zellgroesse := 0.0
 @export var zell_laden_ab := 0.0
 const OHNE_BODEN := [5, 6, 7, 9, 19, 20, 21, 22, 23, 24, 25, 26, 31]
@@ -41,6 +42,11 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(0.35, 1.0, 0.65), Vector3(0.45, 1.5, 1.1), Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO,
 	Vector3(1.5, 1.15, 0.08), Vector3(1.3, 1.15, 0.08), Vector3(1.0, 0.9, 0.06), Vector3(0.75, 1.15, 0.05), Vector3.ZERO,
 	Vector3(1.7, 2.2, 0.12), Vector3(0.3, 0.45, 0.3)]
+## Große Stücke, die das Bild aus der Ferne prägen (Schiffe, Prahme, Kräne): Art → Sichtweite in Metern. Sie bleiben
+## immer geladen (nicht in Zellen), sonst fehlte der Hafen in der Gesamtansicht (Mängelliste M10).
+const FERNSICHT := {5: 1400.0, 6: 1400.0, 8: 900.0, 9: 900.0}
+## Sichtweite aller übrigen Stücke
+const SICHTWEITE := 220.0
 ## Arten, die als lebende Tiere (szenen/figuren/tier.gd) statt als MultiMesh entstehen: Art → Tierart
 const TIERE := {19: 0, 22: 4, 23: 5, 24: 3, 25: 2, 26: 1}
 ## Arten mit mehreren Kollisionskästen (begehbar): je Kasten die Ecken unten und oben (lokal)
@@ -116,7 +122,7 @@ func _baue() -> void:
 	while i + 4 < stuecke.size():
 		var art := int(stuecke[i])
 		var lage := Transform3D(Basis(Vector3.UP, deg_to_rad(stuecke[i + 4])), Vector3(stuecke[i + 1], stuecke[i + 2], stuecke[i + 3]))
-		if zellgroesse > 0.0 and not TIERE.has(art):
+		if zellgroesse > 0.0 and not TIERE.has(art) and not FERNSICHT.has(art):
 			var w := global_transform * lage.origin if is_inside_tree() else lage.origin
 			var k := Vector2i(floori(w.x / zellgroesse), floori(w.z / zellgroesse))
 			(je_zelle.get_or_add(k, {}) as Dictionary).get_or_add(art, []).append(lage)
@@ -202,8 +208,8 @@ func _baue_arten(je_art: Dictionary, ziel: Node3D) -> void:
 		var inst := MultiMeshInstance3D.new()
 		inst.name = "Art%d" % art
 		inst.multimesh = mm
-		inst.visibility_range_end = 220.0
-		inst.visibility_range_end_margin = 25.0
+		inst.visibility_range_end = FERNSICHT.get(art, SICHTWEITE)
+		inst.visibility_range_end_margin = 100.0 if FERNSICHT.has(art) else 25.0
 		inst.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 		ziel.add_child(inst)
 

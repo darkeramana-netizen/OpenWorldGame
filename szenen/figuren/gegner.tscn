@@ -38,6 +38,9 @@ surface_material_override/0 = SubResource("Material_waffe")
 [node name="Name" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.15, 0)
 billboard = 1
+visibility_range_end = 14.0
+visibility_range_end_margin = 3.0
+visibility_range_fade_mode = 1
 pixel_size = 0.004
 font_size = 40
 outline_size = 10

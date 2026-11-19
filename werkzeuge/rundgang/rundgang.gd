@@ -8,7 +8,7 @@ extends SceneTree
 ## --aufloesung 1920x1080, --ausgabe <Ordner>. Die Fotos landen in user://rundgang/<region>_<Zeit>/ (unter Windows
 ## %APPDATA%\Godot\app_userdata\Sorrowland_ In Silentio\rundgang\); der Ordner steht am Ende der Ausgabe.
 
-const WARTEN_MIN := 45       # so viele Bilder je Blickpunkt mindestens (SDFGI, Schatten und Ausblenden setzen sich)
+const WARTEN_MIN := 90       # so viele Bilder je Blickpunkt mindestens (SDFGI, Schatten und Ausblenden setzen sich)
 const WARTEN_MAX_S := 20.0
 
 var _args := {}
@@ -41,12 +41,13 @@ func _initialize() -> void:
 	current_scene = szene
 	for i in 10:
 		await process_frame
-	for name_ in ["HUD", "Spieler"]:
-		var n := szene.get_node_or_null(name_)
-		if n is CanvasLayer:
-			(n as CanvasLayer).visible = false
-		elif n is Node3D:
-			(n as Node3D).visible = false
+	# Alles auf dem Bildschirm (HUD, Entwickler-Anzeige, Meldungen) und den Spieler ausblenden
+	for n in szene.find_children("*", "CanvasLayer", true, false):
+		(n as CanvasLayer).visible = false
+	var spieler := szene.get_node_or_null("Spieler")
+	if spieler is Node3D:
+		(spieler as Node3D).visible = false
+	var gelaende := szene.get_node_or_null("Gelaende")
 	var kamera := Camera3D.new()
 	kamera.fov = 70.0
 	kamera.far = 4000.0
@@ -61,6 +62,11 @@ func _initialize() -> void:
 			continue
 		spielzeit.minuten = float(p.get("uhr", 10.0)) * 60.0
 		kamera.global_position = _v(p["von"])
+		if gelaende != null and gelaende.has_method("hoehe_bei") and not p.get("unter_tage", false):
+			var boden: float = gelaende.hoehe_bei(kamera.global_position.x, kamera.global_position.z)
+			if kamera.global_position.y < boden + 0.3:
+				printerr("Rundgang: %s steht unter dem Gelände (Kamera %.1f, Boden %.1f); bitte in der JSON-Datei anheben"
+					% [p["name"], kamera.global_position.y, boden])
 		var ziel := _v(p["auf"])
 		var oben := Vector3.UP if absf((ziel - kamera.global_position).normalized().y) < 0.99 else Vector3.FORWARD
 		kamera.look_at(ziel, oben)
