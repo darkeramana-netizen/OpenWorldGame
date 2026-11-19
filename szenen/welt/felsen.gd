@@ -112,12 +112,15 @@ func _baue() -> void:
 				if m < farben.size() and farben[m] != Color.WHITE:
 					(mat as BaseMaterial3D).albedo_color = farben[m]
 				mesh.surface_set_material(f, mat)
-		var punkte := PackedVector3Array()
+		# Eine Kollisionsform je Modell, die alle Stücke gedreht und vergrößert benutzen (die Punkte je Stück
+		# umzurechnen kostete bei 2400 Brocken über eine Minute)
+		var form_geteilt: ConcavePolygonShape3D = null
 		if not Engine.is_editor_hint() and not m in ohne_kollision:
 			var form := _mesh(modelle[m], true)
 			if form != null:
-				punkte = form.get_faces()
-		_modelle[m] = [mesh, _teil_lage(modelle[m]), punkte]
+				form_geteilt = ConcavePolygonShape3D.new()
+				form_geteilt.set_faces(form.get_faces())
+		_modelle[m] = [mesh, _teil_lage(modelle[m]), form_geteilt]
 	var alle: Array[int] = []
 	for i in stuecke.size() / SCHRITT:
 		if _modelle.has(int(stuecke[i * SCHRITT])):
@@ -165,7 +168,7 @@ func _baue_stuecke(nummern: Array[int], ziel: Node3D) -> StaticBody3D:
 	for m: int in je_modell:
 		var mesh: Mesh = _modelle[m][0]
 		var teil_lage: Transform3D = _modelle[m][1]
-		var punkte: PackedVector3Array = _modelle[m][2]
+		var form_geteilt: ConcavePolygonShape3D = _modelle[m][2]
 		var gruppen := {}
 		for nr: int in je_modell[m]:
 			var lage := _lage(nr * SCHRITT) * teil_lage
@@ -173,15 +176,10 @@ func _baue_stuecke(nummern: Array[int], ziel: Node3D) -> StaticBody3D:
 			if kachel > 0.0:
 				schluessel = Vector2i(floori(lage.origin.x / kachel), floori(lage.origin.z / kachel))
 			(gruppen.get_or_add(schluessel, []) as Array).append([nr, lage])
-			if koerper != null and not punkte.is_empty():
-				var shape := ConcavePolygonShape3D.new()
-				var flaechen := PackedVector3Array()
-				flaechen.resize(punkte.size())
-				for k in punkte.size():
-					flaechen[k] = lage * punkte[k]
-				shape.set_faces(flaechen)
+			if koerper != null and form_geteilt != null:
 				var cs := CollisionShape3D.new()
-				cs.shape = shape
+				cs.shape = form_geteilt
+				cs.transform = lage
 				koerper.add_child(cs)
 				_formen[nr] = cs
 		for schluessel: Vector2i in gruppen:
