@@ -102,20 +102,24 @@ void fragment() {
 	vec3 v = zur_kamera / max(entfernung, 0.001);
 	float px_staerke = 1.0 - smoothstep(parallax_weite * 0.6, parallax_weite, entfernung);
 
-	// Ebenen der drei Projektionen (Meter) und Blick je Ebene; parallax nur für die vorherrschende Achse
-	vec3 s = sign(n);
-	vec2 ebene[3] = { welt_pos.zy, welt_pos.xz, welt_pos.xy };
-	vec2 blick[3] = { v.zy, v.xz, v.xy };
-	float blick_n[3] = { v.x * s.x, v.y * s.y, v.z * s.z };
-	int haupt = gewicht.x > gewicht.y ? (gewicht.x > gewicht.z ? 0 : 2) : (gewicht.y > gewicht.z ? 1 : 2);
+	// Zwei Projektionen (Meter): Wände entlang der Wand selbst (waagrecht entlang der Wand, senkrecht die Höhe),
+	// so bleibt der Stein auf schräg stehenden Mauern unverzerrt (vorher entlang der Weltachsen: gestreckt und
+	// doppelt überblendet, Mängelliste M19); Oberseiten von oben. Parallax nur für die vorherrschende.
+	vec2 entlang = normalize(vec2(-n.z, n.x) + vec2(0.0001, 0.0));
+	vec2 nach_aussen = normalize(n.xz + vec2(0.0001, 0.0));
+	float g_wand = gewicht.x + gewicht.z;
+	vec2 ebene[2] = { vec2(dot(welt_pos.xz, entlang), welt_pos.y), welt_pos.xz };
+	vec2 blick[2] = { vec2(dot(v.xz, entlang), v.y), v.xz };
+	float blick_n[2] = { dot(v.xz, nach_aussen), v.y * sign(n.y) };
+	int haupt = g_wand > gewicht.y ? 0 : 1;
 
 	float mischung = smoothstep(0.3, 0.7, rauschen3(welt_pos * 0.06));
 	vec3 alb = vec3(0.0);
 	vec3 nk = vec3(0.0);
 	float rau = 0.0;
 	float hh = 0.0;
-	for (int i = 0; i < 3; i++) {
-		float g = i == 0 ? gewicht.x : (i == 1 ? gewicht.y : gewicht.z);
+	for (int i = 0; i < 2; i++) {
+		float g = i == 0 ? g_wand : gewicht.y;
 		if (g < 0.01) continue;
 		vec2 e = ebene[i];
 		if (i == haupt) {
@@ -170,6 +174,6 @@ void fragment() {
 	// Normalenkarte ohne Tangenten: in die Weltnormale kippen (wie im Geländeshader)
 	vec3 t = nk * 2.0 - 1.0;
 	vec3 neu = n;
-	neu += (vec3(0.0, t.y, t.x) * gewicht.x + vec3(t.x, 0.0, t.y) * gewicht.y + vec3(t.x, t.y, 0.0) * gewicht.z) * normal_staerke * 0.8;
+	neu += ((vec3(entlang.x, 0.0, entlang.y) * t.x + vec3(0.0, t.y, 0.0)) * g_wand + vec3(t.x, 0.0, t.y) * gewicht.y) * normal_staerke * 0.8;
 	NORMAL = normalize((VIEW_MATRIX * vec4(normalize(neu), 0.0)).xyz);
 }

@@ -567,9 +567,19 @@ func _st(flaechen: Dictionary, mat: String) -> SurfaceTool:
 	return flaechen[mat]
 
 
+## true: alle Punkte um 90° um die Hochachse gedreht, (x, y, z) → (z, y, -x). So bauen dieselben Funktionen, die
+## Flächen nach ±z legen (Fenster, Fachwerk), auch die Seiten nach ±x (Mängelliste M14).
+var _quer := false
+
+
+func _q(p: Vector3) -> Vector3:
+	return Vector3(p.z, p.y, -p.x) if _quer else p
+
+
 ## Viereck a-b-c-d (gegen den Uhrzeigersinn von außen gesehen), UV in Metern aus der Lage.
 ## Godot zeichnet Dreiecke im Uhrzeigersinn als Vorderseite, darum werden sie umgekehrt eingetragen.
 func _viereck(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
+	a = _q(a); b = _q(b); c = _q(c); d = _q(d)
 	var n := (b - a).cross(c - a).normalized()
 	for p in [a, c, b, a, d, c]:
 		st.set_uv(_uv(p, n))
@@ -579,10 +589,11 @@ func _viereck(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -
 func _viereck_uv(st: SurfaceTool, p: Array, uv: Array) -> void:
 	for i in [0, 2, 1, 0, 3, 2]:
 		st.set_uv(uv[i])
-		st.add_vertex(p[i])
+		st.add_vertex(_q(p[i]))
 
 
 func _dreieck(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
+	a = _q(a); b = _q(b); c = _q(c)
 	var n := (b - a).cross(c - a).normalized()
 	for p in [a, c, b]:
 		st.set_uv(_uv(p, n))
@@ -610,15 +621,24 @@ func _quader(flaechen: Dictionary, mat: String, lo: Vector3, hi: Vector3) -> voi
 	_viereck(st, p[0], p[1], p[5], p[4])   # unten
 
 
-## Fachwerk auf allen vier Seiten eines Geschosses: Schwelle, Rähm, Ständer, Streben an den Ecken
+## Fachwerk auf allen vier Seiten eines Geschosses: Schwelle, Rähm, Riegel, Ständer, Streben an den Ecken,
+## Kopfbänder und Andreaskreuze in den Brüstungen. Die Seiten nach ±x baut dieselbe Funktion gedreht (_quer).
 func _fachwerk(flaechen: Dictionary, lo: Vector3, hi: Vector3) -> void:
+	_fachwerk_seiten(flaechen, lo, hi)
+	_quer = true
+	_fachwerk_seiten(flaechen, Vector3(-hi.z, lo.y, lo.x), Vector3(-lo.z, hi.y, hi.x))
+	_quer = false
+
+
+## Fachwerk der beiden Seiten nach ±z
+func _fachwerk_seiten(flaechen: Dictionary, lo: Vector3, hi: Vector3) -> void:
 	var d := 0.06    # so weit stehen die Balken vor
 	var s := 0.11    # Balkenbreite
 	for seite: int in [1, -1]:
 		var z := hi.z if seite == 1 else lo.z
 		var zz := z + d * seite
 		var breite := hi.x - lo.x
-		# Rähm (oben), Riegel (Mitte)
+		# Rähm (oben), Riegel (Brüstung)
 		_quader(flaechen, "balken", Vector3(lo.x, hi.y - s, minf(z, zz)), Vector3(hi.x, hi.y, maxf(z, zz)))
 		_quader(flaechen, "balken", Vector3(lo.x, lo.y + 0.7, minf(z, zz)), Vector3(hi.x, lo.y + 0.7 + s, maxf(z, zz)))
 		var felder := maxi(3, int(breite / 1.15))
@@ -634,6 +654,11 @@ func _fachwerk(flaechen: Dictionary, lo: Vector3, hi: Vector3) -> void:
 			if k > 0 and k < felder:
 				for e: float in [-1.0, 1.0]:
 					_balken(flaechen, "balken", Vector3(x + e * s / 2, hi.y - s - 0.42, zm), Vector3(x + e * 0.45, hi.y - s, zm), d, 0.09)
+			# Andreaskreuz in der Brüstung jedes zweiten inneren Feldes
+			if k > 0 and k < felder - 1 and k % 2 == 1:
+				var xb := lo.x + breite * (k + 1) / felder
+				_balken(flaechen, "balken", Vector3(x + s / 2, lo.y + 0.08, zm), Vector3(xb - s / 2, lo.y + 0.7, zm), d, 0.08)
+				_balken(flaechen, "balken", Vector3(xb - s / 2, lo.y + 0.08, zm), Vector3(x + s / 2, lo.y + 0.7, zm), d, 0.08)
 		# Streben in den äußeren Feldern (Mann-Figur): vom Fuß des Eckständers zum Rähm, als echte Balken
 		for ecke: int in [0, felder - 1]:
 			var x0 := lo.x + breite * ecke / felder
@@ -641,14 +666,6 @@ func _fachwerk(flaechen: Dictionary, lo: Vector3, hi: Vector3) -> void:
 			var xa := x0 if ecke == 0 else x1
 			var xb := x1 if ecke == 0 else x0
 			_balken(flaechen, "balken", Vector3(xa, lo.y + s, zm), Vector3(xb, hi.y - s, zm), d, s)
-	for seite: int in [1, -1]:
-		var x := hi.x if seite == 1 else lo.x
-		var xx := x + d * seite
-		_quader(flaechen, "balken", Vector3(minf(x, xx), hi.y - s, lo.z), Vector3(maxf(x, xx), hi.y, hi.z))
-		var felder := maxi(3, int((hi.z - lo.z) / 1.2))
-		for k in felder + 1:
-			var z := lo.z + (hi.z - lo.z) * k / felder
-			_quader(flaechen, "balken", Vector3(minf(x, xx), lo.y, z - s / 2), Vector3(maxf(x, xx), hi.y, z + s / 2))
 
 
 ## Knagge: schräge Stütze unter einem vorstehenden Bauteil, als Treppe aus vier Klötzen von (x, y0, z0) an der Wand
@@ -791,6 +808,19 @@ func _dach(flaechen: Dictionary, mat: String, giebel_mat: String, traufe: float,
 			_dreieck(gs, p1, p2, p3)
 		else:
 			_dreieck(gs, p2, p1, p3)
+		# Fenster im Giebel (Dachboden): eines, bei breiten Giebeln zwei nebeneinander (M14)
+		var gh := hoehe * wand_halbe / halbe
+		if gh > 2.4:
+			var reihe := [0.0] if wand_halbe < 3.4 else [-wand_halbe * 0.32, wand_halbe * 0.32]
+			_quer = not giebelstaendig
+			for q: float in reihe:
+				var fh := minf(1.1, gh * (1.0 - absf(q) / wand_halbe) - 1.2)
+				if fh < 0.6:
+					continue
+				# gedreht: (x, y, z) → (z, y, -x), also liegt q bei -x und die Giebelwand bei z = l
+				var mitte := Vector3(q, traufe + 0.45, l) if giebelstaendig else Vector3(-q, traufe + 0.45, l)
+				_fenster(flaechen, mitte, e, fh, false)
+			_quer = false
 		if fachwerk:
 			# Ständer und Kehlbalken im Giebel
 			var n := 4
