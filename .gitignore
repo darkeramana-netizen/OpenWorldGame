@@ -14,3 +14,4 @@ __pycache__/
 
 # Vorübergehende Hilfsskripte (Fotos, Proben), gehören nicht ins Repository
 tests/_*
+werkzeuge/godot_pfad.txt

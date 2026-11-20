@@ -9,3 +9,4 @@
 *.r32 binary
 *.dll binary
 *.so binary
+*.bat text eol=crlf
