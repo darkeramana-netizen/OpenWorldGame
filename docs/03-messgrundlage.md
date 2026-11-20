@@ -525,3 +525,27 @@ Referenzrechner, 1280×720, Strecke stadt_palas, Zellen an
 
 Episch hält das Ziel von 30 fps mit großem Abstand. Auf den Fotos des Rundgangs ist der Unterschied zu Hoch aber klein:
 Der Engpass für „realistisch und detailreich“ ist der Inhalt, nicht die Einstellung (`docs/maengel-drachenstein.md`).
+
+### Felsen, Gebirge, Küste und Bäume (burg-ausbau-19 bis -22)
+
+Referenzrechner, 1280×720, Strecke stadt_palas
+(`docs/messungen/messung_drachenstein_hoch_2026-11-20T18-24-54.txt`, `…_episch_2026-11-20T18-27-15.txt`):
+
+| | Hoch 18.11. | Hoch 20.11. | Episch 19.11. | Episch 20.11. |
+|---|---|---|---|---|
+| Messfahrt fps | 166 | 70 | 89 | 36 |
+| Grafikkarte p50 / p95 | 5,0 / 6,0 ms | 13,7 / 23,1 ms | 10,4 / 14,6 ms | 28,6 / 43,9 ms |
+| Draw Calls p95 | 3708 | 3973 | 6566 | 7205 |
+| Dreiecke in MultiMeshes (Szene) | 9,7 Mio. | 73,3 Mio. | 9,7 Mio. | 73,3 Mio. |
+| Hänger > 33 ms | 0 | 18 | 0 | 1296 |
+
+Die Render-CPU und die Draw Calls sind kaum gestiegen, die Grafikkarte trägt die Last. Ursachen und Abhilfe (burg-ausbau-23):
+
+- **Brocken `boulder_01` war nie vereinfacht** (56.548 Dreiecke, die Kollisionsform ebenso): rund 600 Brocken dieser
+  Art allein über 30 Mio. Dreiecke. Jetzt 2.773 (Kollision 497). `werkzeuge/fels_vereinfachen.py` legt gröber nach,
+  wenn die genaue Vereinfachung an Nähten stecken bleibt.
+- **Fels-Haut `rock_face_02`**: 20.000 Dreiecke je 2,7-m-Stück, rund 800 Stück am Sockel. Jetzt 4.000.
+- **Ferne Bäume** warfen in allen Schattenstufen Schatten (Laubkarten): jetzt nur in Episch (`fern_schatten` in
+  `autoload/grafik.gd`), die nahen Bäume (bis 160 m) behalten ihre Schatten.
+
+Nächste Messung: zeigt, wie viel davon zurückkommt; danach, falls nötig, die Laubkarten verkleinern (Überzeichnung).

@@ -1,0 +1,29 @@
+Messung episch, Region drachenstein, Strecke stadt_palas, Gelände eigen, Grafik Episch, 2026-11-20T18:27:15
+System: Godot 4.7.2.stable, Windows, AMD Ryzen 7 9800X3D 8-Core Processor (16 Kerne), Grafik: NVIDIA GeForce RTX 5060 Ti, Anzeige Windows (1280, 720)
+Laden: Datei 674 ms, Instanziieren 16 ms, Einhängen+_ready 4386 ms, bis 5 Bilder 7493 ms
+  _ready je Bauart (die größten):
+    felsmassiv                 1 Knoten    1498.0 ms
+    burgbau                   64 Knoten    1033.2 ms
+    gelaende                   1 Knoten     641.4 ms
+    felsen                     3 Knoten     564.1 ms
+    stadthaeuser               2 Knoten     284.8 ms
+    felssockel                 2 Knoten     183.3 ms
+    turm                       5 Knoten     106.2 ms
+    tier                      19 Knoten      37.0 ms
+    fernberge                  1 Knoten      11.9 ms
+    person                   122 Knoten       3.9 ms
+Szene: 13092 Knoten, 3452 Meshes (4485 Oberflächen, 6411579 Dreiecke), 1489 MultiMesh (27550 Exemplare, 73288995 Dreiecke), 373 Lichter (1 mit Schatten), 397 Kollisionskörper, 4444 mit Sichtweite
+Fahrt: 69 von 69 Wegpunkten in 113 s
+Anlauf: 410 Bilder, 41.0 fps; Frame p50 18.7 / p95 19.9 / p99 20.7 / max 2032.2 ms; Hänger >33 ms: 4, >50 ms: 3
+    Render-CPU p50 4.0 / p95 4.5 ms, Grafikkarte p50 18.4 / p95 18.7 ms
+    Prozess-Spitze/s p50 18.4 ms, Physik-Spitze/s p50 1.6 ms, Draw Calls p95 6341, Dreiecke p95 24068027, Objekte p95 7145, Speicher max 561 MB, Grafikspeicher max 1832 MB
+Messfahrt: 4037 Bilder, 35.7 fps; Frame p50 28.9 / p95 44.5 / p99 51.6 / max 75.1 ms; Hänger >33 ms: 1296, >50 ms: 70
+    Render-CPU p50 3.4 / p95 4.5 ms, Grafikkarte p50 28.6 / p95 43.9 ms
+    Prozess-Spitze/s p50 37.4 ms, Physik-Spitze/s p50 1.9 ms, Draw Calls p95 7205, Dreiecke p95 20306057, Objekte p95 8149, Speicher max 591 MB, Grafikspeicher max 1853 MB
+Rundblick: 204 Bilder, 25.3 fps; Frame p50 38.5 / p95 51.9 / p99 54.0 / max 56.2 ms; Hänger >33 ms: 185, >50 ms: 13
+    Render-CPU p50 3.1 / p95 4.3 ms, Grafikkarte p50 38.1 / p95 50.5 ms
+    Prozess-Spitze/s p50 49.4 ms, Physik-Spitze/s p50 1.8 ms, Draw Calls p95 6401, Dreiecke p95 17392815, Objekte p95 7329, Speicher max 589 MB, Grafikspeicher max 1849 MB
+Erste Bilder nach dem Laden: 2032 ms (Skripte 134, Zeichnen 1330, Physik/Rest 569; GPU 0, 290 Pipelines), 194 ms (Skripte 164, Zeichnen 20, Physik/Rest 10; GPU 0, 74 Pipelines), 124 ms (Skripte 37, Zeichnen 7, Physik/Rest 80; GPU 27, 0 Pipelines), 50 ms (Skripte 6, Zeichnen 7, Physik/Rest 36; GPU 19, 19 Pipelines), 17 ms (Skripte 2, Zeichnen 7, Physik/Rest 7; GPU 19, 2 Pipelines), 18 ms (Skripte 1, Zeichnen 12, Physik/Rest 5; GPU 19, 0 Pipelines), 20 ms (Skripte 1, Zeichnen 14, Physik/Rest 5; GPU 19, 0 Pipelines), 20 ms (Skripte 1, Zeichnen 14, Physik/Rest 5; GPU 19, 0 Pipelines), 19 ms (Skripte 2, Zeichnen 13, Physik/Rest 5; GPU 19, 0 Pipelines), 20 ms (Skripte 1, Zeichnen 14, Physik/Rest 5; GPU 19, 0 Pipelines), 20 ms (Skripte 1, Zeichnen 14, Physik/Rest 5; GPU 20, 0 Pipelines), 20 ms (Skripte 1, Zeichnen 14, Physik/Rest 6; GPU 20, 0 Pipelines)
+Ladebildschirm fiele nach 10 Bildern: spielbar nach 8.2 s, größtes Bild danach 20.7 ms
+Sichtweiten-Wechsel (LOD): 4901 Knoten mit Sichtweite, 8072 Wechsel (81.95/s), davon 930 näher als 50 m, 7941 weich überblendet, 37 hart und sichtbar (Aufploppen)
+Zellen: 190 nachladbare Inhalte, 125 gebaut, 42 freigegeben, längster Aufbau 34.3 ms, zusammen 98 ms

@@ -18,6 +18,7 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | Nr. | Foto | Befund | Ursache | Stand |
 |---|---|---|---|---|
 | M11 | alle | Entwickler-Einblendung („Ort … Blick …“) unten links in jedem Foto | Rundgang blendete nur das HUD aus | behoben: alle Bildschirmebenen aus |
+| M32 | 10_suedtor, 20_ordensvorwerk | 10 im dritten Rundgang wieder dunkel, 20 nur Laub | 10: unter einem Vordach ohne Kollision (die Sonde sah es nicht); 20: Kamera in Augenhöhe im Gebüsch vor dem Vorwerk | behoben: 10 von außen vor dem Tor (der Torweg führt nach Osten zum Küstenweg), 20 aus 17 m Höhe über die Büsche |
 | M27 | 10_suedtor, 11_nordtor | Bilder fast schwarz (auch im zweiten Rundgang) | Kameras standen unter dem Gelände bzw. 15–20 m neben der Gasse **in Häusern** | behoben: Standpunkte per Sonde gesucht (mitten in der Gasse, freie Sicht aufs Tor); das Werkzeug warnt jetzt bei Kamera unter dem Gelände und bei Blick, der nach weniger als 6 m verdeckt ist |
 | M28 | 19_uebungsplatz | Übungspuppe füllt das Bild, riesiges Namensschild | Kamera 2 m vor der Puppe; Namensschilder der Gegner ohne Sichtweite | behoben: Kamera höher; Namensschilder der Gegner wie bei Personen nur bis 14 m |
 | M29 | 07_bergfried_dach | Brüstung verdeckt den Blick auf die Burg | Kamera knapp über dem Feuerbecken | behoben: Kamera 2 m höher |
@@ -41,7 +42,7 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 
 | Nr. | Foto | Befund | Ursache | Stand |
 |---|---|---|---|---|
-| M4 | 01–04 | Dächer blass beige und gleichförmig | im Referenzbild warme rotbraune Ziegel und Schiefer im Wechsel | offen |
+| M4 | 01–04 | Dächer blass beige und gleichförmig | Die Ziegeltextur mittelt sich (helle Fugen und Flechten) aus der Ferne zu Beige; die Stadt baute nur Ziegel (`nur_ziegel`) | behoben: Ziegel kräftiger rotbraun in drei Tönungen je Hausvariante (rotbraun, dunkel gealtert, heller orange), die Stadt mit Schiefer im Wechsel (wie die Hausform es vorsieht, etwa ein Viertel); auch die Burgbauten (`material/dach.tres`) wärmer |
 | M12 | 08, 21 | grauer Hügel mitten auf der Marktstraße | Geländebuckel von 1,5 m bei (143, 141): Der Erzeuger zog das feine Rauschen je Gasse erneut ab, an Kreuzungen mehrfach | behoben: in der Stadt nur einmal geglättet, Gelände neu erzeugt (Gassen bis 1,6 m tiefer bzw. 1,1 m höher); der Baucache prüft jetzt auch die Geländedaten |
 | M13 | 09_st_marien | Haus und Kirche stehen auf Gras, Sockel ungleich hoch | Pflasterfläche reicht nicht bis St. Marien | offen |
 | M14 | 08, 09 | große leere Fachwerkflächen, Giebelseiten ohne Fenster | Hausbau setzt Fenster nur an die Traufseiten | offen |
@@ -56,7 +57,7 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | M17 | 14, 15 | glatte, graue Felsflächen am Sockel unter den Hofmauern | Felssockel: erzeugte Wand mit großen flachen Dreiecken | in Arbeit: Fels-Haut aus 800 Felswand-Scans (rock_face_02) in Reihen vor der Wand |
 | M18 | 14_fuss_der_rampe | Felsen grob facettiert, flächig | Felsmassiv: Stufen zwischen den Felsbänken als große Dreiecke | in Arbeit: Brocken aus Fotoscans (boulder_01, rock_07, zwei Namaqualand-Findlinge; entsättigt) halb eingegraben vor den Stufen, kleinere auf den Absätzen |
 | M19 | 14_fuss_der_rampe | Stützmauer: Textur gestreckt und verwaschen | Abwicklung der Mauerkrone und Seiten | offen |
-| M20 | 15, 20 | Laubbäume als Low-Poly-Klumpen | einfache Baummodelle (Kegel und verbeulte Kugeln aus bewuchs.gd) | behoben: Bäume aus Fotoscans von Poly Haven (Tanne, junge Tanne, drei Laubbäume; `modelle/baeume/`), aufbereitet mit `werkzeuge/baum_laden.py`: Holz vereinfacht, Laub als Karten mit einem Atlas aus den echten Blättern; nah 3700–5500 Dreiecke, ab 160 m eine leichte Fassung (ein Material); Büsche aus der Krone eines Laubbaums. Wind fehlt noch. Bilder: `docs/bilder/baeume-2026-11-20/` |
+| M20 | 15, 20 | Laubbäume als Low-Poly-Klumpen | einfache Baummodelle (Kegel und verbeulte Kugeln aus bewuchs.gd) | behoben: Bäume aus Fotoscans von Poly Haven (Tanne, junge Tanne, drei Laubbäume; `modelle/baeume/`), aufbereitet mit `werkzeuge/baum_laden.py`: Holz vereinfacht, Laub als Karten mit einem Atlas aus den echten Blättern; nah 3700–5500 Dreiecke, ab 160 m eine leichte Fassung (ein Material); Büsche aus der Krone eines Laubbaums. Wind: `szenen/welt/baum.gdshader` (der Baum wiegt sich mit der Höhe, das Laub flattert, gegen die Sonne scheint es durch). Bilder: `docs/bilder/baeume-2026-11-20/` |
 | M21 | 16, 17, 18 | Höfe groß und leer | Belebung fehlt | offen: Aufgabe „Höfe beleben“ |
 
 ## E. Hafen
