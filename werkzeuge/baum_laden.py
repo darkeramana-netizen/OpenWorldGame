@@ -12,7 +12,7 @@ Dazu baum.json: Höhe des Modells (Meter), damit bewuchs.gd auf die gewünschte 
 Aufruf aus dem Projektordner (braucht numpy, scipy, Pillow, meshoptimizer):
     python3 werkzeuge/baum_laden.py fir_tree_01 island_tree_01
 Weitere Angaben: --buesche 220 (Laubkarten nah), --holz 3000 (Dreiecke Holz nah), --karten 2 (gekreuzte Karten je
-Büschel), --gross 125 (Kartengröße in Prozent der Büschelausdehnung). Nadelbäume: --buesche 420 --karten 3 --gross 170. --busch: nur die Krone auf dem Boden, als Busch
+Büschel), --gross 115 (Kartengröße in Prozent der Büschelausdehnung). Nadelbäume: --buesche 420 --karten 3 --gross 170. --busch: nur die Krone auf dem Boden, als Busch
 (Ordner <name>_busch). Quellen in modelle/baeume/QUELLEN.md.
 """
 import json, sys, tempfile, urllib.request
@@ -31,14 +31,15 @@ def angabe(name, vorgabe):
 BUESCHE = angabe("--buesche", 220)
 HOLZ = angabe("--holz", 3000)
 KARTEN = angabe("--karten", 2)          # gekreuzte Karten je Büschel (Nadelbäume: 3, die Zweige liegen flach)
-GROSS = angabe("--gross", 125) / 100.0  # Kartengröße im Verhältnis zur Ausdehnung des Büschels
+GROSS = angabe("--gross", 115) / 100.0  # Kartengröße im Verhältnis zur Ausdehnung des Büschels
 BUSCH = "--busch" in args               # nur die Krone, auf den Boden gesetzt (ein Busch), Ordner <name>_busch
 if BUSCH:
     args.remove("--busch")
 # Büschel, Holz, Karten je Büschel, Kartengröße: Die Fernfassung hat weniger, aber größere Büschel, damit die
 # Kronen aus der Ferne dicht bleiben
 FASSUNGEN = {"nah": (BUESCHE, HOLZ, KARTEN, GROSS),
-             "fern": (max(40, BUESCHE // 3), max(300, HOLZ // 6), max(2, KARTEN - 1), GROSS * 1.3)}
+             "fern": (max(40, BUESCHE // 3), max(300, HOLZ // 6), max(1, KARTEN - 1), GROSS * (1.3 if KARTEN > 2 else 1.5))}
+# (Laubbäume fern: eine Karte je Büschel, dafür größer; jede überlagerte Karte kostet die Grafikkarte einen Durchgang)
 KACHEL = 512
 KOPF = {"User-Agent": "sorrowland-werkzeuge/1.0"}
 ZIEL = Path(__file__).resolve().parent.parent / "modelle" / "baeume"

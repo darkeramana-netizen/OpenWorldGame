@@ -79,16 +79,19 @@ func _erde() -> void:
 			k.position = heim
 
 
+const VOGELFORM := preload("res://szenen/figuren/vogelform.gd")
+
+
 func _teil(eltern: Node3D, art: String, ort: Vector3) -> Node3D:
 	if not _meshes.has(art):
-		var m := BoxMesh.new()
-		m.size = {"koerper": Vector3(0.11, 0.1, 0.21), "kopf": Vector3(0.065, 0.065, 0.075), "schnabel": Vector3(0.018, 0.015, 0.035),
+		var masse: Vector3 = {"koerper": Vector3(0.11, 0.1, 0.21), "kopf": Vector3(0.065, 0.065, 0.075), "schnabel": Vector3(0.018, 0.015, 0.035),
 			"schwanz": Vector3(0.09, 0.025, 0.11), "fluegel": Vector3(0.16, 0.018, 0.13), "bein": Vector3(0.012, 0.05, 0.012)}[art]
-		_meshes[art] = m
+		_meshes[art] = VOGELFORM.form(art, masse)
 		var farbe: Color = {"koerper": Color(0.55, 0.57, 0.62), "kopf": Color(0.4, 0.46, 0.5), "schnabel": Color(0.7, 0.35, 0.3),
 			"schwanz": Color(0.3, 0.31, 0.35), "fluegel": Color(0.48, 0.5, 0.55), "bein": Color(0.75, 0.3, 0.3)}[art]
 		var mat := StandardMaterial3D.new()
 		mat.albedo_color = farbe
+		mat.cull_mode = BaseMaterial3D.CULL_DISABLED   # Flügel und Schwanz sind einseitige Flächen
 		mat.roughness = 0.9
 		_mats[art] = mat
 	var mi := MeshInstance3D.new()

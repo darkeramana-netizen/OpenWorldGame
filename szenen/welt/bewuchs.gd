@@ -34,7 +34,7 @@ extends Node3D
 ## Höhe eines Baums mit Größe 1 (die Exemplare streuen um 0,75 bis 1,35)
 @export var nadel_hoehe := 12.0
 @export var laub_hoehe := 9.0
-@export var baum_nah_bis := 160.0
+@export var baum_nah_bis := 130.0
 ## Büsche aus einem Fotoscan (alle Teile des glTF sind Varianten), leer: die einfache Form; sichtbar bis busch_bis
 @export var busch_modell := ""
 @export var busch_bis := 200.0
