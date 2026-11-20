@@ -20,22 +20,22 @@ const STUFEN := [
 	{   # Niedrig
 		"msaa": Viewport.MSAA_DISABLED, "fxaa": true, "sdfgi": false, "sdfgi_stufen": 4, "ssao": false, "ssil": false,
 		"ssr": false, "lichtnebel": false, "schattenkarte": 2048, "schatten_stufen": 2, "schatten_weite": 200.0,
-		"weiche_schatten": 1, "ohne_schatten_unter": 2.0, "lod_schwelle": 2.0, "anisotrop": 2,
+		"weiche_schatten": 1, "ohne_schatten_unter": 2.0, "lod_schwelle": 2.0, "anisotrop": 2, "fern_schatten": false,
 	},
 	{   # Mittel
 		"msaa": Viewport.MSAA_2X, "fxaa": false, "sdfgi": false, "sdfgi_stufen": 4, "ssao": true, "ssil": false,
 		"ssr": false, "lichtnebel": false, "schattenkarte": 4096, "schatten_stufen": 2, "schatten_weite": 300.0,
-		"weiche_schatten": 2, "ohne_schatten_unter": 1.0, "lod_schwelle": 1.5, "anisotrop": 4,
+		"weiche_schatten": 2, "ohne_schatten_unter": 1.0, "lod_schwelle": 1.5, "anisotrop": 4, "fern_schatten": false,
 	},
 	{   # Hoch: wie die Szenen und project.godot
 		"msaa": Viewport.MSAA_2X, "fxaa": false, "sdfgi": true, "sdfgi_stufen": 4, "ssao": true, "ssil": true,
 		"ssr": false, "lichtnebel": false, "schattenkarte": 4096, "schatten_stufen": 2, "schatten_weite": 500.0,
-		"weiche_schatten": 3, "ohne_schatten_unter": 1.0, "lod_schwelle": 1.0, "anisotrop": 4,
+		"weiche_schatten": 3, "ohne_schatten_unter": 1.0, "lod_schwelle": 1.0, "anisotrop": 4, "fern_schatten": false,
 	},
 	{   # Episch
 		"msaa": Viewport.MSAA_4X, "fxaa": false, "sdfgi": true, "sdfgi_stufen": 6, "ssao": true, "ssil": true,
 		"ssr": true, "lichtnebel": true, "schattenkarte": 8192, "schatten_stufen": 4, "schatten_weite": 800.0,
-		"weiche_schatten": 5, "ohne_schatten_unter": 0.0, "lod_schwelle": 0.5, "anisotrop": 16,
+		"weiche_schatten": 5, "ohne_schatten_unter": 0.0, "lod_schwelle": 0.5, "anisotrop": 16, "fern_schatten": true,
 	},
 ]
 
@@ -151,5 +151,9 @@ func _bei_knoten(n: Node) -> void:
 		l.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS if int(w["schatten_stufen"]) == 4 \
 			else DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 		l.directional_shadow_max_distance = w["schatten_weite"]
+	elif n is GeometryInstance3D and n.is_in_group("fern_schatten"):
+		# Fernfassung der Bäume: Schatten nur in Episch (die Laubkarten in allen Schattenstufen kosten viel)
+		(n as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if w["fern_schatten"] \
+			else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	elif n.has_method("_schatten_pruefen") and "ohne_schatten_unter" in n:
 		n.set("ohne_schatten_unter", w["ohne_schatten_unter"])

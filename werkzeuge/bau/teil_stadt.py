@@ -439,7 +439,7 @@ print("Hausbäume in der Stadt:", len(STADTBAEUME))
 
 _alle_haeuser = HAEUSER + HINTERHAEUSER
 # Wie im Referenzbild: dicht an dicht Fachwerkhäuser mit warmen, braunroten Ziegeldächern
-N("Stadthaeuser", "Node3D", DS, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\n"
+N("Stadthaeuser", "Node3D", DS, "script = ExtResource(\"27_stadthaeuser\")\nnur_fachwerk = true\n"   # Ziegel und Schiefer im Wechsel (M4)
   + "haeuser = PackedVector4Array(" + ", ".join(f"{x:.5g}, {y:.5g}, {z:.5g}, {g:.4g}" for x, y, z, g, _, _ in _alle_haeuser) + ")\n"
   + "formen = PackedInt32Array(" + ", ".join(str(f) for *_, f in _alle_haeuser) + ")")
 print("Stadthäuser:", len(HAEUSER), "an den Gassen,", len(HINTERHAEUSER), "Hinterhäuser")

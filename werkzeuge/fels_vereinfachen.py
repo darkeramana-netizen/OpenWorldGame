@@ -46,6 +46,13 @@ for m in g["meshes"]:
         ziel_idx = max(3, int(idx.size * anteil) // 3 * 3)
         aus = np.zeros(idx.size, dtype=np.uint32)
         n = mo.simplify(aus, idx, pos, target_index_count=ziel_idx, target_error=0.02)
+        if n > ziel_idx * 1.5:   # an Nähten und Rändern bleibt die genaue Vereinfachung stecken: gröber nachlegen
+            n = mo.simplify(aus, idx, pos, target_index_count=ziel_idx, target_error=0.1)
+        if n > ziel_idx * 1.5:
+            grob = np.zeros(idx.size, dtype=np.uint32)
+            m_ = mo.simplify_sloppy(grob, idx, pos, target_index_count=ziel_idx, target_error=0.1)
+            if 0 < m_ < n:
+                aus, n = grob, m_
         aus = aus[:n]
         benutzt = np.unique(aus); karte = np.full(pos.shape[0], -1, np.int64); karte[benutzt] = np.arange(benutzt.size)
         neu_attr = {}

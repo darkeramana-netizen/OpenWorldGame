@@ -192,6 +192,14 @@ static func treppen(f: int) -> Array:
 	return liste
 
 
+## Dach einer Hausform (Mängelliste M4): Schiefer, wo die Form ihn vorsieht (nicht bei nur_ziegel), sonst Ziegel in
+## drei Tönungen je Variante (rotbraun, dunkel gealtert, heller orange), damit die Dächer nicht gleichförmig wirken.
+func _dachmaterial(form: Array, variante: int) -> String:
+	if not nur_ziegel and form[6] == 1:
+		return "dach1"
+	return ["dach0", "dach2", "dach3"][variante % 3]
+
+
 func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 	# Die Einstellungen gehören in den Schlüssel, sonst teilen sich Knoten mit verschiedenen Einstellungen die Modelle
 	var schluessel := _schluessel(f, variante)
@@ -370,7 +378,7 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		for e: float in [-1.0, 1.0]:
 			_quader(flaechen, "balken", Vector3(e * (vb - 0.12) - 0.05, vy - 0.55, t / 2), Vector3(e * (vb - 0.12) + 0.05, vy, t / 2 + 0.12))
 			_knagge(flaechen, e * (vb - 0.12), vy - 0.55, vy, t / 2, t / 2 + vt - 0.1)
-		var vs := _st(flaechen, "dach0" if nur_ziegel else "dach%d" % form[6])
+		var vs := _st(flaechen, _dachmaterial(form, variante))
 		var d0 := Vector3(-vb - 0.1, vy + 0.45, t / 2 + 0.02)
 		var d1 := Vector3(vb + 0.1, vy + 0.45, t / 2 + 0.02)
 		var d2 := Vector3(vb + 0.1, vy + 0.02, t / 2 + vt)
@@ -392,7 +400,7 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		_quader(flaechen, "balken", Vector3(ex - ew - 0.05, ey0 - 0.18, ez), Vector3(ex + ew + 0.05, ey0, ez + et + 0.05))
 		for e: float in [-1.0, 1.0]:
 			_knagge(flaechen, ex + e * (ew - 0.15), ey0 - 0.9, ey0 - 0.15, ez, ez + et - 0.1)
-		var es := _st(flaechen, "dach0" if nur_ziegel else "dach%d" % form[6])
+		var es := _st(flaechen, _dachmaterial(form, variante))
 		var r0 := Vector3(ex - ew - 0.15, ey1 + 0.55, ez)
 		var r1 := Vector3(ex + ew + 0.15, ey1 + 0.55, ez)
 		var r2 := Vector3(ex + ew + 0.15, ey1 - 0.05, ez + et + 0.2)
@@ -412,7 +420,7 @@ func _form_mesh(f: int, variante := 0) -> ArrayMesh:
 		_quader(flaechen, "quader", Vector3(-b / 2 - 0.08, -0.6, -t / 2 - 0.08), Vector3(b / 2 + 0.08, 0.45, t / 2 + 0.08))
 
 	# Dach: Satteldach mit Überstand; First entlang z (Giebel zur Straße) oder entlang x
-	var dach_mat := "dach0" if nur_ziegel else "dach%d" % form[6]
+	var dach_mat := _dachmaterial(form, variante)
 	var halbe := (b / 2.0 if giebelstaendig else front) + 0.45
 	var laenge := (front + 0.35) if giebelstaendig else (b / 2.0 + 0.35)
 	var firsthoehe := halbe * tan(deg_to_rad(DACHNEIGUNG))
@@ -803,7 +811,7 @@ func _dach_details(flaechen: Dictionary, mat: String, punkt: Callable, traufe: f
 	var st := _st(flaechen, mat)
 	var oben := traufe + hoehe
 	var L: Vector3 = punkt.call(0.0, 1.0, 0.0) - punkt.call(0.0, 0.0, 0.0)
-	var schritt := 0.3 if mat == "dach0" else 0.24
+	var schritt := 0.24 if mat == "dach1" else 0.3
 	for s: int in [1, -1]:
 		var D: Vector3 = (punkt.call(s * halbe, 0.0, unten) - punkt.call(0.0, 0.0, oben)).normalized()   # hinab
 		var N := D.cross(L).normalized()
@@ -897,7 +905,7 @@ func _material(name_: String) -> Material:
 	var m := StandardMaterial3D.new()
 	# Textur und Meter je Kachel (Fotoscans, echte Größe siehe texturen/groessen.json)
 	var tex := {"quader": ["quader", 2.5], "bruchstein": ["bruchstein", 2.0], "dach0": ["dach", 2.0],
-		"dach1": ["schiefer", 3.0], "balken": ["holz", 2.0], "tuer": ["holz", 1.5], "laden": ["holz", 1.5],
+		"dach2": ["dach", 2.0], "dach3": ["dach", 2.0], "dach1": ["schiefer", 3.0], "balken": ["holz", 2.0], "tuer": ["holz", 1.5], "laden": ["holz", 1.5],
 		"rahmen": ["holz", 2.0]}
 	if name_.begins_with("putz"):
 		tex[name_] = ["putz", 1.6]
@@ -919,6 +927,15 @@ func _material(name_: String) -> Material:
 			m.heightmap_min_layers = 6
 			m.heightmap_max_layers = 16
 	match name_:
+		# Ziegel kräftiger als die Textur (deren helle Fugen und Flechten mitteln sich aus der Ferne zu Beige)
+		"dach0":
+			m.albedo_color = Color(0.92, 0.6, 0.48)
+		"dach2":
+			m.albedo_color = Color(0.7, 0.47, 0.38)
+		"dach3":
+			m.albedo_color = Color(1.0, 0.72, 0.55)
+		"dach1":
+			m.albedo_color = Color(0.85, 0.88, 0.95)
 		"quader", "bruchstein":
 			m.albedo_color = Color(1.25, 1.18, 1.05)   # heller, warmer Kalkstein wie an den Burgmauern
 		"balken", "rahmen":

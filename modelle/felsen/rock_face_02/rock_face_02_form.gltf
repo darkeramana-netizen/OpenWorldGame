@@ -35,7 +35,7 @@
   {
    "bufferView": 0,
    "componentType": 5126,
-   "count": 457,
+   "count": 458,
    "type": "VEC3",
    "min": [
     -2.257464647293091,
@@ -44,14 +44,14 @@
    ],
    "max": [
     0.4412935972213745,
-    2.331071138381958,
-    0.9009888768196106
+    2.3295657634735107,
+    0.938514769077301
    ]
   },
   {
    "bufferView": 1,
    "componentType": 5125,
-   "count": 1422,
+   "count": 1437,
    "type": "SCALAR"
   }
  ],
@@ -59,20 +59,20 @@
   {
    "buffer": 0,
    "byteOffset": 0,
-   "byteLength": 5484,
+   "byteLength": 5496,
    "target": 34962
   },
   {
    "buffer": 0,
-   "byteOffset": 5484,
-   "byteLength": 5688,
+   "byteOffset": 5496,
+   "byteLength": 5748,
    "target": 34963
   }
  ],
  "buffers": [
   {
    "uri": "rock_face_02_form.bin",
-   "byteLength": 11172
+   "byteLength": 11244
   }
  ]
 }

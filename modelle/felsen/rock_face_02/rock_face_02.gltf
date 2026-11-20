@@ -87,45 +87,45 @@
   {
    "bufferView": 0,
    "componentType": 5126,
-   "count": 11254,
+   "count": 2571,
    "type": "VEC3",
    "min": [
-    -2.2605576515197754,
-    -0.13961930572986603,
+    -2.2586581707000732,
+    -0.13911482691764832,
     -1.188185453414917
    ],
    "max": [
-    0.45009371638298035,
-    2.3323476314544678,
+    0.44998323917388916,
+    2.330899953842163,
     0.938514769077301
    ]
   },
   {
    "bufferView": 1,
    "componentType": 5126,
-   "count": 11254,
+   "count": 2571,
    "type": "VEC3",
    "min": [
-    -0.9901635050773621,
+    -0.9193525314331055,
     -0.9999661445617676,
     -0.7566072940826416
    ],
    "max": [
     0.9995900988578796,
-    0.9997413158416748,
-    0.9999607801437378
+    0.9993909597396851,
+    0.9998934268951416
    ]
   },
   {
    "bufferView": 2,
    "componentType": 5126,
-   "count": 11254,
+   "count": 2571,
    "type": "VEC2"
   },
   {
    "bufferView": 3,
    "componentType": 5125,
-   "count": 59994,
+   "count": 11991,
    "type": "SCALAR"
   }
  ],
@@ -133,25 +133,25 @@
   {
    "buffer": 0,
    "byteOffset": 0,
-   "byteLength": 135048,
+   "byteLength": 30852,
    "target": 34962
   },
   {
    "buffer": 0,
-   "byteOffset": 135048,
-   "byteLength": 135048,
+   "byteOffset": 30852,
+   "byteLength": 30852,
    "target": 34962
   },
   {
    "buffer": 0,
-   "byteOffset": 270096,
-   "byteLength": 90032,
+   "byteOffset": 61704,
+   "byteLength": 20568,
    "target": 34962
   },
   {
    "buffer": 0,
-   "byteOffset": 360128,
-   "byteLength": 239976,
+   "byteOffset": 82272,
+   "byteLength": 47964,
    "target": 34963
   }
  ],
@@ -164,7 +164,7 @@
  "buffers": [
   {
    "uri": "rock_face_02.bin",
-   "byteLength": 600104
+   "byteLength": 130236
   }
  ]
 }

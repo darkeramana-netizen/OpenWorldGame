@@ -35,23 +35,23 @@
   {
    "bufferView": 0,
    "componentType": 5126,
-   "count": 58546,
+   "count": 195,
    "type": "VEC3",
    "min": [
-    -0.7480385899543762,
-    -0.07364296913146973,
-    -0.9457283616065979
+    -0.7264273166656494,
+    -0.0658981129527092,
+    -0.9424077272415161
    ],
    "max": [
-    0.5239759087562561,
-    0.9301872253417969,
-    0.8818937540054321
+    0.4533558785915375,
+    0.8833410739898682,
+    0.8474018573760986
    ]
   },
   {
    "bufferView": 1,
    "componentType": 5125,
-   "count": 169644,
+   "count": 1491,
    "type": "SCALAR"
   }
  ],
@@ -59,20 +59,20 @@
   {
    "buffer": 0,
    "byteOffset": 0,
-   "byteLength": 702552,
+   "byteLength": 2340,
    "target": 34962
   },
   {
    "buffer": 0,
-   "byteOffset": 702552,
-   "byteLength": 678576,
+   "byteOffset": 2340,
+   "byteLength": 5964,
    "target": 34963
   }
  ],
  "buffers": [
   {
    "uri": "boulder_01_form.bin",
-   "byteLength": 1381128
+   "byteLength": 8304
   }
  ]
 }

@@ -223,7 +223,7 @@ func _pflanze() -> void:
 	else:
 		var teile := []
 		for m in _modell_meshes(busch_modell):
-			teile.append([m, null, busch_groesse])
+			teile.append([_mit_wind(m, 2.0, 0.02), null, busch_groesse])
 		_zeige_gekachelt("Buesche", listen["busch"], teile, busch_bis)
 	_zeige("Felsen", _fels(), listen["fels"], load("res://material/fels.tres"), false)
 	for art in listen:
@@ -331,7 +331,8 @@ func _zeige_modelle(name_: String, exemplare: Array, ordner: PackedStringArray, 
 		var nah := _modell_mesh(pfad + o + "_nah.gltf")
 		var fern := _modell_mesh(pfad + o + "_fern.gltf")
 		if info is Dictionary and nah != null and fern != null:
-			modelle.append([nah, fern, hoehe / float(info["hoehe"])])
+			var h := float(info["hoehe"])
+			modelle.append([_mit_wind(nah, h), _mit_wind(fern, h), hoehe / h])
 	if modelle.is_empty():
 		_zeige(name_, _nadelbaum() if name_ == "Nadelbaeume" else _laubbaum(), exemplare, _material(0.012, 0.6, 0.0, 0.85), true)
 		return
@@ -377,7 +378,44 @@ func _zeige_gekachelt(name_: String, exemplare: Array, modelle: Array, nah_bis: 
 			else:
 				mmi.visibility_range_begin = nah_bis
 				mmi.visibility_range_begin_margin = 30.0
+				mmi.add_to_group("fern_schatten")   # Schatten je nach Grafikstufe (autoload/grafik.gd)
 			knoten.add_child(mmi)
+
+
+const BAUM_SHADER := preload("res://szenen/welt/baum.gdshader")
+
+
+## Kopie des Meshes mit Wind (szenen/welt/baum.gdshader) statt der importierten Standardmaterialien; die Texturen,
+## Farben und UV-Verschiebungen bleiben. hoehe: Höhe des Modells in Metern (ungeskaliert).
+func _mit_wind(mesh: Mesh, hoehe: float, wiegen := 0.012) -> Mesh:
+	var kopie := mesh.duplicate() as Mesh
+	for f in kopie.get_surface_count():
+		var alt := kopie.surface_get_material(f) as BaseMaterial3D
+		if alt == null:
+			continue
+		var m := ShaderMaterial.new()
+		m.shader = BAUM_SHADER
+		m.set_shader_parameter("farbe_tex", alt.albedo_texture)
+		m.set_shader_parameter("farbe", alt.albedo_color)
+		m.set_shader_parameter("uv_massstab", Vector2(alt.uv1_scale.x, alt.uv1_scale.y))
+		m.set_shader_parameter("uv_versatz", Vector2(alt.uv1_offset.x, alt.uv1_offset.y))
+		if alt.normal_enabled and alt.normal_texture != null:
+			m.set_shader_parameter("mit_normal", true)
+			m.set_shader_parameter("normal_tex", alt.normal_texture)
+			m.set_shader_parameter("normal_staerke", alt.normal_scale)
+		if alt.roughness_texture != null:
+			m.set_shader_parameter("mit_arm", true)
+			m.set_shader_parameter("arm_tex", alt.roughness_texture)
+		else:
+			m.set_shader_parameter("rauheit", alt.roughness)
+		var laub_ := alt.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED
+		m.set_shader_parameter("laub", laub_)
+		if laub_:
+			m.set_shader_parameter("alpha_schwelle", alt.alpha_scissor_threshold)
+		m.set_shader_parameter("modell_hoehe", hoehe)
+		m.set_shader_parameter("wiegen", wiegen)
+		kopie.surface_set_material(f, m)
+	return kopie
 
 
 ## Alle Teile eines Modells als Meshes (mit ihrer Drehung und Größe im Modell, ohne ihren Versatz)
