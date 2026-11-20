@@ -371,7 +371,7 @@ func _initialize() -> void:
 			print("       Streife von %s: %s" % [w_.name, wo])
 	# Ausstattung und Hafenkram stehen auf dem Boden: nicht darin, nicht darüber, nicht in einer Wand; sitzende Tauben
 	# sitzen auf einer Oberfläche
-	var nicht_boden := [5, 6, 7, 9, 19, 20, 21, 22, 23, 24, 25, 26, 31]
+	var nicht_boden := [5, 6, 7, 9, 19, 20, 21, 22, 23, 24, 25, 26, 31, 39]
 	var ohne_a: Array[RID] = []
 	var traeger: Array = []
 	for k in current_scene.find_children("*", "Node3D", true, false):
@@ -394,7 +394,7 @@ func _initialize() -> void:
 		var i_ := 0
 		while i_ + sch - 1 < st_.size():
 			var art_ := int(st_[i_])
-			if (sch == 5 and not art_ in nicht_boden and art_ != 29) or (sch == 7 and art_ in [5, 6, 7]):
+			if (sch == 5 and not art_ in nicht_boden and art_ != 29) or (sch == 7 and art_ in [5, 6, 7, 39]):
 				stuecke_alle += 1
 				var p_ := k.global_transform * Vector3(st_[i_ + 1], st_[i_ + 2], st_[i_ + 3])
 				var ab_ := PhysicsRayQueryParameters3D.create(p_ + Vector3.UP * 1.8, p_ + Vector3.DOWN * 4.0, 1)

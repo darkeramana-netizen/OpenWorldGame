@@ -376,9 +376,12 @@ MATERIALIEN = {
 }
 MATERIAL_ORDNER = ZIEL.parent / "material"
 # Diese Materialien nutzen szenen/welt/stein.gdshader (keine sichtbare Wiederholung, Moos): Name → (Moos, Schwankung)
-STEIN_SHADER = {"mauer": (0.35, 0.18), "hell": (0.25, 0.12), "basalt": (0.3, 0.15), "kai": (0.45, 0.2),
+STEIN_SHADER = {"mauer": (0.35, 0.18), "hell": (0.25, 0.12), "basalt": (0.3, 0.15), "kai": (0.2, 0.2),
                 "bruchstein": (0.4, 0.18), "boden": (0.15, 0.15), "pflaster": (0.1, 0.15)}
 # Parallax-Tiefe (Meter) für stein.gdshader, aus texturen/<tex>_hoehe.jpg (texturen_laden.py --hoehen)
+# Eigene Steine auf den Oberseiten (stein.gdshader, mit_deckel): Name → Textur. Die Krone der Kaimauer ist mit
+# großen Platten belegt, nicht mit Bruchstein (Mängelliste M24).
+DECKEL = {"kai": "platten"}
 STEIN_TIEFE = {"mauer": 0.05, "hell": 0.035, "basalt": 0.06, "kai": 0.07, "bruchstein": 0.07, "boden": 0.03, "pflaster": 0.045}
 
 
@@ -391,14 +394,23 @@ def schreibe_materialien():
         s = 1.0 / m
         if name in STEIN_SHADER:
             moos, schwankung = STEIN_SHADER[name]
-            (MATERIAL_ORDNER / f"{name}.tres").write_text(f'''[gd_resource type="ShaderMaterial" load_steps=6 format=3]
+            deckel_res = deckel_par = ""
+            if name in DECKEL:
+                dt = DECKEL[name]
+                dm = groessen.get(dt, {}).get("meter", 3.0)
+                deckel_res = "".join(f'[ext_resource type="Texture2D" path="res://texturen/{dt}_{k}.jpg" id="{6 + i}_deckel"]\n'
+                                     for i, k in enumerate(("farbe", "normal", "rau", "hoehe")))
+                deckel_par = (f"shader_parameter/mit_deckel = true\nshader_parameter/deckel_meter = {dm}\n"
+                              + "".join(f'shader_parameter/deckel_{p} = ExtResource("{6 + i}_deckel")\n'
+                                        for i, p in enumerate(("farbe", "normalen", "rauheit", "hoehe"))))
+            (MATERIAL_ORDNER / f"{name}.tres").write_text(f'''[gd_resource type="ShaderMaterial" load_steps={6 + (4 if deckel_res else 0)} format=3]
 
 [ext_resource type="Shader" path="res://szenen/welt/stein.gdshader" id="1_shader"]
 [ext_resource type="Texture2D" path="res://texturen/{tex}_farbe.jpg" id="2_farbe"]
 [ext_resource type="Texture2D" path="res://texturen/{tex}_normal.jpg" id="3_normal"]
 [ext_resource type="Texture2D" path="res://texturen/{tex}_rau.jpg" id="4_rau"]
 [ext_resource type="Texture2D" path="res://texturen/{tex}_hoehe.jpg" id="5_hoehe"]
-
+{deckel_res}
 [resource]
 shader = ExtResource("1_shader")
 shader_parameter/farbe = ExtResource("2_farbe")
@@ -410,7 +422,7 @@ shader_parameter/schwankung = {schwankung}
 shader_parameter/moos = {moos}
 shader_parameter/hoehe = ExtResource("5_hoehe")
 shader_parameter/tiefe = {STEIN_TIEFE.get(name, 0.04)}
-''', encoding="utf-8")
+{deckel_par}''', encoding="utf-8")
             continue
         (MATERIAL_ORDNER / f"{name}.tres").write_text(f'''[gd_resource type="StandardMaterial3D" load_steps=4 format=3]
 

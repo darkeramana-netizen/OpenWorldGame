@@ -1,9 +1,20 @@
 shader_type spatial;
 // Das Wächtermeer: Wellen aus mehreren Rauschlagen in verschiedenen Richtungen (keine Streifen), dunkles Blaugrün,
 // Spiegelung des Himmels zum Rand hin. Dieselbe Oberfläche dient als Fernmeer bis zum Horizont (mit Aussparung).
+// Die Wassertiefe kommt aus der Höhenkarte des Geländes (globale Uniform, auch von stein.gdshader genutzt; die
+// Tiefenkarte des Bildschirms ist nicht auf jedem Treiber gefüllt): Flaches Wasser ist durchsichtig und grünlich
+// (man sieht den Grund), tiefes fast schwarz; am Ufer ein Saum aus Gischt. Im Hafenbecken ist das Wasser trüb und ruhig.
 
-uniform vec3 farbe_tief = vec3(0.03, 0.11, 0.15);   // tiefes Blaugrün wie im Referenzbild
-uniform vec3 farbe_hell = vec3(0.08, 0.25, 0.29);
+global uniform sampler2D gelaende_hoehe : filter_linear;
+global uniform vec4 gelaende_rahmen;
+uniform vec3 farbe_tief = vec3(0.012, 0.05, 0.065);  // tiefes Blaugrün wie im Referenzbild
+uniform vec3 farbe_hell = vec3(0.025, 0.085, 0.095);
+uniform vec3 farbe_flach = vec3(0.06, 0.13, 0.11);   // über hellem Grund
+uniform float sichttiefe = 3.5;                      // so tief sieht man ins Wasser (Meter bis fast undurchsichtig)
+uniform float gischt = 1.0;
+// Hafenbecken (x min, z min, x max, z max): trübes, grünlich-graues Wasser, kaum Kräuselung
+uniform vec4 hafen = vec4(0.0);
+uniform vec3 farbe_hafen = vec3(0.03, 0.055, 0.045);
 uniform float wellenhoehe = 0.15;
 // Halbe Größe der Fläche (PlaneMesh): Zum Rand hin laufen die Wellen aus, damit die Naht zum Fernmeer nicht klafft.
 uniform vec2 halbe_groesse = vec2(1400.0, 900.0);
@@ -64,7 +75,12 @@ void fragment() {
 		discard;
 	}
 	float abstand = length(VERTEX);
-	float staerke = kraeuseln * (1.0 - smoothstep(kraeuseln_bis * 0.3, kraeuseln_bis, abstand));
+	float im_hafen = 0.0;
+	if (hafen.z > hafen.x) {
+		vec2 r = min(welt_pos.xz - hafen.xy, hafen.zw - welt_pos.xz);
+		im_hafen = clamp(min(r.x, r.y) / 25.0, 0.0, 1.0);
+	}
+	float staerke = kraeuseln * (1.0 - smoothstep(kraeuseln_bis * 0.3, kraeuseln_bis, abstand)) * (1.0 - im_hafen * 0.6);
 	// Normale aus dem Gefälle der Wellenhöhe (in Weltkoordinaten)
 	vec2 p = welt_pos.xz;
 	float e = 0.35;
@@ -76,12 +92,34 @@ void fragment() {
 
 	// großflächige, weiche Farbunterschiede (Strömung, Tiefe) statt regelmäßiger Bänder
 	float flecken = rauschen(p * 0.004 + vec2(TIME * 0.002, 0.0)) * 0.5 + rauschen(p * 0.013) * 0.25 + 0.5;
-	ALBEDO = mix(farbe_tief, farbe_hell, clamp(flecken, 0.0, 1.0) * 0.45);
+	vec3 farbe = mix(farbe_tief, farbe_hell, clamp(flecken, 0.0, 1.0) * 0.6);
+	farbe = mix(farbe, farbe_hafen * (0.85 + flecken * 0.3), im_hafen);
+
+	// Wassertiefe unter diesem Punkt (außerhalb der Höhenkarte: tief); entlang des Blicks ist der Weg zum Grund länger
+	float tief = 50.0;
+	if (gelaende_rahmen.z > 0.0) {
+		vec2 guv = (welt_pos.xz - gelaende_rahmen.xy) / gelaende_rahmen.zw;
+		if (guv.x > 0.0 && guv.y > 0.0 && guv.x < 1.0 && guv.y < 1.0) {
+			vec2 n = vec2(textureSize(gelaende_hoehe, 0));   // Rasterpunkte liegen auf den Texelmitten
+			tief = max(welt_pos.y - textureLod(gelaende_hoehe, guv * (n - 1.0) / n + 0.5 / n, 0.0).r, 0.0);
+		}
+	}
+	float durch_blick = tief / max(abs(dot(normalize(CAMERA_POSITION_WORLD - welt_pos), vec3(0.0, 1.0, 0.0))), 0.15);
+	float sicht = sichttiefe * (1.0 - im_hafen * 0.65);
+	float flach = exp(-tief / max(sicht * 0.5, 0.01));
+	farbe = mix(farbe, farbe_flach * (1.0 - im_hafen * 0.4), flach * 0.7);
+	ALPHA = clamp(1.0 - exp(-durch_blick / max(sicht, 0.01)), 0.0, 1.0);
+	ALPHA = max(ALPHA, smoothstep(kraeuseln_bis * 0.5, kraeuseln_bis * 1.5, abstand));
+
+	// Gischt: ein unruhiger Saum, wo das Wasser flach auf den Grund läuft
+	float schaum_rauschen = rauschen(p * 1.7 + vec2(TIME * 0.25, -TIME * 0.18)) * 0.5 + rauschen(p * 4.3 - vec2(TIME * 0.4, 0.0)) * 0.3 + 0.5;
+	float saum = 1.0 - smoothstep(0.0, 0.55 + 0.35 * sin(TIME * 0.9 + p.x * 0.3 + p.y * 0.2), tief);
+	float schaum = saum * smoothstep(0.35, 0.75, schaum_rauschen) * gischt * (1.0 - im_hafen * 0.35)
+			* (1.0 - smoothstep(60.0, 160.0, abstand));
+	ALBEDO = mix(farbe, vec3(0.75, 0.78, 0.76), schaum);
+	ALPHA = max(ALPHA, schaum);
 	// Mit der Kräuselung darf die Oberfläche glatter sein: Die Sonne glitzert in vielen kleinen Lichtern statt
-	// eines großen weißen Flecks.
-	ROUGHNESS = mix(0.2, 0.06, staerke / max(kraeuseln, 0.001));
+	// eines großen weißen Flecks. Gischt ist matt.
+	ROUGHNESS = mix(mix(0.2, 0.06, staerke / max(kraeuseln, 0.001)), 0.8, schaum);
 	SPECULAR = 0.5;
-	// Zum Rand hin (flacher Blickwinkel) heller, wie eine Spiegelung des Himmels.
-	float rand = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 4.0);
-	ALBEDO = mix(ALBEDO, vec3(0.3, 0.4, 0.44), rand * 0.4);
 }

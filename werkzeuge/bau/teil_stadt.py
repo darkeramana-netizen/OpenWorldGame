@@ -173,9 +173,10 @@ while s_ < l_ * 0.93:
     s_ += laenge_ + 0.4
 _hm = W((720, 520))
 schild("SchildHafen", HF, _hm[0], KAI_OBEN + 8, _hm[1], "Drachenhafen", 64)
-# Koggen im Becken (szenen/welt/ausstattung.gd, Art 5; die Wasserlinie liegt bei -20)
-SCHIFFE = [(5, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in
-           [((660, 480), 80), ((745, 478), 95), ((700, 560), 85), ((760, 548), 60)]]
+# Koggen im Becken (szenen/welt/ausstattung.gd, Art 5 mit aufgetuchtem Segel, Art 39 mit lose zum Trocknen gesetztem;
+# die Wasserlinie liegt bei -20)
+SCHIFFE = [(a, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for a, pp, g in
+           [(5, (660, 480), 80), (39, (745, 478), 95), (5, (700, 560), 85), (39, (760, 548), 60)]]
 # Draußen in der Bucht: Koggen unter vollem Segel (Art 6)
 SCHIFFE += [(6, *(lambda p: (p[0], -20.0, p[1]))(W(pp)), g) for pp, g in [((960, 560), 150), ((1080, 640), 200)]]
 # Ruderboote an den Stegen (Art 7)

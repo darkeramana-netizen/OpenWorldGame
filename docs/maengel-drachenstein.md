@@ -65,9 +65,20 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | Nr. | Foto | Befund | Ursache | Stand |
 |---|---|---|---|---|
 | M10 | 01–04 | Schiffe und Kräne aus der Luft nicht zu sehen | Ausstattung blendet nach 220 m aus, Zellen laden ab 240 m | behoben: Koggen bis 1400 m, Kräne und Prahme bis 900 m sichtbar, immer geladen |
-| M22 | 12_drachenkai | Hafenwasser hell türkis wie ein Schwimmbecken | Himmelsspiegelung auf glatter Fläche | prüfen nach dem neuen Wasser |
-| M23 | 12, 13 | Schiffe kastenförmig, Segel fehlen | einfache Modelle | offen |
-| M24 | 12 | Kai sandfarben und glatt | Material der Kaifläche | offen |
+| M22 | 12_drachenkai, 01–05 | Hafenwasser hell türkis wie ein Schwimmbecken, auch das offene Meer | Grundfarbe des Wassers ein helles Cyan, von der Sonne aufgehellt; keine Tiefe, keine Durchsicht, kein Ufersaum | behoben (`wasser.gdshader`): dunkles Blaugrün, Wassertiefe aus der Höhenkarte des Geländes (die Bildschirm-Tiefenkarte war im Fotoskript leer, deshalb nicht genutzt): flach durchsichtig und grünlich über dem Grund, tief fast schwarz, Gischt am Ufer; Hafenbecken, Kanal und Untergrundhafen trüb grünlich-grau und ruhiger. Bilder: `docs/bilder/hafen-2026-11-20/` |
+| M23 | 12, 13 | Schiffe kastenförmig, Segel fehlen | einfache Modelle | behoben (`ausstattung.gd`): Rumpf mit geraden, schrägen Steven und Klinkerplanken (glatte Außenhaut), Barghölzer, Kiel, durchgesteckte Decksbalken; Kastelle als Plattformen mit Brüstung, Pfosten und Handlauf, Tür im Achterkastell; Heckruder mit Pinne; Mastkorb, Wanten mit Webeleinen, Stagen, Brassen, Schoten; gestreifte Segel (Leinen und Rotbraun): in der Bucht voll gebläht, im Hafen aufgetucht mit Zeisingen oder lose zum Trocknen gesetzt (neue Art 39). Auch Ruderboote und Prahme haben den neuen Rumpf |
+| M24 | 12 | Kai sandfarben und glatt | Die Kaikante ist die 4 m breite Krone der Kaimauer, mit Bruchstein im 2-m-Raster, von oben wie Sand | behoben: `stein.gdshader` kann Oberseiten mit eigenen Steinen belegen (`mit_deckel`); die Kaikrone trägt große Steinplatten, weniger Moos (`material/kai.tres`, erzeugt von `werkzeuge/texturen_erzeugen.py`, `DECKEL`) |
+
+
+## E2. Neu aus dem Rundgang vom 20.11.2026 (Hoch)
+
+| Nr. | Foto | Befund | Ursache | Stand |
+|---|---|---|---|---|
+| M33 | 10_suedtor, 15, 17 | Rundtürme (am Südtor, an den Höfen) mit senkrecht gestreckter, verschmierter Textur | Folge der M19-Korrektur: Die Koordinate „entlang der Wand“ ist rund um einen Zylinder überall gleich, die Steine wurden zu senkrechten Streifen | behoben (`stein.gdshader`): gekrümmte Flächen (Änderung der Normale je Meter) bekommen wieder die Projektion entlang der Weltachsen, gerade Mauern behalten die Wandprojektion. Bild: `docs/bilder/hafen-2026-11-20/t1_suedtor_vorher_nachher.jpg` |
+| M34 | 14_fuss_der_rampe, 16_mittelburg | graue Felsbrocken stoßen durch die Zwingermauer und ragen über die Mauerkrone | Felsmassiv bzw. Brocken am Burgberg zu nah an den Mauern | offen |
+| M35 | 01, 03, 05 | kleine flache Sandinseln im Meer vor der Mole | Geländebuckel knapp über dem Meeresspiegel | offen |
+| M36 | 12_drachenkai | Möwen liegen wie weiße Fische auf dem Kai | Haltung oder Höhe der sitzenden Möwen | prüfen |
+| M37 | 11_nordtor | Gasse endet an Häusern in Wiese (Gras zwischen den Häusern in der Stadt) | Pflasterfläche deckt die Hinterhöfe nicht | offen (mit M13) |
 
 ## F. Figuren und Tiere
 

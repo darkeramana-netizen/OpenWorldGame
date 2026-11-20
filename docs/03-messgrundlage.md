@@ -549,3 +549,15 @@ Die Render-CPU und die Draw Calls sind kaum gestiegen, die Grafikkarte trägt di
   `autoload/grafik.gd`), die nahen Bäume (bis 160 m) behalten ihre Schatten.
 
 Nächste Messung: zeigt, wie viel davon zurückkommt; danach, falls nötig, die Laubkarten verkleinern (Überzeichnung).
+
+Die Messungen danach (`…_hoch_2026-11-20T19-23-41`, `…_episch_2026-11-20T19-26-03` nach den Felsen;
+`…_hoch_2026-11-20T20-54-46`, `…_episch_2026-11-20T20-57-07` nach kleineren Laubkarten):
+
+| | Hoch 19:23 | Hoch 20:54 | Episch 19:26 | Episch 20:57 |
+|---|---|---|---|---|
+| Messfahrt fps | 104,0 | 101,5 | 51,9 | 51,3 |
+| Grafikkarte p50 / p95 | – | 9,4 / 12,7 ms | – | 19,2 / 25,7 ms |
+| Hänger > 33 ms | 0 | 0 | 14 | 15 |
+
+Die vereinfachten Felsen holen den größten Teil zurück (Hoch 70 → 104 fps, Episch 36 → 52 fps); die kleineren
+Laubkarten ändern messbar nichts. Episch liegt weiter deutlich über dem Ziel von 30 fps.

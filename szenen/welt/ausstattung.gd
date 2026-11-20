@@ -29,7 +29,7 @@ extends Node3D
 ## (220 m) liegen.
 @export var zellgroesse := 0.0
 @export var zell_laden_ab := 0.0
-const OHNE_BODEN := [5, 6, 7, 9, 19, 20, 21, 22, 23, 24, 25, 26, 31]
+const OHNE_BODEN := [5, 6, 7, 9, 19, 20, 21, 22, 23, 24, 25, 26, 31, 39]
 const Zellteil := preload("res://szenen/welt/zellteil.gd")
 var _bereit := false
 
@@ -41,10 +41,10 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(0.35, 1.7, 1.2), Vector3.ZERO, Vector3.ONE, Vector3.ZERO, Vector3.ZERO, Vector3(0.35, 0.9, 0.7),
 	Vector3(0.35, 1.0, 0.65), Vector3(0.45, 1.5, 1.1), Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO,
 	Vector3(1.5, 1.15, 0.08), Vector3(1.3, 1.15, 0.08), Vector3(1.0, 0.9, 0.06), Vector3(0.75, 1.15, 0.05), Vector3.ZERO,
-	Vector3(1.7, 2.2, 0.12), Vector3(0.3, 0.45, 0.3)]
+	Vector3(1.7, 2.2, 0.12), Vector3(0.3, 0.45, 0.3), Vector3(2.6, 3.4, 9.5)]
 ## Große Stücke, die das Bild aus der Ferne prägen (Schiffe, Prahme, Kräne): Art → Sichtweite in Metern. Sie bleiben
 ## immer geladen (nicht in Zellen), sonst fehlte der Hafen in der Gesamtansicht (Mängelliste M10).
-const FERNSICHT := {5: 1400.0, 6: 1400.0, 8: 900.0, 9: 900.0}
+const FERNSICHT := {5: 1400.0, 6: 1400.0, 8: 900.0, 9: 900.0, 39: 1400.0}
 ## Sichtweite aller übrigen Stücke
 const SICHTWEITE := 220.0
 ## Arten, die als lebende Tiere (szenen/figuren/tier.gd) statt als MultiMesh entstehen: Art → Tierart
@@ -63,7 +63,7 @@ const KAESTEN := {21: [
 	[Vector3(0.9, -0.5, -2.2), Vector3(2.0, 0.6, -1.4)],      # Kohlenkiste
 	[Vector3(2.4, -0.5, -1.2), Vector3(3.3, 0.9, 1.4)]]}      # Werkbank
 ## Wasserfahrzeuge: die Kollisionsbox reicht unter die Wasserlinie
-const TIEFGANG := {5: 1.6, 6: 1.6, 7: 0.5, 9: 0.8}
+const TIEFGANG := {5: 1.7, 6: 1.7, 7: 0.5, 9: 0.8, 39: 1.7}
 ## Farben der Markisen
 const STOFFE := [Color(0.62, 0.16, 0.12), Color(0.85, 0.78, 0.58), Color(0.2, 0.32, 0.52), Color(0.28, 0.42, 0.22)]
 
@@ -222,7 +222,8 @@ func _st(mat: String) -> SurfaceTool:
 	if not _f.has(mat):
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		st.set_smooth_group(-1)   # kantig: sonst glättet generate_normals über die Kanten hinweg
+		# kantig: sonst glättet generate_normals über die Kanten hinweg; nur die Außenhaut der Rümpfe ist rund
+		st.set_smooth_group(0 if mat in ["rumpf", "rumpf_teer"] else -1)
 		_f[mat] = st
 	return _f[mat]
 
@@ -330,9 +331,11 @@ func _mesh(art: int) -> ArrayMesh:
 			_klotz("holz", Vector3(-0.65, 0.65, -0.94), Vector3(0.65, 0.95, -0.86))
 			_klotz("sack", Vector3(-0.4, 0.65, -0.5), Vector3(0.3, 1.05, 0.3), 0.3)
 		5:
-			_kogge(false)
+			_kogge(0)
 		6:
-			_kogge(true)
+			_kogge(1)
+		39:
+			_kogge(2)
 		7:
 			_ruderboot()
 		8:
@@ -754,43 +757,85 @@ func _seil(mat: String, a: Vector3, b: Vector3, r: float) -> void:
 	_zylinder(mat, a, r, r, a.distance_to(b), 5, Basis(x, y, z))
 
 
-## Rumpf aus Spanten (Querschnitte entlang z), für Kogge und Ruderboot.
-func _rumpf(laenge: float, breite: float, stationen: int, tief: float, hoch: float, kastelle: bool) -> void:
-	var querschnitt := func(z: float) -> Array:
-		var t := absf(z) / (laenge / 2.0)
-		var w := breite * sqrt(maxf(1.0 - pow(t, 2.4), 0.0)) + 0.06
-		var heck := 0.4 if z > 0.0 and kastelle else 0.0
-		var deck := hoch + pow(t, 2.0) * (hoch * 0.5 + heck)
-		return [Vector2(-w * 0.98, deck), Vector2(-w, hoch * 0.35), Vector2(-w * 0.85, -tief * 0.4), Vector2(-w * 0.45, -tief * 0.8),
-			Vector2(0.0, -tief), Vector2(w * 0.45, -tief * 0.8), Vector2(w * 0.85, -tief * 0.4), Vector2(w, hoch * 0.35), Vector2(w * 0.98, deck)]
-	var vorher: Array = []
-	var z_vorher := 0.0
-	for k in stationen + 1:
-		var z := -laenge / 2.0 + laenge * k / stationen
-		var q: Array = querschnitt.call(z)
-		if k > 0:
-			for j in q.size() - 1:
-				var a: Vector2 = vorher[j]
-				var b: Vector2 = vorher[j + 1]
-				var c: Vector2 = q[j + 1]
-				var d: Vector2 = q[j]
-				var mitte := (a + b + c + d) / 4.0
-				var mat := "rumpf_teer" if mitte.y < 0.2 else "holz"
-				_viereck(mat, Vector3(a.x, a.y, z_vorher), Vector3(b.x, b.y, z_vorher), Vector3(c.x, c.y, z), Vector3(d.x, d.y, z),
-					Vector3(mitte.x, mitte.y + 0.6, 0.0))
-				_viereck(mat, Vector3(a.x, a.y, z_vorher), Vector3(b.x, b.y, z_vorher), Vector3(c.x, c.y, z), Vector3(d.x, d.y, z),
-					-Vector3(mitte.x, mitte.y + 0.6, 0.0))
-			var dv: Vector2 = vorher[0]
-			var dq: Vector2 = q[0]
-			var yd := minf(dv.y, dq.y) - hoch * 0.32
-			_viereck("deck", Vector3(dv.x, yd, z_vorher), Vector3(-dv.x, yd, z_vorher), Vector3(-dq.x, yd, z), Vector3(dq.x, yd, z), Vector3.UP)
-		vorher = q
-		z_vorher = z
+## Rumpf aus Spanten (Querschnitte entlang z), für Kogge, Ruderboot und Prahm. Bug und Heck laufen in geraden, schräg
+## gestellten Steven aus (der Kiel ist um `steven` kürzer als das Deck); die Bordwand ist geklinkert: Jeder Plankengang
+## liegt mit der Unterkante etwas außen über dem darunter. Barghölzer laufen außen entlang, bei der Kogge ragen die
+## Decksbalken durch die Bordwand. Rückgabe: Funktion t (−1 Bug … 1 Heck) → [Breite, Deckshöhe, z an der Reling].
+func _rumpf(laenge: float, breite: float, stationen: int, tief: float, hoch: float, kastelle: bool, steven := 0.22) -> Callable:
+	var lk := laenge * (1.0 - steven)
+	var weite := func(t: float) -> float:
+		return breite * pow(maxf(1.0 - pow(absf(t), 2.6), 0.0), 0.6) + 0.05
+	var oben := func(t: float) -> float:
+		return hoch + t * t * hoch * 0.45 + (t * t * 0.4 if kastelle and t > 0.0 else 0.0)
+	# Querschnitt vom Kiel zur Reling: (Anteil der Breite, Höhe: < 0 Anteil des Tiefgangs, > 0 Anteil der Deckshöhe)
+	var profil := [Vector2(0.0, -1.0), Vector2(0.34, -0.97), Vector2(0.64, -0.84), Vector2(0.85, -0.6), Vector2(0.96, -0.3),
+		Vector2(1.0, 0.05), Vector2(1.0, 0.4), Vector2(0.99, 0.72), Vector2(0.97, 1.0)]
+	var punkt := func(t: float, i: int, s: float) -> Vector3:
+		var f: Vector2 = profil[i]
+		var d: float = oben.call(t)
+		var y := f.y * tief if f.y < 0.0 else f.y * d
+		var z := t * (lk / 2.0 + (y + tief) / (d + tief) * (laenge - lk) / 2.0)
+		return Vector3(s * f.x * float(weite.call(t)), y, z)
+	var klinker := breite * 0.014
+	for s: float in [-1.0, 1.0]:
+		for k in stationen:
+			var t0 := -1.0 + 2.0 * k / stationen
+			var t1 := -1.0 + 2.0 * (k + 1) / stationen
+			for i in profil.size() - 1:
+				var a: Vector3 = punkt.call(t0, i, s)
+				var b: Vector3 = punkt.call(t1, i, s)
+				var c: Vector3 = punkt.call(t1, i + 1, s)
+				var d: Vector3 = punkt.call(t0, i + 1, s)
+				var ri := Vector2(c.x - b.x, c.y - b.y)
+				var aussen := Vector3(ri.y * s, -ri.x * s, 0.0).normalized()
+				if aussen == Vector3.ZERO:
+					aussen = Vector3(s, 0, 0)
+				if i > 0:   # Klinker: die Unterkante liegt außen auf dem Gang darunter
+					a += aussen * klinker
+					b += aussen * klinker
+				var mat := "rumpf_teer" if (a.y + d.y) / 2.0 < 0.1 else "rumpf"
+				_viereck(mat, a, b, c, d, aussen)
+				_viereck("rumpf_innen", a - aussen * 0.06, b - aussen * 0.06, c - aussen * 0.06, d - aussen * 0.06, -aussen)
+		# Barghölzer: eines an der Reling, eines halb hoch, bei der Kogge ein drittes
+		for i: int in ([8, 6, 5] if kastelle else [8, 6]):
+			for k in stationen:
+				var t0 := -1.0 + 2.0 * k / stationen
+				var t1 := -1.0 + 2.0 * (k + 1) / stationen
+				var r := breite * (0.03 if i == 8 else 0.036)
+				_seil("holz_dunkel", punkt.call(t0, i, s) + Vector3(s * r, 0, 0), punkt.call(t1, i, s) + Vector3(s * r, 0, 0), r)
+	# Deck (bzw. Bodenbretter) unter der Reling
+	var tiefer := 0.95 if kastelle else hoch * 0.32
+	for k in stationen:
+		var t0 := -1.0 + 2.0 * k / stationen
+		var t1 := -1.0 + 2.0 * (k + 1) / stationen
+		if absf(t0) > 0.93 or absf(t1) > 0.93:
+			continue
+		var y0: float = oben.call(t0) - tiefer
+		var y1: float = oben.call(t1) - tiefer
+		var w0: float = weite.call(t0) * 0.985
+		var w1: float = weite.call(t1) * 0.985
+		var z0 := t0 * (lk / 2.0 + (y0 + tief) / (float(oben.call(t0)) + tief) * (laenge - lk) / 2.0)
+		var z1 := t1 * (lk / 2.0 + (y1 + tief) / (float(oben.call(t1)) + tief) * (laenge - lk) / 2.0)
+		_viereck("deck", Vector3(-w0, y0, z0), Vector3(w0, y0, z0), Vector3(w1, y1, z1), Vector3(-w1, y1, z1), Vector3.UP)
+	# Kiel und Steven
+	_klotz("holz_dunkel", Vector3(-breite * 0.05, -tief - breite * 0.06, -lk / 2.0), Vector3(breite * 0.05, -tief + 0.05, lk / 2.0))
+	for e: float in [-1.0, 1.0]:
+		_seil("holz_dunkel", Vector3(0, -tief - breite * 0.04, e * lk / 2.0),
+			Vector3(0, float(oben.call(e)) + breite * 0.12, e * (laenge / 2.0 + breite * 0.05)), breite * 0.045)
+	if kastelle:   # Decksbalken, die durch die Bordwand ragen
+		for t: float in [-0.62, -0.38, -0.12, 0.2, 0.42]:
+			var y: float = oben.call(t) * 0.62
+			var w: float = weite.call(t)
+			var z := t * (lk / 2.0 + (y + tief) / (float(oben.call(t)) + tief) * (laenge - lk) / 2.0)
+			_klotz("holz_dunkel", Vector3(-w - 0.38, y - 0.14, z - 0.14), Vector3(w + 0.38, y + 0.14, z + 0.14))
+	return func(t: float) -> Array:
+		var d: float = oben.call(t)
+		return [weite.call(t), d, t * laenge / 2.0]
 
 
 ## Ruderboot: kleiner Rumpf, drei Ducht-Bänke, zwei Riemen.
 func _ruderboot() -> void:
-	_rumpf(5.0, 0.75, 8, 0.45, 0.55, false)
+	_rumpf(5.0, 0.75, 12, 0.45, 0.55, false, 0.16)
 	for z: float in [-1.2, 0.0, 1.2]:
 		_klotz("holz", Vector3(-0.68, 0.3, z - 0.12), Vector3(0.68, 0.36, z + 0.12))
 	for s: float in [-1.0, 1.0]:
@@ -800,7 +845,7 @@ func _ruderboot() -> void:
 ## Prahm: flacher Lastkahn ohne Mast (passt unter das Gewölbe des Untergrundhafens), beladen mit Kisten, Fässern
 ## und Säcken, dazu ein Staken.
 func _prahm() -> void:
-	_rumpf(12.0, 2.1, 10, 0.8, 1.0, false)
+	_rumpf(12.0, 2.1, 14, 0.8, 1.0, false, 0.1)
 	_klotz("holz", Vector3(-1.9, 0.55, -5.0), Vector3(1.9, 0.65, 5.0))
 	for z: float in [-3.6, -2.4, 2.6]:
 		_klotz("holz", Vector3(-0.9, 0.65, z - 0.4), Vector3(-0.1, 1.35, z + 0.4))
@@ -845,48 +890,141 @@ func _tretradkran() -> void:
 	_klotz("sack", Vector3(-0.45, 1.95, -6.85), Vector3(0.45, 2.75, -5.95))
 
 
-## Kogge: bauchiger Rumpf aus Spanten, Deck, Achter- und Vorderkastell, Mast mit Takelage und Wimpel; im Hafen ist
-## das Segel an der Rahe gerefft, unter Segel hängt es voll und vom Wind gebläht.
-func _kogge(unter_segel: bool) -> void:
-	_rumpf(18.0, 2.7, 14, 1.6, 1.7, true)
-	# Achterkastell und Vorderkastell
-	_klotz("holz", Vector3(-2.3, 2.3, 4.6), Vector3(2.3, 2.45, 8.2))
-	for x: float in [-2.3, 2.2]:
-		_klotz("holz", Vector3(x, 2.45, 4.6), Vector3(x + 0.1, 3.4, 8.2))
-	_klotz("holz", Vector3(-2.3, 2.45, 4.6), Vector3(2.3, 3.4, 4.7))
-	_klotz("holz", Vector3(-1.4, 2.6, -8.6), Vector3(1.4, 2.75, -6.4))
-	_klotz("holz", Vector3(-1.4, 2.75, -6.5), Vector3(1.4, 3.4, -6.4))
-	# Mast, Rahe (im Hafen mit gerefftem Segel), Bugspriet, Ruder
-	_zylinder("holz_dunkel", Vector3(0, 1.0, -0.5), 0.2, 0.22, 16.0, 8)
-	# liegend quer zum Schiff: Der Zylinder wächst vom Fuß nach lokal -x, also beginnt er rechts vom Mast
-	_zylinder("holz_dunkel", Vector3(5.0, 14.2, -0.5), 0.12, 0.14, 10.0, 6, Basis(Vector3.FORWARD, -PI / 2.0))
-	if not unter_segel:
-		_zylinder("segel", Vector3(4.6, 13.75, -0.5), 0.32, 0.4, 9.2, 8, Basis(Vector3.FORWARD, -PI / 2.0))
-	_zylinder("holz_dunkel", Vector3(0, 2.6, -8.8), 0.1, 0.12, 4.5, 6, Basis(Vector3.RIGHT, -PI / 2.6))
-	_klotz("holz_dunkel", Vector3(-0.08, -1.4, 8.9), Vector3(0.08, 2.4, 9.8))
-	_zylinder("holz_dunkel", Vector3(0, 15.6, -0.5), 0.55, 0.6, 0.7, 8)   # Mastkorb
-	# Takelage: Wanten zu beiden Seiten, Vor- und Achterstag
-	var top := Vector3(0, 15.4, -0.5)
+## Kogge: bauchiger, geklinkerter Rumpf mit geraden Steven, durchgesteckte Decksbalken, Achter- und Vorderkastell
+## mit Reling, Heckruder mit Pinne, Mast mit Mastkorb, Wanten mit Webeleinen, Stagen und Wimpel.
+## segel: 0 im Hafen an der Rahe aufgetucht, 1 voll gesetzt und gebläht (in der Bucht), 2 lose zum Trocknen gesetzt.
+## Das Segel ist gestreift (Leinen und Rotbraun), wie auf den Siegeln der Hansestädte.
+func _kogge(segel: int) -> void:
+	var laenge := 19.0
+	var r: Callable = _rumpf(laenge, 2.8, 20, 1.7, 1.8, true)
+	# Achterkastell: Plattform über dem Heck, Front mit Tür zum Deck, Reling mit Pfosten
+	var ka := 3.15
+	_kastell(Vector3(0, ka, 4.0), [Vector2(-2.55, 4.0), Vector2(2.55, 4.0), Vector2(1.75, 9.6), Vector2(-1.75, 9.6)], 1.05)
+	_klotz("holz", Vector3(-2.45, 0.9, 3.9), Vector3(2.45, ka, 4.05))
+	_klotz("holz_dunkel", Vector3(-0.5, 0.95, 3.82), Vector3(0.5, 2.6, 3.9))
+	for x: float in [-2.2, 2.2]:
+		_klotz("holz_dunkel", Vector3(x - 0.12, 0.9, 3.85), Vector3(x + 0.12, ka + 1.15, 4.1))
+	# Vorderkastell: dreieckig, über den Vorsteven hinaus
+	var kv := 3.45
+	_kastell(Vector3(0, kv, -6.2), [Vector2(-2.3, -6.2), Vector2(2.3, -6.2), Vector2(0.35, -10.9), Vector2(-0.35, -10.9)], 0.95)
+	for x: float in [-1.6, 1.6]:
+		_klotz("holz_dunkel", Vector3(x - 0.12, 1.3, -6.35), Vector3(x + 0.12, kv, -6.1))
+	# Heckruder am Achtersteven, Pinne ins Kastell
+	var fuss := Vector3(0, -1.7, laenge * 0.78 / 2.0)
+	var kopf := Vector3(0, float(r.call(1.0)[1]) + 0.2, laenge / 2.0 + 0.1)
+	var blatt := func(u: float, hinten: float) -> Vector3:
+		return fuss.lerp(kopf, u) + Vector3(0, 0, 0.18 + hinten)
+	for x: float in [-0.09, 0.09]:
+		_viereck("holz_dunkel", blatt.call(0.0, 0.0) + Vector3(x, 0, 0), blatt.call(0.0, 1.5) + Vector3(x, 0, 0),
+			blatt.call(0.55, 0.45) + Vector3(x, 0, 0), blatt.call(0.55, 0.0) + Vector3(x, 0, 0), Vector3(signf(x), 0, 0))
+	_seil("holz_dunkel", blatt.call(0.0, 0.0), blatt.call(0.9, 0.0), 0.12)
+	_seil("holz_dunkel", blatt.call(0.0, 1.5), blatt.call(0.55, 0.45), 0.05)
+	_seil("holz_dunkel", blatt.call(0.85, 0.0), Vector3(0, ka - 0.4, 7.2), 0.07)
+	# Mast mit Mastkorb, Rahe, Bugspriet
+	var mz := -0.6
+	_zylinder("holz_dunkel", Vector3(0, 0.9, mz), 0.22, 0.25, 17.2, 10)
+	_zylinder("holz", Vector3(0, 16.0, mz), 0.62, 0.68, 0.85, 10)
+	_zylinder("holz_dunkel", Vector3(0, 16.0, mz), 0.7, 0.7, 0.08, 10)
+	var ry := 15.0 if segel != 2 else 14.2
+	_zylinder("holz_dunkel", Vector3(5.6, ry, mz), 0.13, 0.16, 11.2, 8, Basis(Vector3.FORWARD, -PI / 2.0))
+	_seil("holz_dunkel", Vector3(0, 3.0, -9.4), Vector3(0, 5.4, -14.2), 0.13)
+	# Wanten mit Webeleinen (Sprossen aus Tauwerk), Vor- und Achterstag, Brassen von den Nocken der Rahe
+	var top := Vector3(0, 15.6, mz)
 	for s: float in [-1.0, 1.0]:
-		for dz: float in [-1.2, 0.0, 1.2]:
-			_seil("seil", top, Vector3(s * 2.55, 2.2, -0.5 + dz), 0.03)
-	_seil("seil", top, Vector3(0, 3.0, -10.6), 0.035)
-	_seil("seil", top, Vector3(0, 3.5, 8.6), 0.035)
-	# Wimpel am Masttopp (rot, nach achtern wehend)
-	_viereck("wimpel", Vector3(0, 17.0, -0.5), Vector3(0, 16.4, -0.5), Vector3(0.0, 16.75, 2.6), Vector3(0.0, 16.75, 2.6), Vector3.RIGHT)
-	_viereck("wimpel", Vector3(0, 17.0, -0.5), Vector3(0, 16.4, -0.5), Vector3(0.0, 16.75, 2.6), Vector3(0.0, 16.75, 2.6), Vector3.LEFT)
-	if unter_segel:
-		# volles Rahsegel unter der Rahe, nach vorn gebläht (in Teilen, damit es sich wölbt)
-		var teile := 8
-		for i in teile:
-			for j in 6:
-				var p := func(ii: int, jj: int) -> Vector3:
-					var u := float(ii) / teile * 2.0 - 1.0
-					var v := float(jj) / 6.0
-					var bauch := (1.0 - u * u) * sin(v * PI) * 1.4
-					return Vector3(u * 4.5, 14.0 - v * 9.5, -0.9 - bauch)
-				_viereck("segel", p.call(i, j), p.call(i + 1, j), p.call(i + 1, j + 1), p.call(i, j + 1), Vector3(0, 0, -1))
-				_viereck("segel", p.call(i, j), p.call(i + 1, j), p.call(i + 1, j + 1), p.call(i, j + 1), Vector3(0, 0, 1))
+		var fuesse: Array[Vector3] = []
+		for t: float in [-0.16, -0.06, 0.04]:
+			var q: Array = r.call(t)
+			fuesse.append(Vector3(s * (float(q[0]) + 0.12), float(q[1]) - 0.05, float(q[2])))
+		for f in fuesse:
+			_seil("seil", top, f, 0.032)
+			_klotz("holz_dunkel", f - Vector3(0.06, 0.5, 0.12), f + Vector3(0.06, 0.1, 0.12))
+		var u := 0.08
+		while u < 0.62:
+			for j in fuesse.size() - 1:
+				_seil("seil", fuesse[j].lerp(top, u), fuesse[j + 1].lerp(top, u), 0.016)
+			u += 0.045
+		_seil("seil", Vector3(s * 5.5, ry, mz), Vector3(s * 1.6, ka + 1.0, 8.6), 0.022)
+	_seil("seil", top, Vector3(0, 5.3, -14.0), 0.04)
+	_seil("seil", top + Vector3(0, 0.3, 0), Vector3(0, ka + 1.1, 9.4), 0.04)
+	_seil("seil", Vector3(0, 16.4, mz), Vector3(0, ry + 0.15, mz), 0.06)   # Fall der Rahe
+	# Wimpel am Masttopp (rot, nach achtern wehend), Laterne am Heck
+	var wz := mz
+	_viereck("wimpel", Vector3(0, 17.9, wz), Vector3(0, 17.3, wz), Vector3(0.0, 17.65, wz + 3.0), Vector3(0.0, 17.65, wz + 3.0), Vector3.RIGHT)
+	_viereck("wimpel", Vector3(0, 17.9, wz), Vector3(0, 17.3, wz), Vector3(0.0, 17.65, wz + 3.0), Vector3(0.0, 17.65, wz + 3.0), Vector3.LEFT)
+	_zylinder("holz_dunkel", Vector3(0, 16.85, wz), 0.06, 0.06, 1.1, 6)
+	_klotz("metall", Vector3(-0.18, ka + 1.2, 9.25), Vector3(0.18, ka + 1.65, 9.6))
+	# Segel: 10 Bahnen im Wechsel hell und rotbraun
+	var bahnen := 10
+	var bahn := func(i: int) -> String:
+		return "segel_streifen" if i % 2 == 1 else "segel"
+	match segel:
+		0:   # aufgetucht: ein dicker, faltiger Wulst unter der Rahe, mit Zeisingen festgebunden
+			var x := -5.2
+			while x < 5.2:
+				var r0 := 0.34 + 0.12 * sin(x * 2.3) + 0.08 * (1.0 - absf(x) / 5.5)
+				_zylinder(bahn.call(int((x + 5.5) / 1.1)), Vector3(x + 0.55, ry - 0.42, mz + 0.05), r0, r0 + 0.1, 0.55, 8, Basis(Vector3.FORWARD, -PI / 2.0))
+				x += 0.55
+			for zx: float in [-4.2, -2.6, -1.0, 1.0, 2.6, 4.2]:
+				_zylinder("seil", Vector3(zx + 0.05, ry - 0.4, mz + 0.05), 0.5, 0.5, 0.1, 8, Basis(Vector3.FORWARD, -PI / 2.0))
+		1, 2:  # voll gesetzt (gebläht nach vorn) oder lose hängend (leichte Falten, unten durchhängend)
+			var reihen := 8
+			var unten := 4.4 if segel == 1 else 6.4
+			for i in bahnen:
+				for j in reihen:
+					var p := func(ii: int, jj: int) -> Vector3:
+						var u := float(ii) / bahnen * 2.0 - 1.0
+						var v := float(jj) / reihen
+						var y := ry - 0.15 - v * (ry - 0.15 - unten)
+						if segel == 1:
+							var bauch := (1.0 - u * u * 0.85) * sin(v * PI * 0.92) * 1.7
+							return Vector3(u * 5.3 * (1.0 - v * 0.06), y + u * u * v * 0.5, mz - 0.25 - bauch)
+						var falte := sin(u * 13.0 + v * 2.0) * 0.12 * v + v * v * 0.35
+						return Vector3(u * 5.3 * (1.0 - v * 0.08), y + (1.0 - u * u) * v * v * -0.4, mz - 0.2 - falte)
+					var aussen := Vector3(0, 0, -1)
+					_viereck(bahn.call(i), p.call(i, j), p.call(i + 1, j), p.call(i + 1, j + 1), p.call(i, j + 1), aussen)
+			# Schoten von den Schothörnern nach achtern an Deck
+			for sx: float in [-1.0, 1.0]:
+				var horn := Vector3(sx * 5.3 * (1.0 - (0.06 if segel == 1 else 0.08)), unten + (0.5 if segel == 1 else 0.0), mz - 0.25)
+				_seil("seil", horn, Vector3(sx * 2.2, 2.7, 3.2), 0.025)
+				_seil("seil", Vector3(sx * 4.0, unten + 0.3, mz - 0.4), Vector3(sx * 1.4, 3.4, -6.0), 0.02)
+
+
+## Kastell: Plattform (Umriss in x/z auf Höhe mitte.y) mit Brüstung aus Planken zwischen Pfosten und einem Handlauf.
+func _kastell(mitte: Vector3, umriss: Array, hoehe: float) -> void:
+	var y := mitte.y
+	var p := func(i: int, dy: float) -> Vector3:
+		var v: Vector2 = umriss[i % umriss.size()]
+		return Vector3(v.x, y + dy, v.y)
+	var n := umriss.size()
+	# Boden (oben Deck, unten dunkles Holz)
+	_viereck("deck", p.call(0, 0.0), p.call(1, 0.0), p.call(2, 0.0), p.call(3, 0.0), Vector3.UP)
+	_viereck("holz_dunkel", p.call(0, -0.18), p.call(1, -0.18), p.call(2, -0.18), p.call(3, -0.18), Vector3.DOWN)
+	var schwerpunkt := Vector3.ZERO
+	for i in n:
+		schwerpunkt += p.call(i, 0.0) / n
+	for i in n:
+		var a: Vector3 = p.call(i, 0.0)
+		var b: Vector3 = p.call(i + 1, 0.0)
+		if i == 0:
+			continue   # zur Schiffsmitte hin offen (dort steht die Front)
+		var aussen := ((a + b) / 2.0 - schwerpunkt) * Vector3(1, 0, 1)
+		# Randbalken unter der Plattform, Brüstung aus Planken, Handlauf
+		_viereck("holz_dunkel", a + Vector3(0, -0.18, 0), b + Vector3(0, -0.18, 0), b + Vector3(0, -0.45, 0), a + Vector3(0, -0.45, 0), aussen)
+		_viereck("holz", a, b, b + Vector3(0, hoehe * 0.8, 0), a + Vector3(0, hoehe * 0.8, 0), aussen)
+		_viereck("rumpf_innen", a, b, b + Vector3(0, hoehe * 0.8, 0), a + Vector3(0, hoehe * 0.8, 0), -aussen)
+		_seil("holz_dunkel", a + Vector3(0, hoehe, 0), b + Vector3(0, hoehe, 0), 0.07)
+		var l := a.distance_to(b)
+		var stueck := int(l / 0.9)
+		for k in stueck + 1:
+			var q := a.lerp(b, float(k) / maxf(stueck, 1))
+			_klotz("holz_dunkel", q - Vector3(0.07, 0.45, 0.07), q + Vector3(0.07, hoehe, 0.07))
+	# Brüstung vorn zur Schiffsmitte: nur ein Handlauf mit Pfosten
+	var a0: Vector3 = p.call(0, 0.0)
+	var b0: Vector3 = p.call(1, 0.0)
+	_seil("holz_dunkel", a0 + Vector3(0, hoehe, 0), b0 + Vector3(0, hoehe, 0), 0.06)
+	for k in 5:
+		var q := a0.lerp(b0, k / 4.0)
+		_klotz("holz_dunkel", q - Vector3(0.05, 0.0, 0.05), q + Vector3(0.05, hoehe, 0.05))
 
 
 func _material(name_: String) -> Material:
@@ -920,7 +1058,7 @@ func _material(name_: String) -> Material:
 				pass
 			elif name_ in ["fell", "haar", "taube", "taube_hals", "taube_dunkel"]:
 				pass
-			elif not name_ in ["holz_dunkel", "korb", "rumpf_teer", "deck"]:
+			elif not name_ in ["holz_dunkel", "korb", "rumpf_teer", "deck", "rumpf", "rumpf_innen"]:
 				s.albedo_texture = load("res://texturen/stoff_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(3, 3, 3)
@@ -938,7 +1076,8 @@ func _material(name_: String) -> Material:
 			s.albedo_color = {"holz_dunkel": Color(0.45, 0.36, 0.3), "glut": Color(1.0, 0.5, 0.15), "wasser": Color(0.1, 0.12, 0.12),
 				"stein": Color(0.62, 0.58, 0.52), "dach": Color(0.45, 0.25, 0.18), "heu": Color(0.82, 0.7, 0.36),
 				"fell": Color(0.36, 0.22, 0.13), "haar": Color(0.12, 0.09, 0.07), "korb": Color(0.85, 0.68, 0.42),
-				"rumpf_teer": Color(0.22, 0.17, 0.13), "deck": Color(0.8, 0.68, 0.52), "segel": Color(0.9, 0.85, 0.72),
+				"rumpf_teer": Color(0.2, 0.16, 0.13), "deck": Color(0.8, 0.68, 0.52), "segel": Color(0.86, 0.8, 0.66),
+				"segel_streifen": Color(0.56, 0.17, 0.1), "rumpf": Color(0.58, 0.45, 0.33), "rumpf_innen": Color(0.5, 0.4, 0.3),
 				"sack": Color(0.85, 0.76, 0.58), "markise_a": STOFFE[0], "markise_b": STOFFE[1],
 				"ware_rot": Color(0.75, 0.18, 0.1), "ware_gruen": Color(0.3, 0.5, 0.15),
 				"ware_tuch": STOFFE[2], "ware_tuch2": STOFFE[3], "seil": Color(0.5, 0.42, 0.3),
@@ -950,7 +1089,7 @@ func _material(name_: String) -> Material:
 			if name_ == "fisch":
 				s.metallic = 0.45
 				s.roughness = 0.35
-			if name_.begins_with("markise") or name_ in ["segel", "wimpel"]:
+			if name_.begins_with("markise") or name_ in ["segel", "segel_streifen", "wimpel"]:
 				s.cull_mode = BaseMaterial3D.CULL_DISABLED
 			m = s
 	_mats[name_] = m

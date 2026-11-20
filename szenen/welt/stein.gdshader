@@ -27,6 +27,13 @@ uniform float fugen = 0.45;              // wie dunkel die tiefsten Stellen werd
 uniform float regen = 0.38;              // Stärke der Regenspuren auf Wänden
 uniform float feuchte = 1.0;             // Stärke der Feuchte am Mauerfuß
 uniform float parallax_weite = 28.0;     // bis zu dieser Entfernung (m) wird Parallax gerechnet
+// Eigene Steine für Oberseiten (z. B. Kaiplatten auf der Krone der Kaimauer statt Bruchstein)
+uniform bool mit_deckel = false;
+uniform sampler2D deckel_farbe : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D deckel_normalen : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D deckel_rauheit : hint_roughness_r, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D deckel_hoehe : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform float deckel_meter = 2.5;
 
 // Geländehöhe der Region (gelaende.gd): R = Höhe in Metern; rahmen = Ursprung x, z und Größe x, z
 global uniform sampler2D gelaende_hoehe : filter_linear;
@@ -63,7 +70,12 @@ void vertex() {
 
 // Parallax entlang einer Projektion: p_ab Weltkoordinaten in der Ebene, v_ab und v_n der Blick (zur Kamera)
 // in der Ebene und entlang der Flächennormale. Gibt die verschobene Ebenenkoordinate (Meter) zurück.
-vec2 parallax(vec2 p_ab, vec2 v_ab, float v_n, float staerke) {
+float hoehe_bei(vec2 uv, bool deckel) {
+	return deckel ? textureLod(deckel_hoehe, uv, 0.0).r : textureLod(hoehe, uv, 0.0).r;
+}
+
+vec2 parallax(vec2 p_ab, vec2 v_ab, float v_n, float staerke, bool deckel) {
+	float m = deckel ? deckel_meter : meter;
 	if (tiefe <= 0.0 || staerke <= 0.0) {
 		return p_ab;
 	}
@@ -73,7 +85,7 @@ vec2 parallax(vec2 p_ab, vec2 v_ab, float v_n, float staerke) {
 	vec2 versatz = -v_ab / vn * tiefe * staerke;   // Weg in der Ebene bis zur vollen Tiefe
 	float lage = 0.0;                              // 0 = Oberfläche, 1 = volle Tiefe
 	vec2 p = p_ab;
-	float h = textureLod(hoehe, p / meter, 0.0).r;
+	float h = hoehe_bei(p / m, deckel);
 	float vorher_lage = 0.0;
 	float vorher_tief = 1.0 - h;
 	for (int i = 0; i < SCHRITTE; i++) {
@@ -84,7 +96,7 @@ vec2 parallax(vec2 p_ab, vec2 v_ab, float v_n, float staerke) {
 		vorher_tief = 1.0 - h;
 		lage += schritt;
 		p = p_ab + versatz * lage;
-		h = textureLod(hoehe, p / meter, 0.0).r;
+		h = hoehe_bei(p / m, deckel);
 	}
 	// zwischen den letzten beiden Schritten einpassen
 	float a = vorher_tief - vorher_lage;
@@ -112,6 +124,11 @@ void fragment() {
 	vec2 blick[2] = { vec2(dot(v.xz, entlang), v.y), v.xz };
 	float blick_n[2] = { dot(v.xz, nach_aussen), v.y * sign(n.y) };
 	int haupt = g_wand > gewicht.y ? 0 : 1;
+	// Gekrümmte Wände (Rundtürme): Entlang der Wand gemessen ist die Koordinate rund um den Turm überall gleich, die
+	// Steine würden zu senkrechten Streifen (Mängelliste M33). Dort deshalb die Projektion entlang der Weltachsen, je
+	// nach Richtung der Normale überblendet. Krümmung = Änderung der Normale je Meter.
+	float kruemmung = length(fwidth(n.xz)) / max(length(fwidth(welt_pos)), 0.0001);
+	float rund = smoothstep(0.02, 0.05, kruemmung);
 
 	float mischung = smoothstep(0.3, 0.7, rauschen3(welt_pos * 0.06));
 	vec3 alb = vec3(0.0);
@@ -122,10 +139,45 @@ void fragment() {
 		float g = i == 0 ? g_wand : gewicht.y;
 		if (g < 0.01) continue;
 		vec2 e = ebene[i];
-		if (i == haupt) {
-			e = parallax(e, blick[i], blick_n[i], px_staerke);
+		bool deckel = mit_deckel && i == 1 && n.y > 0.0;
+		if (i == haupt && !(i == 0 && rund > 0.5)) {
+			e = parallax(e, blick[i], blick_n[i], px_staerke, deckel);
+		}
+		if (deckel) {
+			// Platten liegen in Reihen: nicht gedreht und nicht überblendet, sonst verschwimmen die Fugen
+			vec2 a = e / deckel_meter;
+			alb += texture(deckel_farbe, a).rgb * g;
+			nk += texture(deckel_normalen, a).rgb * g;
+			rau += texture(deckel_rauheit, a).r * g;
+			hh += texture(deckel_hoehe, a).r * g;
+			continue;
 		}
 		vec2 a = e / meter;
+		if (i == 0 && rund > 0.0) {
+			// um den Turm: zwei Achsenprojektionen; je weiter die Normale zu einer Achse zeigt, desto mehr zählt sie
+			vec2 gx = vec2(welt_pos.z * sign(n.x), welt_pos.y) / meter;
+			vec2 gz = vec2(-welt_pos.x * sign(n.z), welt_pos.y) / meter;
+			float wx = pow(abs(n.x), 4.0);
+			float wz = pow(abs(n.z), 4.0);
+			wx /= max(wx + wz, 0.0001);
+			vec3 alb_r = texture(farbe, gx).rgb * wx + texture(farbe, gz).rgb * (1.0 - wx);
+			vec3 nk_r = texture(normalen, gx).rgb * wx + texture(normalen, gz).rgb * (1.0 - wx);
+			float rau_r = texture(rauheit, gx).r * wx + texture(rauheit, gz).r * (1.0 - wx);
+			float hh_r = texture(hoehe, gx).r * wx + texture(hoehe, gz).r * (1.0 - wx);
+			if (rund >= 0.999) {
+				alb += alb_r * g;
+				nk += nk_r * g;
+				rau += rau_r * g;
+				hh += hh_r * g;
+				continue;
+			}
+			vec2 b0 = a * 0.55 + 0.31;
+			alb += mix(mix(texture(farbe, a).rgb, texture(farbe, b0).rgb, mischung * 0.6), alb_r, rund) * g;
+			nk += mix(mix(texture(normalen, a).rgb, texture(normalen, b0).rgb, mischung * 0.6), nk_r, rund) * g;
+			rau += mix(mix(texture(rauheit, a).r, texture(rauheit, b0).r, mischung * 0.6), rau_r, rund) * g;
+			hh += mix(texture(hoehe, a).r, hh_r, rund) * g;
+			continue;
+		}
 		// Waagrechte Steinlagen müssen waagrecht bleiben: gedreht wird nur auf Oberseiten
 		vec2 b = (i == 1 ? drehe(a) : a) * 0.55 + 0.31;
 		alb += mix(texture(farbe, a).rgb, texture(farbe, b).rgb, mischung * 0.6) * g;

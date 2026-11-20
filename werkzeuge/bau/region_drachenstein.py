@@ -5,6 +5,8 @@ lade_hoehen("gelaende")
 
 grundgeruest("gelaende", region_eigenschaften="grenze_min = Vector2(-880, -680)\ngrenze_max = Vector2(1280, 730)",
              wasser_groesse=(2800, 1800),
+             # Mängelliste M22: Hafenbecken, Kanal und Untergrundhafen mit trübem, ruhigem Wasser (Becken x 108–188, z −36–56)
+             wasser_parameter="\nshader_parameter/hafen = Vector4(30, -40, 192, 60)",
              # Loch im Steilhang hinter dem Wassertor (Rasterpunkte am Fuß, x 92,5): Dort führt der Gang unter dem Zwinger
              # in den Untergrundhafen (teil_stadt.py); die Ringmauer und die Kanalmauern decken die Ränder.
              gelaende_extra="\nloecher = PackedVector4Array(91.5, -13.5, 93.5, -4.0)",
