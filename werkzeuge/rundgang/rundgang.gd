@@ -25,7 +25,7 @@ func _initialize() -> void:
 		return
 	var aufl: String = _args.get("aufloesung", "")
 	if aufl.contains("x"):
-		root.get_window().size = Vector2i(int(aufl.get_slice("x", 0)), int(aufl.get_slice("x", 1)))
+		root.size = Vector2i(int(aufl.get_slice("x", 0)), int(aufl.get_slice("x", 1)))   # root ist das Fenster (get_window() ist hier noch leer)
 	var zeit := Time.get_datetime_string_from_system().replace(":", "-")
 	var ausgabe: String = _args.get("ausgabe", "user://rundgang/%s_%s/" % [region, zeit])
 	DirAccess.make_dir_recursive_absolute(ausgabe)
