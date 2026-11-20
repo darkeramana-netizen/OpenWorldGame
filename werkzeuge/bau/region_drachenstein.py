@@ -124,6 +124,10 @@ bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2), WL(PD
                        WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG), WL(PD.ZWINGER_III), WL(PD.BURGBEZIRK), WL(PD.RINGMAUER)],   # im Burgbezirk Felsgrund
         frei_rechtecke=[(BF_X_NEU, BF_Z_NEU, 90, 90), (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24,
         zellgroesse=128.0, zell_laden_ab=150.0,
+        # Bäume aus Fotoscans (Mängelliste M6/M20, werkzeuge/baum_laden.py)
+        nadel_modelle='PackedStringArray("fir_tree_01", "fir_sapling_medium")',
+        laub_modelle='PackedStringArray("island_tree_01", "tree_small_02", "island_tree_02")',
+        busch_modell='"res://modelle/baeume/island_tree_02_busch/island_tree_02_busch_nah.gltf"', busch_groesse=0.7,
         feste_baeume=STADTBAEUME + BURGBAEUME)   # Hausbäume in den Höfen der Stadt (teil_stadt.py)
 
 # ---------- Personen der Region ----------

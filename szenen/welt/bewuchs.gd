@@ -26,6 +26,19 @@ extends Node3D
 @export var bereich: Rect2 = Rect2()
 ## Zusätzlich fest gesetzte Bäume (x, y, z, Größe), z. B. die Waldstücke an den Landstraßen; negative Größe: Laubbaum.
 @export var feste_baeume: PackedVector4Array = PackedVector4Array()
+## Baummodelle aus Fotoscans (werkzeuge/baum_laden.py): Ordner unter modelle/baeume/ mit <name>_nah.gltf,
+## <name>_fern.gltf und baum.json. Leer: die einfachen Formen aus diesem Skript. Jeder Baum bekommt nach seinem Ort
+## eines der Modelle; bis baum_nah_bis Meter die volle Fassung, dahinter die leichte (Mängelliste M6/M20).
+@export var nadel_modelle := PackedStringArray()
+@export var laub_modelle := PackedStringArray()
+## Höhe eines Baums mit Größe 1 (die Exemplare streuen um 0,75 bis 1,35)
+@export var nadel_hoehe := 12.0
+@export var laub_hoehe := 9.0
+@export var baum_nah_bis := 160.0
+## Büsche aus einem Fotoscan (alle Teile des glTF sind Varianten), leer: die einfache Form; sichtbar bis busch_bis
+@export var busch_modell := ""
+@export var busch_bis := 200.0
+@export var busch_groesse := 1.0
 ## > 0: Kollision der Stämme nach Zellen dieser Größe (Meter) trennen; mit zell_laden_ab > 0 entsteht sie erst, wenn
 ## der Spieler nah ist (autoload/zellwelt.gd). Die Bäume selbst bleiben immer sichtbar (von weit her zu sehen).
 @export var zellgroesse := 0.0
@@ -197,9 +210,21 @@ func _pflanze() -> void:
 				f.store_var(listen)
 				f.close()
 				DirAccess.rename_absolute(tmp, datei)
-	_zeige("Nadelbaeume", _nadelbaum(), listen["nadel"], _material(0.012, 0.6, 0.0, 0.85), true)
-	_zeige("Laubbaeume", _laubbaum(), listen["laub"], _material(0.015, 0.6, 0.0, 0.85), true)
-	_zeige("Buesche", _busch(), listen["busch"], _material(0.04, 0.6, 0.0, 0.9), false)
+	if nadel_modelle.is_empty():
+		_zeige("Nadelbaeume", _nadelbaum(), listen["nadel"], _material(0.012, 0.6, 0.0, 0.85), true)
+	else:
+		_zeige_modelle("Nadelbaeume", listen["nadel"], nadel_modelle, nadel_hoehe)
+	if laub_modelle.is_empty():
+		_zeige("Laubbaeume", _laubbaum(), listen["laub"], _material(0.015, 0.6, 0.0, 0.85), true)
+	else:
+		_zeige_modelle("Laubbaeume", listen["laub"], laub_modelle, laub_hoehe)
+	if busch_modell == "":
+		_zeige("Buesche", _busch(), listen["busch"], _material(0.04, 0.6, 0.0, 0.9), false)
+	else:
+		var teile := []
+		for m in _modell_meshes(busch_modell):
+			teile.append([m, null, busch_groesse])
+		_zeige_gekachelt("Buesche", listen["busch"], teile, busch_bis)
 	_zeige("Felsen", _fels(), listen["fels"], load("res://material/fels.tres"), false)
 	for art in listen:
 		anzahl[art] = (listen[art] as Array).size()
@@ -289,6 +314,92 @@ func _zeige(name_: String, mesh: Mesh, exemplare: Array, material: Material, sch
 	mmi.material_override = material
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if schatten else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mmi)
+
+
+const BAUM_KACHEL := 128.0
+
+
+## Bäume aus Modellen: je Modell und Kachel (128 m) zwei MultiMeshes, nah die volle und fern die leichte Fassung,
+## mit weichem Übergang (Sichtweite je Kachel). Das Modell eines Baums hängt nur von seinem Ort ab.
+func _zeige_modelle(name_: String, exemplare: Array, ordner: PackedStringArray, hoehe: float) -> void:
+	if exemplare.is_empty():
+		return
+	var modelle := []   # [nah, fern, Maßstab]
+	for o in ordner:
+		var pfad := "res://modelle/baeume/%s/" % o
+		var info: Variant = JSON.parse_string(FileAccess.get_file_as_string(pfad + "baum.json"))
+		var nah := _modell_mesh(pfad + o + "_nah.gltf")
+		var fern := _modell_mesh(pfad + o + "_fern.gltf")
+		if info is Dictionary and nah != null and fern != null:
+			modelle.append([nah, fern, hoehe / float(info["hoehe"])])
+	if modelle.is_empty():
+		_zeige(name_, _nadelbaum() if name_ == "Nadelbaeume" else _laubbaum(), exemplare, _material(0.012, 0.6, 0.0, 0.85), true)
+		return
+	_zeige_gekachelt(name_, exemplare, modelle, baum_nah_bis)
+
+
+## Exemplare nach Modell (aus dem Ort) und Kachel aufteilen. modelle: [Mesh nah, Mesh fern oder null, Maßstab];
+## nah sichtbar bis nah_bis, fern ab dort (ohne Fernfassung endet das Modell bei nah_bis).
+func _zeige_gekachelt(name_: String, exemplare: Array, modelle: Array, nah_bis: float) -> void:
+	if exemplare.is_empty() or modelle.is_empty():
+		return
+	var gruppen := {}   # Vector3i(Modell, Kachel x, Kachel z) → Transformationen
+	for ex: Array in exemplare:
+		var t: Transform3D = ex[0]
+		var m := absi(hash(Vector2i(roundi(t.origin.x * 10.0), roundi(t.origin.z * 10.0)))) % modelle.size()
+		var k := Vector3i(m, floori(t.origin.x / BAUM_KACHEL), floori(t.origin.z / BAUM_KACHEL))
+		(gruppen.get_or_add(k, []) as Array).append(t)
+	var knoten := Node3D.new()
+	knoten.name = name_
+	add_child(knoten)
+	for k: Vector3i in gruppen:
+		var mitte := Vector3((k.y + 0.5) * BAUM_KACHEL, 0.0, (k.z + 0.5) * BAUM_KACHEL)
+		var liste: Array = gruppen[k]
+		var massstab: float = modelle[k.x][2]
+		for stufe in 2:
+			if modelle[k.x][stufe] == null:
+				continue
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.mesh = modelle[k.x][stufe]
+			mm.instance_count = liste.size()
+			for i in liste.size():
+				var t: Transform3D = liste[i]
+				mm.set_instance_transform(i, Transform3D(t.basis.scaled(Vector3.ONE * massstab), t.origin - mitte))
+			var mmi := MultiMeshInstance3D.new()
+			mmi.name = "%s_%d_%d_%d" % ["nah" if stufe == 0 else "fern", k.x, k.y, k.z]
+			mmi.multimesh = mm
+			mmi.position = mitte
+			mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			if stufe == 0:
+				mmi.visibility_range_end = nah_bis
+				mmi.visibility_range_end_margin = 30.0
+			else:
+				mmi.visibility_range_begin = nah_bis
+				mmi.visibility_range_begin_margin = 30.0
+			knoten.add_child(mmi)
+
+
+## Alle Teile eines Modells als Meshes (mit ihrer Drehung und Größe im Modell, ohne ihren Versatz)
+func _modell_meshes(pfad: String) -> Array:
+	var liste := []
+	if not ResourceLoader.exists(pfad):
+		return liste
+	var szene: Node = (load(pfad) as PackedScene).instantiate()
+	for mi: MeshInstance3D in szene.find_children("*", "MeshInstance3D", true, false):
+		liste.append(mi.mesh)
+	szene.free()
+	return liste
+
+
+func _modell_mesh(pfad: String) -> Mesh:
+	if not ResourceLoader.exists(pfad):
+		return null
+	var szene: Node = (load(pfad) as PackedScene).instantiate()
+	var teile := szene.find_children("*", "MeshInstance3D", true, false)
+	var mesh: Mesh = (teile[0] as MeshInstance3D).mesh if not teile.is_empty() else null
+	szene.free()
+	return mesh
 
 
 ## Stämme sind fest: ein Körper mit einem Zylinder je Baum (mit zellgroesse ein Körper je Zelle).

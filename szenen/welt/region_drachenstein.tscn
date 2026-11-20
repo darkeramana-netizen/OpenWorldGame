@@ -5494,6 +5494,10 @@ feste_baeume = PackedVector4Array(58.77, -14.4, 257, 0.98, 187.76, -16.42, 73.99
 wald_anteil = 0.24
 zellgroesse = 128.0
 zell_laden_ab = 150.0
+nadel_modelle = PackedStringArray("fir_tree_01", "fir_sapling_medium")
+laub_modelle = PackedStringArray("island_tree_01", "tree_small_02", "island_tree_02")
+busch_modell = "res://modelle/baeume/island_tree_02_busch/island_tree_02_busch_nah.gltf"
+busch_groesse = 0.7
 
 [node name="Personen" type="Node3D" parent="."]
 
