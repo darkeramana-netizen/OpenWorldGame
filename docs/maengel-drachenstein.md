@@ -45,8 +45,8 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | M4 | 01–04 | Dächer blass beige und gleichförmig | Die Ziegeltextur mittelt sich (helle Fugen und Flechten) aus der Ferne zu Beige; die Stadt baute nur Ziegel (`nur_ziegel`) | behoben: Ziegel kräftiger rotbraun in drei Tönungen je Hausvariante (rotbraun, dunkel gealtert, heller orange), die Stadt mit Schiefer im Wechsel (wie die Hausform es vorsieht, etwa ein Viertel); auch die Burgbauten (`material/dach.tres`) wärmer |
 | M12 | 08, 21 | grauer Hügel mitten auf der Marktstraße | Geländebuckel von 1,5 m bei (143, 141): Der Erzeuger zog das feine Rauschen je Gasse erneut ab, an Kreuzungen mehrfach | behoben: in der Stadt nur einmal geglättet, Gelände neu erzeugt (Gassen bis 1,6 m tiefer bzw. 1,1 m höher); der Baucache prüft jetzt auch die Geländedaten |
 | M13 | 09_st_marien | Haus und Kirche stehen auf Gras, Sockel ungleich hoch | Pflasterfläche reicht nicht bis St. Marien | offen |
-| M14 | 08, 09 | große leere Fachwerkflächen, Giebelseiten ohne Fenster | Hausbau setzt Fenster nur an die Traufseiten | offen |
-| M15 | 08, 12 | Tauben und Möwen als flache Klötze | einfache Platzhaltermodelle | offen |
+| M14 | 08, 09 | große leere Fachwerkflächen, Giebelseiten ohne Fenster | Hausbau setzt Fenster nur an die Traufseiten; an den Schmalseiten nur Ständer und Rähm | behoben: Fachwerk rundum mit Riegeln, Streben, Kopfbändern, Andreaskreuze in jeder zweiten Brüstung; Fenster im Giebeldreieck (eines, bei breiten Giebeln zwei). `stadthaeuser.gd` baut die Seiten nach ±x mit denselben Funktionen, um 90° gedreht (`_quer`) |
+| M15 | 08, 12 | Tauben und Möwen als flache Klötze | einfache Platzhaltermodelle | behoben: runde Formen (`szenen/figuren/vogelform.gd`): Körper und Kopf als Ellipsoid, Schnabel als Kegel, Flügel und Schwanz als Federflächen, Beine; Möwen mit schwarzen Flügelspitzen |
 | M16 | 08 | dunkler Fleck auf dem Marktpflaster | unbekannt (Schatten, Loch oder Decal) | prüfen |
 
 ## D. Burg
@@ -56,7 +56,7 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | M7 | 01–05 | Fels zwischen den Burgmauern wirkt wie grauer Kies | Felsmassiv: 1-m-Netz aus kantigen Felsbänken | in Arbeit: 2400 Brocken aus Fotoscans vor den Stufen (siehe M18), bis 450 m sichtbar |
 | M17 | 14, 15 | glatte, graue Felsflächen am Sockel unter den Hofmauern | Felssockel: erzeugte Wand mit großen flachen Dreiecken | in Arbeit: Fels-Haut aus 800 Felswand-Scans (rock_face_02) in Reihen vor der Wand |
 | M18 | 14_fuss_der_rampe | Felsen grob facettiert, flächig | Felsmassiv: Stufen zwischen den Felsbänken als große Dreiecke | in Arbeit: Brocken aus Fotoscans (boulder_01, rock_07, zwei Namaqualand-Findlinge; entsättigt) halb eingegraben vor den Stufen, kleinere auf den Absätzen |
-| M19 | 14_fuss_der_rampe | Stützmauer: Textur gestreckt und verwaschen | Abwicklung der Mauerkrone und Seiten | offen |
+| M19 | 14_fuss_der_rampe | Stützmauer: Textur gestreckt und verwaschen | `stein.gdshader` projizierte entlang der Weltachsen: Auf schräg stehenden Mauern wurde der Stein gestreckt und doppelt überblendet | behoben: Wände werden entlang der Wand projiziert (waagrecht die Wandrichtung, senkrecht die Höhe), für alle Mauern der Burg |
 | M20 | 15, 20 | Laubbäume als Low-Poly-Klumpen | einfache Baummodelle (Kegel und verbeulte Kugeln aus bewuchs.gd) | behoben: Bäume aus Fotoscans von Poly Haven (Tanne, junge Tanne, drei Laubbäume; `modelle/baeume/`), aufbereitet mit `werkzeuge/baum_laden.py`: Holz vereinfacht, Laub als Karten mit einem Atlas aus den echten Blättern; nah 3700–5500 Dreiecke, ab 160 m eine leichte Fassung (ein Material); Büsche aus der Krone eines Laubbaums. Wind: `szenen/welt/baum.gdshader` (der Baum wiegt sich mit der Höhe, das Laub flattert, gegen die Sonne scheint es durch). Bilder: `docs/bilder/baeume-2026-11-20/` |
 | M21 | 16, 17, 18 | Höfe groß und leer | Belebung fehlt | offen: Aufgabe „Höfe beleben“ |
 
