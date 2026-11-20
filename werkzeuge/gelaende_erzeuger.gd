@@ -336,10 +336,19 @@ func hoehe(p: Vector2) -> float:
 		var krone := GRAVECREST_HOEHE + maxf(0.0, -p.x - 775.0) * 0.8
 		h = lerpf(h, maxf(h, krone), flanke)
 
-	# Küste: Das Land fällt zum Wächtermeer hin ab.
-	var kueste := KUESTE_X + 20.0 * sin(p.y / 110.0)
+	# Küste: Das Land fällt zum Wächtermeer hin ab. Fern vom Küstenweg als Felsküste (Mängelliste M8): Das Land bleibt
+	# 8 bis 17 m über dem Wasser und bricht mit ausgefranster Kante als Klippe ab; dazwischen kleine Buchten mit Strand.
+	var kueste := KUESTE_X + 20.0 * sin(p.y / 110.0) + _versatz.get_noise_2dv(p * 3.0) * 18.0
 	var d := p.x - kueste
-	h = lerpf(h, -18.6, smoothstep(-110.0, 0.0, d) * (1.0 - berg))
+	var flach := lerpf(h, -18.6, smoothstep(-110.0, 0.0, d) * (1.0 - berg))
+	var kliff_anteil := smoothstep(30.0, 70.0, _abstand_zu(WEG_KUESTE, p)) * (1.0 - _strand(p)) * (1.0 - berg)
+	if kliff_anteil > 0.0:
+		var kante := -12.0 + (_huegel.get_noise_2dv(p * 0.6) * 0.5 + 0.5) * 9.0
+		var kliff := lerpf(h, kante, smoothstep(-120.0, -25.0, d))
+		kliff = lerpf(kliff, -24.0, smoothstep(-7.0, -1.0, d + _zacke(p) * 3.0))
+		h = lerpf(flach, kliff, kliff_anteil)
+	else:
+		h = flach
 	h -= smoothstep(5.0, 70.0, d) * 15.0
 
 	# Burgfeste Drachenstein nach dem Grundriss: Burgberg, Stadt, Burgringe, Hafen.
@@ -372,9 +381,17 @@ func hoehe(p: Vector2) -> float:
 	# Bucht vor dem Hafen: offenes Wasser, außerhalb der Mauern
 	if not _bucht.is_empty() and p.x > -320.0:
 		var db := _polygon_abstand(p, _bucht)
+		# Felsufer: am Ufer fern der Wege steigt das Land um 3 bis 9 m an (Landzungen), damit eine Klippe entsteht
+		if db > 0.0 and db < 40.0 and not Geometry2D.is_point_in_polygon(p, _hafen) and not Geometry2D.is_point_in_polygon(p, _stadt) \
+				and not Geometry2D.is_point_in_polygon(p, _ring):
+			var kopf := (3.0 + maxf(0.0, _huegel.get_noise_2dv(p * 0.6)) * 6.0) * (1.0 - _strand(p))
+			h += kopf * smoothstep(45.0, 8.0, db) * smoothstep(25.0, 45.0, _naechster_weg(p))
 		if db < 14.0 and not Geometry2D.is_point_in_polygon(p, _hafen) and not Geometry2D.is_point_in_polygon(p, _stadt) \
 				and not Geometry2D.is_point_in_polygon(p, _ring) and _abstand_zu(WEG_KUESTE, p) > 8.0:
-			h = minf(h, lerpf(-24.0, h, smoothstep(0.0, 14.0, db)))
+			# Felsküste mit ausgefranster Kante (M8); in kleinen Buchten und an den Wegen ein flaches Ufer
+			var strand := maxf(_strand(p), 1.0 - smoothstep(14.0, 28.0, _naechster_weg(p)))
+			var ufer := smoothstep(0.0, lerpf(3.5, 14.0, strand), db - _zacke(p) * 2.5 * (1.0 - strand))
+			h = minf(h, lerpf(-24.0, h, ufer))
 	# Inseln zum Bergfried, nach Burgberg und Bucht, damit beide sie nicht einebnen.
 	for insel: Array in INSELN:
 		var r: float = insel[1]
@@ -417,6 +434,19 @@ func hoehe(p: Vector2) -> float:
 	if p.x > -629.0 and p.x < -613.0 and absf(p.y + 364.0) < 30.0:
 		h = minf(h, 10.0)
 	return h
+
+
+## Kleine Buchten mit Strand zwischen den Klippen (0 Klippe, 1 Strand), Flecken von etwa 80 m
+func _strand(p: Vector2) -> float:
+	return smoothstep(0.62, 0.78, _versatz.get_noise_2dv(p * 4.0 + Vector2(91.0, -47.0)) * 0.5 + 0.5)
+
+
+## Abstand zur nächsten Landstraße außerhalb der Mauern
+func _naechster_weg(p: Vector2) -> float:
+	var w := INF
+	for linie: Array in [WEG_GRAVEMARCH, WEG_NORD, WEG_KUESTE]:
+		w = minf(w, _abstand_zu(linie, p))
+	return w
 
 
 ## Wie weit eine Stelle im Gebirge liegt (0 Land, 1 Hauptkamm). Der Fuß läuft nicht gerade: Er springt um bis zu

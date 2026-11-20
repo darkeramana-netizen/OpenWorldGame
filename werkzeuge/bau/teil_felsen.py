@@ -74,23 +74,39 @@ def _frei_fuer(umriss):
 FELSSTUECKE = []
 _reihen = {}         # Reihe → [(x, z, halbe Breite)]
 kandidaten = []
+
+
+def _kandidat(px, pz, nur_kueste=False):
+    dx, dz, s = _gefaelle(px, pz)
+    h0 = H(px, pz)
+    if s < 1.3 or h0 < -24:      # nur echte Steilwände, nicht die Hänge im Zwinger
+        return
+    # an allen Steilwänden außerhalb der Höfe: außen an den Klippen und innen unter den Terrassen der Burghöfe
+    if any(im_vieleck((px, pz), v) for v in _frei):
+        return
+    unten = min(H(px + dx * d, pz + dz * d) for d in (2, 4, 6, 10, 14, 20))
+    if nur_kueste and unten > -21.0:   # an der übrigen Küste nur Wände, die ins Wasser abbrechen
+        return
+    oben = max(H(px - dx * d, pz - dz * d) for d in (2, 4, 6, 10, 14, 20))
+    reihe_m = REIHE if oben - unten >= 14 else REIHE_KLEIN
+    r = (h0 + 20.0) / reihe_m
+    if abs(r - round(r)) > 0.25:
+        return
+    kandidaten.append((oben - unten, (reihe_m, round(r)), px, pz, dx, dz, oben, unten, s))
+
+
 for x in range(-150, 330, 2):
     for z in range(-330, 330, 2):
-        px, pz = x + random.uniform(-0.8, 0.8), z + random.uniform(-0.8, 0.8)
-        dx, dz, s = _gefaelle(px, pz)
-        h0 = H(px, pz)
-        if s < 1.3 or h0 < -24:      # nur echte Steilwände, nicht die Hänge im Zwinger
+        _kandidat(x + random.uniform(-0.8, 0.8), z + random.uniform(-0.8, 0.8))
+# Felsküste (Mängelliste M8): auch die Klippen an der Ostküste und am Ufer der Bucht (werkzeuge/gelaende_erzeuger.gd)
+_zufall_kueste = random.Random(808)
+for x in range(-360, 340, 2):
+    for z in range(-560, 744, 2):
+        if -150 <= x < 330 and -330 <= z < 330:
             continue
-        # an allen Steilwänden außerhalb der Höfe: außen an den Klippen und innen unter den Terrassen der Burghöfe
-        if any(im_vieleck((px, pz), v) for v in _frei):
+        if H(x, z) > 0.0 or H(x, z) < -24.0:
             continue
-        oben = max(H(px - dx * d, pz - dz * d) for d in (2, 4, 6, 10, 14, 20))
-        unten = min(H(px + dx * d, pz + dz * d) for d in (2, 4, 6, 10, 14, 20))
-        reihe_m = REIHE if oben - unten >= 14 else REIHE_KLEIN
-        r = (h0 + 20.0) / reihe_m
-        if abs(r - round(r)) > 0.25:
-            continue
-        kandidaten.append((oben - unten, (reihe_m, round(r)), px, pz, dx, dz, oben, unten, s))
+        _kandidat(x + _zufall_kueste.uniform(-0.8, 0.8), z + _zufall_kueste.uniform(-0.8, 0.8), nur_kueste=True)
 kandidaten.sort(reverse=True)
 
 for hoehe, reihe, px, pz, dx, dz, oben, unten, steil in kandidaten:

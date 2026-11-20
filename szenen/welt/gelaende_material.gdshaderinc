@@ -130,7 +130,8 @@ void gelaende_material(vec3 welt_pos, vec3 welt_normale, out vec3 albedo, out ve
 	if (mit_klippe) {
 		a_klippe = max(a_klippe, a_felsgrund * smoothstep(0.35, 0.6, gross + (klein - 0.5) * 0.3 + 0.15));
 	}
-	float a_sand = 1.0 - smoothstep(meeresspiegel + 0.8, meeresspiegel + 2.6, h + klein * 0.8);
+	// Sand nur auf flachem Ufer, an Klippen bleibt der Fels (Mängelliste M8)
+	float a_sand = (1.0 - smoothstep(meeresspiegel + 0.8, meeresspiegel + 2.6, h + klein * 0.8)) * (1.0 - smoothstep(0.22, 0.4, steil));
 	float a_schnee = smoothstep(schneegrenze, schneegrenze + 30.0, h + gross * 20.0) * (1.0 - smoothstep(0.22, 0.42, steil));
 	float a_erde = smoothstep(0.62, 0.8, gross + klein * 0.15) * 0.55;   // kahle Stellen im Gras
 	float a_weg = m.r;
