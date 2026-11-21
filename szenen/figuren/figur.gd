@@ -104,6 +104,7 @@ var _blick: LookAtModifier3D
 var _blickziel: Marker3D
 var _anim_rest := 0.0      # noch nicht abgespielte Zeit (Animation in der Ferne seltener)
 var _anim_takt := 0
+var _stoff: SpringBoneSimulator3D     # schwingender Rock (realistische Menschen), nah aktiv
 
 const HUEFTE := 0.93
 const SCHULTER := 1.43
@@ -543,6 +544,9 @@ func _baue_mensch(w: bool) -> bool:
 	_modell.rotation.y = PI
 	add_child(_modell)
 	var skelett: Skeleton3D = _modell.get_node("Armature/Skeleton3D")
+	_stoff = stoff_einrichten(skelett)
+	if _stoff != null:
+		_stoff.reset.call_deferred()          # nach dem Aufstellen nicht vom Sprung an den Platz losschwingen
 	if frisur == 3 and beruf in ["", "haendler"]:
 		_hut(skelett)
 	_zubehoer(skelett, w)
@@ -559,6 +563,58 @@ func _baue_mensch(w: bool) -> bool:
 	_anim.play("Idle")
 	_anim.seek(fmod(absf(float(hash(_name_text))) * 0.001, 2.0), true)
 	return true
+
+
+## Stoff, der schwingt (realistische Menschen): Der Rock hängt an Knochenketten rock_<Kette>_<Glied>
+## (werkzeuge/mensch_bauen.py). Ein SpringBoneSimulator3D lässt sie mit Schwerkraft, Trägheit und Luftwiderstand
+## nachschwingen; Kapseln an Ober- und Unterschenkeln schieben den Stoff vor den Beinen her. Gibt den Simulator zurück
+## (oder null, wenn das Modell keinen Rock hat).
+static func stoff_einrichten(skelett: Skeleton3D) -> SpringBoneSimulator3D:
+	if skelett.find_bone("rock_0_0") < 0:
+		return null
+	var ketten := 0
+	while skelett.find_bone("rock_%d_0" % ketten) >= 0:
+		ketten += 1
+	var glieder := 0
+	while skelett.find_bone("rock_0_%d" % glieder) >= 0:
+		glieder += 1
+	var sim := SpringBoneSimulator3D.new()
+	sim.name = "Stoff"
+	skelett.add_child(sim)
+	sim.setting_count = ketten
+	var kurve := Curve.new()
+	kurve.add_point(Vector2(0.0, 1.0))
+	kurve.add_point(Vector2(1.0, 0.3))
+	for c in ketten:
+		sim.set_root_bone_name(c, "rock_%d_0" % c)
+		sim.set_end_bone_name(c, "rock_%d_%d" % [c, glieder - 1])
+		sim.set_extend_end_bone(c, true)
+		sim.set_end_bone_direction(c, SkeletonModifier3D.BONE_DIRECTION_PLUS_Y)
+		sim.set_end_bone_length(c, 0.05)
+		sim.set_radius(c, 0.012)
+		# oben an der Hüfte fast fest, zum Saum hin weich: so schwingt der Stoff unten, nicht als Ganzes
+		sim.set_stiffness(c, 4.0)
+		sim.set_stiffness_damping_curve(c, kurve)
+		sim.set_drag(c, 0.6)
+		sim.set_gravity(c, 1.0)
+		sim.set_enable_all_child_collisions(c, true)
+	# Beine als Kapseln (entlang der Knochenachse y)
+	for b: Array in [["thigh_l", 0.065], ["thigh_r", 0.065], ["calf_l", 0.05], ["calf_r", 0.05]]:
+		var i := skelett.find_bone(b[0])
+		var kind := skelett.find_bone("calf_l" if b[0] == "thigh_l" else "calf_r" if b[0] == "thigh_r" else
+			"foot_l" if b[0] == "calf_l" else "foot_r")
+		if i < 0 or kind < 0:
+			continue
+		var laenge := skelett.get_bone_rest(kind).origin.length()
+		var k := SpringBoneCollisionCapsule3D.new()
+		k.bone_name = b[0]
+		k.radius = b[1]
+		# am Oberschenkel erst unterhalb der Hüfte, sonst läge die Kapsel schon im Stand im Rock
+		var anfang := laenge * (0.3 if b[0].begins_with("thigh") else 0.0)
+		k.height = laenge - anfang + 2.0 * float(b[1])
+		k.position_offset = Vector3(0, (anfang + laenge) * 0.5, 0)
+		sim.add_child(k)
+	return sim
 
 
 ## Die Animationen für die MakeHuman-Körper: ohne Positionsspuren außer Wurzel und Becken, sonst zögen sie die
@@ -929,6 +985,8 @@ func _spiele_animation(delta: float) -> void:
 	var n := 1
 	if kamera != null:
 		var d := kamera.global_position.distance_to(global_position)
+		if _stoff != null:
+			_stoff.active = d < 30.0      # schwingender Stoff nur nah
 		n = 0
 		for stufe: Array in ANIM_STUFEN:
 			if d < float(stufe[0]):

@@ -256,6 +256,41 @@ def hauptkind(q, kinder):
     return k[0]
 
 
+def quaternion(rq):
+    tr = np.trace(rq)
+    if tr > 0:
+        sq = np.sqrt(tr + 1.0) * 2
+        return [(rq[2, 1] - rq[1, 2]) / sq, (rq[0, 2] - rq[2, 0]) / sq, (rq[1, 0] - rq[0, 1]) / sq, 0.25 * sq]
+    i = int(np.argmax(np.diag(rq)))
+    j_, k_ = (i + 1) % 3, (i + 2) % 3
+    sq = np.sqrt(1.0 + rq[i, i] - rq[j_, j_] - rq[k_, k_]) * 2
+    qq = [0.0, 0.0, 0.0]
+    qq[i] = 0.25 * sq; qq[j_] = (rq[j_, i] + rq[i, j_]) / sq; qq[k_] = (rq[k_, i] + rq[i, k_]) / sq
+    return qq + [(rq[k_, j_] - rq[j_, k_]) / sq]
+
+
+def rock_ketten(V, rock_ids, mitte, oben, unten, ketten=12, glieder=4):
+    """Knochenketten für einen Rock (Federknochen, SpringBoneSimulator3D in figur.gd): ketten Ketten rund um die
+    Hüfte, je glieder Gelenke von der Taille (oben) bis zum Saum (unten), auf der Rockfläche. Gibt die Gelenkorte
+    [kette][glied] zurück."""
+    p = V[rock_ids]
+    winkel = np.arctan2(p[:, 0] - mitte[0], p[:, 2] - mitte[2])
+    orte = []
+    for c in range(ketten):
+        w = -np.pi + (c + 0.5) * 2 * np.pi / ketten
+        dw = np.abs((winkel - w + np.pi) % (2 * np.pi) - np.pi)
+        kette = []
+        for k in range(glieder):
+            y = oben + (unten - oben) * k / (glieder - 1)
+            sel = (dw < np.pi / ketten * 1.5) & (np.abs(p[:, 1] - y) < 0.06)
+            if sel.sum() == 0:
+                sel = dw < np.pi / ketten * 1.5
+            rr = np.median(np.hypot(p[sel, 0] - mitte[0], p[sel, 2] - mitte[2]))
+            kette.append(np.array([mitte[0] + np.sin(w) * rr, y, mitte[2] + np.cos(w) * rr]))
+        orte.append(kette)
+    return orte
+
+
 # ---------- glTF schreiben ----------
 
 class Gltf:
@@ -458,15 +493,70 @@ def main():
     korrektur = {}
     for n in qnamen:
         k = hauptkind(n, kinder)
-        if n == "root":
-            korrektur[n] = np.eye(3)
+        if n in ("root", "pelvis", "spine_01", "spine_02", "spine_03", "neck_01", "Head"):
+            korrektur[n] = np.eye(3)      # Rumpf, Hals, Kopf: in A- und T-Haltung gleich
         elif k is None:
             korrektur[n] = korrektur[qeltern[n]]
         else:
             korrektur[n] = drehung_von_zu(QP[k] - QP[n], MHP[k] - MHP[n])
     for n in qnamen:   # Blätter erst nach den Eltern
-        if hauptkind(n, kinder) is None and n != "root":
+        if hauptkind(n, kinder) is None and n not in ("root", "Head"):
             korrektur[n] = korrektur[qeltern[n]]
+
+    # Federknochen für den Rock (Kittelrock oder Kleid): eigene Ketten am Becken, die Rockecken hängen an ihnen
+    kleidung = opt.get("kleidung", "kittel")
+    zusatz = []        # (Name, Eltern, Bindung 4x4)
+    rock_ids = sorted({e for g_, ecken, _ in flaechen if g_ == "helper-skirt" for e in ecken})
+    if kleidung != "keine" and rock_ids:
+        taille_ = MHP["spine_01"][1]
+        lang_ = 0.5 if kleidung == "kittel" else 0.1
+        # A-Linie: zum Saum hin weiter (echte Kleider und Kittel sind unten weit, sonst tritt das Bein vorn heraus)
+        huefte_ = MHP["thigh_l"][1]
+        weite_ = 0.6 if kleidung == "kleid" else 0.4
+        mx_, mz_ = MHP["pelvis"][0], MHP["pelvis"][2]
+        for i in rock_ids:
+            t_ = min(max((huefte_ - V[i][1]) / max(huefte_ - lang_, 0.1), 0.0), 1.0)
+            f_ = 1.0 + weite_ * t_ ** 1.3
+            V[i][0] = mx_ + (V[i][0] - mx_) * f_
+            V[i][2] = mz_ + (V[i][2] - mz_) * f_
+        orte = rock_ketten(V, rock_ids, MHP["pelvis"], taille_ - 0.035, lang_ + 0.02)
+        for c, kette in enumerate(orte):
+            for k, ort in enumerate(kette):
+                runter = (kette[k + 1] - ort) if k + 1 < len(kette) else (ort - kette[k - 1])
+                yb = runter / np.linalg.norm(runter)
+                xb = np.cross(yb, [0.0, 1.0, 0.0]); xb = xb / (np.linalg.norm(xb) + 1e-9)
+                zb = np.cross(xb, yb)
+                b = np.eye(4); b[:3, 0] = xb; b[:3, 1] = yb; b[:3, 2] = zb; b[:3, 3] = ort
+                zusatz.append((f"rock_{c}_{k}", "pelvis" if k == 0 else f"rock_{c}_{k - 1}", b))
+        # Rockecken: zwischen den beiden nächsten Ketten (Winkel) und den beiden nächsten Gliedern (Höhe)
+        ketten_n, glieder_n = len(orte), len(orte[0])
+        basis_ = len(qnamen)
+        mitte_ = MHP["pelvis"]
+        for i in rock_ids:
+            q = V[i]
+            w = np.arctan2(q[0] - mitte_[0], q[2] - mitte_[2])
+            cf = (w + np.pi) / (2 * np.pi) * ketten_n - 0.5
+            c0 = int(np.floor(cf)) % ketten_n; c1 = (c0 + 1) % ketten_n; fc = cf - np.floor(cf)
+            t = (q[1] - (taille_ - 0.035)) / ((lang_ + 0.02) - (taille_ - 0.035)) * (glieder_n - 1)
+            t = min(max(t, 0.0), glieder_n - 1.001)
+            k0 = int(t); fk = t - k0
+            # das Stück zwischen Glied k0 und k0+1 dreht sich mit Glied k0; zum nächsten Glied hin weich überblenden
+            gk = {k0: 1.0 - 0.5 * fk, min(k0 + 1, glieder_n - 1): 0.5 * fk}
+            d = {}
+            # vorn und hinten (dort schwingen die Beine durch) folgt der Stoff stärker den Beinen, seitlich freier
+            BEIN_ANTEIL = 0.55 + 0.3 * abs(np.cos(w))
+            for c, wc in ((c0, 1.0 - fc), (c1, fc)):
+                for k, wk in gk.items():
+                    j = basis_ + c * glieder_n + k
+                    d[j] = d.get(j, 0.0) + wc * wk * (1.0 - BEIN_ANTEIL)
+            # ein Teil folgt den Beinen (Gewichte aus MakeHuman), sonst liefe das ausschreitende Bein durch den Stoff
+            for j, wv in zip(*ecken_jw[i]):
+                if wv > 0:
+                    d[j] = d.get(j, 0.0) + wv * BEIN_ANTEIL
+            p_ = sorted(d.items(), key=lambda kv: -kv[1])[:4]
+            sm = sum(x for _, x in p_)
+            ecken_jw[i] = ([j for j, _ in p_] + [0] * (4 - len(p_)), [x / sm for _, x in p_] + [0.0] * (4 - len(p_)))
+    alle = qnamen + [z[0] for z in zusatz]
 
     gl = Gltf()
     knoten_von = {}
@@ -499,10 +589,22 @@ def main():
         else:
             gl.g["nodes"][0]["children"].append(knoten_von[n])
     ibm = []
+    bindung = {}
     for n in qnamen:
         b = np.eye(4); b[:3, :3] = korrektur[n] @ R[n]; b[:3, 3] = MHP[n]
+        bindung[n] = b
         ibm.append(np.linalg.inv(b).T.reshape(-1))
-    gl.g["skins"].append({"joints": [knoten_von[n] for n in qnamen], "skeleton": knoten_von["root"],
+    # Zusatzknochen: in der Ruhelage so zum Eltern wie in der Bindung
+    ruhe = {n: welt_t(n) for n in qnamen}
+    for n, e, b in zusatz:
+        ruhe[n] = ruhe[e] @ np.linalg.inv(bindung[e]) @ b
+        bindung[n] = b
+        lokal = np.linalg.inv(ruhe[e]) @ ruhe[n]
+        gl.g["nodes"].append({"name": n, "translation": lokal[:3, 3].tolist(), "rotation": quaternion(lokal[:3, :3])})
+        knoten_von[n] = len(gl.g["nodes"]) - 1
+        gl.g["nodes"][knoten_von[e]].setdefault("children", []).append(knoten_von[n])
+        ibm.append(np.linalg.inv(b).T.reshape(-1))
+    gl.g["skins"].append({"joints": [knoten_von[n] for n in alle], "skeleton": knoten_von["root"],
                           "inverseBindMatrices": gl.acc(np.array(ibm), 5126, "MAT4")})
 
     def teil(teilname, pos, tex, jw, tri, mat, nor=None):
@@ -534,7 +636,6 @@ def main():
     koerper_fl = [(e, t) for g_, e, t in flaechen if g_ == "body"]
 
     # Kleidung aus der Hilfsgeometrie: Kittel (Rumpf, Arme, Rock bis zum Knie), Beinlinge, Gürtel, Schuhe
-    kleidung = opt.get("kleidung", "kittel")
     if kleidung != "keine":
         from scipy.spatial import cKDTree
         stoffe = REPO / "modelle" / "figuren" / "menschen" / "stoffe"
@@ -542,11 +643,12 @@ def main():
         rel = lambda n: f"../stoffe/{n}"
         farbe_kittel = [float(x) for x in opt.get("kittelfarbe", "0.42,0.34,0.24").split(",")] + [1.0]
         farbe_bein = [float(x) for x in opt.get("beinfarbe", "0.2,0.18,0.16").split(",")] + [1.0]
-        m_kittel = gl.material("Kittel", rel("kittel_farbe.jpg"), farbe_kittel, rau=0.95, normal_uri=rel("kittel_normal.jpg"))
+        m_kittel = gl.material("Kittel", rel("kittel_farbe.jpg"), farbe_kittel, rau=0.95, normal_uri=rel("kittel_normal.jpg"),
+                               doppelt=True)
         m_bein = gl.material("Beinlinge", rel("beinlinge_farbe.jpg"), farbe_bein, rau=0.95, normal_uri=rel("beinlinge_normal.jpg"))
         m_leder = gl.material("Leder", rel("leder_farbe.jpg"), (0.75, 0.62, 0.5, 1.0), rau=0.7, normal_uri=rel("leder_normal.jpg"))
-        haupt = lambda i: qnamen[ecken_jw[i][0][0]]                 # Knochen mit dem größten Gewicht
-        hand = lambda i: sum(ww for jj, ww in zip(*ecken_jw[i]) if qnamen[jj].startswith(("hand", "thumb", "index",
+        haupt = lambda i: alle[ecken_jw[i][0][0]]                 # Knochen mit dem größten Gewicht
+        hand = lambda i: sum(ww for jj, ww in zip(*ecken_jw[i]) if alle[jj].startswith(("hand", "thumb", "index",
                                                                                           "middle", "ring", "pinky")))
         oben_k = ("spine", "clavicle", "upperarm", "lowerarm")
         unten_k = ("thigh", "calf", "foot", "ball")
@@ -560,9 +662,11 @@ def main():
             return ist_oben_roh(i) and V[i][1] < hals
         def ist_unten(i):
             h = haupt(i)
-            # unter dem Rock keine Beinlinge (sie schimmerten beim Gehen durch), nur ein Stück über dem Saum
+            # Beinlinge bis zur Taille: der Rock schwingt (Federknochen) und weicht den Beinen aus
+            if V[i][1] > rock_lang + (0.2 if kleidung == "kleid" else 0.1):   # unter dem Rock unsichtbar
+                return False
             return (h.startswith(("thigh", "calf")) or (h == "pelvis" and V[i][1] <= taille + 0.02)) and \
-                not ist_schuh(i) and V[i][1] < rock_lang + 0.1
+                not ist_schuh(i)
         def ist_schuh(i):
             h = haupt(i)
             return h.startswith(("foot", "ball")) or (h.startswith("calf") and V[i][1] < 0.12)
@@ -591,7 +695,7 @@ def main():
         oben_ids = stueck(hose_fl, ist_oben_roh, 0.011, m_kittel, "Kittel", 3.0, deckel=hals)
         oben_ids = {i for i in oben_ids if V[i][1] < hals}
         stueck(rock_fl, lambda i: rock_lang <= V[i][1] <= taille - 0.035, 0.006, m_kittel, "Kittelrock", 3.0)
-        unten_ids = stueck(hose_fl, ist_unten, 0.003, m_bein, "Beinlinge", 3.0) if kleidung == "kittel" else set()
+        unten_ids = stueck(hose_fl, ist_unten, 0.003, m_bein, "Beinlinge", 3.0)
         arm = lambda i: haupt(i).startswith(("upperarm", "lowerarm", "hand", "thumb", "index", "middle", "ring", "pinky"))
         stueck(hose_fl, lambda i: not arm(i) and abs(V[i][1] - taille) < 0.15, 0.03, m_leder, "Guertel", 4.0,
                band=(taille - 0.025, taille + 0.025))
@@ -611,12 +715,11 @@ def main():
             # nur Haut, die selbst zum Kleiderbereich gehört und Stoff dicht über sich hat (sonst Löcher am Saum)
             baum = cKDTree(V[bedeckt_von])
             d, _ = baum.query(V[koerper_ids])
-            unter = lambda i: (ist_oben(i) and hand(i) < 0.12 and V[i][1] < hals - 0.02) or \
-                (kleidung == "kittel" and ist_unten(i))
+            unter = lambda i: (ist_oben(i) and hand(i) < 0.12 and V[i][1] < hals - 0.02) or ist_unten(i)
             bedeckt |= {i for i, dd in zip(koerper_ids, d) if dd < 0.025 and unter(i)}
-        # unter dem Rock die Beine (beim Kleid bis zum Knöchel)
-        bedeckt |= {i for i in koerper_ids if (haupt(i).startswith(("thigh", "calf")) or
-                                               (haupt(i) == "pelvis" and V[i][1] < taille)) and V[i][1] > rock_lang + 0.06}
+        # Beine und Becken unter dem Rock weglassen (sonst stechen sie beim Gehen durch den Stoff)
+        bedeckt |= {i for i in koerper_ids if (haupt(i).startswith(("thigh", "calf")) or haupt(i) == "pelvis")
+                    and rock_lang + (0.2 if kleidung == "kleid" else 0.1) < V[i][1] < taille}
         koerper_fl = [(e, t) for e, t in koerper_fl if not all(i in bedeckt for i in e)]
     pos, tex, jw, tri = zerlege_nach_uv(V, vt, koerper_fl, ecken_jw)
     teil("Koerper", pos, tex, jw, tri, m_haut)
