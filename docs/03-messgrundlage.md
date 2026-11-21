@@ -561,3 +561,7 @@ Die Messungen danach (`…_hoch_2026-11-20T19-23-41`, `…_episch_2026-11-20T19-
 
 Die vereinfachten Felsen holen den größten Teil zurück (Hoch 70 → 104 fps, Episch 36 → 52 fps); die kleineren
 Laubkarten ändern messbar nichts. Episch liegt weiter deutlich über dem Ziel von 30 fps.
+
+Nach Hafen, Wasser und den Felsen an den Mauern (`…_hoch_2026-11-21T11-12-27`, `…_episch_2026-11-21T11-14-48`):
+Hoch 110,1 fps (Grafikkarte p50 8,4 ms), Episch 56,0 fps (17,2 ms). Das durchsichtige Wasser kostet messbar nichts;
+die Felsbrocken an den Mauern fallen weg (Dreiecke in MultiMeshes 44,6 → 39,4 Mio.), daher der kleine Gewinn.

@@ -37,6 +37,10 @@ func _ready() -> void:
 		var kopf := _teil(koerper, "kopf", Vector3(0, 0.06, -0.19))
 		_teil(kopf, "schnabel", Vector3(0, -0.01, -0.07))
 		_teil(koerper, "schwanz", Vector3(0, 0.01, 0.2))
+		# Beine (nur sitzend zu sehen): Möwen stehen auf dem Kai, sie liegen nicht (Mängelliste M36)
+		var beine := []
+		for s in [-1.0, 1.0]:
+			beine.append(_teil(koerper, "bein", Vector3(s * 0.035, -0.12, 0.03)))
 		var fluegel := []
 		for s in [-1.0, 1.0]:
 			var gelenk := Node3D.new()
@@ -45,7 +49,7 @@ func _ready() -> void:
 			_teil(gelenk, "fluegel", Vector3(s * 0.25, 0, 0))
 			_teil(gelenk, "spitze", Vector3(s * 0.55, 0, 0.03))
 			fluegel.append(gelenk)
-		var vogel := {"knoten": v, "koerper": koerper, "fluegel": fluegel, "heim": heim,
+		var vogel := {"knoten": v, "koerper": koerper, "kopf": kopf, "beine": beine, "fluegel": fluegel, "heim": heim,
 			"winkel": _zufall.randf() * TAU, "tempo": _zufall.randf_range(0.11, 0.2) * (1.0 if _zufall.randf() < 0.6 else -1.0),
 			"radius": weite * _zufall.randf_range(0.5, 1.3), "hoehe": hoehe * _zufall.randf_range(0.7, 1.4),
 			"wellen": _zufall.randf() * TAU, "takt": 0.0, "schlagen": 0.0, "pause": _zufall.randf_range(1.0, 6.0),
@@ -56,6 +60,7 @@ func _ready() -> void:
 			v.rotation.y = _zufall.randf() * TAU
 			_falte(vogel)
 		else:
+			_strecke(vogel)
 			_setze_kreis(vogel, 0.0)
 
 
@@ -65,10 +70,10 @@ const VOGELFORM := preload("res://szenen/figuren/vogelform.gd")
 func _teil(eltern: Node3D, art: String, ort: Vector3) -> Node3D:
 	if not _meshes.has(art):
 		var masse: Vector3 = {"koerper": Vector3(0.13, 0.12, 0.36), "kopf": Vector3(0.09, 0.09, 0.11), "schnabel": Vector3(0.025, 0.025, 0.07),
-			"schwanz": Vector3(0.12, 0.025, 0.12), "fluegel": Vector3(0.38, 0.02, 0.17), "spitze": Vector3(0.26, 0.018, 0.12)}[art]
+			"schwanz": Vector3(0.12, 0.025, 0.12), "fluegel": Vector3(0.38, 0.02, 0.17), "spitze": Vector3(0.26, 0.018, 0.12), "bein": Vector3(0.016, 0.13, 0.016)}[art]
 		_meshes[art] = VOGELFORM.form(art, masse)
 		var farbe: Color = {"koerper": Color(0.93, 0.93, 0.92), "kopf": Color(0.95, 0.95, 0.94), "schnabel": Color(0.9, 0.75, 0.2),
-			"schwanz": Color(0.92, 0.92, 0.92), "fluegel": Color(0.66, 0.69, 0.72), "spitze": Color(0.12, 0.12, 0.13)}[art]
+			"schwanz": Color(0.92, 0.92, 0.92), "fluegel": Color(0.66, 0.69, 0.72), "spitze": Color(0.12, 0.12, 0.13), "bein": Color(0.86, 0.72, 0.45)}[art]
 		var mat := StandardMaterial3D.new()
 		mat.albedo_color = farbe
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED   # Flügel und Schwanz sind einseitige Flächen
@@ -103,6 +108,8 @@ func _process(delta: float) -> void:
 			if not _auf and abstand < SCHEU + weite * 0.5:
 				_auf = true
 				_zeit = 0.0
+				for v in _voegel:
+					_strecke(v)
 		if not _auf:
 			for v in _voegel:
 				_putze(v, delta)
@@ -186,13 +193,32 @@ func _gleite(v: Dictionary, delta: float) -> void:
 
 
 func _falte(v: Dictionary) -> void:
-	# Sitzend: Flügel zusammengelegt eng am Körper (nach hinten geklappt und verkürzt, die Spitzen über dem Schwanz)
+	# Sitzend: Flügel zusammengelegt oben auf dem Rücken (nach hinten geklappt und verkürzt, die schwarzen Spitzen über
+	# dem Schwanz), der Körper vorn leicht angehoben, der Kopf auf dem Hals darüber, die Beine ausgestreckt
 	var f: Array = v["fluegel"]
-	(f[0] as Node3D).rotation = Vector3(0, -1.5, 0.1)
-	(f[1] as Node3D).rotation = Vector3(0, 1.5, -0.1)
-	(f[0] as Node3D).scale = Vector3(0.48, 1.0, 0.5)
-	(f[1] as Node3D).scale = Vector3(0.48, 1.0, 0.5)
+	for i in 2:
+		var s := -1.0 if i == 0 else 1.0
+		(f[i] as Node3D).position = Vector3(s * 0.045, 0.052, -0.12)   # an der Schulter
+		(f[i] as Node3D).rotation = Vector3(0.0, -s * 1.5, s * 0.12)   # nach hinten geklappt (vorher zum Kopf hin)
+		(f[i] as Node3D).scale = Vector3(0.44, 1.0, 0.5)
+	(v["koerper"] as Node3D).rotation = Vector3(0.28, 0, 0)
+	(v["kopf"] as Node3D).position = Vector3(0, 0.07, -0.17)
+	for b: Node3D in v["beine"]:
+		b.visible = true
+		b.rotation = Vector3(-0.28, 0, 0)   # senkrecht trotz des angehobenen Körpers
+
+
+## Fliegend: Flügel ausgebreitet, Beine eingezogen, Kopf gestreckt
+func _strecke(v: Dictionary) -> void:
+	var f: Array = v["fluegel"]
+	for i in 2:
+		var s := -1.0 if i == 0 else 1.0
+		(f[i] as Node3D).position = Vector3(s * 0.07, 0.04, -0.02)
+		(f[i] as Node3D).scale = Vector3.ONE
 	(v["koerper"] as Node3D).rotation = Vector3.ZERO
+	(v["kopf"] as Node3D).position = Vector3(0, 0.06, -0.19)
+	for b: Node3D in v["beine"]:
+		b.visible = false
 
 
 func _putze(v: Dictionary, delta: float) -> void:
@@ -219,5 +245,5 @@ func _erde() -> void:
 		var abfrage := PhysicsRayQueryParameters3D.create(oben, oben + Vector3.DOWN * 8.0, 1)
 		var treffer := raum.intersect_ray(abfrage)
 		if treffer and not (treffer.collider is CharacterBody3D or (treffer.collider as Node).has_method("unterwegs")):
-			k.global_position.y = (treffer.position as Vector3).y - 0.08
+			k.global_position.y = (treffer.position as Vector3).y + 0.09   # auf den Beinen
 			v["heim"] = k.position

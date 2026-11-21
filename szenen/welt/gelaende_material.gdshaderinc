@@ -143,7 +143,12 @@ void gelaende_material(vec3 welt_pos, vec3 welt_normale, out vec3 albedo, out ve
 	a_pflaster = max(a_pflaster, in_stadt * (1.0 - smoothstep(-17.6, -17.0, h)) * step(meeresspiegel + 0.5, h) * (1.0 - a_fels));
 	// Burghöfe: ganz gepflastert
 	a_pflaster = max(a_pflaster, a_hof * (1.0 - a_fels));
-	a_erde = max(a_erde, in_stadt * (1.0 - a_fels) * smoothstep(0.45, 0.75, gross) * 0.6);
+	// Zwischen den Häusern (Mängelliste M37): festgetretene Erde, in Flecken gepflasterte Höfe; Gras nur noch in
+	// einzelnen größeren Flecken (Gärten), nicht als Wiese mitten in der Stadt
+	float garten = smoothstep(0.62, 0.78, gross + (klein - 0.5) * 0.1);
+	a_erde = max(a_erde, in_stadt * (1.0 - a_fels) * (1.0 - garten) * 0.92);
+	float hofpflaster = smoothstep(0.42, 0.58, rauschen(p * 0.09 + vec2(17.0, -5.0))) * (1.0 - garten);
+	a_pflaster = max(a_pflaster, in_stadt * (1.0 - a_fels) * hofpflaster * step(meeresspiegel + 0.5, h) * 0.95);
 	a_weg *= 1.0 - in_stadt;
 
 	vec3 g = zwei(gras_farbe, p, M_GRAS) * mix(gras, gras_trocken, smoothstep(0.35, 0.8, gross));
