@@ -282,6 +282,48 @@ if "Schmiede" in WERKPLAETZE:
     person("Burgschmied", BL, round(sx_, 2), boden_, round(sz_, 2), "Burgschmied Wendel Hart", "schmied_burg", 0, "0.3, 0.22, 0.16, 1",
            gier=round(math.degrees(math.atan2(ax_ - sx_, az_ - sz_)), 1), sichtbar_wenn="alarm<3", haltung="arbeiten")
 
+# --- Mängelliste M21: Leute an den neuen Werkplätzen und an den Tischen unter den Hoflinden. Lage im Rahmen des
+# Platzes: e entlang, i nach innen (wie in werkplatz), Blick zur Mauer (-n) oder auf einen Punkt.
+_hofarbeit = 0
+HOFARBEIT = [  # Platz, e, i, Blick (None: zur Mauer, sonst e, i des Ziels), Haltung, Name, Dialog, Tracht
+    ("Hackplatz Vorburg", 0.0, 2.0, None, "arbeiten", "Knecht Hinnerk Scheit", "burggesinde", GESINDE_TRACHTEN[0]),
+    ("Zimmerplatz Mittelburg", 0.3, 1.75, None, "arbeiten", "Zimmermann Gero Lot", "burggesinde", "0.45, 0.36, 0.25, 1"),
+    ("Zimmerplatz Mittelburg", -3.4, 0.95, None, "arbeiten", "Lehrling Matz Span", "burggesinde", GESINDE_TRACHTEN[3]),
+    ("Garten Oberburg", -0.9, 3.6, None, "knien", "Gärtnerin Wiebke Kraut", "magd_burg", GESINDE_TRACHTEN[2]),
+    ("Steinmetz Oberburg", 0.2, 1.85, None, "arbeiten", "Steinmetz Ulf Quader", "burggesinde", "0.5, 0.48, 0.42, 1"),
+    ("Markt Oberburg", -2.0, -0.9, (-2.0, 3.0), "reden", "Händlerin Grete Wolle", "magd_burg", "0.55, 0.25, 0.18, 1"),
+    ("Markt Oberburg", -1.6, 1.4, (-2.0, 0.0), "", "Magd Lene Pfund", "magd_burg", GESINDE_TRACHTEN[1]),
+    ("Übungsplatz Palas", -2.0, 9.0, (-2.0, 0.2), "schwert", "Knappe Arnulf Grau", "knappe_burg", WACHE_TRACHT),
+    ("Übungsplatz Palas", 0.6, 9.5, (0.6, 0.2), "schwert", "Knappin Ida Falk", "knappe_burg", WACHE_TRACHT),
+]
+for wn_, e_, i_, ziel_, haltung_, anzeige_, dialog_, tracht_ in HOFARBEIT:
+    if wn_ not in WERKPLAETZE:
+        continue
+    px_, pz_, (ux_, uz_), (nx_, nz_), boden_ = WERKPLAETZE[wn_]
+    x_, z_ = px_ + ux_ * e_ + nx_ * i_, pz_ + uz_ * e_ + nz_ * i_
+    if ziel_ is None:
+        blick_ = math.degrees(math.atan2(-nx_, -nz_))
+    else:
+        zx_, zz_ = px_ + ux_ * ziel_[0] + nx_ * ziel_[1], pz_ + uz_ * ziel_[0] + nz_ * ziel_[1]
+        blick_ = math.degrees(math.atan2(zx_ - x_, zz_ - z_))
+    person(f"Hofarbeit{_hofarbeit}", BL, round(x_, 2), boden_, round(z_, 2), anzeige_, dialog_, 0, tracht_,
+           gier=round(blick_, 1), sichtbar_wenn="alarm<3", haltung=haltung_)
+    _hofarbeit += 1
+# An den Tischen unter den Linden sitzen sich zwei gegenüber (einer erzählt)
+RAST_NAMEN = ["Magd Frieda Lein", "Knecht Ole Brack", "Wächter Konrad Tann", "Magd Sanne Rieth", "Knecht Bodo Furch",
+              "Magd Ute Kessel"]
+_rast = 0
+for wn_ in sorted(w_ for w_ in WERKPLAETZE if w_.startswith("Tisch ")):
+    px_, pz_, (ux_, uz_), (nx_, nz_), boden_ = WERKPLAETZE[wn_]
+    for seite_ in (-1, 1):
+        x_, z_ = px_ + nx_ * seite_ * 0.95, pz_ + nz_ * seite_ * 0.95
+        person(f"Rast{_rast}", BL, round(x_, 2), boden_, round(z_, 2), RAST_NAMEN[_rast % len(RAST_NAMEN)],
+               "burggesinde" if _rast % 3 else "magd_burg", 0, GESINDE_TRACHTEN[_rast % 4],
+               gier=round(math.degrees(math.atan2(px_ - x_, pz_ - z_)), 1), sichtbar_wenn="alarm<3",
+               haltung="sitzend_reden" if seite_ > 0 else "sitzen")
+        _rast += 1
+print("Burgleben: an den Werkplätzen", _hofarbeit, "und an den Tischen", _rast)
+
 # --- Kaplan vor der Drachenkapelle, Haushofmeister vor dem Palas, Stallknecht an der Tränke ---
 for bau_, name_, anzeige_, dialog_, tracht_, boden_ in [
         (PD.PALAS, "Haushofmeister", "Haushofmeister Reinold Esch", "haushofmeister", "0.35, 0.18, 0.15, 1", PD.H_KERNBURG)]:

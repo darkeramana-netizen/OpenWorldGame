@@ -11,7 +11,9 @@ extends Node3D
 ## 15 Amboss auf dem Klotz, 16 Esse mit Rauchfang, 17 Unterstand (offen nach lokal +z), 18 Heuhaufen, 19 Pferd (Kopf nach
 ## lokal +z; als lebendes Tier), 20 Wandlaterne (an einer Wand, die lokal bei z = 0 steht; ohne Kollision),
 ## 22 Hund, 23 Katze, 24 Schwein, 25 Schaf, 26 Kuh (lebende Tiere, tier.gd), 27 Leiter (lehnt nach lokal -z an einer
-## Wand), 28 Wäscheleine mit Wäsche, 29 Stroh am Boden, 30 Pfütze, 31 Taube (27 bis 31 ohne Kollision), 32 Zaunfeld
+## Wand), 40 Werkbank mit Werkzeug, 41 Sägebock mit Balken, 42 Zielscheibe aus Stroh (Front nach lokal +z),
+## 43 Gemüsebeet (1,4 × 3,6 m), 44 Bank, 45 Tisch mit zwei Bänken, 46 Hackklotz mit Axt, 47 Steinmetzplatz (Quader
+## auf Böcken), 48 Rüstungsständer mit Kettenhemd, Helm und Schild, 28 Wäscheleine mit Wäsche, 29 Stroh am Boden, 30 Pfütze, 31 Taube (27 bis 31 ohne Kollision), 32 Zaunfeld
 ## (3 m), 33 Anbindebalken, 34 Bretterwand eines Schweinekobens (2 m), 35 Gatter (1,5 m, am Pfosten bei x = 0
 ## angeschlagen), 36 Schlamm, 37 Netzgestell mit Fischernetz (3,2 m), 38 Fischkorb, 21 Schmiede (gemauerte
 ## Werkstatt mit Pultdach, Rücken an der Hofmauer bei lokal -z, offen nach +z; innen Esse, Amboss, Werkbank)
@@ -41,7 +43,10 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(0.35, 1.7, 1.2), Vector3.ZERO, Vector3.ONE, Vector3.ZERO, Vector3.ZERO, Vector3(0.35, 0.9, 0.7),
 	Vector3(0.35, 1.0, 0.65), Vector3(0.45, 1.5, 1.1), Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO,
 	Vector3(1.5, 1.15, 0.08), Vector3(1.3, 1.15, 0.08), Vector3(1.0, 0.9, 0.06), Vector3(0.75, 1.15, 0.05), Vector3.ZERO,
-	Vector3(1.7, 2.2, 0.12), Vector3(0.3, 0.45, 0.3), Vector3(2.6, 3.4, 9.5)]
+	Vector3(1.7, 2.2, 0.12), Vector3(0.3, 0.45, 0.3), Vector3(2.6, 3.4, 9.5),
+	Vector3(1.0, 0.95, 0.4), Vector3(1.6, 0.95, 0.45), Vector3(0.65, 1.6, 0.35), Vector3(0.75, 0.3, 1.85),
+	Vector3(0.9, 0.5, 0.2), Vector3(1.0, 0.85, 1.0), Vector3(0.35, 0.6, 0.35), Vector3(1.1, 0.9, 0.7),
+	Vector3(0.55, 1.75, 0.35)]
 ## Große Stücke, die das Bild aus der Ferne prägen (Schiffe, Prahme, Kräne): Art → Sichtweite in Metern. Sie bleiben
 ## immer geladen (nicht in Zellen), sonst fehlte der Hafen in der Gesamtansicht (Mängelliste M10).
 const FERNSICHT := {5: 1400.0, 6: 1400.0, 8: 900.0, 9: 900.0, 39: 1400.0}
@@ -467,6 +472,102 @@ func _mesh(art: int) -> ArrayMesh:
 				var r := 0.38 + i * 0.13
 				_fleck("pfuetze_rand", m + Vector3(0, 0.008, 0), r * 1.28, i * 1.7)
 				_fleck("pfuetze", m + Vector3(0, 0.014 + i * 0.001, 0), r, i * 1.7 + 0.4)
+		40:  # Werkbank: Platte auf vier Beinen, unten ein Brett, darauf Hammer, Säge, Hobel und ein paar Bretter
+			_klotz("holz", Vector3(-1.0, 0.82, -0.38), Vector3(1.0, 0.92, 0.38))
+			for x: float in [-0.9, 0.9]:
+				for z: float in [-0.3, 0.3]:
+					_klotz("holz_dunkel", Vector3(x - 0.05, 0, z - 0.05), Vector3(x + 0.05, 0.82, z + 0.05))
+			_klotz("holz_dunkel", Vector3(-0.92, 0.18, -0.3), Vector3(0.92, 0.22, 0.3))
+			_seil("holz", Vector3(-0.6, 0.95, 0.1), Vector3(-0.3, 0.95, 0.2), 0.018)
+			_klotz("metall", Vector3(-0.66, 0.93, 0.03), Vector3(-0.58, 0.99, 0.17))
+			_viereck("metall", Vector3(0.05, 0.925, -0.05), Vector3(0.6, 0.925, -0.1), Vector3(0.6, 0.925, 0.0), Vector3(0.05, 0.925, 0.07), Vector3.UP)
+			_klotz("holz_dunkel", Vector3(-0.08, 0.92, -0.08), Vector3(0.05, 0.98, 0.1))
+			_klotz("holz", Vector3(0.3, 0.92, 0.12), Vector3(0.55, 1.0, 0.22))
+			_klotz("holz", Vector3(-0.95, 0.92, -0.33), Vector3(0.7, 0.96, -0.18), 0.03)
+			_klotz("holz", Vector3(-0.9, 0.22, -0.25), Vector3(0.8, 0.27, -0.05), 0.0)
+		41:  # Sägebock: zwei Kreuzböcke, darauf ein Stamm mit halb eingesägtem Schnitt und der Säge, Späne am Boden
+			for x: float in [-1.0, 1.0]:
+				for s: float in [-1.0, 1.0]:
+					_seil("holz_dunkel", Vector3(x, 0, s * 0.4), Vector3(x, 0.78, -s * 0.15), 0.045)
+				_seil("holz_dunkel", Vector3(x - 0.05, 0.5, -0.2), Vector3(x + 0.05, 0.5, 0.2), 0.03)
+			# liegend: der Zylinder wächst vom Fuß nach lokal -x, also beginnt er rechts
+			_zylinder("holz", Vector3(1.6, 0.92, 0), 0.2, 0.21, 3.2, 10, Basis(Vector3.FORWARD, -PI / 2.0))
+			_zylinder("holz_dunkel", Vector3(1.61, 0.92, 0), 0.19, 0.19, 0.02, 10, Basis(Vector3.FORWARD, -PI / 2.0))
+			_viereck("metall", Vector3(0.3, 1.0, 0.0), Vector3(0.3, 1.45, 0.02), Vector3(0.95, 1.4, 0.02), Vector3(0.95, 1.05, 0.0), Vector3.BACK)
+			_klotz("holz_dunkel", Vector3(0.9, 1.0, -0.04), Vector3(1.05, 1.5, 0.05))
+			_fleck("spaene", Vector3(0.2, 0.012, 0.15), 0.6, 1.3)
+		42:  # Zielscheibe: dicke Strohscheibe auf einem Bock, bemalte Ringe, ein paar Pfeile stecken darin
+			_zylinder("heu", Vector3(0, 1.05, -0.12), 0.6, 0.62, 0.24, 16, Basis(Vector3.RIGHT, PI / 2.0))
+			_zylinder("ware_rot", Vector3(0, 1.05, 0.122), 0.46, 0.46, 0.006, 16, Basis(Vector3.RIGHT, PI / 2.0))
+			_zylinder("segel", Vector3(0, 1.05, 0.127), 0.31, 0.31, 0.006, 16, Basis(Vector3.RIGHT, PI / 2.0))
+			_zylinder("ware_rot", Vector3(0, 1.05, 0.132), 0.13, 0.13, 0.006, 12, Basis(Vector3.RIGHT, PI / 2.0))
+			_seil("holz_dunkel", Vector3(-0.45, 0, 0.1), Vector3(-0.3, 1.45, -0.1), 0.05)
+			_seil("holz_dunkel", Vector3(0.45, 0, 0.1), Vector3(0.3, 1.45, -0.1), 0.05)
+			_seil("holz_dunkel", Vector3(0, 0, -0.75), Vector3(0, 1.3, -0.15), 0.05)
+			for pf: Vector3 in [Vector3(0.08, 1.12, 0.13), Vector3(-0.22, 0.95, 0.13), Vector3(0.3, 1.25, 0.13)]:
+				_seil("holz", pf, pf + Vector3(0.05, 0.03, 0.62), 0.008)
+				_klotz("wimpel", pf + Vector3(0.03, 0.0, 0.52), pf + Vector3(0.07, 0.06, 0.62))
+		43:  # Gemüsebeet: Erde, mit Brettern eingefasst, drei Reihen Kohl und eine Reihe Lauch
+			_klotz("lehm", Vector3(-0.7, 0, -1.8), Vector3(0.7, 0.14, 1.8))
+			for s: float in [-1.0, 1.0]:
+				_klotz("holz_dunkel", Vector3(s * 0.7 - 0.03, 0, -1.83), Vector3(s * 0.7 + 0.03, 0.2, 1.83))
+				_klotz("holz_dunkel", Vector3(-0.73, 0, s * 1.8 - 0.03), Vector3(0.73, 0.2, s * 1.8 + 0.03))
+			var z := -1.5
+			while z <= 1.55:
+				for x: float in [-0.42, 0.0, 0.42]:
+					if x > 0.3:
+						_seil("ware_gruen", Vector3(x, 0.14, z), Vector3(x + 0.02, 0.48, z + 0.03), 0.025)
+						_seil("ware_gruen", Vector3(x + 0.06, 0.14, z + 0.12), Vector3(x + 0.04, 0.42, z + 0.16), 0.022)
+					else:
+						var r := 0.13 + 0.03 * sin(z * 7.0 + x * 5.0)
+						_zylinder("ware_gruen", Vector3(x, 0.12, z), r * 0.7, r, r * 1.4, 8)
+				z += 0.42
+		44:  # Bank: Sitzbrett auf zwei Wangen
+			_klotz("holz", Vector3(-0.9, 0.42, -0.17), Vector3(0.9, 0.48, 0.17))
+			for x: float in [-0.7, 0.7]:
+				_klotz("holz_dunkel", Vector3(x - 0.05, 0, -0.15), Vector3(x + 0.05, 0.42, 0.15))
+		45:  # Tisch mit zwei Bänken, darauf Krug, Becher, Brot und Holzteller
+			_klotz("holz", Vector3(-1.0, 0.74, -0.42), Vector3(1.0, 0.8, 0.42))
+			for x: float in [-0.85, 0.85]:
+				_klotz("holz_dunkel", Vector3(x - 0.06, 0, -0.32), Vector3(x + 0.06, 0.74, 0.32))
+			_klotz("holz_dunkel", Vector3(-0.85, 0.15, -0.04), Vector3(0.85, 0.22, 0.04))
+			for s: float in [-1.0, 1.0]:
+				_klotz("holz", Vector3(-0.95, 0.42, s * 0.82 - 0.15), Vector3(0.95, 0.48, s * 0.82 + 0.15))
+				for x: float in [-0.75, 0.75]:
+					_klotz("holz_dunkel", Vector3(x - 0.05, 0, s * 0.82 - 0.13), Vector3(x + 0.05, 0.42, s * 0.82 + 0.13))
+			_zylinder("kork", Vector3(0.1, 0.8, 0.0), 0.08, 0.1, 0.24, 10)
+			for b: Vector3 in [Vector3(-0.35, 0.8, 0.22), Vector3(0.45, 0.8, -0.2)]:
+				_zylinder("holz_dunkel", b, 0.04, 0.045, 0.1, 8)
+				_zylinder("holz", b + Vector3(0.05, 0, -0.25 * signf(b.z)), 0.12, 0.12, 0.015, 10)
+			_zylinder("sack", Vector3(-0.15, 0.8, -0.15), 0.1, 0.12, 0.09, 10)
+		46:  # Hackklotz mit eingeschlagener Axt, ringsum Scheite
+			_zylinder("holz_dunkel", Vector3.ZERO, 0.32, 0.34, 0.55, 12)
+			_zylinder("holz", Vector3(0, 0.55, 0), 0.31, 0.31, 0.01, 12)
+			_seil("holz", Vector3(0.05, 0.6, 0.0), Vector3(0.45, 1.05, 0.2), 0.022)
+			_klotz("metall", Vector3(-0.06, 0.52, -0.08), Vector3(0.1, 0.66, 0.08), 0.4)
+			for i in 6:
+				var w := i * 1.1
+				var m := Vector3(cos(w) * 0.6, 0.06, sin(w) * 0.55)
+				_klotz("holz", m - Vector3(0.2, 0.06, 0.05), m + Vector3(0.2, 0.06, 0.05), w)
+		47:  # Steinmetzplatz: ein Quader auf zwei Böcken in Arbeit, zwei fertige Quader daneben, Splitter am Boden
+			for x: float in [-0.55, 0.55]:
+				_klotz("holz_dunkel", Vector3(x - 0.08, 0, -0.35), Vector3(x + 0.08, 0.5, 0.35))
+			_klotz("quader", Vector3(-0.75, 0.5, -0.3), Vector3(0.65, 0.95, 0.32))
+			_klotz("quader", Vector3(0.65, 0.5, -0.3), Vector3(0.75, 0.88, 0.32))   # roh behauene Seite
+			_klotz("quader", Vector3(-1.05, 0, -0.1), Vector3(-0.15, 0.4, 0.65), 0.1)
+			_klotz("quader", Vector3(0.2, 0, 0.35), Vector3(1.05, 0.38, 0.7), -0.15)
+			_seil("metall", Vector3(0.1, 0.96, 0.1), Vector3(0.3, 0.97, 0.18), 0.012)
+			_klotz("holz_dunkel", Vector3(-0.3, 0.95, 0.05), Vector3(-0.12, 1.05, 0.2))
+			_fleck("splitter", Vector3(0.2, 0.01, 0.0), 0.75, 2.1)
+		48:  # Rüstungsständer: Pfahl mit Querholz, darauf Kettenhemd und Helm, ein Rundschild lehnt davor
+			_klotz("holz_dunkel", Vector3(-0.35, 0, -0.25), Vector3(0.35, 0.08, 0.25))
+			_klotz("holz_dunkel", Vector3(-0.04, 0.08, -0.04), Vector3(0.04, 1.62, 0.04))
+			_klotz("holz_dunkel", Vector3(-0.3, 1.38, -0.03), Vector3(0.3, 1.44, 0.03))
+			_zylinder("metall", Vector3(0, 0.72, 0), 0.24, 0.21, 0.7, 12)
+			_zylinder("metall", Vector3(0, 1.42, 0), 0.24, 0.22, 0.04, 12)
+			_zylinder("metall", Vector3(0, 1.48, 0), 0.12, 0.14, 0.24, 10)
+			_zylinder("wimpel", Vector3(0, 0.62, 0.32), 0.34, 0.34, 0.04, 16, Basis(Vector3.RIGHT, PI / 2.0 - 0.25))
+			_zylinder("metall", Vector3(0, 0.62, 0.36), 0.07, 0.07, 0.04, 8, Basis(Vector3.RIGHT, PI / 2.0 - 0.25))
 		32:  # Zaunfeld: drei Pfosten, zwei Riegel
 			for x: float in [-1.5, 0.0, 1.5]:
 				_klotz("holz_dunkel", Vector3(x - 0.06, -0.15, -0.06), Vector3(x + 0.06, 1.18, 0.06), 0.1 * x)
@@ -1074,7 +1175,7 @@ func _material(name_: String) -> Material:
 				s.albedo_texture = load("res://texturen/klippe_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(0.5, 0.5, 0.5)
-			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder", "ruß", "schlamm", "netz", "fisch", "fisch_dunkel", "kork", "pfuetze", "pfuetze_rand"]:
+			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder", "ruß", "schlamm", "netz", "fisch", "fisch_dunkel", "kork", "pfuetze", "pfuetze_rand", "spaene", "splitter"]:
 				pass
 			elif name_ in ["fell", "haar", "taube", "taube_hals", "taube_dunkel"]:
 				pass
@@ -1106,6 +1207,9 @@ func _material(name_: String) -> Material:
 				"schlamm": Color(0.2, 0.15, 0.1), "taube": Color(0.55, 0.57, 0.62), "taube_hals": Color(0.35, 0.45, 0.42), "taube_dunkel": Color(0.32, 0.33, 0.37),
 				"ruß": Color(0.07, 0.06, 0.055), "netz": Color(0.3, 0.26, 0.2), "kork": Color(0.62, 0.45, 0.26),
 				"fisch": Color(0.68, 0.72, 0.74), "fisch_dunkel": Color(0.3, 0.34, 0.38)}.get(name_, Color(0.6, 0.6, 0.6))
+			if name_ in ["spaene", "splitter"]:
+				s.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+				s.albedo_color = Color(0.78, 0.64, 0.44, 0.7) if name_ == "spaene" else Color(0.55, 0.53, 0.49, 0.55)
 			if name_ in ["pfuetze", "pfuetze_rand"]:
 				# halb durchsichtig: das Pflaster scheint durch, die Pfütze spiegelt den Himmel, der Rand ist nur feucht
 				s.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA

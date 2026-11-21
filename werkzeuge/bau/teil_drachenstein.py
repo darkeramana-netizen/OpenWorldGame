@@ -772,7 +772,9 @@ _GRUND = {}
 _A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2.6, 2.6), 11: (2.3, 1.5), 12: (2.5, 1.0),
               13: (1.9, 0.7), 14: (0.7, 0.7), 15: (0.8, 0.7), 16: (1.8, 1.4), 17: (4.6, 3.6), 18: (1.9, 1.9), 19: (0.7, 2.6),
               21: (7.6, 5.4), 22: (0.4, 1.0), 23: (0.3, 0.6), 24: (0.7, 1.4), 25: (0.7, 1.3), 26: (0.9, 2.2),
-              27: (0.6, 1.1), 28: (4.2, 0.6), 29: (1.2, 1.2), 30: (1.6, 1.2), 31: (0.2, 0.3)}
+              27: (0.6, 1.1), 28: (4.2, 0.6), 29: (1.2, 1.2), 30: (1.6, 1.2), 31: (0.2, 0.3),
+              40: (2.0, 0.8), 41: (3.4, 0.9), 42: (1.3, 0.9), 43: (1.5, 3.7), 44: (1.8, 0.4), 45: (2.2, 2.0), 46: (1.4, 1.3),
+              47: (2.2, 1.5), 48: (0.9, 0.9), 3: (3.2, 2.2)}
 _treppen_w = []
 for k_ in range(0, len(TREPPEN), 7):
     fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
@@ -858,9 +860,12 @@ BURGBAEUME = []                  # Hoflinden (x, y, z, Größe; negativ: Laubbau
 WERKPLAETZE = {}                 # Name → (x, z, entlang, nach innen, Boden): dort steht jemand bei der Arbeit
 
 
-def werkplatz(name, teile, hof_w, boden, tiefe=1.0):
+def werkplatz(name, teile, hof_w, boden, tiefe=1.0, frei_im_hof=False, mitte=False):
     """Sucht an der Hofmauer einen Platz für eine Gruppe von Stücken. teile: (Art, entlang, nach innen, Drehung) im
-    Rahmen der Mauer (entlang der Kante, nach innen in den Hof); gestellt wird nur, wenn alle passen."""
+    Rahmen der Mauer (entlang der Kante, nach innen in den Hof); gestellt wird nur, wenn alle passen.
+    frei_im_hof: sonst frei im Hof; mitte: zuerst frei im Hof (dort, wo man den Hof betritt und sieht)."""
+    if mitte and _werkplatz_im_hof(name, teile, hof_w, boden):
+        return True
     kante_ = hof_w + hof_w[:1]
     mx_, mz_ = sum(q[0] for q in hof_w) / len(hof_w), sum(q[1] for q in hof_w) / len(hof_w)
     versuche_ = []
@@ -886,6 +891,37 @@ def werkplatz(name, teile, hof_w, boden, tiefe=1.0):
                 stelle(art_, x_, z_, g_, hof_w, boden, wegabstand=2.6)
             WERKPLAETZE[name] = (px_, pz_, (ux_, uz_), (nx_, nz_), boden)
             return True
+    if not frei_im_hof:
+        return False
+    return _werkplatz_im_hof(name, teile, hof_w, boden)
+
+
+def _werkplatz_im_hof(name, teile, hof_w, boden):
+    """Wie werkplatz, aber frei im Hof (Raster 2 m, vier Richtungen, mindestens 8 m von der Mauer)."""
+    # An der Mauer ist kein Platz: frei im Hof, auf einem Raster, in vier Richtungen (die Höfe sind in der Mitte weit
+    # und leer, Mängelliste M21)
+    raster_ = []
+    xs_, zs_ = [q[0] for q in hof_w], [q[1] for q in hof_w]
+    x_ = min(xs_) + 4.0
+    while x_ < max(xs_) - 4.0:
+        z_ = min(zs_) + 4.0
+        while z_ < max(zs_) - 4.0:
+            if _im_poly((x_, z_), hof_w) and _abstand_rand((x_, z_), hof_w) > 8.0:
+                raster_.append((x_, z_))
+            z_ += 2.0
+        x_ += 2.0
+    random.shuffle(raster_)
+    for px_, pz_ in raster_:
+        for g0_ in (0.0, 90.0, 180.0, 270.0):
+            a_ = math.radians(g0_)
+            nx_, nz_ = math.sin(a_), math.cos(a_)
+            ux_, uz_ = nz_, -nx_
+            lagen_ = [(art_, px_ + ux_ * e_ + nx_ * i_, pz_ + uz_ * e_ + nz_ * i_, g0_ + d_) for art_, e_, i_, d_ in teile]
+            if all(stelle(art_, x_, z_, g_, hof_w, boden, wegabstand=3.0, probe=True) for art_, x_, z_, g_ in lagen_):
+                for art_, x_, z_, g_ in lagen_:
+                    stelle(art_, x_, z_, g_, hof_w, boden, wegabstand=3.0)
+                WERKPLAETZE[name] = (px_, pz_, (ux_, uz_), (nx_, nz_), boden)
+                return True
     return False
 
 
@@ -914,6 +950,15 @@ for name_, hof_, boden_ in _hoefe:
             if stelle(10, x_, z_, 0.0, hof_w_, boden_, wegabstand=3.0, probe=True):
                 BURGBAEUME.append((round(x_, 2), round(boden_, 2), round(z_, 2), -1.25))
                 BURG_SPERREN.append(_rechteck_w(x_, z_, 1.6, 1.6, 0.0))
+                # Tisch mit Bänken im Schatten der Linde (M21): dort sitzen Leute bei der Rast
+                for k2_ in range(24):
+                    w2_ = k2_ * 0.9
+                    tx_, tz_ = x_ + 3.2 * math.cos(w2_), z_ + 3.2 * math.sin(w2_)
+                    g2_ = math.degrees(w2_) + 90.0          # die Bänke liegen tangential zum Stamm
+                    if stelle(45, tx_, tz_, g2_, hof_w_, boden_, wegabstand=2.6):
+                        WERKPLAETZE[f"Tisch {name_}"] = (tx_, tz_, (math.cos(math.radians(g2_)), -math.sin(math.radians(g2_))),
+                                                         (math.sin(math.radians(g2_)), math.cos(math.radians(g2_))), boden_)
+                        break
                 break
     # Werkplätze: Schmiede, Holzplatz und ein Unterstand für Karren in der Vorburg, Holzplatz und Unterstand in der
     # Mittelburg (die Stücke stehen mit dem Rücken zur Hofmauer)
@@ -939,6 +984,30 @@ for name_, hof_, boden_ in _hoefe:
     if name_ in ("Mittelburg", "Oberburg"):
         # Tränke für die Reitpferde der Boten, daneben ein Wasserfass
         werkplatz(f"Tränke {name_}", [(12, 0.0, 0.4, 0), (0, 1.9, 0.3, 0)], hof_w_, boden_)
+    # Mängelliste M21: Arbeit und Alltag in jedem Hof (die Leute dazu setzt teil_burgleben.py)
+    if name_ == "Vorburg":
+        # Hackplatz: Brennholz für Küche und Schmiede
+        werkplatz("Hackplatz Vorburg", [(46, 0.0, 0.9, 0), (11, -2.4, 0.1, 90), (11, 2.6, 0.1, 90)], hof_w_, boden_,
+                  frei_im_hof=True)
+    if name_ == "Mittelburg":
+        # Zimmerplatz: ein Stamm wird auf dem Sägebock zu Balken gesägt, daneben Werkbank und Hackklotz
+        werkplatz("Zimmerplatz Mittelburg", [(41, 0.0, 0.6, 0), (40, -3.4, 0.0, 0), (46, 3.1, 1.3, 0), (11, 0.0, -1.6, 0)],
+                  hof_w_, boden_, mitte=True)
+    if name_ == "Oberburg":
+        # Kräuter- und Gemüsegarten der Burgküche: drei Beete nebeneinander, die Schmalseite an der Mauer
+        werkplatz("Garten Oberburg", [(43, -2.0, 1.2, 0), (43, 0.0, 1.2, 0), (43, 2.0, 1.2, 0), (2, 3.6, 0.2, 20)],
+                  hof_w_, boden_, tiefe=0.4, frei_im_hof=True)
+        # Steinmetz: Quader für die Ausbesserung der Mauern
+        werkplatz("Steinmetz Oberburg", [(47, 0.0, 0.7, 0), (40, -3.0, 0.1, 0)], hof_w_, boden_, frei_im_hof=True)
+        # Händler aus der Stadt: zwei Stände mit Waren für das Gesinde, dahinter Kisten und Säcke
+        werkplatz("Markt Oberburg", [(3, -2.0, 0.0, 0), (3, 2.0, 0.0, 0), (1, -3.2, -1.6, 15), (2, 0.0, -1.7, 0),
+                                     (0, 3.3, -1.5, 0)], hof_w_, boden_, mitte=True)
+    if name_ == "Palas":
+        # Übungsplatz der Knappen: Zielscheiben mit dem Rücken zur Mauer, Waffen- und Rüstungsständer, Bank
+        werkplatz("Übungsplatz Palas", [(42, -2.0, 0.2, 0), (42, 0.6, 0.2, 0), (48, 3.0, 0.2, 0), (13, 4.8, 0.3, 0),
+                                        (44, -4.6, 0.3, 0)], hof_w_, boden_, mitte=True)
+    # Bank an der Hofmauer (zum Ausruhen)
+    werkplatz(f"Bank {name_}", [(44, 0.0, 0.1, 0)], hof_w_, boden_)
     # Feuerkörbe zu beiden Seiten jedes Tors, innen im Hof
     for tor_ in PD.TORE.values():
         tw_ = W(tor_)
