@@ -32,7 +32,9 @@ func _ready() -> void:
 	for i in anzahl:
 		var v := Node3D.new()
 		add_child(v)
-		var heim := Vector3((i - (anzahl - 1) / 2.0) * weite / maxf(anzahl, 1), 0, 0) if sitzend else Vector3.ZERO
+		# sitzend gleich auf Beinhöhe (0,09 m): Auf die Oberfläche gesetzt werden sie erst, wenn ein Spieler nahe ist
+		# (_erde); bis dahin steckten die Beine im Boden und sie lagen wie Fische auf dem Kai (Mängelliste M36)
+		var heim := Vector3((i - (anzahl - 1) / 2.0) * weite / maxf(anzahl, 1), 0.09, 0) if sitzend else Vector3.ZERO
 		var koerper := _teil(v, "koerper", Vector3.ZERO)
 		var kopf := _teil(koerper, "kopf", Vector3(0, 0.06, -0.19))
 		_teil(kopf, "schnabel", Vector3(0, -0.01, -0.07))
