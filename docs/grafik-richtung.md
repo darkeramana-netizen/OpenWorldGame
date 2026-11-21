@@ -74,3 +74,18 @@ Werkzeug `werkzeuge/mensch_bauen.py`, Quellen in `modelle/figuren/menschen/QUELL
 Offen bis zur Umstellung: mehr Körper im Vorrat (Alter, Statur, Hautton, Frisuren), Bärte (MakeHuman hat keine
 CC0-Bärte; eigene Karte nötig), Berufskleidung (Schürze, Kettenhemd, Wappenrock, Kutte), eine ferne Fassung mit weniger
 Dreiecken (MakeHuman-Proxy `male1591` mit 1600 Ecken), Frauen im Kleid ohne Beinlinge beim Sitzen prüfen.
+
+### Zweite Runde: schwingender Stoff und lebendige Haut
+
+- **Stoff, der beim Gehen mitgeht**: Röcke von Kittel und Kleid hängen an 12 Knochenketten (je 4 Glieder) mit einem
+  `SpringBoneSimulator3D` (Godot 4.7): Schwerkraft, Trägheit, Luftwiderstand, oben an der Hüfte steif, zum Saum hin
+  weich; Kapseln an Ober- und Unterschenkeln schieben den Stoff. Vorn und hinten folgt der Stoff zusätzlich den Beinen
+  (bis 85 %), damit das ausschreitende Bein nicht durchsticht. Röcke in A-Linie (unten weit). Nur bis 30 m aktiv.
+  Grenze: Das ist Sekundärbewegung (wie in den meisten großen Spielen), keine Tuchsimulation mit Faltenwurf Faser für
+  Faser; die wäre für viele Menschen gleichzeitig in Godot nicht in Echtzeit möglich.
+- **Haut je Figur**: Bräune an Gesicht, Hals, Händen (fleckig), Röte an Nase, Wangen, Ohren, Bartschatten mit
+  Stoppeln, Sommersprossen, Schmutz an den Händen, leicht anderer Hautton; feine Poren und Falten als Normalkarte,
+  Glanz an Stirn, Nase und Lippen als Rauheitskarte; in Godot Subsurface Scattering im Hautmodus.
+- **Noch offen**: Abnutzung der Stoffe (Schmutz am Saum, Flicken, ausgeblichene Stellen, Faltennormalen), bessere Haare
+  (Strähnen statt Kappe), Bärte, Berufskleidung (Schürze, Wappenrock, Kutte) als eigene schwingende Stoffbahnen, ein
+  größerer Vorrat an Körpern.

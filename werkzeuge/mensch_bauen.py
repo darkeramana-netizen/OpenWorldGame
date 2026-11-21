@@ -375,6 +375,120 @@ def zerlege_nach_uv(ecken_pos, uv, flaechen, gewichte_je_ecke):
     return np.array(pos), np.array(tex), jw, np.array(tri)
 
 
+# ---------- Haut: Vielfalt, Poren, Glanz ----------
+
+def uv_maske(groesse, flaechen, vt, wert_je_ecke, unschaerfe):
+    """Malt einen Wert je Körperecke in die UV-Karte (je Dreieck der Mittelwert) und weicht ihn auf."""
+    from PIL import ImageDraw, ImageFilter
+    klein = groesse // 4
+    im = Image.new("L", (klein, klein), 0)
+    zeichner = ImageDraw.Draw(im)
+    for ecken, uvs in flaechen:
+        w = float(np.mean([wert_je_ecke[e] for e in ecken]))
+        if w <= 0.002:
+            continue
+        punkte = [(vt[t][0] * klein, (1.0 - vt[t][1]) * klein) for t in uvs if t >= 0]
+        if len(punkte) >= 3:
+            zeichner.polygon(punkte, fill=int(min(w, 1.0) * 255))
+    im = im.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(unschaerfe))
+    return np.asarray(im.resize((groesse, groesse), Image.BILINEAR), np.float32) / 255.0
+
+
+def bearbeite_haut(farbe_bild, ziel, flaechen, vt, V, kopf, maenner, zufall, opt):
+    """Aus der MakeHuman-Haut eine eigene je Figur: Bräune an Gesicht, Hals und Händen, Röte an Nase, Wangen und
+    Ohren, Bartschatten, Sommersprossen oder Flecken, Schmutz an den Händen; dazu Normalkarte (Poren, Falten aus der
+    Farbe und feinem Rauschen) und Rauheit (Stirn, Nase, Lippen glänzen). Schreibt haut.jpg, haut_normal.png,
+    haut_rau.png."""
+    from PIL import ImageFilter
+    g = 1024
+    a = np.asarray(Image.open(farbe_bild).convert("RGB").resize((g, g), Image.LANCZOS), np.float32) / 255.0
+    hx, hy, hz = kopf
+    n = len(V)
+    vorn = np.clip((V[:, 2] - hz - 0.02) / 0.06, 0, 1)                       # Gesichtsseite des Kopfes
+    am_kopf = (V[:, 1] > hy - 0.03).astype(np.float32)
+    gesicht = am_kopf * vorn
+    hals = ((V[:, 1] > hy - 0.16) & (V[:, 1] <= hy - 0.03)).astype(np.float32)
+    haende = np.zeros(n, np.float32)
+    ids_arm = {i for ecken, _ in flaechen for i in ecken}
+    # Hände: weit außen und unterhalb der Hüfte in der A-Haltung
+    haende[(np.abs(V[:, 0]) > 0.33) & (V[:, 1] < 1.05)] = 1.0
+    unterarm = ((np.abs(V[:, 0]) > 0.25) & (V[:, 1] < 1.2)).astype(np.float32)
+    mund_y = hy + 0.035
+    nase = gesicht * np.clip(1.0 - np.hypot(V[:, 0] - hx, (V[:, 1] - (hy + 0.08)) * 0.8) / 0.03, 0, 1)
+    wangen = gesicht * np.clip(1.0 - np.abs(np.abs(V[:, 0] - hx) - 0.045) / 0.025, 0, 1) * \
+        np.clip(1.0 - np.abs(V[:, 1] - (hy + 0.06)) / 0.035, 0, 1)
+    ohren = am_kopf * np.clip((np.abs(V[:, 0] - hx) - 0.065) / 0.01, 0, 1) * np.clip(1 - np.abs(V[:, 1] - (hy + 0.08)) / 0.04, 0, 1)
+    bart = gesicht * np.clip(((mund_y + 0.015) - V[:, 1]) / 0.02, 0, 1) * np.clip((V[:, 1] - (hy - 0.05)) / 0.02, 0, 1)
+    oberlippe = gesicht * np.clip(1.0 - np.abs(V[:, 1] - (mund_y + 0.012)) / 0.008, 0, 1) * \
+        np.clip(1.0 - np.abs(V[:, 0] - hx) / 0.03, 0, 1)
+    lippen = gesicht * np.clip(1.0 - np.abs(V[:, 1] - mund_y) / 0.007, 0, 1) * np.clip(1.0 - np.abs(V[:, 0] - hx) / 0.026, 0, 1)
+    stirn = gesicht * np.clip((V[:, 1] - (hy + 0.13)) / 0.03, 0, 1) * np.clip(1.0 - np.abs(V[:, 0] - hx) / 0.06, 0, 1)
+    m = lambda w, b: uv_maske(g, flaechen, vt, w, b)
+    M_sonne = m(np.maximum.reduce([gesicht, hals * 0.8, haende, unterarm * 0.5]), 6)
+    M_rot = m(np.maximum.reduce([nase, wangen * 0.8, ohren]), 5)
+    M_bart = m(np.maximum(bart, oberlippe), 3)
+    M_haende = m(haende, 4)
+    M_glanz = m(np.maximum.reduce([nase, stirn, lippen]), 4)
+    M_lippen = m(lippen, 2)
+    M_gesicht = m(gesicht, 4)
+
+    braeune = float(opt.get("braeune", zufall.uniform(0.1, 0.6)))
+    roete = float(opt.get("roete", zufall.uniform(0.1, 0.55)))
+    bartschatten = float(opt.get("bart", zufall.uniform(0.3, 0.9) if maenner else 0.0))
+    sprossen = float(opt.get("sommersprossen", zufall.choice([0.0, 0.0, 0.0, 0.5, 0.9])))
+    schmutz = float(opt.get("schmutz", zufall.uniform(0.0, 0.6)))
+    ton = np.array([float(x) for x in opt.get("hautton", "%.3f,%.3f,%.3f" % tuple(
+        np.array([1.0, 1.0, 1.0]) + zufall.uniform(-0.06, 0.04) + np.array([0.0, zufall.uniform(-0.03, 0.01), zufall.uniform(-0.05, 0.0)]))).split(",")])
+
+    rng = np.random.default_rng(zufall.randint(0, 1 << 30))
+    def rauschen(skala, glatt):
+        z = rng.random((g // skala + 2, g // skala + 2)).astype(np.float32)
+        im = Image.fromarray((z * 255).astype(np.uint8)).resize((g, g), Image.BICUBIC)
+        if glatt:
+            im = im.filter(ImageFilter.GaussianBlur(glatt))
+        return np.asarray(im, np.float32) / 255.0
+    fleckig = rauschen(24, 6)                                           # ungleichmäßige Bräune
+    a = a * ton
+    sonne = M_sonne[..., None] * braeune * (0.75 + 0.5 * fleckig[..., None])
+    a = a * (1.0 - sonne) + a * np.array([0.9, 0.8, 0.72]) * sonne       # gebräunt: etwas dunkler, wärmer
+    rot = M_rot[..., None] * roete
+    a = a * (1.0 - rot * 0.5) + np.array([0.75, 0.32, 0.28]) * a.mean(axis=2, keepdims=True) * 1.6 * rot * 0.5
+    if bartschatten > 0:
+        stoppeln = rauschen(1, 0) > (0.55 - 0.25 * bartschatten)
+        b = M_bart[..., None] * bartschatten * (0.55 + 0.45 * stoppeln[..., None])
+        a = a * (1.0 - b * 0.4) + np.array([0.2, 0.19, 0.19]) * b * 0.4
+    if sprossen > 0:
+        punkte = (rauschen(3, 0) > 0.86).astype(np.float32)
+        punkte = np.asarray(Image.fromarray((punkte * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2)), np.float32) / 255
+        f = (np.maximum(M_gesicht, M_sonne * 0.5) * punkte * sprossen)[..., None]
+        a = a * (1.0 - f * 0.45) + a * np.array([0.7, 0.48, 0.32]) * f * 0.45
+    if schmutz > 0:
+        dreck = M_haende[..., None] * schmutz * (0.5 + 0.5 * rauschen(16, 3)[..., None])
+        a = a * (1.0 - dreck * 0.5) + np.array([0.22, 0.18, 0.13]) * dreck * 0.5
+    a = a * (1.0 + (M_lippen[..., None] * np.array([0.08, -0.05, -0.03])))
+    # feine Unregelmäßigkeit überall (Haut ist nie gleichmäßig)
+    a = a * (0.96 + 0.08 * rauschen(6, 1.5)[..., None])
+    Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).save(ziel / "haut.jpg", quality=92)
+
+    # Normalkarte: Hochpass der Helligkeit (Falten, Poren der Vorlage) plus feine Poren
+    hell = a.mean(axis=2)
+    weich = np.asarray(Image.fromarray((hell * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5)), np.float32) / 255
+    # Falten der Vorlage schwach, Poren fein (ein Bildpunkt sind etwa 2 mm im Gesicht)
+    hoehe = (hell - weich) * 0.6 + (rauschen(1, 0.4) - 0.5) * 0.05
+    dx = np.roll(hoehe, -1, 1) - np.roll(hoehe, 1, 1)
+    dy = np.roll(hoehe, -1, 0) - np.roll(hoehe, 1, 0)
+    staerke = 1.0
+    nrm = np.stack([-dx * staerke, dy * staerke, np.ones_like(dx)], axis=2)
+    nrm /= np.linalg.norm(nrm, axis=2, keepdims=True)
+    Image.fromarray(((nrm * 0.5 + 0.5) * 255).astype(np.uint8)).save(ziel / "haut_normal.png", optimize=True)
+    # Rauheit (glTF: G-Kanal), Metall 0
+    rau = 0.62 - 0.2 * M_glanz - 0.12 * M_lippen + 0.06 * (rauschen(4, 1) - 0.5) + 0.1 * (M_haende * schmutz)
+    mr = np.zeros((g, g, 3), np.float32); mr[..., 1] = np.clip(rau, 0.25, 0.9)
+    Image.fromarray((mr * 255).astype(np.uint8)).save(ziel / "haut_rau.png", optimize=True)
+    return {"braeune": round(braeune, 2), "roete": round(roete, 2), "bart": round(bartschatten, 2),
+            "sommersprossen": sprossen, "schmutz": round(schmutz, 2)}
+
+
 # ---------- Stoffe (Poly Haven, CC0) ----------
 
 STOFFE = {"kittel": "cotton_jersey", "beinlinge": "poly_wool_herringbone", "leder": "brown_leather"}
@@ -534,8 +648,8 @@ def main():
         mitte_ = MHP["pelvis"]
         for i in rock_ids:
             q = V[i]
-            w = np.arctan2(q[0] - mitte_[0], q[2] - mitte_[2])
-            cf = (w + np.pi) / (2 * np.pi) * ketten_n - 0.5
+            wi = np.arctan2(q[0] - mitte_[0], q[2] - mitte_[2])
+            cf = (wi + np.pi) / (2 * np.pi) * ketten_n - 0.5
             c0 = int(np.floor(cf)) % ketten_n; c1 = (c0 + 1) % ketten_n; fc = cf - np.floor(cf)
             t = (q[1] - (taille_ - 0.035)) / ((lang_ + 0.02) - (taille_ - 0.035)) * (glieder_n - 1)
             t = min(max(t, 0.0), glieder_n - 1.001)
@@ -544,7 +658,7 @@ def main():
             gk = {k0: 1.0 - 0.5 * fk, min(k0 + 1, glieder_n - 1): 0.5 * fk}
             d = {}
             # vorn und hinten (dort schwingen die Beine durch) folgt der Stoff stärker den Beinen, seitlich freier
-            BEIN_ANTEIL = 0.55 + 0.3 * abs(np.cos(w))
+            BEIN_ANTEIL = 0.55 + 0.3 * abs(np.cos(wi))
             for c, wc in ((c0, 1.0 - fc), (c1, fc)):
                 for k, wk in gk.items():
                     j = basis_ + c * glieder_n + k
@@ -631,8 +745,13 @@ def main():
 
     # Haut
     hm = lies_material(sysa / "skins" / haut / f"{haut}.mhmat")
-    haut_bild = bild(sysa / "skins" / haut / hm["diffuseTexture"], "haut.jpg")
-    m_haut = gl.material("Haut", haut_bild, rau=0.62)
+    import random as _random
+    import zlib
+    zufall_ = _random.Random(zlib.crc32(name.encode()))
+    haut_info = bearbeite_haut(sysa / "skins" / haut / hm["diffuseTexture"], ziel,
+                               [(e, t) for g_, e, t in flaechen if g_ == "body"], vt, V, MHP["Head"], not w, zufall_, opt)
+    m_haut = gl.material("Haut", "haut.jpg", rau=1.0, normal_uri="haut_normal.png")
+    gl.g["materials"][m_haut]["pbrMetallicRoughness"]["metallicRoughnessTexture"] = {"index": gl.textur("haut_rau.png")}
     koerper_fl = [(e, t) for g_, e, t in flaechen if g_ == "body"]
 
     # Kleidung aus der Hilfsgeometrie: Kittel (Rumpf, Arme, Rock bis zum Knie), Beinlinge, Gürtel, Schuhe
@@ -653,7 +772,7 @@ def main():
         oben_k = ("spine", "clavicle", "upperarm", "lowerarm")
         unten_k = ("thigh", "calf", "foot", "ball")
         taille = MHP["spine_01"][1]
-        hals = MHP["neck_01"][1] - 0.035          # Halsausschnitt auf fester Höhe
+        hals = MHP["neck_01"][1] + 0.005          # runder Halsausschnitt eng am Hals, auf fester Höhe
         rock_lang = 0.5 if kleidung == "kittel" else 0.1     # Kittel bis zum Knie, Kleid bis zum Knöchel
         def ist_oben_roh(i):
             h = haupt(i)
@@ -715,7 +834,7 @@ def main():
             # nur Haut, die selbst zum Kleiderbereich gehört und Stoff dicht über sich hat (sonst Löcher am Saum)
             baum = cKDTree(V[bedeckt_von])
             d, _ = baum.query(V[koerper_ids])
-            unter = lambda i: (ist_oben(i) and hand(i) < 0.12 and V[i][1] < hals - 0.02) or ist_unten(i)
+            unter = lambda i: (ist_oben(i) and hand(i) < 0.12 and V[i][1] < hals - 0.012) or ist_unten(i)
             bedeckt |= {i for i, dd in zip(koerper_ids, d) if dd < 0.025 and unter(i)}
         # Beine und Becken unter dem Rock weglassen (sonst stechen sie beim Gehen durch den Stoff)
         bedeckt |= {i for i in koerper_ids if (haupt(i).startswith(("thigh", "calf")) or haupt(i) == "pelvis")
@@ -761,7 +880,7 @@ def main():
     gl.schreibe(ziel / f"{name}.gltf")
     info = {"quelle": "MakeHuman 1.x (CC0)", "geschlecht": geschlecht, "alter": alter, "muskeln": muskeln,
             "gewicht": gewicht, "groesse": groesse, "haut": haut, "haare": haare, "massstab": round(float(s), 4),
-            "hoehe_m": round(float((v[koerper_ids, 1].max() - boden) * s), 3)}
+            "hoehe_m": round(float((v[koerper_ids, 1].max() - boden) * s), 3), "haut_merkmale": haut_info}
     (ziel / "mensch.json").write_text(json.dumps(info, indent=1))
     print("gebaut:", name, info)
 

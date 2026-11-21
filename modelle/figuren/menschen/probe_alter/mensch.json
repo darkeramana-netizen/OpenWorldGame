@@ -8,5 +8,12 @@
  "haut": "old_caucasian_male",
  "haare": "short04",
  "massstab": 0.1036,
- "hoehe_m": 1.793
+ "hoehe_m": 1.793,
+ "haut_merkmale": {
+  "braeune": 0.39,
+  "roete": 0.51,
+  "bart": 0.64,
+  "sommersprossen": 0.0,
+  "schmutz": 0.35
+ }
 }

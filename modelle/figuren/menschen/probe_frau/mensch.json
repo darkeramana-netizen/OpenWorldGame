@@ -8,5 +8,12 @@
  "haut": "young_caucasian_female",
  "haare": "braid01",
  "massstab": 0.1159,
- "hoehe_m": 1.861
+ "hoehe_m": 1.861,
+ "haut_merkmale": {
+  "braeune": 0.59,
+  "roete": 0.21,
+  "bart": 0.0,
+  "sommersprossen": 0.5,
+  "schmutz": 0.54
+ }
 }

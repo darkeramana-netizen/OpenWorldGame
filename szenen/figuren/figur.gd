@@ -545,6 +545,7 @@ func _baue_mensch(w: bool) -> bool:
 	add_child(_modell)
 	var skelett: Skeleton3D = _modell.get_node("Armature/Skeleton3D")
 	_stoff = stoff_einrichten(skelett)
+	haut_verfeinern(_modell)
 	if _stoff != null:
 		_stoff.reset.call_deferred()          # nach dem Aufstellen nicht vom Sprung an den Platz losschwingen
 	if frisur == 3 and beruf in ["", "haendler"]:
@@ -615,6 +616,27 @@ static func stoff_einrichten(skelett: Skeleton3D) -> SpringBoneSimulator3D:
 		k.position_offset = Vector3(0, (anfang + laenge) * 0.5, 0)
 		sim.add_child(k)
 	return sim
+
+
+## Haut und Augen der realistischen Menschen: Licht scheint durch die Haut (Subsurface Scattering im Hautmodus, an
+## Ohren und Nase stärker), Augen glänzen feucht. Die Materialien werden je Vorlage einmal angelegt und geteilt.
+static var _haut_mats := {}
+static func haut_verfeinern(modell: Node) -> void:
+	for m: MeshInstance3D in modell.find_children("*", "MeshInstance3D", true, false):
+		for i in m.mesh.get_surface_count():
+			var basis := m.mesh.surface_get_material(i) as StandardMaterial3D
+			if basis == null or not basis.resource_name in ["Haut", "Augen"]:
+				continue
+			if not _haut_mats.has(basis.get_instance_id()):
+				var neu: StandardMaterial3D = basis.duplicate()
+				if basis.resource_name == "Haut":
+					neu.subsurf_scatter_enabled = true
+					neu.subsurf_scatter_skin_mode = true
+					neu.subsurf_scatter_strength = 0.35
+				else:
+					neu.roughness = 0.3
+				_haut_mats[basis.get_instance_id()] = neu
+			m.set_surface_override_material(i, _haut_mats[basis.get_instance_id()])
 
 
 ## Die Animationen für die MakeHuman-Körper: ohne Positionsspuren außer Wurzel und Becken, sonst zögen sie die
