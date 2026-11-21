@@ -51,5 +51,26 @@ den Stand großer Studio-Spiele (Gesichter, Kleidung, Animation aus Motion Captu
 |---|---|
 | Ausstattung: Werkzeug und erste Scans (Fass, Kisten, Korb, Axt, Hammer, Säge, Schild, Laterne, Eimer, Zuber, Hocker) | erledigt (21.11.2026) |
 | Ausstattung: weitere Arten (Säcke, Amboss, Wagen, Marktstand, Leiter, Tränke) | offen; für Wagen, Schiffe und Amboss gibt es keinen CC0-Scan, dort selbst bauen mit Fotoscan-Materialien |
-| Figuren: Prototyp mit realistischen Körpern | offen |
+| Figuren: Prototyp mit realistischen Körpern | Prototyp steht (Zweig `figuren-prototyp`, siehe unten) |
 | Tiere | offen |
+
+## Figuren-Prototyp (21.11.2026)
+
+Werkzeug `werkzeuge/mensch_bauen.py`, Quellen in `modelle/figuren/menschen/QUELLEN.md`.
+
+- **Körper**: MakeHuman-Grundkörper (CC0) mit den Makro-Zielen wie in MakeHuman (Geschlecht, Alter, Muskeln,
+  Gewicht, Größe), Hauttexturen nach Alter und Herkunft, Haare, Augen, Brauen und Wimpern aus den Systemassets.
+- **Skelett und Animation**: Der Körper wird an das Skelett der Quaternius-Figuren gebunden (gleiche 65 Knochen, gleiche
+  Ausrichtung in T-Haltung, Längen vom MakeHuman-Körper; die Bindungsmatrizen beschreiben die A-Haltung). Damit laufen
+  alle 43 vorhandenen Animationen ohne Umrechnung; nur ihre Positionsspuren (außer Wurzel und Becken) fallen weg, damit
+  die Proportionen bleiben. Hut, Zubehör, Blick und Dinge in der Hand hängen an denselben Knochen wie bisher.
+- **Kleidung**: aus der Hilfsgeometrie des Grundkörpers (Strumpfhose, Rock): Kittel mit langen Ärmeln und Rock bis zum
+  Knie, oder Kleid bis zum Knöchel; Beinlinge, Gürtel als Ring, Lederschuhe. Stoffe aus Poly-Haven-Scans, grau, die
+  Tracht der Figur färbt sie. Haut unter der Kleidung fällt weg (nichts sticht durch).
+- **Kosten**: etwa 28 000 Dreiecke je Figur, wie die heutigen (Körper 14 000 und Kleidung 13 000).
+- **Schalter**: `figur.gd` baut mit `FIGUREN_REALISTISCH=1` (oder Projekteinstellung `sorrowland/figuren_realistisch`)
+  die neuen Körper; Kinder bleiben vorerst Quaternius.
+
+Offen bis zur Umstellung: mehr Körper im Vorrat (Alter, Statur, Hautton, Frisuren), Bärte (MakeHuman hat keine
+CC0-Bärte; eigene Karte nötig), Berufskleidung (Schürze, Kettenhemd, Wappenrock, Kutte), eine ferne Fassung mit weniger
+Dreiecken (MakeHuman-Proxy `male1591` mit 1600 Ecken), Frauen im Kleid ohne Beinlinge beim Sitzen prüfen.

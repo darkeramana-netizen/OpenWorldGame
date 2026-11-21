@@ -83,6 +83,15 @@ const HALTUNGEN := {"": "Idle", "reden": "Idle_Talking", "sitzen": "Sitting_Idle
 
 static var _szenen := {}
 static var _bibliothek: AnimationLibrary
+static var _bibliothek_mensch: AnimationLibrary
+## Prototyp (docs/grafik-richtung.md): realistische Menschen aus MakeHuman (modelle/figuren/menschen, gebaut mit
+## werkzeuge/mensch_bauen.py) statt der Quaternius-Körper. Einschalten mit der Projekteinstellung
+## sorrowland/figuren_realistisch oder der Umgebungsvariablen FIGUREN_REALISTISCH=1.
+static var realistisch: bool = OS.get_environment("FIGUREN_REALISTISCH") != "" or \
+	bool(ProjectSettings.get_setting("sorrowland/figuren_realistisch", false))
+const MENSCHEN := "res://modelle/figuren/menschen/"
+const MENSCHEN_MAENNER := ["probe_mann", "probe_alter"]
+const MENSCHEN_FRAUEN := ["probe_frau"]
 static var _modell_mats := {}
 static var _koepfe := {}
 var _anim: AnimationPlayer
@@ -468,6 +477,8 @@ func _haenge_an(skelett: Skeleton3D, pfad: String, filter := "", ohne := "") -> 
 
 func _baue_modell() -> bool:
 	var w := ist_weiblich()
+	if realistisch and beruf != "kind":
+		return _baue_mensch(w)
 	var koerper_szene := _szene(MODELLE + ("Superhero_Female_FullBody.gltf" if w else "Superhero_Male_FullBody.gltf"))
 	var bib := _animationen()
 	if koerper_szene == null or bib == null:
@@ -515,6 +526,58 @@ func _baue_modell() -> bool:
 	_anim.play("Idle")
 	_anim.seek(fmod(absf(float(hash(_name_text))) * 0.001, 2.0), true)   # nicht alle im Gleichschritt
 	return true
+
+
+## Realistischer Mensch (Prototyp): fertiger Körper mit Kleidung aus modelle/figuren/menschen, am selben Skelett wie
+## die Quaternius-Figuren; Hut, Zubehör, Blick und Handgriffe wie dort.
+func _baue_mensch(w: bool) -> bool:
+	var vorrat: Array = MENSCHEN_FRAUEN if w else MENSCHEN_MAENNER
+	var name_: String = vorrat[absi(hash(_name_text)) % vorrat.size()]
+	var s := _szene(MENSCHEN + name_ + "/" + name_ + ".gltf")
+	var bib := _animationen_mensch()
+	if s == null or bib == null:
+		return false
+	_modell = s.instantiate()
+	_modell.name = "Modell"
+	_modell.set_meta("figur_teil", true)
+	_modell.rotation.y = PI
+	add_child(_modell)
+	var skelett: Skeleton3D = _modell.get_node("Armature/Skeleton3D")
+	if frisur == 3 and beruf in ["", "haendler"]:
+		_hut(skelett)
+	_zubehoer(skelett, w)
+	_blick_einrichten(skelett)
+	_setze_handding()
+	_halte_alle()
+	_anim = AnimationPlayer.new()
+	_anim.name = "Anim"
+	_modell.add_child(_anim)
+	_anim.add_animation_library("", bib)
+	_anim.playback_default_blend_time = 0.25
+	_anim.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+	_anim_takt = absi(hash(_name_text + str(get_instance_id()))) % 4
+	_anim.play("Idle")
+	_anim.seek(fmod(absf(float(hash(_name_text))) * 0.001, 2.0), true)
+	return true
+
+
+## Die Animationen für die MakeHuman-Körper: ohne Positionsspuren außer Wurzel und Becken, sonst zögen sie die
+## Gelenke auf die Proportionen der Quaternius-Figur.
+static func _animationen_mensch() -> AnimationLibrary:
+	if _bibliothek_mensch == null:
+		var bib := _animationen()
+		if bib == null:
+			return null
+		_bibliothek_mensch = AnimationLibrary.new()
+		for n in bib.get_animation_list():
+			var an: Animation = bib.get_animation(n).duplicate(true)
+			for t in range(an.get_track_count() - 1, -1, -1):
+				if an.track_get_type(t) == Animation.TYPE_POSITION_3D:
+					var pfad := String(an.track_get_path(t))
+					if not (pfad.ends_with(":root") or pfad.ends_with(":pelvis")):
+						an.remove_track(t)
+			_bibliothek_mensch.add_animation(n, an)
+	return _bibliothek_mensch
 
 
 ## Vom Grundkörper nur Kopf und Hals behalten: Dreiecke, deren Ecken alle überwiegend an Kopf- oder Halsknochen
@@ -836,6 +899,14 @@ func _faerbe_modell() -> void:
 					ton = klar.call(SCHUHE[(h / 5) % SCHUHE.size()], 2.3)
 				else:
 					ton = tracht_ton
+			elif mat_name == "Kittel":          # realistischer Mensch: Stoffe sind grau, die Tracht färbt
+				ton = klar.call(tracht, 1.7)
+			elif mat_name == "Beinlinge":
+				ton = klar.call(HOSEN[(absi(hash(_name_text)) / 3) % HOSEN.size()], 1.4)
+			elif mat_name == "Leder" and kordel_farbe.a > 0.0 and "Guertel" in name_:
+				ton = klar.call(kordel_farbe, 1.6)
+			elif mat_name in ["Haut", "Augen", "Brauen", "Wimpern", "Leder", "Haare"]:
+				continue
 			elif "Eye" in mat_name:
 				continue
 			var schluessel := "%d|%s" % [basis.get_instance_id(), ton.to_html()]
