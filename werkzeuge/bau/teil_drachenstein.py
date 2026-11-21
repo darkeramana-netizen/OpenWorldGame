@@ -774,7 +774,8 @@ _A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2
               21: (7.6, 5.4), 22: (0.4, 1.0), 23: (0.3, 0.6), 24: (0.7, 1.4), 25: (0.7, 1.3), 26: (0.9, 2.2),
               27: (0.6, 1.1), 28: (4.2, 0.6), 29: (1.2, 1.2), 30: (1.6, 1.2), 31: (0.2, 0.3),
               40: (2.0, 0.8), 41: (3.4, 0.9), 42: (1.3, 0.9), 43: (1.5, 3.7), 44: (1.8, 0.4), 45: (2.2, 2.0), 46: (1.4, 1.3),
-              47: (2.2, 1.5), 48: (0.9, 0.9), 3: (3.2, 2.2), 49: (2.1, 4.8), 33: (3.2, 0.5)}
+              47: (2.2, 1.5), 48: (0.9, 0.9), 3: (3.2, 2.2), 49: (2.1, 4.8), 33: (3.2, 0.5),
+              50: (0.4, 0.4), 51: (0.65, 0.65), 52: (0.45, 0.45)}
 _treppen_w = []
 for k_ in range(0, len(TREPPEN), 7):
     fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
@@ -943,6 +944,11 @@ for name_, hof_, boden_ in _hoefe:
         x_, z_ = mx_ + r_ * math.cos(w_), mz_ + r_ * math.sin(w_)
         if stelle(10, x_, z_, random.uniform(0, 90), hof_w_, boden_, wegabstand=4.0):
             BURG_BRUNNEN[name_] = (x_, z_)
+            # ein Eimer steht am Brunnenrand (Fotoscan, Art 50)
+            for w2_ in (0.4, 2.0, 3.6, 5.2):
+                if stelle(50, x_ + 2.15 * math.cos(w2_), z_ + 2.15 * math.sin(w2_), w2_ * 57.0, hof_w_, boden_,
+                          wegabstand=2.0):
+                    break
             _vorplaetze_w.append(_rechteck_w(x_, z_, 5.4, 5.4, 0.0))   # rund um den Brunnen bleibt Platz zum Wasserholen
             break
     # Hoflinde (Laubbaum) unweit des Brunnens: Stamm abseits der Wege, die Krone (7 m) über keinem Haus und keinem Bau
@@ -990,7 +996,7 @@ for name_, hof_, boden_ in _hoefe:
                                      (1, -3.1, 0.5, 10), (1, -3.2, 1.5, 40), (2, -2.1, 2.5, 0)], hof_w_, boden_, tiefe=1.0)
     if name_ in ("Mittelburg", "Oberburg"):
         # Tränke für die Reitpferde der Boten, daneben ein Wasserfass
-        werkplatz(f"Tränke {name_}", [(12, 0.0, 0.4, 0), (0, 1.9, 0.3, 0)], hof_w_, boden_)
+        werkplatz(f"Tränke {name_}", [(12, 0.0, 0.4, 0), (0, 1.9, 0.3, 0), (50, -1.8, 0.5, 40)], hof_w_, boden_)
     # Mängelliste M21: Arbeit und Alltag in jedem Hof (die Leute dazu setzt teil_burgleben.py)
     if name_ == "Vorburg":
         # Hackplatz: Brennholz für Küche und Schmiede
@@ -998,14 +1004,14 @@ for name_, hof_, boden_ in _hoefe:
                   frei_im_hof=True)
     if name_ == "Mittelburg":
         # Zimmerplatz: ein Stamm wird auf dem Sägebock zu Balken gesägt, daneben Werkbank und Hackklotz
-        werkplatz("Zimmerplatz Mittelburg", [(41, 0.0, 0.6, 0), (40, -3.4, 0.0, 0), (46, 3.1, 1.3, 0), (11, 0.0, -1.6, 0)],
+        werkplatz("Zimmerplatz Mittelburg", [(41, 0.0, 0.6, 0), (40, -3.4, 0.0, 0), (52, -3.4, 1.6, 20), (46, 3.1, 1.3, 0), (11, 0.0, -1.6, 0)],
                   hof_w_, boden_, mitte=True)
     if name_ == "Oberburg":
         # Kräuter- und Gemüsegarten der Burgküche: drei Beete nebeneinander, die Schmalseite an der Mauer
         werkplatz("Garten Oberburg", [(43, -2.0, 1.2, 0), (43, 0.0, 1.2, 0), (43, 2.0, 1.2, 0), (2, 3.6, 0.2, 20)],
                   hof_w_, boden_, tiefe=0.4, frei_im_hof=True)
         # Steinmetz: Quader für die Ausbesserung der Mauern
-        werkplatz("Steinmetz Oberburg", [(47, 0.0, 0.7, 0), (40, -3.0, 0.1, 0)], hof_w_, boden_, frei_im_hof=True)
+        werkplatz("Steinmetz Oberburg", [(47, 0.0, 0.7, 0), (40, -3.0, 0.1, 0), (50, 1.9, -0.1, 0)], hof_w_, boden_, frei_im_hof=True)
         # Händler aus der Stadt: zwei Stände mit Waren für das Gesinde, dahinter Kisten und Säcke
         werkplatz("Markt Oberburg", [(3, -2.0, 0.0, 0), (3, 2.0, 0.0, 0), (1, -3.2, -1.6, 15), (2, 0.0, -1.7, 0),
                                      (0, 3.3, -1.5, 0)], hof_w_, boden_, mitte=True)
@@ -1300,6 +1306,11 @@ for name_, hof_, boden_ in _hoefe:
             continue
         if stelle(28, x_, z_, math.degrees(math.atan2(nx_, nz_)), hof_w_, boden_, wegabstand=2.0):
             gesetzt_ += 1
+            # Waschzuber am Ende der Leine (Art 51)
+            for s2_ in (1, -1):
+                if stelle(51, x_ + ux_ * 3.3 * s2_ + nx_ * 0.5, z_ + uz_ * 3.3 * s2_ + nz_ * 0.5, 35.0 * s2_,
+                          hof_w_, boden_, wegabstand=2.0):
+                    break
     _klein[28] = _klein.get(28, 0) + gesetzt_
     # Pfützen: verschüttetes Wasser am Brunnen und an der Tränke
     if name_ in BURG_BRUNNEN:

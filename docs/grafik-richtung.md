@@ -11,7 +11,7 @@ auszutauschen?
 | Mauern, Burgen, Häuser | Geometrie aus Bauskripten, Fotoscan-Materialien, Verwitterung | weitgehend; Form gut, Details ausbaufähig |
 | Bäume, Büsche, Felsen, Pflanzen | Fotoscans (Poly Haven), eigene LOD-Werkzeuge | ja |
 | Wasser | eigener Shader (Tiefe, Gischt) | ja |
-| Ausstattung (Fässer, Kisten, Werkbank, Wagen, Schiffe …) | 50 Arten, aus Klötzen und Zylindern im Skript gebaut | nein |
+| Ausstattung (Fässer, Kisten, Werkbank, Wagen, Schiffe …) | 53 Arten; Fass, Kisten, Eimer, Zuber, Hocker, Laterne, Werkzeug, Schild und Korb aus Fotoscans (`SCANS` in `ausstattung.gd`), der Rest aus Klötzen und Zylindern im Skript | teilweise |
 | Figuren | Quaternius (CC0), Low-Poly, comicartig | nein |
 | Tiere | Quaternius (CC0), Low-Poly | nein |
 
@@ -32,8 +32,9 @@ Der Austausch wird also nicht teuer – teuer würde es, wenn wir noch viele wei
 
 1. **Ab jetzt neue Dinge gleich realistisch**: zuerst nach einem CC0-Scan suchen (Poly Haven, ambientCG); nur wo es
    keinen gibt (Wagen, Schiffe, Amboss), weiter selbst bauen, dann aber mit Fotoscan-Materialien statt Grundfarben.
-2. **Ausstattung austauschen, die Nummern bleiben**: Werkzeug `werkzeuge/modell_laden.py` nach dem Vorbild von
-   `baum_laden.py` (laden, vereinfachen, LOD, Kollision). Poly Haven hat u. a. Fässer, Kisten, Eimer, Körbe, Äxte,
+2. **Ausstattung austauschen, die Nummern bleiben**: Werkzeug `werkzeuge/modell_laden.py` (laden, vereinfachen, nahe
+   und ferne Fassung; erledigt, erste elf Scans in `modelle/ausstattung/QUELLEN.md`). Eine Art kann aus mehreren Scans
+   und eigener Geometrie bestehen (Werkbank mit Scan-Hammer und -Säge); Kollision und Platzierung bleiben. Poly Haven hat u. a. Fässer, Kisten, Eimer, Körbe, Äxte,
    Hämmer, Sägen, Leitern, Laternen, Hocker, Tische, Bänke, Truhe, Spinnrad, Schild.
 3. **Figuren**: Prototyp in einem eigenen Zweig – realistische CC0-Körper (MakeHuman, Export unter CC0) mit den
    Animationen der Quaternius-Bibliothek (CC0) über Godots Retargeting. Erst wenn das im Spiel überzeugt, umstellen.
@@ -43,3 +44,12 @@ Der Austausch wird also nicht teuer – teuer würde es, wenn wir noch viele wei
 
 Grenze: Godot 4.7.2 mit GDScript ohne eigenen Build erreicht einen glaubwürdigen, realistischen Eindruck, aber nicht
 den Stand großer Studio-Spiele (Gesichter, Kleidung, Animation aus Motion Capture).
+
+## Stand der Umstellung
+
+| Schritt | Stand |
+|---|---|
+| Ausstattung: Werkzeug und erste Scans (Fass, Kisten, Korb, Axt, Hammer, Säge, Schild, Laterne, Eimer, Zuber, Hocker) | erledigt (21.11.2026) |
+| Ausstattung: weitere Arten (Säcke, Amboss, Wagen, Marktstand, Leiter, Tränke) | offen; für Wagen, Schiffe und Amboss gibt es keinen CC0-Scan, dort selbst bauen mit Fotoscan-Materialien |
+| Figuren: Prototyp mit realistischen Körpern | offen |
+| Tiere | offen |

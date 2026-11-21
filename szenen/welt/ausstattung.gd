@@ -46,7 +46,33 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(1.7, 2.2, 0.12), Vector3(0.3, 0.45, 0.3), Vector3(2.6, 3.4, 9.5),
 	Vector3(1.0, 0.95, 0.4), Vector3(1.6, 0.95, 0.45), Vector3(0.65, 1.6, 0.35), Vector3(0.75, 0.3, 1.85),
 	Vector3(0.9, 0.5, 0.2), Vector3(1.0, 0.85, 1.0), Vector3(0.35, 0.6, 0.35), Vector3(1.1, 0.9, 0.7),
-	Vector3(0.55, 1.75, 0.35), Vector3(1.05, 1.9, 2.4)]
+	Vector3(0.55, 1.75, 0.35), Vector3(1.05, 1.9, 2.4),
+	Vector3.ZERO, Vector3(0.31, 0.35, 0.31), Vector3.ZERO]
+## Fotoscans (Poly Haven, CC0; werkzeuge/modell_laden.py, modelle/ausstattung): Art → Teile [Modell, Ort, Drehung in Grad
+## (x, y, z), Maßstab]. Ein Teil mit einer Zahl statt eines Namens ist eine selbst gebaute Form: 100 + Art ist die Art ohne
+## die Dinge, die ein Scan ersetzt (Werkzeug, Axt, Schild, Laterne, Korb). Bis SCAN_NAH Meter zeigt jede Art die volle
+## Fassung der Scans, dahinter die vereinfachte (je etwa ein Sechstel der Dreiecke).
+const SCANS := {
+	0: [["wine_barrel_01", Vector3.ZERO, Vector3.ZERO, Vector3(1.0, 1.09, 1.0)]],
+	1: [["wooden_crate_01", Vector3(0, 0, -0.19), Vector3.ZERO, Vector3(0.9, 0.9, 0.9)],
+		["wooden_crate_01", Vector3(0, 0, 0.19), Vector3(0, 180, 0), Vector3(0.9, 0.9, 0.9)],
+		["wooden_crate_01", Vector3(0.04, 0.315, 0.02), Vector3(0, 84, 0), Vector3(0.9, 0.9, 0.9)]],
+	20: [[120, Vector3.ZERO, Vector3.ZERO, Vector3.ONE], ["wooden_lantern_01", Vector3(0, 2.0, 0.48), Vector3.ZERO, Vector3.ONE]],
+	38: [[138, Vector3.ZERO, Vector3.ZERO, Vector3.ONE], ["wicker_basket_02", Vector3.ZERO, Vector3.ZERO, Vector3(1.5, 1.5, 1.5)]],
+	40: [[140, Vector3.ZERO, Vector3.ZERO, Vector3.ONE],
+		["wooden_hammer_01", Vector3(-0.55, 0.932, 0.12), Vector3(-90, 25, 0), Vector3.ONE],
+		["handsaw_wood", Vector3(0.3, 0.94, -0.02), Vector3(0, 80, 90), Vector3.ONE]],
+	46: [[146, Vector3.ZERO, Vector3.ZERO, Vector3.ONE], ["wooden_axe_03", Vector3(-0.33, 1.06, 0), Vector3(145, 90, 0), Vector3.ONE]],
+	48: [[148, Vector3.ZERO, Vector3.ZERO, Vector3.ONE], ["kite_shield", Vector3(0.12, 0, 0.5), Vector3(-17, 8, 0), Vector3(0.68, 0.68, 0.68)]],
+	50: [["wooden_bucket_01", Vector3.ZERO, Vector3.ZERO, Vector3.ONE]],
+	51: [["wooden_bucket_02", Vector3.ZERO, Vector3.ZERO, Vector3.ONE]],
+	52: [["wooden_stool_01", Vector3.ZERO, Vector3.ZERO, Vector3.ONE]],
+}
+const SCAN_NAH := 30.0
+## Mitte der Fischlage im Scan-Korb (wicker_basket_02, 1,5-fach): x, Höhe, z
+const KORB_FISCHE := Vector3(-0.02, 0.25, 0.0)
+static var _meshes_fern := {}
+
 ## Große Stücke, die das Bild aus der Ferne prägen (Schiffe, Prahme, Kräne): Art → Sichtweite in Metern. Sie bleiben
 ## immer geladen (nicht in Zellen), sonst fehlte der Hafen in der Gesamtansicht (Mängelliste M10).
 const FERNSICHT := {5: 1400.0, 6: 1400.0, 8: 900.0, 9: 900.0, 39: 1400.0}
@@ -216,6 +242,24 @@ func _baue_arten(je_art: Dictionary, ziel: Node3D) -> void:
 		inst.visibility_range_end = FERNSICHT.get(art, SICHTWEITE)
 		inst.visibility_range_end_margin = 100.0 if FERNSICHT.has(art) else 25.0
 		inst.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		if SCANS.has(art):
+			# Fotoscan: nah die volle Fassung, ab SCAN_NAH die vereinfachte
+			var mm_fern := MultiMesh.new()
+			mm_fern.transform_format = MultiMesh.TRANSFORM_3D
+			mm_fern.mesh = _mesh_fern(art)
+			mm_fern.instance_count = mm.instance_count
+			mm_fern.buffer = mm.buffer
+			var fern := MultiMeshInstance3D.new()
+			fern.name = "Art%dFern" % art
+			fern.multimesh = mm_fern
+			fern.visibility_range_begin = SCAN_NAH
+			fern.visibility_range_begin_margin = 3.0
+			fern.visibility_range_end = inst.visibility_range_end
+			fern.visibility_range_end_margin = inst.visibility_range_end_margin
+			fern.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			ziel.add_child(fern)
+			inst.visibility_range_end = SCAN_NAH
+			inst.visibility_range_end_margin = 3.0
 		if art == 30:   # Pfützen liegen flach auf dem Boden: kein Schattenwurf
 			inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		ziel.add_child(inst)
@@ -290,6 +334,9 @@ func _zylinder(mat: String, mitte: Vector3, r_unten: float, r_mitte: float, hoeh
 
 func _mesh(art: int) -> ArrayMesh:
 	if _meshes.has(art):
+		return _meshes[art]
+	if SCANS.has(art):
+		_meshes[art] = _scan_mesh(art, "nah")
 		return _meshes[art]
 	_f = {}
 	match art:
@@ -428,12 +475,16 @@ func _mesh(art: int) -> ArrayMesh:
 				for z: float in [-0.75, 0.7]:
 					_klotz("fell", Vector3(x - 0.07, 0, z - 0.07), Vector3(x + 0.07, 1.0, z + 0.07))
 					_klotz("haar", Vector3(x - 0.08, 0, z - 0.08), Vector3(x + 0.08, 0.12, z + 0.08))
-		20:  # Wandlaterne: Ausleger aus der Wand, darunter die Laterne mit Glut
+		20, 120:  # Wandlaterne: Ausleger aus der Wand, darunter die Laterne mit Glut (120: nur Ausleger, Haken und Glut)
 			_klotz("metall", Vector3(-0.03, 2.55, 0.0), Vector3(0.03, 2.6, 0.5))
 			_klotz("metall", Vector3(-0.03, 2.2, 0.0), Vector3(0.03, 2.6, 0.05))
-			_klotz("metall", Vector3(-0.16, 2.48, 0.32), Vector3(0.16, 2.54, 0.64))
-			_klotz("glut", Vector3(-0.11, 2.12, 0.37), Vector3(0.11, 2.48, 0.59))
-			_klotz("metall", Vector3(-0.15, 2.07, 0.33), Vector3(0.15, 2.12, 0.63))
+			if art == 20:
+				_klotz("metall", Vector3(-0.16, 2.48, 0.32), Vector3(0.16, 2.54, 0.64))
+				_klotz("glut", Vector3(-0.11, 2.12, 0.37), Vector3(0.11, 2.48, 0.59))
+				_klotz("metall", Vector3(-0.15, 2.07, 0.33), Vector3(0.15, 2.12, 0.63))
+			else:
+				_klotz("metall", Vector3(-0.01, 2.5, 0.47), Vector3(0.01, 2.55, 0.49))
+				_klotz("glut", Vector3(-0.045, 2.1, 0.435), Vector3(0.045, 2.24, 0.525))
 		21:
 			_schmiede()
 		27:  # Leiter: zwei Holme und Sprossen, oben an der Wand
@@ -472,16 +523,17 @@ func _mesh(art: int) -> ArrayMesh:
 				var r := 0.38 + i * 0.13
 				_fleck("pfuetze_rand", m + Vector3(0, 0.008, 0), r * 1.28, i * 1.7)
 				_fleck("pfuetze", m + Vector3(0, 0.014 + i * 0.001, 0), r, i * 1.7 + 0.4)
-		40:  # Werkbank: Platte auf vier Beinen, unten ein Brett, darauf Hammer, Säge, Hobel und ein paar Bretter
+		40, 140:  # Werkbank: Platte auf vier Beinen, unten ein Brett, darauf Hammer, Säge, Hobel und ein paar Bretter
 			_klotz("holz", Vector3(-1.0, 0.82, -0.38), Vector3(1.0, 0.92, 0.38))
 			for x: float in [-0.9, 0.9]:
 				for z: float in [-0.3, 0.3]:
 					_klotz("holz_dunkel", Vector3(x - 0.05, 0, z - 0.05), Vector3(x + 0.05, 0.82, z + 0.05))
 			_klotz("holz_dunkel", Vector3(-0.92, 0.18, -0.3), Vector3(0.92, 0.22, 0.3))
-			_seil("holz", Vector3(-0.6, 0.95, 0.1), Vector3(-0.3, 0.95, 0.2), 0.018)
-			_klotz("metall", Vector3(-0.66, 0.93, 0.03), Vector3(-0.58, 0.99, 0.17))
-			_viereck("metall", Vector3(0.05, 0.925, -0.05), Vector3(0.6, 0.925, -0.1), Vector3(0.6, 0.925, 0.0), Vector3(0.05, 0.925, 0.07), Vector3.UP)
-			_klotz("holz_dunkel", Vector3(-0.08, 0.92, -0.08), Vector3(0.05, 0.98, 0.1))
+			if art == 40:   # Hammer und Säge (bei 140 aus Fotoscans)
+				_seil("holz", Vector3(-0.6, 0.95, 0.1), Vector3(-0.3, 0.95, 0.2), 0.018)
+				_klotz("metall", Vector3(-0.66, 0.93, 0.03), Vector3(-0.58, 0.99, 0.17))
+				_viereck("metall", Vector3(0.05, 0.925, -0.05), Vector3(0.6, 0.925, -0.1), Vector3(0.6, 0.925, 0.0), Vector3(0.05, 0.925, 0.07), Vector3.UP)
+				_klotz("holz_dunkel", Vector3(-0.08, 0.92, -0.08), Vector3(0.05, 0.98, 0.1))
 			_klotz("holz", Vector3(0.3, 0.92, 0.12), Vector3(0.55, 1.0, 0.22))
 			_klotz("holz", Vector3(-0.95, 0.92, -0.33), Vector3(0.7, 0.96, -0.18), 0.03)
 			_klotz("holz", Vector3(-0.9, 0.22, -0.25), Vector3(0.8, 0.27, -0.05), 0.0)
@@ -540,11 +592,12 @@ func _mesh(art: int) -> ArrayMesh:
 				_zylinder("holz_dunkel", b, 0.04, 0.045, 0.1, 8)
 				_zylinder("holz", b + Vector3(0.05, 0, -0.25 * signf(b.z)), 0.12, 0.12, 0.015, 10)
 			_zylinder("sack", Vector3(-0.15, 0.8, -0.15), 0.1, 0.12, 0.09, 10)
-		46:  # Hackklotz mit eingeschlagener Axt, ringsum Scheite
+		46, 146:  # Hackklotz mit eingeschlagener Axt, ringsum Scheite (146 ohne Axt)
 			_zylinder("holz_dunkel", Vector3.ZERO, 0.32, 0.34, 0.55, 12)
 			_zylinder("holz", Vector3(0, 0.55, 0), 0.31, 0.31, 0.01, 12)
-			_seil("holz", Vector3(0.05, 0.6, 0.0), Vector3(0.45, 1.05, 0.2), 0.022)
-			_klotz("metall", Vector3(-0.06, 0.52, -0.08), Vector3(0.1, 0.66, 0.08), 0.4)
+			if art == 46:
+				_seil("holz", Vector3(0.05, 0.6, 0.0), Vector3(0.45, 1.05, 0.2), 0.022)
+				_klotz("metall", Vector3(-0.06, 0.52, -0.08), Vector3(0.1, 0.66, 0.08), 0.4)
 			for i in 6:
 				var w := i * 1.1
 				var m := Vector3(cos(w) * 0.6, 0.06, sin(w) * 0.55)
@@ -559,15 +612,16 @@ func _mesh(art: int) -> ArrayMesh:
 			_seil("metall", Vector3(0.1, 0.96, 0.1), Vector3(0.3, 0.97, 0.18), 0.012)
 			_klotz("holz_dunkel", Vector3(-0.3, 0.95, 0.05), Vector3(-0.12, 1.05, 0.2))
 			_fleck("splitter", Vector3(0.2, 0.01, 0.0), 0.75, 2.1)
-		48:  # Rüstungsständer: Pfahl mit Querholz, darauf Kettenhemd und Helm, ein Rundschild lehnt davor
+		48, 148:  # Rüstungsständer: Pfahl mit Querholz, darauf Kettenhemd und Helm, ein Rundschild lehnt davor (148 ohne)
 			_klotz("holz_dunkel", Vector3(-0.35, 0, -0.25), Vector3(0.35, 0.08, 0.25))
 			_klotz("holz_dunkel", Vector3(-0.04, 0.08, -0.04), Vector3(0.04, 1.62, 0.04))
 			_klotz("holz_dunkel", Vector3(-0.3, 1.38, -0.03), Vector3(0.3, 1.44, 0.03))
 			_zylinder("metall", Vector3(0, 0.72, 0), 0.24, 0.21, 0.7, 12)
 			_zylinder("metall", Vector3(0, 1.42, 0), 0.24, 0.22, 0.04, 12)
 			_zylinder("metall", Vector3(0, 1.48, 0), 0.12, 0.14, 0.24, 10)
-			_zylinder("wimpel", Vector3(0, 0.62, 0.32), 0.34, 0.34, 0.04, 16, Basis(Vector3.RIGHT, PI / 2.0 - 0.25))
-			_zylinder("metall", Vector3(0, 0.62, 0.36), 0.07, 0.07, 0.04, 8, Basis(Vector3.RIGHT, PI / 2.0 - 0.25))
+			if art == 48:
+				_zylinder("wimpel", Vector3(0, 0.62, 0.32), 0.34, 0.34, 0.04, 16, Basis(Vector3.RIGHT, PI / 2.0 - 0.25))
+				_zylinder("metall", Vector3(0, 0.62, 0.36), 0.07, 0.07, 0.04, 8, Basis(Vector3.RIGHT, PI / 2.0 - 0.25))
 		49:  # Leiterwagen: Bodenbretter auf zwei Achsen, vier Speichenräder, Leitern als Seitenwände, Deichsel nach vorn;
 			# geladen mit Fässern, Säcken und Kisten, darüber eine halb zurückgeschlagene Plane
 			_klotz("holz", Vector3(-0.72, 0.78, -1.9), Vector3(0.72, 0.86, 1.6))
@@ -686,12 +740,16 @@ func _mesh(art: int) -> ArrayMesh:
 			while x < 1.45:
 				_klotz("kork", Vector3(x - 0.05, 2.0, 0.03), Vector3(x + 0.05, 2.08, 0.1))
 				x += 0.35
-		38:  # Fischkorb: geflochtener Korb, oben Fische
-			_zylinder("korb", Vector3(0, 0, 0), 0.24, 0.29, 0.38, 12)
-			_zylinder("korb", Vector3(0, 0.36, 0), 0.3, 0.3, 0.04, 12)
+		38, 138:  # Fischkorb: geflochtener Korb, oben Fische (138: nur die Fische, im Scan-Korb)
+			var oben := 0.38
+			if art == 38:
+				_zylinder("korb", Vector3(0, 0, 0), 0.24, 0.29, 0.38, 12)
+				_zylinder("korb", Vector3(0, 0.36, 0), 0.3, 0.3, 0.04, 12)
+			else:
+				oben = KORB_FISCHE.y
 			for i in 6:
 				var w := i * 1.05
-				var m := Vector3(cos(w) * 0.12, 0.38 + (i % 2) * 0.03, sin(w) * 0.12)
+				var m := Vector3(cos(w) * 0.12 + (KORB_FISCHE.x if art == 138 else 0.0), oben + (i % 2) * 0.03, sin(w) * 0.12 + (KORB_FISCHE.z if art == 138 else 0.0))
 				_klotz("fisch", m + Vector3(-0.04, 0, -0.13), m + Vector3(0.04, 0.035, 0.13), w)
 				_klotz("fisch_dunkel", m + Vector3(-0.025, 0.035, -0.11), m + Vector3(0.025, 0.045, 0.1), w)
 		14:  # Feuerkorb auf einem Pfahl, darin Glut
@@ -706,6 +764,86 @@ func _mesh(art: int) -> ArrayMesh:
 		mesh.surface_set_material(mesh.get_surface_count() - 1, _material(mat))
 	_meshes[art] = mesh
 	return mesh
+
+
+## Form einer Art aus Fotoscans (SCANS): alle Teile in ein Mesh, je Material eine Fläche. fassung "nah" oder "fern".
+func _scan_mesh(art: int, fassung: String) -> ArrayMesh:
+	var je_mat := {}      # Material → [Ecken, Normalen, Tangenten, UV, Indizes]
+	var reihe := []       # Materialien in der Reihenfolge des ersten Auftretens
+	for teil: Array in SCANS[art]:
+		var lage := Transform3D(Basis.from_euler(teil[2] * PI / 180.0) * Basis.from_scale(teil[3]), teil[1])
+		var quellen := []   # [Mesh, Lage im Modell]
+		if teil[0] is int:
+			quellen.append([_mesh(teil[0]), Transform3D()])
+		else:
+			var szene: PackedScene = load("res://modelle/ausstattung/%s/%s_%s.gltf" % [teil[0], teil[0], fassung])
+			var wurzel := szene.instantiate() as Node3D
+			for mi: MeshInstance3D in wurzel.find_children("*", "MeshInstance3D", true, false):
+				var t := Transform3D()
+				var k: Node = mi
+				while k != wurzel:
+					t = (k as Node3D).transform * t
+					k = k.get_parent()
+				quellen.append([mi.mesh, t])
+			wurzel.free()
+		for q: Array in quellen:
+			var m: Mesh = q[0]
+			var tr: Transform3D = lage * (q[1] as Transform3D)
+			var nb := tr.basis.inverse().transposed()
+			for f in m.get_surface_count():
+				var mat := m.surface_get_material(f)
+				if not je_mat.has(mat):
+					je_mat[mat] = [PackedVector3Array(), PackedVector3Array(), PackedFloat32Array(), PackedVector2Array(), PackedInt32Array()]
+					reihe.append(mat)
+				var ziel: Array = je_mat[mat]
+				# gepackte Arrays sind Werte: lokal füllen, danach zurückschreiben
+				var e: PackedVector3Array = ziel[0]
+				var nn: PackedVector3Array = ziel[1]
+				var tt: PackedFloat32Array = ziel[2]
+				var uu: PackedVector2Array = ziel[3]
+				var ii: PackedInt32Array = ziel[4]
+				var arr := m.surface_get_arrays(f)
+				var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+				var n: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
+				var basis_index := e.size()
+				for i in v.size():
+					e.append(tr * v[i])
+					nn.append((nb * n[i]).normalized())
+				if arr[Mesh.ARRAY_TANGENT] != null:
+					var tg: PackedFloat32Array = arr[Mesh.ARRAY_TANGENT]
+					for i in v.size():
+						var tv := (tr.basis * Vector3(tg[i * 4], tg[i * 4 + 1], tg[i * 4 + 2])).normalized()
+						tt.append_array([tv.x, tv.y, tv.z, tg[i * 4 + 3]])
+				if arr[Mesh.ARRAY_TEX_UV] != null:
+					uu.append_array(arr[Mesh.ARRAY_TEX_UV])
+				if arr[Mesh.ARRAY_INDEX] != null:
+					for i: int in arr[Mesh.ARRAY_INDEX]:
+						ii.append(basis_index + i)
+				else:
+					for i in v.size():
+						ii.append(basis_index + i)
+				je_mat[mat] = [e, nn, tt, uu, ii]
+	var mesh := ArrayMesh.new()
+	for mat: Material in reihe:
+		var z: Array = je_mat[mat]
+		var arr := []
+		arr.resize(Mesh.ARRAY_MAX)
+		arr[Mesh.ARRAY_VERTEX] = z[0]
+		arr[Mesh.ARRAY_NORMAL] = z[1]
+		if (z[2] as PackedFloat32Array).size() == (z[0] as PackedVector3Array).size() * 4:
+			arr[Mesh.ARRAY_TANGENT] = z[2]
+		if (z[3] as PackedVector2Array).size() == (z[0] as PackedVector3Array).size():
+			arr[Mesh.ARRAY_TEX_UV] = z[3]
+		arr[Mesh.ARRAY_INDEX] = z[4]
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+		mesh.surface_set_material(mesh.get_surface_count() - 1, mat)
+	return mesh
+
+
+func _mesh_fern(art: int) -> ArrayMesh:
+	if not _meshes_fern.has(art):
+		_meshes_fern[art] = _scan_mesh(art, "fern")
+	return _meshes_fern[art]
 
 
 ## Schmiede: Bruchsteinwände an die Hofmauer gelehnt, vorn eine Brüstung mit Pfosten, darüber ein hochgeklappter

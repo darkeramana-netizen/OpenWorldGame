@@ -88,7 +88,7 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 
 | Nr. | Foto | Befund | Ursache | Stand |
 |---|---|---|---|---|
-| M30 | 15, 16, 18 | Pferde einfarbig braun, Figuren aus der Nähe einfach | Modelle aus Detailstufe 3 | teilweise: Pferde mit sechs Fellfarben je nach Platz (Brauner, Fuchs, Rappe, Schimmel, Falbe, Dunkelbrauner; `tier.gd`); bessere Modelle für Figuren offen |
+| M30 | 15, 16, 18 | Pferde einfarbig braun, Figuren aus der Nähe einfach | Modelle aus Detailstufe 3 | teilweise: Pferde mit sechs Fellfarben je nach Platz (Brauner, Fuchs, Rappe, Schimmel, Falbe, Dunkelbrauner; `tier.gd`); bessere Modelle für Figuren offen. Ausstattung: erste Stücke aus Fotoscans (Fass, Kisten, Korb, Werkzeug, Schild, Laterne, neu Eimer, Waschzuber und Hocker; `werkzeuge/modell_laden.py`, `docs/grafik-richtung.md`) |
 
 ## Nächste Schritte
 
