@@ -211,6 +211,8 @@ func _baue_arten(je_art: Dictionary, ziel: Node3D) -> void:
 		inst.visibility_range_end = FERNSICHT.get(art, SICHTWEITE)
 		inst.visibility_range_end_margin = 100.0 if FERNSICHT.has(art) else 25.0
 		inst.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		if art == 30:   # Pfützen liegen flach auf dem Boden: kein Schattenwurf
+			inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		ziel.add_child(inst)
 
 
@@ -458,10 +460,13 @@ func _mesh(art: int) -> ArrayMesh:
 				var r := 0.15 + (i % 4) * 0.18
 				var m := Vector3(cos(w) * r, 0, sin(w) * r)
 				_klotz("heu", m + Vector3(-0.28, 0, -0.18), m + Vector3(0.28, 0.04 + (i % 3) * 0.04, 0.18), w)
-		30:  # Pfütze: flache, glänzende Wasserflecken
+		30:  # Pfütze: unregelmäßige Wasserflecken mit feuchtem Rand im Pflaster, halb durchsichtig (Mängelliste M16:
+			# die harte, fast schwarze Scheibe wirkte wie ein Loch)
 			for i in 3:
-				var m := Vector3((i - 1) * 0.45, 0.012 + i * 0.002, (i % 2) * 0.3 - 0.15)
-				_zylinder("wasser", m, 0.35 + i * 0.12, 0.35 + i * 0.12, 0.004, 14)
+				var m := Vector3((i - 1) * 0.5, 0.0, (i % 2) * 0.32 - 0.16)
+				var r := 0.38 + i * 0.13
+				_fleck("pfuetze_rand", m + Vector3(0, 0.008, 0), r * 1.28, i * 1.7)
+				_fleck("pfuetze", m + Vector3(0, 0.014 + i * 0.001, 0), r, i * 1.7 + 0.4)
 		32:  # Zaunfeld: drei Pfosten, zwei Riegel
 			for x: float in [-1.5, 0.0, 1.5]:
 				_klotz("holz_dunkel", Vector3(x - 0.06, -0.15, -0.06), Vector3(x + 0.06, 1.18, 0.06), 0.1 * x)
@@ -747,6 +752,20 @@ func _schmiede() -> void:
 	_klotz("metall", Vector3(3.0, 2.68, 3.02), Vector3(3.16, 2.75, 3.38))
 	# Boden aus gestampftem Lehm mit Schlacke
 	_klotz("lehm", Vector3(-3.3, -0.3, -2.2), Vector3(3.3, 0.02, 2.2))
+
+
+## Flacher, unregelmäßiger Fleck (Pfütze, feuchter Rand): Scheibe mit welligem Umriss, nach oben gewandt.
+func _fleck(mat: String, mitte: Vector3, r: float, phase: float) -> void:
+	var st := _st(mat)
+	var teile := 20
+	for k in teile:
+		var w0 := TAU * k / teile
+		var w1 := TAU * (k + 1) / teile
+		var r0 := r * (1.0 + 0.22 * sin(w0 * 3.0 + phase) + 0.1 * sin(w0 * 5.0 + phase * 2.0))
+		var r1 := r * (1.0 + 0.22 * sin(w1 * 3.0 + phase) + 0.1 * sin(w1 * 5.0 + phase * 2.0))
+		st.add_vertex(mitte)   # Reihenfolge wie in _viereck: so zeigt die Vorderseite nach oben
+		st.add_vertex(mitte + Vector3(cos(w0) * r0, 0, sin(w0) * r0 * 0.8))
+		st.add_vertex(mitte + Vector3(cos(w1) * r1, 0, sin(w1) * r1 * 0.8))
 
 
 ## Seil oder Stange als dünner Zylinder von a nach b.
@@ -1055,7 +1074,7 @@ func _material(name_: String) -> Material:
 				s.albedo_texture = load("res://texturen/klippe_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(0.5, 0.5, 0.5)
-			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder", "ruß", "schlamm", "netz", "fisch", "fisch_dunkel", "kork"]:
+			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder", "ruß", "schlamm", "netz", "fisch", "fisch_dunkel", "kork", "pfuetze", "pfuetze_rand"]:
 				pass
 			elif name_ in ["fell", "haar", "taube", "taube_hals", "taube_dunkel"]:
 				pass
@@ -1087,6 +1106,12 @@ func _material(name_: String) -> Material:
 				"schlamm": Color(0.2, 0.15, 0.1), "taube": Color(0.55, 0.57, 0.62), "taube_hals": Color(0.35, 0.45, 0.42), "taube_dunkel": Color(0.32, 0.33, 0.37),
 				"ruß": Color(0.07, 0.06, 0.055), "netz": Color(0.3, 0.26, 0.2), "kork": Color(0.62, 0.45, 0.26),
 				"fisch": Color(0.68, 0.72, 0.74), "fisch_dunkel": Color(0.3, 0.34, 0.38)}.get(name_, Color(0.6, 0.6, 0.6))
+			if name_ in ["pfuetze", "pfuetze_rand"]:
+				# halb durchsichtig: das Pflaster scheint durch, die Pfütze spiegelt den Himmel, der Rand ist nur feucht
+				s.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+				s.albedo_color = Color(0.18, 0.21, 0.23, 0.55) if name_ == "pfuetze" else Color(0.08, 0.07, 0.06, 0.32)
+				s.roughness = 0.04 if name_ == "pfuetze" else 0.35
+				s.metallic_specular = 0.9 if name_ == "pfuetze" else 0.5
 			if name_ == "fisch":
 				s.metallic = 0.45
 				s.roughness = 0.35

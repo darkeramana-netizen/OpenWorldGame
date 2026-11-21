@@ -29,6 +29,10 @@ const DATEIEN := ["Horse", "Cow", "Sheep", "Pig", "Dog", "Cat", "Wolf", "Llama"]
 const HOEHEN := [2.1, 1.6, 1.05, 0.95, 0.75, 0.36, 0.95, 1.9]
 ## Fellfarbe, wenn keine angegeben ist
 const FELLE := {4: Color(0.55, 0.4, 0.27), 5: Color(0.78, 0.52, 0.3), 6: Color(0.5, 0.5, 0.52)}
+## Pferde ohne eigene Farbe: je nach Platz eines dieser Felle (Mängelliste M30: alle gleich braun)
+## Brauner, Fuchs, Rappe, Schimmel, Falbe, Dunkelbrauner
+const PFERDEFELLE := [Color(0.55, 0.36, 0.22), Color(0.74, 0.42, 0.2), Color(0.2, 0.17, 0.16), Color(0.86, 0.85, 0.81),
+	Color(0.8, 0.67, 0.46), Color(0.36, 0.23, 0.15)]
 ## Gehen und Laufen in m/s
 const GEHEN := [1.2, 0.8, 0.9, 0.8, 1.4, 1.0, 1.4, 1.0]
 const LAUFEN := [5.0, 3.0, 3.2, 2.8, 4.5, 3.8, 5.0, 3.5]
@@ -107,6 +111,9 @@ func _baue() -> void:
 		m.scale = Vector3.ONE * (HOEHEN[art] / hoehe)
 	# einfärben
 	var farbe: Color = fell if fell.a > 0.0 else FELLE.get(art, Color(0, 0, 0, 0))
+	if fell.a <= 0.0 and art == 0:
+		var platz := Vector2i(roundi(global_position.x * 2.0), roundi(global_position.z * 2.0)) if is_inside_tree() else Vector2i.ZERO
+		farbe = PFERDEFELLE[absi(hash(platz)) % PFERDEFELLE.size()]
 	if farbe.a > 0.0:
 		for mi: MeshInstance3D in m.find_children("*", "MeshInstance3D", true, false):
 			var basis := mi.mesh.surface_get_material(0) as StandardMaterial3D
@@ -116,7 +123,7 @@ func _baue() -> void:
 			if not _mats.has(schluessel):
 				var neu: StandardMaterial3D = basis.duplicate()
 				neu.albedo_color = Color(basis.albedo_color.r * farbe.r * 1.6, basis.albedo_color.g * farbe.g * 1.6,
-					basis.albedo_color.b * farbe.b * 1.6) if art <= 1 else farbe
+					basis.albedo_color.b * farbe.b * 1.6) if art == 1 else farbe   # Pferde: das Fell selbst (ein Schimmel ist weiß)
 				_mats[schluessel] = neu
 			mi.set_surface_override_material(0, _mats[schluessel])
 	# Animationen: Stehen, Gehen, Laufen (Namen wie "Armature|Idle")

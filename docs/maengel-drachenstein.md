@@ -44,10 +44,10 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 |---|---|---|---|---|
 | M4 | 01–04 | Dächer blass beige und gleichförmig | Die Ziegeltextur mittelt sich (helle Fugen und Flechten) aus der Ferne zu Beige; die Stadt baute nur Ziegel (`nur_ziegel`) | behoben: Ziegel kräftiger rotbraun in drei Tönungen je Hausvariante (rotbraun, dunkel gealtert, heller orange), die Stadt mit Schiefer im Wechsel (wie die Hausform es vorsieht, etwa ein Viertel); auch die Burgbauten (`material/dach.tres`) wärmer |
 | M12 | 08, 21 | grauer Hügel mitten auf der Marktstraße | Geländebuckel von 1,5 m bei (143, 141): Der Erzeuger zog das feine Rauschen je Gasse erneut ab, an Kreuzungen mehrfach | behoben: in der Stadt nur einmal geglättet, Gelände neu erzeugt (Gassen bis 1,6 m tiefer bzw. 1,1 m höher); der Baucache prüft jetzt auch die Geländedaten |
-| M13 | 09_st_marien | Haus und Kirche stehen auf Gras, Sockel ungleich hoch | Pflasterfläche reicht nicht bis St. Marien | offen |
+| M13 | 09_st_marien | Haus und Kirche stehen auf Gras, Sockel ungleich hoch | Pflasterfläche reicht nicht bis St. Marien | behoben mit M37: zwischen Häusern und Kirche Pflaster bzw. festgetretene Erde; die Sockel stehen gleichmäßig auf (geprüft im Bild an St. Marien, `docs/bilder/stadt-2026-11-21/s2_st_marien_vorher_nachher.jpg`) |
 | M14 | 08, 09 | große leere Fachwerkflächen, Giebelseiten ohne Fenster | Hausbau setzt Fenster nur an die Traufseiten; an den Schmalseiten nur Ständer und Rähm | behoben: Fachwerk rundum mit Riegeln, Streben, Kopfbändern, Andreaskreuze in jeder zweiten Brüstung; Fenster im Giebeldreieck (eines, bei breiten Giebeln zwei). `stadthaeuser.gd` baut die Seiten nach ±x mit denselben Funktionen, um 90° gedreht (`_quer`) |
 | M15 | 08, 12 | Tauben und Möwen als flache Klötze | einfache Platzhaltermodelle | behoben: runde Formen (`szenen/figuren/vogelform.gd`): Körper und Kopf als Ellipsoid, Schnabel als Kegel, Flügel und Schwanz als Federflächen, Beine; Möwen mit schwarzen Flügelspitzen |
-| M16 | 08 | dunkler Fleck auf dem Marktpflaster | unbekannt (Schatten, Loch oder Decal) | prüfen |
+| M16 | 08 | dunkler Fleck auf dem Marktpflaster | eine Pfütze (Ausstattung Art 30): drei kreisrunde, fast schwarze, undurchsichtige Scheiben, die Schatten warfen | behoben (`ausstattung.gd`): unregelmäßige Flecken mit feuchtem Rand, halb durchsichtig (das Pflaster scheint durch), spiegelnd, ohne Schattenwurf |
 
 ## D. Burg
 
@@ -88,7 +88,7 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 
 | Nr. | Foto | Befund | Ursache | Stand |
 |---|---|---|---|---|
-| M30 | 15, 16, 18 | Pferde einfarbig braun, Figuren aus der Nähe einfach | Modelle aus Detailstufe 3 | offen: bessere CC0-Modelle |
+| M30 | 15, 16, 18 | Pferde einfarbig braun, Figuren aus der Nähe einfach | Modelle aus Detailstufe 3 | teilweise: Pferde mit sechs Fellfarben je nach Platz (Brauner, Fuchs, Rappe, Schimmel, Falbe, Dunkelbrauner; `tier.gd`); bessere Modelle für Figuren offen |
 
 ## Nächste Schritte
 
