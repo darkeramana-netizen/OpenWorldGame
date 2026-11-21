@@ -192,6 +192,17 @@ for name_, hof_, boden_ in _hoefe:
             continue
         HUEHNER_BURG.append((round(c_[0], 2), boden_, round(c_[1], 2), random.randint(4, 7), weite_))
         gesetzt_ += 1
+# Zweite Runde (M21): eine Schar picht neben jedem Fuhrwerk verstreutes Korn auf (mitten im Hof)
+for wn_ in sorted(w_ for w_ in WERKPLAETZE if w_.startswith("Fuhrwerk ")):
+    px_, pz_, (ux_, uz_), (nx_, nz_), boden_ = WERKPLAETZE[wn_]
+    for seite_ in (-1.0, 1.0):
+        c_ = (px_ + ux_ * seite_ * 4.4, pz_ + uz_ * seite_ * 4.4)
+        rand_ = [(c_[0] + math.cos(w_) * 2.5 * r_, c_[1] + math.sin(w_) * 2.5 * r_) for w_ in [k_ * math.tau / 12 for k_ in range(12)]
+                 for r_ in (0.5, 1.0)] + [c_]
+        if any(_drin(q_, r_) for q_ in rand_ for r_ in _HINDERNISSE):
+            continue
+        HUEHNER_BURG.append((round(c_[0], 2), boden_, round(c_[1], 2), random.randint(3, 5), 2.5))
+        break
 for k_, (x_, y_, z_, n_, weite_) in enumerate(HUEHNER_BURG):
     N(f"Schar{k_}", "Node3D", BG + "/Huehner", f"""{T(x_, y_, z_)}
 script = ExtResource("44_huehner")
@@ -295,6 +306,7 @@ HOFARBEIT = [  # Platz, e, i, Blick (None: zur Mauer, sonst e, i des Ziels), Hal
     ("Markt Oberburg", -1.6, 1.4, (-2.0, 0.0), "", "Magd Lene Pfund", "magd_burg", GESINDE_TRACHTEN[1]),
     ("Übungsplatz Palas", -2.0, 9.0, (-2.0, 0.2), "schwert", "Knappe Arnulf Grau", "knappe_burg", WACHE_TRACHT),
     ("Übungsplatz Palas", 0.6, 9.5, (0.6, 0.2), "schwert", "Knappin Ida Falk", "knappe_burg", WACHE_TRACHT),
+    ("Reitpferde Palas", -2.3, -0.6, (-1.1, 0.0), "", "Pferdeknecht Veit Hafer", "burggesinde", GESINDE_TRACHTEN[0]),
 ]
 for wn_, e_, i_, ziel_, haltung_, anzeige_, dialog_, tracht_ in HOFARBEIT:
     if wn_ not in WERKPLAETZE:
@@ -313,16 +325,61 @@ for wn_, e_, i_, ziel_, haltung_, anzeige_, dialog_, tracht_ in HOFARBEIT:
 RAST_NAMEN = ["Magd Frieda Lein", "Knecht Ole Brack", "Wächter Konrad Tann", "Magd Sanne Rieth", "Knecht Bodo Furch",
               "Magd Ute Kessel"]
 _rast = 0
-for wn_ in sorted(w_ for w_ in WERKPLAETZE if w_.startswith("Tisch ")):
+for wn_ in sorted(w_ for w_ in WERKPLAETZE if w_.startswith("Tisch ") or w_ == "Wachtisch Palas"):
     px_, pz_, (ux_, uz_), (nx_, nz_), boden_ = WERKPLAETZE[wn_]
     for seite_ in (-1, 1):
         x_, z_ = px_ + nx_ * seite_ * 0.95, pz_ + nz_ * seite_ * 0.95
-        person(f"Rast{_rast}", BL, round(x_, 2), boden_, round(z_, 2), RAST_NAMEN[_rast % len(RAST_NAMEN)],
-               "burggesinde" if _rast % 3 else "magd_burg", 0, GESINDE_TRACHTEN[_rast % 4],
+        wache_ = wn_ == "Wachtisch Palas"
+        person(f"Rast{_rast}", BL, round(x_, 2), boden_, round(z_, 2),
+               ("Wache Gerold Kies" if seite_ < 0 else "Wache Rike Brand") if wache_ else RAST_NAMEN[_rast % len(RAST_NAMEN)],
+               "hofwache_burg" if wache_ else ("burggesinde" if _rast % 3 else "magd_burg"), 1 if wache_ else 0,
+               WACHE_TRACHT if wache_ else GESINDE_TRACHTEN[_rast % 4],
                gier=round(math.degrees(math.atan2(px_ - x_, pz_ - z_)), 1), sichtbar_wenn="alarm<3",
                haltung="sitzend_reden" if seite_ > 0 else "sitzen")
         _rast += 1
 print("Burgleben: an den Werkplätzen", _hofarbeit, "und an den Tischen", _rast)
+
+# --- Zweite Runde (M21): am Fuhrwerk steht der Fuhrmann beim Pferd; ein Knecht trägt die Ladung vom Wagen zur nächsten
+# Haustür und kommt zurück (Weg frei von Häusern und Ausstattung) ---
+FUHR_NAMEN = ["Fuhrmann Jost Riemen", "Fuhrfrau Alke Wagner", "Fuhrmann Benno Achs"]
+TRAEGER_NAMEN = ["Knecht Lambert Kiep", "Magd Gisla Trage", "Knecht Henner Last"]
+_fuhr, _traeger = 0, 0
+for wn_ in sorted(w_ for w_ in WERKPLAETZE if w_.startswith("Fuhrwerk ")):
+    px_, pz_, (ux_, uz_), (nx_, nz_), boden_ = WERKPLAETZE[wn_]
+    hofname_ = wn_.split(" ", 1)[1]
+    hof_w_ = next(WL(h_) for n_, h_, _ in _hoefe if n_ == hofname_)
+    # Fuhrmann neben dem Kopf des Pferdes, Blick zum Pferd
+    fx_, fz_ = px_ + ux_ * 1.25 + nx_ * 4.6, pz_ + uz_ * 1.25 + nz_ * 4.6
+    kx_, kz_ = px_ + nx_ * 4.8, pz_ + nz_ * 4.8
+    person(f"Fuhrmann{_fuhr}", BL, round(fx_, 2), boden_, round(fz_, 2), FUHR_NAMEN[_fuhr % 3], "burggesinde", 0,
+           "0.4, 0.33, 0.22, 1", gier=round(math.degrees(math.atan2(kx_ - fx_, kz_ - fz_)), 1), sichtbar_wenn="alarm<3",
+           haltung="reden")
+    _fuhr += 1
+    # Träger: hinter dem Wagen (neben den Fässern) aufladen, zur nächsten erreichbaren Haustür, dort abladen
+    hinten_ = (px_ + ux_ * -1.6 + nx_ * -3.0, pz_ + uz_ * -1.6 + nz_ * -3.0)
+    if any(_drin(hinten_, r_) for r_ in _HINDERNISSE):
+        hinten_ = (px_ + ux_ * 1.6 + nx_ * -4.2, pz_ + uz_ * 1.6 + nz_ * -4.2)
+    tueren_ = []
+    for x_, _, z_, g_, f_ in HOFHAEUSER:
+        if not _drin((x_, z_), hof_w_):
+            continue
+        a_ = math.radians(g_)
+        vor_ = (_FORMEN[f_][1] + 0.7) / 2 + 1.6
+        t_ = (x_ + math.sin(a_) * vor_, z_ + math.cos(a_) * vor_)
+        if not any(_drin(t_, r_) for r_ in _HINDERNISSE) and strecke_frei(hinten_, t_):
+            tueren_.append(t_)
+    if any(_drin(hinten_, r_) for r_ in _HINDERNISSE) or not tueren_:
+        continue
+    tuer_ = min(tueren_, key=lambda t_: math.dist(t_, hinten_))
+    punkte_ = p3([hinten_, tuer_, hinten_], boden_)
+    punkte_[0] = punkte_[0] + ("arbeiten", 5)
+    punkte_[1] = punkte_[1] + ("arbeiten", 3)
+    person(f"Traeger{_traeger}", BL, round(hinten_[0], 2), boden_, round(hinten_[1], 2), TRAEGER_NAMEN[_traeger % 3],
+           "burggesinde", 0, GESINDE_TRACHTEN[(_traeger + 1) % 4], sichtbar_wenn="alarm<3",
+           ablauf={"vormittag": (punkte_, ["runde"]), "nachmittag": (punkte_, ["runde"]),
+                   "stille_stunde": (p3([tuer_], boden_), ["weg"])})
+    _traeger += 1
+print("Burgleben: Fuhrleute", _fuhr, "Träger", _traeger)
 
 # --- Kaplan vor der Drachenkapelle, Haushofmeister vor dem Palas, Stallknecht an der Tränke ---
 for bau_, name_, anzeige_, dialog_, tracht_, boden_ in [

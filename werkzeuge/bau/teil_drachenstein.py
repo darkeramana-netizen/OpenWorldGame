@@ -774,7 +774,7 @@ _A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2
               21: (7.6, 5.4), 22: (0.4, 1.0), 23: (0.3, 0.6), 24: (0.7, 1.4), 25: (0.7, 1.3), 26: (0.9, 2.2),
               27: (0.6, 1.1), 28: (4.2, 0.6), 29: (1.2, 1.2), 30: (1.6, 1.2), 31: (0.2, 0.3),
               40: (2.0, 0.8), 41: (3.4, 0.9), 42: (1.3, 0.9), 43: (1.5, 3.7), 44: (1.8, 0.4), 45: (2.2, 2.0), 46: (1.4, 1.3),
-              47: (2.2, 1.5), 48: (0.9, 0.9), 3: (3.2, 2.2)}
+              47: (2.2, 1.5), 48: (0.9, 0.9), 3: (3.2, 2.2), 49: (2.1, 4.8), 33: (3.2, 0.5)}
 _treppen_w = []
 for k_ in range(0, len(TREPPEN), 7):
     fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
@@ -806,6 +806,11 @@ for x_, y_, z_, g_, f_ in HOFHAEUSER:
     vor_ = (t_ + 0.7) / 2 + 1.4
     _vorplaetze_w.append(_rechteck_w(x_ + math.sin(a_) * vor_, z_ + math.cos(a_) * vor_, 2.4, 2.8, g_))
 VORPLATZ_ERLAUBT = {0, 1, 2, 14, 20}
+# Die Blickpunkte des Foto-Rundgangs (werkzeuge/rundgang/drachenstein.json) stehen dort, wo man einen Hof betritt und
+# überblickt: 8 × 8 m bleiben frei von größeren Stücken (sonst stünde z. B. ein Fuhrwerk in der Kamera)
+import json as _json
+for _bp in _json.loads((REPO / "werkzeuge" / "rundgang" / "drachenstein.json").read_text(encoding="utf-8")).get("punkte", []):
+    _vorplaetze_w.append(_rechteck_w(_bp["von"][0], _bp["von"][2], 8.0, 8.0, 0.0))
 
 
 def _abstand_rand(q, poly):
@@ -910,9 +915,11 @@ def _werkplatz_im_hof(name, teile, hof_w, boden):
                 raster_.append((x_, z_))
             z_ += 2.0
         x_ += 2.0
-    random.shuffle(raster_)
+    # nahe der Hofmitte zuerst (dort sieht man sie, wenn man den Hof betritt), mit etwas Zufall
+    mx_, mz_ = sum(xs_) / len(xs_), sum(zs_) / len(zs_)
+    raster_.sort(key=lambda q_: math.dist(q_, (mx_, mz_)) + random.uniform(0.0, 6.0))
     for px_, pz_ in raster_:
-        for g0_ in (0.0, 90.0, 180.0, 270.0):
+        for g0_ in random.sample((0.0, 90.0, 180.0, 270.0), 4):
             a_ = math.radians(g0_)
             nx_, nz_ = math.sin(a_), math.cos(a_)
             ux_, uz_ = nz_, -nx_
@@ -1006,6 +1013,17 @@ for name_, hof_, boden_ in _hoefe:
         # Übungsplatz der Knappen: Zielscheiben mit dem Rücken zur Mauer, Waffen- und Rüstungsständer, Bank
         werkplatz("Übungsplatz Palas", [(42, -2.0, 0.2, 0), (42, 0.6, 0.2, 0), (48, 3.0, 0.2, 0), (13, 4.8, 0.3, 0),
                                         (44, -4.6, 0.3, 0)], hof_w_, boden_, mitte=True)
+    # Zweite Runde (M21): ein Fuhrwerk mitten im Hof, das gerade be- oder entladen wird: Leiterwagen, davor das Zugpferd,
+    # hinter dem Wagen Fässer und Kisten
+    if name_ in ("Vorburg", "Mittelburg", "Oberburg"):
+        werkplatz(f"Fuhrwerk {name_}", [(49, 0.0, 0.0, 0), (19, 0.0, 4.1, 0), (0, -0.6, -3.3, 0), (0, 0.3, -3.5, 0),
+                                        (1, 1.2, -3.1, 25)], hof_w_, boden_, mitte=True)
+    if name_ == "Palas":
+        # zwei Reitpferde für einen Ausritt der Herrschaft, am Anbindebalken, daneben Heu
+        werkplatz("Reitpferde Palas", [(19, -1.1, 0.0, 0), (19, 1.1, 0.2, 0), (33, 0.0, 1.55, 0), (18, 3.4, 0.4, 0)],
+                  hof_w_, boden_, mitte=True)
+        # Wachtisch: die Wachen der Kernburg würfeln in der Pause, daneben ein Feuerkorb und ein Waffenständer
+        werkplatz("Wachtisch Palas", [(45, 0.0, 0.0, 0), (14, 2.0, 0.0, 0), (13, -2.4, 0.2, 90)], hof_w_, boden_, mitte=True)
     # Bank an der Hofmauer (zum Ausruhen)
     werkplatz(f"Bank {name_}", [(44, 0.0, 0.1, 0)], hof_w_, boden_)
     # Feuerkörbe zu beiden Seiten jedes Tors, innen im Hof

@@ -46,7 +46,7 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(1.7, 2.2, 0.12), Vector3(0.3, 0.45, 0.3), Vector3(2.6, 3.4, 9.5),
 	Vector3(1.0, 0.95, 0.4), Vector3(1.6, 0.95, 0.45), Vector3(0.65, 1.6, 0.35), Vector3(0.75, 0.3, 1.85),
 	Vector3(0.9, 0.5, 0.2), Vector3(1.0, 0.85, 1.0), Vector3(0.35, 0.6, 0.35), Vector3(1.1, 0.9, 0.7),
-	Vector3(0.55, 1.75, 0.35)]
+	Vector3(0.55, 1.75, 0.35), Vector3(1.05, 1.9, 2.4)]
 ## Große Stücke, die das Bild aus der Ferne prägen (Schiffe, Prahme, Kräne): Art → Sichtweite in Metern. Sie bleiben
 ## immer geladen (nicht in Zellen), sonst fehlte der Hafen in der Gesamtansicht (Mängelliste M10).
 const FERNSICHT := {5: 1400.0, 6: 1400.0, 8: 900.0, 9: 900.0, 39: 1400.0}
@@ -568,6 +568,57 @@ func _mesh(art: int) -> ArrayMesh:
 			_zylinder("metall", Vector3(0, 1.48, 0), 0.12, 0.14, 0.24, 10)
 			_zylinder("wimpel", Vector3(0, 0.62, 0.32), 0.34, 0.34, 0.04, 16, Basis(Vector3.RIGHT, PI / 2.0 - 0.25))
 			_zylinder("metall", Vector3(0, 0.62, 0.36), 0.07, 0.07, 0.04, 8, Basis(Vector3.RIGHT, PI / 2.0 - 0.25))
+		49:  # Leiterwagen: Bodenbretter auf zwei Achsen, vier Speichenräder, Leitern als Seitenwände, Deichsel nach vorn;
+			# geladen mit Fässern, Säcken und Kisten, darüber eine halb zurückgeschlagene Plane
+			_klotz("holz", Vector3(-0.72, 0.78, -1.9), Vector3(0.72, 0.86, 1.6))
+			for z: float in [-1.4, 1.1]:
+				_klotz("holz_dunkel", Vector3(-0.95, 0.62, z - 0.06), Vector3(0.95, 0.74, z + 0.06))
+				for s: float in [-1.0, 1.0]:
+					var nabe := Vector3(s * 0.98, 0.62, z)
+					var r := 0.62 if z < 0.0 else 0.5
+					nabe.y = r
+					for k in 12:
+						var w0 := TAU * k / 12.0
+						var w1 := TAU * (k + 1) / 12.0
+						_seil("holz_dunkel", nabe + Vector3(0, sin(w0) * r, cos(w0) * r), nabe + Vector3(0, sin(w1) * r, cos(w1) * r), 0.045)
+					for k in 6:
+						var w := TAU * k / 6.0
+						_seil("holz", nabe, nabe + Vector3(0, sin(w) * r, cos(w) * r), 0.022)
+					_zylinder("holz_dunkel", nabe - Vector3(s * 0.08, 0, 0), 0.09, 0.09, 0.16, 8, Basis(Vector3.FORWARD, PI / 2.0 * s))
+			# Leitern: Holme oben und unten, Sprossen dazwischen, nach außen geneigt
+			for s: float in [-1.0, 1.0]:
+				_seil("holz_dunkel", Vector3(s * 0.72, 0.88, -1.9), Vector3(s * 0.72, 0.88, 1.6), 0.04)
+				_seil("holz_dunkel", Vector3(s * 0.95, 1.65, -2.0), Vector3(s * 0.95, 1.65, 1.7), 0.045)
+				var z := -1.85
+				while z < 1.65:
+					_seil("holz", Vector3(s * 0.72, 0.88, z), Vector3(s * 0.95, 1.65, z + 0.02), 0.025)
+					z += 0.3
+			_klotz("holz", Vector3(-0.72, 0.86, -1.95), Vector3(0.72, 1.35, -1.88))
+			# Deichsel und Ortscheit
+			_seil("holz_dunkel", Vector3(0, 0.72, 1.4), Vector3(0, 0.62, 3.9), 0.06)
+			_seil("holz_dunkel", Vector3(-0.5, 0.64, 3.4), Vector3(0.5, 0.64, 3.4), 0.04)
+			# Ladung
+			for f: Vector3 in [Vector3(-0.33, 0.86, -1.3), Vector3(0.33, 0.86, -1.3), Vector3(-0.33, 0.86, -0.55)]:
+				_zylinder("holz", f, 0.28, 0.33, 0.82, 12)
+				_zylinder("metall", f + Vector3(0, 0.15, 0), 0.315, 0.335, 0.06, 12)
+			for k in 4:   # liegende, bauchige Säcke, zwei übereinander
+				var m := Vector3(0.55, 1.06 + (k / 2) * 0.36, -0.75 + (k % 2) * 0.5 + (k / 2) * 0.22)
+				_zylinder("sack", m, 0.17, 0.23, 0.62, 10, Basis(Vector3.FORWARD, -PI / 2.0))
+			_klotz("holz", Vector3(-0.65, 0.86, 0.3), Vector3(-0.05, 1.42, 0.95))
+			_klotz("holz_dunkel", Vector3(-0.67, 1.05, 0.28), Vector3(-0.03, 1.12, 0.97))
+			# Plane, nach hinten zurückgeschlagen: in Falten über dem hinteren Teil
+			var bogen := 8
+			for i in bogen:
+				var w0 := PI * i / bogen
+				var w1 := PI * (i + 1) / bogen
+				var a0 := Vector3(-cos(w0) * 0.95, 1.65 + sin(w0) * 0.55, -1.95)
+				var a1 := Vector3(-cos(w1) * 0.95, 1.65 + sin(w1) * 0.55, -1.95)
+				_viereck("plane", a0, a1, a1 + Vector3(0, -0.05 * sin(w1 * 3.0), 1.05), a0 + Vector3(0, -0.05 * sin(w0 * 3.0), 1.05), Vector3(0, 1, 0))
+			for z: float in [-1.95, -0.9]:
+				for i in bogen:
+					var w0 := PI * i / bogen
+					var w1 := PI * (i + 1) / bogen
+					_seil("holz_dunkel", Vector3(-cos(w0) * 0.95, 1.65 + sin(w0) * 0.55, z), Vector3(-cos(w1) * 0.95, 1.65 + sin(w1) * 0.55, z), 0.025)
 		32:  # Zaunfeld: drei Pfosten, zwei Riegel
 			for x: float in [-1.5, 0.0, 1.5]:
 				_klotz("holz_dunkel", Vector3(x - 0.06, -0.15, -0.06), Vector3(x + 0.06, 1.18, 0.06), 0.1 * x)
@@ -1199,7 +1250,7 @@ func _material(name_: String) -> Material:
 				"fell": Color(0.36, 0.22, 0.13), "haar": Color(0.12, 0.09, 0.07), "korb": Color(0.85, 0.68, 0.42),
 				"rumpf_teer": Color(0.2, 0.16, 0.13), "deck": Color(0.8, 0.68, 0.52), "segel": Color(0.86, 0.8, 0.66),
 				"segel_streifen": Color(0.56, 0.17, 0.1), "rumpf": Color(0.58, 0.45, 0.33), "rumpf_innen": Color(0.5, 0.4, 0.3),
-				"sack": Color(0.85, 0.76, 0.58), "markise_a": STOFFE[0], "markise_b": STOFFE[1],
+				"sack": Color(0.85, 0.76, 0.58), "plane": Color(0.82, 0.77, 0.64), "markise_a": STOFFE[0], "markise_b": STOFFE[1],
 				"ware_rot": Color(0.75, 0.18, 0.1), "ware_gruen": Color(0.3, 0.5, 0.15),
 				"ware_tuch": STOFFE[2], "ware_tuch2": STOFFE[3], "seil": Color(0.5, 0.42, 0.3),
 				"wimpel": Color(0.65, 0.08, 0.06), "glas": Color(0.1, 0.13, 0.13), "kohle": Color(0.05, 0.05, 0.05),
@@ -1219,7 +1270,7 @@ func _material(name_: String) -> Material:
 			if name_ == "fisch":
 				s.metallic = 0.45
 				s.roughness = 0.35
-			if name_.begins_with("markise") or name_ in ["segel", "segel_streifen", "wimpel"]:
+			if name_.begins_with("markise") or name_ in ["segel", "segel_streifen", "wimpel", "plane"]:
 				s.cull_mode = BaseMaterial3D.CULL_DISABLED
 			m = s
 	_mats[name_] = m
