@@ -846,7 +846,8 @@ func _ruderboot() -> void:
 ## und Säcken, dazu ein Staken.
 func _prahm() -> void:
 	_rumpf(12.0, 2.1, 14, 0.8, 1.0, false, 0.1)
-	_klotz("holz", Vector3(-1.9, 0.55, -5.0), Vector3(1.9, 0.65, 5.0))
+	# Die Ladung steht auf dem Deck des Rumpfs (eine eigene, rechteckige Ladefläche ragte an Bug und Heck aus dem
+	# spitz zulaufenden Rumpf heraus)
 	for z: float in [-3.6, -2.4, 2.6]:
 		_klotz("holz", Vector3(-0.9, 0.65, z - 0.4), Vector3(-0.1, 1.35, z + 0.4))
 		_klotz("holz_dunkel", Vector3(-0.92, 1.1, z - 0.42), Vector3(-0.08, 1.18, z + 0.42))
@@ -856,7 +857,7 @@ func _prahm() -> void:
 		_zylinder("metall", Vector3(0.7, 0.8, z), 0.345, 0.37, 0.07, 12)
 	for k in 3:
 		_klotz("sack", Vector3(-1.2 + k * 0.45, 0.65, 3.9), Vector3(-0.8 + k * 0.45, 1.1, 4.5), 0.2 * (k - 1))
-	_seil("holz_dunkel", Vector3(1.6, 0.7, -4.6), Vector3(1.75, 4.2, 4.2), 0.05)
+	_seil("holz_dunkel", Vector3(1.3, 0.76, -3.8), Vector3(1.25, 0.8, 3.8), 0.05)   # Staken, längs abgelegt
 
 
 ## Tretradkran wie an Hansehäfen: Holzbock, Pfosten mit schrägem Ausleger, großes Laufrad, Seil mit Haken.

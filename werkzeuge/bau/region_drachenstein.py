@@ -123,7 +123,9 @@ untertitel = "{untertitel}"''')
 
 # ---------- Bewuchs: Wälder, Büsche, Gras; Stadt, Burgen und Hafen bleiben frei ----------
 bewuchs(frei_vielecke=[STADT_UMRISS, WL(PD.HAFEN_BEZIRK), WL(PD.BURGHOF2), WL(PD.BURGHOF3), WL(PD.KERNBURG),
-                       WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG), WL(PD.ZWINGER_III), WL(PD.BURGBEZIRK), WL(PD.RINGMAUER)],   # im Burgbezirk Felsgrund
+                       WL(PD.VORBURG), WL(PD.ZWINGER_KERNBURG), WL(PD.ZWINGER_III), WL(PD.BURGBEZIRK), WL(PD.RINGMAUER),
+                       # das Ordensvorwerk (Hof aus Akt I, halbe Breite 38 m) mit 2 m Rand: dort wuchsen Bäume im Hof
+                       [VW(-40, -40), VW(40, -40), VW(40, 40), VW(-40, 40)]],   # im Burgbezirk Felsgrund
         frei_rechtecke=[(BF_X_NEU, BF_Z_NEU, 90, 90), (-600, -205, 240, 240), (-694, -366, 150, 60)], wald_anteil=0.24,
         zellgroesse=128.0, zell_laden_ab=150.0,
         # Bäume aus Fotoscans (Mängelliste M6/M20, werkzeuge/baum_laden.py)

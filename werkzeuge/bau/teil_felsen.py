@@ -401,8 +401,14 @@ for _linie in MAUERLINIEN:
         if (max(ax_, bx_) >= _fm_bereich[0] and min(ax_, bx_) <= _fm_bereich[2]
                 and max(az_, bz_) >= _fm_bereich[1] and min(az_, bz_) <= _fm_bereich[3]):
             _fm_mauern += [ax_, az_, bx_, bz_]
+# und die Burgwege (Rampe, Zwingerweg …): am Hang daneben kein hoher Fels
+_fm_wege = []
+for _linie in [WL(w_) for w_ in PD.BURGWEGE]:
+    for (ax_, az_), (bx_, bz_) in zip(_linie, _linie[1:]):
+        _fm_wege += [ax_, az_, bx_, bz_]
 N("Felsmassiv", "Node3D", DS, f"""script = ExtResource("33_felsmassiv")
 mauern = PackedVector2Array({", ".join(f"{v:.2f}" for v in _fm_mauern)})
+wege = PackedVector2Array({", ".join(f"{v:.2f}" for v in _fm_wege)})
 gelaende = NodePath("../../Gelaende")
 bereich = Rect2({min(_rx) - 2:.1f}, {min(_rz) - 2:.1f}, {max(_rx) - min(_rx) + 4:.1f}, {max(_rz) - min(_rz) + 4:.1f})
 material = ExtResource("34_felsmassiv_mat")
@@ -423,7 +429,7 @@ def _nah_kueste(x_, z_, r_=24.0):
     return any(math.dist((x_, z_), q_) < r_ for i_ in (-1, 0, 1) for j_ in (-1, 0, 1) for q_ in _knetz.get((gx_ + i_, gz_ + j_), ()))
 FELSSTUECKE = [f_ for f_ in FELSSTUECKE if f_[0] >= FARN or not _nah_kueste(f_[1], f_[3])]
 print("Felsmassiv im Burgbezirk; dort entfernt:", _vorher - len(FELSSTUECKE), "Brocken, Platten und Pflanzen;",
-      len(_fm_mauern) // 4, "Mauerstücke begrenzen den Fels")
+      len(_fm_mauern) // 4, "Mauer- und", len(_fm_wege) // 4, "Wegstücke begrenzen den Fels")
 N("Felsen", "Node3D", DS, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray({", ".join(f'"{p}"' for p, _, _ in FELSMODELLE)})
 farben = PackedColorArray({", ".join(FARBEN.get(m, "1, 1, 1, 1") for m in range(len(FELSMODELLE)))})

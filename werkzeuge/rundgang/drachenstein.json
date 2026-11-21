@@ -21,7 +21,7 @@
 		{"name": "17_oberburg", "von": [1.1, 16.2, -3.2], "auf": [-5.8, 19, -106], "uhr": 10},
 		{"name": "18_palas_vorhof", "von": [-5.8, 18.2, -90], "auf": [-5.8, 22, -125], "uhr": 10},
 		{"name": "19_uebungsplatz", "von": [14.4, 19.8, -114.9], "auf": [-12, 18.5, -115], "uhr": 10},
-		{"name": "20_ordensvorwerk", "von": [128, 17, 490], "auf": [76, 1, 490], "uhr": 10},
+		{"name": "20_ordensvorwerk", "von": [140, 32, 535], "auf": [75, 2, 490], "uhr": 10},
 		{"name": "21_markt_nacht", "von": [151, -13.8, 111.5], "auf": [136, -12, 170], "uhr": 22.5}
 	]
 }

@@ -34,9 +34,13 @@ extends Node3D
 @export var mauern := PackedVector2Array()
 @export var mauer_abstand := 7.0
 @export var mauer_sockel := 0.4
+## Wege (Paare von Endpunkten): Am Hang neben einem Weg wird der Fels ebenso flach, aber über eine weitere Strecke
+## (sonst stehen dort mannshohe, kantige Felszacken, Mängelliste M34 an der Rampe)
+@export var wege := PackedVector2Array()
+@export var weg_abstand := 14.0
 
 const _M_ZELLE := 2.0
-var _m_abstand := PackedFloat32Array()   # Abstand zur nächsten Mauer je Rasterpunkt (2 m), gekappt
+var _m_abstand := PackedFloat32Array()   # Nähe zu Mauern und Wegen je Rasterpunkt (2 m): 0 daran, 1 weit genug weg
 var _m_n := Vector2i.ZERO
 
 var _g: Node
@@ -106,29 +110,32 @@ func _ready() -> void:
 
 ## Abstand zur nächsten Mauer auf einem 2-m-Raster über dem Bereich (nur bis mauer_abstand gerechnet)
 func _mauer_raster() -> void:
-	if mauern.size() < 2:
+	if mauern.size() < 2 and wege.size() < 2:
 		return
 	_m_n = Vector2i(ceili(bereich.size.x / _M_ZELLE) + 2, ceili(bereich.size.y / _M_ZELLE) + 2)
 	_m_abstand.resize(_m_n.x * _m_n.y)
-	_m_abstand.fill(mauer_abstand)
-	for k in range(0, mauern.size() - 1, 2):
-		var a := mauern[k]
-		var b := mauern[k + 1]
-		var lo := (Vector2(minf(a.x, b.x), minf(a.y, b.y)) - bereich.position - Vector2.ONE * mauer_abstand) / _M_ZELLE
-		var hi := (Vector2(maxf(a.x, b.x), maxf(a.y, b.y)) - bereich.position + Vector2.ONE * mauer_abstand) / _M_ZELLE
-		for iz in range(maxi(floori(lo.y), 0), mini(ceili(hi.y), _m_n.y - 1) + 1):
-			for ix in range(maxi(floori(lo.x), 0), mini(ceili(hi.x), _m_n.x - 1) + 1):
-				var p := bereich.position + Vector2(ix, iz) * _M_ZELLE
-				var d := p.distance_to(Geometry2D.get_closest_point_to_segment(p, a, b))
-				var i := iz * _m_n.x + ix
-				if d < _m_abstand[i]:
-					_m_abstand[i] = d
+	_m_abstand.fill(1.0)
+	for liste: Array in [[mauern, mauer_abstand], [wege, weg_abstand]]:
+		var linien: PackedVector2Array = liste[0]
+		var weite: float = liste[1]
+		for k in range(0, linien.size() - 1, 2):
+			var a := linien[k]
+			var b := linien[k + 1]
+			var lo := (Vector2(minf(a.x, b.x), minf(a.y, b.y)) - bereich.position - Vector2.ONE * weite) / _M_ZELLE
+			var hi := (Vector2(maxf(a.x, b.x), maxf(a.y, b.y)) - bereich.position + Vector2.ONE * weite) / _M_ZELLE
+			for iz in range(maxi(floori(lo.y), 0), mini(ceili(hi.y), _m_n.y - 1) + 1):
+				for ix in range(maxi(floori(lo.x), 0), mini(ceili(hi.x), _m_n.x - 1) + 1):
+					var p := bereich.position + Vector2(ix, iz) * _M_ZELLE
+					var d := p.distance_to(Geometry2D.get_closest_point_to_segment(p, a, b)) / weite
+					var i := iz * _m_n.x + ix
+					if d < _m_abstand[i]:
+						_m_abstand[i] = d
 
 
-## Abstand zur nächsten Mauer (bilinear aus dem Raster); ohne Mauern: mauer_abstand
+## Nähe zu Mauern und Wegen (bilinear aus dem Raster): 0 daran, 1 weit genug weg (Mauer 7 m, Weg 14 m)
 func _mauer_bei(x: float, z: float) -> float:
 	if _m_abstand.is_empty():
-		return mauer_abstand
+		return 1.0
 	var u := (Vector2(x, z) - bereich.position) / _M_ZELLE
 	var ix := clampi(floori(u.x), 0, _m_n.x - 2)
 	var iz := clampi(floori(u.y), 0, _m_n.y - 2)
@@ -161,7 +168,7 @@ func _brocken_auf(a: Vector3, b: Vector3, c: Vector3, w: float) -> void:
 	var n := (b - a).cross(c - a).normalized()
 	var m_ := (a + b + c) / 3.0
 	var feld := Vector2i(floori(m_.x / 2.6), floori(m_.z / 2.6))
-	if _brocken_felder.has(feld) or _mauer_bei(m_.x, m_.z) < 4.0:
+	if _brocken_felder.has(feld) or _mauer_bei(m_.x, m_.z) < 0.57:
 		return
 	var steil := absf(n.y) < 0.6
 	var chance := brocken_dichte if steil else (brocken_dichte * 0.05 if absf(n.y) > 0.85 else brocken_dichte * 0.25)
@@ -284,7 +291,7 @@ func _fels(x: float, z: float, h: float) -> float:
 	var relief := lerpf(1.3, 2.6, 1.0 - staerke)
 	y += blockhoehe * relief - kluft * 0.9 + _fein.get_noise_2d(x * 2.0, z * 2.0) * 0.15
 	# nie mehr als 4,5 m über dem Gelände, an Mauern nur ein flacher Sockel
-	var hoechstens := lerpf(mauer_sockel, 4.5, smoothstep(1.0, mauer_abstand, _mauer_bei(x, z)))
+	var hoechstens := lerpf(mauer_sockel, 4.5, smoothstep(0.14, 1.0, _mauer_bei(x, z)))
 	return clampf(y, h + 0.05, h + hoechstens)
 
 
