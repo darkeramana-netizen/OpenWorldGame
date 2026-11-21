@@ -28,6 +28,9 @@ uniform sampler2D pflaster_normal : hint_normal, filter_linear_mipmap_anisotropi
 uniform sampler2D klippe_farbe : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D klippe_normal : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform bool mit_klippe = false;
+// Flur (werkzeuge/bau/teil_flur.py, Mängelliste M6): R Acker, G Getreide, B Weide (0,5) / Wiese (1), A Furchenrichtung
+uniform sampler2D flur : filter_linear;
+uniform bool mit_flur = false;
 
 // Gepflasterte Flächen (Städte, Burghöfe): bis zu vier Vielecke, aneinandergehängt in "pflaster_punkte",
 // "pflaster_laengen" sagt, wie viele Punkte zu jedem gehören.
@@ -160,6 +163,49 @@ void gelaende_material(vec3 welt_pos, vec3 welt_normale, out vec3 albedo, out ve
 	vec3 pf = texture(pflaster_farbe, p / M_PFLASTER).rgb * mix(1.0, 0.85, klein);
 	pf = mix(pf, zwei(erde_farbe, p, M_ERDE) * 0.9, smoothstep(0.68, 0.85, gross) * 0.7);
 	farbe = mix(farbe, pf, a_pflaster);
+	// Flur: Äcker mit Furchen, goldenes Getreide in Reihen, kurz gefressene Weide, Wiese mit Blüten
+	float a_acker = 0.0;
+	float furche = 0.0;          // -1 .. 1: Neigung der Furchenflanke
+	vec2 quer_dir = vec2(1.0, 0.0);
+	if (mit_flur) {
+		vec4 fl = texture(flur, (welt_pos.xz - welt_ursprung) / welt_groesse);
+		float boden_frei = (1.0 - a_fels) * (1.0 - a_weg) * (1.0 - a_pflaster);
+		a_acker = smoothstep(0.35, 0.75, fl.r) * boden_frei;
+		float a_korn = smoothstep(0.35, 0.75, fl.g) * boden_frei;
+		float a_weide = smoothstep(0.2, 0.45, fl.b) * (1.0 - smoothstep(0.6, 0.85, fl.b)) * boden_frei;
+		float a_wiese = smoothstep(0.6, 0.85, fl.b) * boden_frei;
+		float w = fl.a * PI;
+		vec2 entlang = vec2(cos(w), sin(w));
+		quer_dir = vec2(-entlang.y, entlang.x);
+		float q = dot(p, quer_dir);
+		float welle = sin(q * TAU / 0.8);
+		furche = cos(q * TAU / 0.8);
+		// Acker: dunkle, feuchte Erde, die Kämme heller, in den Furchen Schatten
+		vec3 acker = zwei(erde_farbe, p, M_ERDE * 0.7) * vec3(0.78, 0.66, 0.55);
+		acker *= mix(0.72, 1.08, welle * 0.5 + 0.5) * (0.9 + klein * 0.2);
+		farbe = mix(farbe, acker, a_acker);
+		// Getreide: goldene Halme in Reihen, darunter dunkler Grund
+		// Werte linear (wie alle Albedos hier): reifes Getreide liegt um 0,3 / 0,22 / 0,08
+		vec3 korn = vec3(0.34, 0.25, 0.085) * (0.8 + 1.2 * dot(zwei(gras_farbe, p * 1.7, M_GRAS), vec3(0.33)));
+		korn *= mix(0.82, 1.06, sin(q * TAU / 0.28) * 0.5 + 0.5) * (0.92 + gross * 0.16);
+		// ungleich reif: hellere, dunklere und noch grünliche Stellen, vom Wind niedergedrückte Bahnen
+		korn *= 0.82 + 0.36 * rauschen(p * 0.09 + vec2(5.0, 11.0));
+		korn = mix(korn, korn * vec3(0.78, 0.98, 0.62), smoothstep(0.55, 0.8, rauschen(p * 0.05 + vec2(-7.0, 3.0))) * 0.6);
+		farbe = mix(farbe, korn, a_korn);
+		// Weide: kurzes, frisches Grün
+		farbe = mix(farbe, g * vec3(0.92, 1.1, 0.82), a_weide);
+		// Wiese: einzelne kleine Blüten, gelb (Hahnenfuß, Löwenzahn) und weiß (Margeriten), in lockeren Nestern;
+		// aus der Ferne (Bildpunkt größer als eine Blüte) nur ein leichter Farbschimmer statt flimmernder Punkte
+		float nest_g = smoothstep(0.4, 0.75, rauschen(p * 0.22 + vec2(31.0, 7.0)));
+		float nest_w = smoothstep(0.45, 0.8, rauschen(p * 0.18 + vec2(-13.0, 22.0)));
+		float fein = clamp(1.0 - length(fwidth(p)) * 6.0, 0.0, 1.0);
+		float bl_gelb = mix(nest_g * 0.12, smoothstep(0.8, 0.86, rauschen(p * 10.0 + vec2(3.0, 9.0))) * nest_g, fein);
+		float bl_weiss = mix(nest_w * 0.1, smoothstep(0.82, 0.88, rauschen(p * 9.0 + vec2(-21.0, 4.0))) * nest_w, fein);
+		vec3 wiese = g * vec3(1.02, 1.06, 0.86);
+		wiese = mix(wiese, vec3(0.5, 0.38, 0.02), bl_gelb * 0.8);
+		wiese = mix(wiese, vec3(0.55, 0.55, 0.5), bl_weiss * 0.75);
+		farbe = mix(farbe, wiese, a_wiese);
+	}
 	vec3 f = mix(dreiseitig(fels_farbe, welt_pos, gewicht, 1.0 / M_FELS), dreiseitig(fels_farbe, welt_pos, gewicht, 1.0 / (M_FELS * 4.0)), 0.4) * fels;
 	vec3 k = mix(dreiseitig(klippe_farbe, welt_pos, gewicht, 1.0 / M_KLIPPE), dreiseitig(klippe_farbe, welt_pos, gewicht, 1.0 / (M_KLIPPE * 5.0)), 0.45);
 	k *= 1.3 + rauschen(welt_pos.xz * 0.03 + welt_pos.y * 0.05) * 0.3;   // hellgrauer Kalkstein wie im Referenzbild
@@ -180,6 +226,9 @@ void gelaende_material(vec3 welt_pos, vec3 welt_normale, out vec3 albedo, out ve
 	float staerke = mix(mix(0.45, 0.9, a_pflaster), 1.1, a_fels) * (1.0 - a_schnee * 0.6);
 	vec3 neu = normalize(n + vec3(nk.x, 0.0, -nk.y) * staerke * (1.0 - gewicht.x - gewicht.z) + vec3(0.0, nk.y, 0.0) * 0.0
 		+ (vec3(0.0, nk.y, nk.x) * gewicht.x + vec3(nk.x, nk.y, 0.0) * gewicht.z) * staerke * a_fels);
+	if (a_acker > 0.0) {   // Furchen kippen die Normale quer zum Feld
+		neu = normalize(neu + vec3(quer_dir.x, 0.0, quer_dir.y) * furche * 0.35 * a_acker);
+	}
 	normale = neu;
 
 	albedo = farbe;

@@ -154,9 +154,9 @@ def pflaster_parameter(vielecke):
 TEXTUR_MATERIALIEN = ["mauer", "hell", "basalt", "holz", "eis", "kai", "boden", "pflaster", "bruchstein",
                       "dach", "dach_schiefer", "stoff", "metall", "fels"]
 
-def bewuchs(frei_rechtecke=(), frei_vielecke=(), frei_kreise=(), feste_baeume=(), **werte):
+def bewuchs(frei_rechtecke=(), frei_vielecke=(), frei_kreise=(), feste_baeume=(), baumfrei_vielecke=(), **werte):
     """Bäume, Büsche, Felsen und Gras (szenen/welt/bewuchs.gd). frei_rechtecke: (Mitte x, Mitte z, Breite, Tiefe);
-    frei_vielecke: Listen von (x, z); frei_kreise: (x, z, Radius); feste_baeume: (x, y, z, Größe).
+    frei_vielecke: Listen von (x, z); baumfrei_vielecke: dort nur Gras, keine Bäume und Büsche (Felder); frei_kreise: (x, z, Radius); feste_baeume: (x, y, z, Größe).
     werte: weitere Eigenschaften, z. B. wald_anteil=0.3, laub_farbe="Color(0.8, 0.8, 0.6, 1)"."""
     E("Script", "res://szenen/welt/bewuchs.gd", "26_bewuchs")
     vielecke = [[(x - sx / 2, z - sz / 2), (x + sx / 2, z - sz / 2), (x + sx / 2, z + sz / 2), (x - sx / 2, z + sz / 2)]
@@ -165,6 +165,9 @@ def bewuchs(frei_rechtecke=(), frei_vielecke=(), frei_kreise=(), feste_baeume=()
     if vielecke:
         zeilen.append("frei_vielecke = Array[PackedVector2Array]([" + ", ".join(
             "PackedVector2Array(" + ", ".join(f"{x:.5g}, {z:.5g}" for x, z in v) + ")" for v in vielecke) + "])")
+    if baumfrei_vielecke:
+        zeilen.append("baumfrei_vielecke = Array[PackedVector2Array]([" + ", ".join(
+            "PackedVector2Array(" + ", ".join(f"{x:.5g}, {z:.5g}" for x, z in v) + ")" for v in baumfrei_vielecke) + "])")
     if frei_kreise:
         zeilen.append("frei_kreise = PackedVector3Array(" + ", ".join(f"{x:.5g}, {z:.5g}, {r:.5g}" for x, z, r in frei_kreise) + ")")
     if feste_baeume:

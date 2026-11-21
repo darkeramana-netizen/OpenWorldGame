@@ -21,6 +21,8 @@ extends Node3D
 @export var schneegrenze: float = 85.0
 ## Frei gehaltene Flächen: Vielecke aus (x, z) und Kreise (x, z, Radius).
 @export var frei_vielecke: Array[PackedVector2Array] = []
+## Hier wächst nur Gras, keine Bäume und Büsche (Felder der Flur)
+@export var baumfrei_vielecke: Array[PackedVector2Array] = []
 @export var frei_kreise: PackedVector3Array = PackedVector3Array()
 ## Nur in diesem Rechteck (x, z, Breite, Tiefe); leer: das ganze Gelände.
 @export var bereich: Rect2 = Rect2()
@@ -58,6 +60,7 @@ const STEIL_GRAS := 0.4
 var _gelaende: Node3D
 var _boden_rid: RID
 var _maske: Image
+var _flur: Image             # Felder (teil_flur.py): R Acker, G Getreide, B Weide/Wiese
 var _maske_ursprung := Vector2.ZERO
 var _maske_groesse := Vector2.ONE
 var _meer: float = -20.0
@@ -115,6 +118,11 @@ func _lies_maske() -> void:
 		_maske = textur.get_image()
 		if _maske and _maske.is_compressed():
 			_maske.decompress()
+	var flur_textur := material.get_shader_parameter("flur") as Texture2D
+	if flur_textur and material.get_shader_parameter("mit_flur"):
+		_flur = flur_textur.get_image()
+		if _flur and _flur.is_compressed():
+			_flur.decompress()
 	_maske_ursprung = material.get_shader_parameter("welt_ursprung")
 	_maske_groesse = material.get_shader_parameter("welt_groesse")
 	_meer = material.get_shader_parameter("meeresspiegel")
@@ -127,6 +135,15 @@ func _maske_bei(x: float, z: float) -> Color:
 	if u.x < 0.0 or u.y < 0.0 or u.x >= 1.0 or u.y >= 1.0:
 		return Color(0, 0, 0)
 	return _maske.get_pixel(int(u.x * _maske.get_width()), int(u.y * _maske.get_height()))
+
+
+func _flur_bei(x: float, z: float) -> Color:
+	if _flur == null:
+		return Color(0, 0, 0, 0)
+	var u := (Vector2(x, z) - _maske_ursprung) / _maske_groesse
+	if u.x < 0.0 or u.y < 0.0 or u.x >= 1.0 or u.y >= 1.0:
+		return Color(0, 0, 0, 0)
+	return _flur.get_pixel(int(u.x * _flur.get_width()), int(u.y * _flur.get_height()))
 
 
 func _steilheit(x: float, z: float) -> float:
@@ -163,6 +180,10 @@ func _platz(x: float, z: float, steil_max: float, raum: float) -> float:
 				return NAN
 	if _ist_frei(x, z) or _gelaende.am_loch(x, z, raum + 3.0):
 		return NAN
+	if raum > 0.0:
+		for vieleck in baumfrei_vielecke:
+			if Geometry2D.is_point_in_polygon(Vector2(x, z), vieleck):
+				return NAN
 	# Steht etwas darüber oder daneben (Mauer, Haus, Brücke)? Dann trifft der Strahl nicht den Boden.
 	var raum_abfrage := get_world_3d().direct_space_state
 	for versatz in [Vector2.ZERO, Vector2(raum, 0), Vector2(-raum, 0), Vector2(0, raum), Vector2(0, -raum)]:
@@ -526,9 +547,30 @@ func _graszelle(zelle: Vector2i) -> Node3D:
 		var h := _platz(x, z, STEIL_GRAS, 0.0)
 		if is_nan(h):
 			continue
+		# Flur (Mängelliste M6): auf dem Acker kein Gras; im Getreide hohe, goldene Halme (doppelt so dicht);
+		# auf der Weide kurz; auf der Wiese hier und da ein blühender Büschel
+		var fl := _flur_bei(x, z)
+		if fl.r > 0.5:
+			continue
 		var ex := _exemplar(zufall, x, h - 0.05, z, 0.6, 1.4)
 		var c: Color = ex[1]
-		ex[1] = Color(grund.r * c.r, grund.g * c.g, grund.b * c.b, c.a)
+		var ton := grund
+		if fl.g > 0.5:
+			ton = Color(1.55, 1.18, 0.5)
+			var t: Transform3D = ex[0]
+			t.basis = t.basis.scaled(Vector3(0.8, 2.6, 0.8))
+			ex[0] = t
+			var ex2 := _exemplar(zufall, x + zufall.randf_range(-0.4, 0.4), h - 0.05, z + zufall.randf_range(-0.4, 0.4), 0.7, 1.2)
+			var t2: Transform3D = ex2[0]
+			t2.basis = t2.basis.scaled(Vector3(0.8, 2.4, 0.8))
+			exemplare.append([t2, Color(1.5, 1.14, 0.48, c.a)])
+		elif fl.b > 0.3 and fl.b < 0.7:
+			var t: Transform3D = ex[0]
+			t.basis = t.basis.scaled(Vector3(1.0, 0.55, 1.0))
+			ex[0] = t
+		elif fl.b >= 0.7 and zufall.randf() < 0.16:
+			ton = Color(2.4, 2.1, 0.5) if zufall.randf() < 0.6 else Color(2.5, 2.5, 2.3)
+		ex[1] = Color(ton.r * c.r, ton.g * c.g, ton.b * c.b, c.a)
 		exemplare.append(ex)
 	var knoten := Node3D.new()
 	add_child(knoten)
