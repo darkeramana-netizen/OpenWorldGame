@@ -393,7 +393,16 @@ _BEWUCHS_MASSIV = list(range(GRAS, GRAS + 17)) + list(range(MOOS, MOOS + 12))
 # (Farbtexturen beim Laden entsättigt: werkzeuge/felsen_laden.py --grau 0.15; die Tönung hellt wie bei den übrigen Brocken auf)
 BROCKEN_MASSIV = [("boulder_01", 1.4, "1.2, 1.19, 1.17, 1"), ("rock_07", 0.3, "1.45, 1.44, 1.42, 1"),
                   ("namaqualand_boulder_03", 2.6, "1.45, 1.44, 1.42, 1"), ("namaqualand_boulder_05", 1.2, "1.15, 1.14, 1.12, 1")]
+# Mauern im Bereich des Felsmassivs (Mängelliste M34): daneben nur ein flacher Felssockel, keine Brocken
+_fm_bereich = (min(_rx) - 10, min(_rz) - 10, max(_rx) + 10, max(_rz) + 10)
+_fm_mauern = []
+for _linie in MAUERLINIEN:
+    for (ax_, az_), (bx_, bz_) in zip(_linie, _linie[1:]):
+        if (max(ax_, bx_) >= _fm_bereich[0] and min(ax_, bx_) <= _fm_bereich[2]
+                and max(az_, bz_) >= _fm_bereich[1] and min(az_, bz_) <= _fm_bereich[3]):
+            _fm_mauern += [ax_, az_, bx_, bz_]
 N("Felsmassiv", "Node3D", DS, f"""script = ExtResource("33_felsmassiv")
+mauern = PackedVector2Array({", ".join(f"{v:.2f}" for v in _fm_mauern)})
 gelaende = NodePath("../../Gelaende")
 bereich = Rect2({min(_rx) - 2:.1f}, {min(_rz) - 2:.1f}, {max(_rx) - min(_rx) + 4:.1f}, {max(_rz) - min(_rz) + 4:.1f})
 material = ExtResource("34_felsmassiv_mat")
@@ -413,7 +422,8 @@ def _nah_kueste(x_, z_, r_=24.0):
     gx_, gz_ = int(x_ // 20), int(z_ // 20)
     return any(math.dist((x_, z_), q_) < r_ for i_ in (-1, 0, 1) for j_ in (-1, 0, 1) for q_ in _knetz.get((gx_ + i_, gz_ + j_), ()))
 FELSSTUECKE = [f_ for f_ in FELSSTUECKE if f_[0] >= FARN or not _nah_kueste(f_[1], f_[3])]
-print("Felsmassiv im Burgbezirk; dort entfernt:", _vorher - len(FELSSTUECKE), "Brocken, Platten und Pflanzen")
+print("Felsmassiv im Burgbezirk; dort entfernt:", _vorher - len(FELSSTUECKE), "Brocken, Platten und Pflanzen;",
+      len(_fm_mauern) // 4, "Mauerstücke begrenzen den Fels")
 N("Felsen", "Node3D", DS, f"""script = ExtResource("30_felsen")
 modelle = PackedStringArray({", ".join(f'"{p}"' for p, _, _ in FELSMODELLE)})
 farben = PackedColorArray({", ".join(FARBEN.get(m, "1, 1, 1, 1") for m in range(len(FELSMODELLE)))})

@@ -94,6 +94,9 @@ def _drin_poly(q, poly):
 TORBOEGEN_ALLE = []      # (Ring, x, z, ux, uz, Boden, Breite, Krone, Dicke, mit Tortürmen) aller Tore aus mauerring
 
 
+MAUERLINIEN = []          # alle Mauerzüge (Welt x, z), in der Reihenfolge des Baus
+
+
 def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=None, strassen=(), torbreite=6.0,
              turm_r=0.0, turm_extra=5.0, turm_dach=True, mitte=(0, 0), zinnen=True, mat="Material_mauer",
              torname="", hoehe_min=None, oben_fest=None, aussparen=(), tor_regel="offen"):
@@ -105,6 +108,7 @@ def mauerring(name, eltern, punkte, hoehe, dicke=3.0, geschlossen=False, tore=No
     aussparen: Vielecke (Welt), in denen keine Mauer steht (dort steht z. B. ein begehbarer Turm mit eigenen Mauern).
     tor_regel: Torflügel aller Tore ohne eigene Regel (szenen/welt/fluegel.gd: "offen", "tag", "zu", mit ":Bedingung")."""
     pkt = punkte + [punkte[0]] if geschlossen else list(punkte)
+    MAUERLINIEN.append([tuple(q) for q in pkt])     # für das Felsmassiv (teil_felsen.py): neben Mauern kein hoher Fels
     tore = dict(tore or {})
     for i in range(len(pkt) - 1):
         if i in tore:

@@ -10,7 +10,7 @@ global uniform vec4 gelaende_rahmen;
 uniform vec3 farbe_tief = vec3(0.012, 0.05, 0.065);  // tiefes Blaugrün wie im Referenzbild
 uniform vec3 farbe_hell = vec3(0.025, 0.085, 0.095);
 uniform vec3 farbe_flach = vec3(0.06, 0.13, 0.11);   // über hellem Grund
-uniform float sichttiefe = 3.5;                      // so tief sieht man ins Wasser (Meter bis fast undurchsichtig)
+uniform float sichttiefe = 1.4;                      // so tief sieht man ins Wasser (Meter bis fast undurchsichtig)
 uniform float gischt = 1.0;
 // Hafenbecken (x min, z min, x max, z max): trübes, grünlich-graues Wasser, kaum Kräuselung
 uniform vec4 hafen = vec4(0.0);
@@ -101,7 +101,10 @@ void fragment() {
 		vec2 guv = (welt_pos.xz - gelaende_rahmen.xy) / gelaende_rahmen.zw;
 		if (guv.x > 0.0 && guv.y > 0.0 && guv.x < 1.0 && guv.y < 1.0) {
 			vec2 n = vec2(textureSize(gelaende_hoehe, 0));   // Rasterpunkte liegen auf den Texelmitten
-			tief = max(welt_pos.y - textureLod(gelaende_hoehe, guv * (n - 1.0) / n + 0.5 / n, 0.0).r, 0.0);
+			float grund = textureLod(gelaende_hoehe, guv * (n - 1.0) / n + 0.5 / n, 0.0).r;
+			// Liegt das Gelände deutlich über dem Wasser, ist das Wasser in einem Gang oder einer Halle unter dem
+			// Fels (Untergrundhafen, Kanal): dort tief, nicht Strand
+			tief = grund > welt_pos.y + 0.6 ? 50.0 : max(welt_pos.y - grund, 0.0);
 		}
 	}
 	float durch_blick = tief / max(abs(dot(normalize(CAMERA_POSITION_WORLD - welt_pos), vec3(0.0, 1.0, 0.0))), 0.15);
@@ -109,6 +112,8 @@ void fragment() {
 	float flach = exp(-tief / max(sicht * 0.5, 0.01));
 	farbe = mix(farbe, farbe_flach * (1.0 - im_hafen * 0.4), flach * 0.7);
 	ALPHA = clamp(1.0 - exp(-durch_blick / max(sicht, 0.01)), 0.0, 1.0);
+	// ab 3 m Tiefe undurchsichtig: Stufen und Platten des Meeresbodens (Geländeerzeuger) schimmern sonst durch
+	ALPHA = max(ALPHA, smoothstep(1.5, 3.0, tief));
 	ALPHA = max(ALPHA, smoothstep(kraeuseln_bis * 0.5, kraeuseln_bis * 1.5, abstand));
 
 	// Gischt: ein unruhiger Saum, wo das Wasser flach auf den Grund läuft

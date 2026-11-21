@@ -382,8 +382,10 @@ func hoehe(p: Vector2) -> float:
 	if not _bucht.is_empty() and p.x > -320.0:
 		var db := _polygon_abstand(p, _bucht)
 		# Felsufer: am Ufer fern der Wege steigt das Land um 3 bis 9 m an (Landzungen), damit eine Klippe entsteht
-		if db > 0.0 and db < 40.0 and not Geometry2D.is_point_in_polygon(p, _hafen) and not Geometry2D.is_point_in_polygon(p, _stadt) \
-				and not Geometry2D.is_point_in_polygon(p, _ring):
+		# nur echtes Land: Das Vieleck der Bucht endet im Osten im offenen Meer, dort entstand sonst ein Wall knapp unter
+		# dem Wasser mit Sandinseln darauf (Mängelliste M35, M39)
+		if db > 0.0 and db < 40.0 and h > -19.0 and not Geometry2D.is_point_in_polygon(p, _hafen) \
+				and not Geometry2D.is_point_in_polygon(p, _stadt) and not Geometry2D.is_point_in_polygon(p, _ring):
 			var kopf := (3.0 + maxf(0.0, _huegel.get_noise_2dv(p * 0.6)) * 6.0) * (1.0 - _strand(p))
 			h += kopf * smoothstep(45.0, 8.0, db) * smoothstep(25.0, 45.0, _naechster_weg(p))
 		if db < 14.0 and not Geometry2D.is_point_in_polygon(p, _hafen) and not Geometry2D.is_point_in_polygon(p, _stadt) \

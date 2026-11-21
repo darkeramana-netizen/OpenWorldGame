@@ -29,6 +29,15 @@ extends Node3D
 @export var brocken_farben := PackedColorArray()
 ## Wahrscheinlichkeit für einen Brocken je Rasterfeld (2,6 m) an einer Stufe
 @export var brocken_dichte := 0.55
+## Mauern (Paare von Endpunkten, Welt x/z): Daneben bleibt der Fels ein flacher Sockel, sonst wüchsen seine Blöcke über
+## niedrige Mauern und in die Wege (Mängelliste M34). Volle Höhe erst ab `mauer_abstand` Metern.
+@export var mauern := PackedVector2Array()
+@export var mauer_abstand := 7.0
+@export var mauer_sockel := 0.4
+
+const _M_ZELLE := 2.0
+var _m_abstand := PackedFloat32Array()   # Abstand zur nächsten Mauer je Rasterpunkt (2 m), gekappt
+var _m_n := Vector2i.ZERO
 
 var _g: Node
 var _maske: Image
@@ -85,6 +94,7 @@ func _ready() -> void:
 	_flecken.frequency = 0.07
 	_zufall.seed = 8080
 	_zufall_brocken.seed = 4711
+	_mauer_raster()
 	var nx := ceili(bereich.size.x / (kachel * raster))
 	var nz := ceili(bereich.size.y / (kachel * raster))
 	for kx in nx:
@@ -92,6 +102,40 @@ func _ready() -> void:
 			_baue_kachel(bereich.position + Vector2(kx, kz) * kachel * raster)
 	_setze_bewuchs()
 	_setze_brocken()
+
+
+## Abstand zur nächsten Mauer auf einem 2-m-Raster über dem Bereich (nur bis mauer_abstand gerechnet)
+func _mauer_raster() -> void:
+	if mauern.size() < 2:
+		return
+	_m_n = Vector2i(ceili(bereich.size.x / _M_ZELLE) + 2, ceili(bereich.size.y / _M_ZELLE) + 2)
+	_m_abstand.resize(_m_n.x * _m_n.y)
+	_m_abstand.fill(mauer_abstand)
+	for k in range(0, mauern.size() - 1, 2):
+		var a := mauern[k]
+		var b := mauern[k + 1]
+		var lo := (Vector2(minf(a.x, b.x), minf(a.y, b.y)) - bereich.position - Vector2.ONE * mauer_abstand) / _M_ZELLE
+		var hi := (Vector2(maxf(a.x, b.x), maxf(a.y, b.y)) - bereich.position + Vector2.ONE * mauer_abstand) / _M_ZELLE
+		for iz in range(maxi(floori(lo.y), 0), mini(ceili(hi.y), _m_n.y - 1) + 1):
+			for ix in range(maxi(floori(lo.x), 0), mini(ceili(hi.x), _m_n.x - 1) + 1):
+				var p := bereich.position + Vector2(ix, iz) * _M_ZELLE
+				var d := p.distance_to(Geometry2D.get_closest_point_to_segment(p, a, b))
+				var i := iz * _m_n.x + ix
+				if d < _m_abstand[i]:
+					_m_abstand[i] = d
+
+
+## Abstand zur nächsten Mauer (bilinear aus dem Raster); ohne Mauern: mauer_abstand
+func _mauer_bei(x: float, z: float) -> float:
+	if _m_abstand.is_empty():
+		return mauer_abstand
+	var u := (Vector2(x, z) - bereich.position) / _M_ZELLE
+	var ix := clampi(floori(u.x), 0, _m_n.x - 2)
+	var iz := clampi(floori(u.y), 0, _m_n.y - 2)
+	var fx := clampf(u.x - ix, 0.0, 1.0)
+	var fz := clampf(u.y - iz, 0.0, 1.0)
+	var i := iz * _m_n.x + ix
+	return lerpf(lerpf(_m_abstand[i], _m_abstand[i + 1], fx), lerpf(_m_abstand[i + _m_n.x], _m_abstand[i + _m_n.x + 1], fx), fz)
 
 
 ## Die Brocken als felsen.gd-Kind, mit Kollision (vereinfachte Form der Scans)
@@ -117,7 +161,7 @@ func _brocken_auf(a: Vector3, b: Vector3, c: Vector3, w: float) -> void:
 	var n := (b - a).cross(c - a).normalized()
 	var m_ := (a + b + c) / 3.0
 	var feld := Vector2i(floori(m_.x / 2.6), floori(m_.z / 2.6))
-	if _brocken_felder.has(feld):
+	if _brocken_felder.has(feld) or _mauer_bei(m_.x, m_.z) < 4.0:
 		return
 	var steil := absf(n.y) < 0.6
 	var chance := brocken_dichte if steil else (brocken_dichte * 0.05 if absf(n.y) > 0.85 else brocken_dichte * 0.25)
@@ -239,8 +283,9 @@ func _fels(x: float, z: float, h: float) -> float:
 	var kluft := 1.0 - smoothstep(-0.97, -0.8, _naht.get_noise_2d(q.x, q.y))  # 1 in der Kluft
 	var relief := lerpf(1.3, 2.6, 1.0 - staerke)
 	y += blockhoehe * relief - kluft * 0.9 + _fein.get_noise_2d(x * 2.0, z * 2.0) * 0.15
-	# nie mehr als 4,5 m über dem Gelände
-	return clampf(y, h + 0.05, h + 4.5)
+	# nie mehr als 4,5 m über dem Gelände, an Mauern nur ein flacher Sockel
+	var hoechstens := lerpf(mauer_sockel, 4.5, smoothstep(1.0, mauer_abstand, _mauer_bei(x, z)))
+	return clampf(y, h + 0.05, h + hoechstens)
 
 
 func _punkt(x: float, z: float) -> Vector3:

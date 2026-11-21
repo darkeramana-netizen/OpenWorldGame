@@ -180,6 +180,7 @@ def bruestung(name, linie, hoehen, abstand, ab=None, nicht_bei=()):
             for e_ in (-1, 1):
                 nx_, nz_ = -uz_ * e_, ux_ * e_
                 unten_ = min(H(p0_[0] + nx_ * (abstand + 2), p0_[1] + nz_ * (abstand + 2)), h0_) - 3.0
+                MAUERLINIEN.append([(p0_[0] + nx_ * abstand, p0_[1] + nz_ * abstand), (p1_[0] + nx_ * abstand, p1_[1] + nz_ * abstand)])
                 mauern += [p0_[0] + nx_ * abstand - ux_ * 0.3, p0_[1] + nz_ * abstand - uz_ * 0.3,
                            p1_[0] + nx_ * abstand + ux_ * 0.3, p1_[1] + nz_ * abstand + uz_ * 0.3,
                            round(unten_, 2), round(max(h0_, h1_) + 1.0, 2), 1.2, nx_, nz_, 0]
