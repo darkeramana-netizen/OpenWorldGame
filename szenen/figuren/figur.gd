@@ -676,6 +676,14 @@ const STOFF_TEILE := {
 	"Wappenrock": [0.0002, 0.08, 0.105, 0.08, 0.07],
 	"Wappenrock_hinten": [0.0002, 0.08, 0.105, 0.08, 0.07],
 }
+## Teil → mögliche Unterlagen (die erste vorhandene zählt)
+const STOFF_LAGEN := {
+	"Schuerze": ["Kittelrock"],
+	"Lederschuerze": ["Kittelrock"],
+	"Wappenrock": ["Kettenhemd_rock", "Kittelrock"],
+	"Wappenrock_hinten": ["Kettenhemd_rock", "Kittelrock"],
+	"Kettenhemd_rock": ["Kittelrock"],
+}
 ## Unter Bahnen hat der Rock eine Aussparung (werkzeuge/mensch_bauen.py, hinter_bahn), unter dem Kettenhemd ist er nur
 ## ein schmaler Streifen: dann bleibt er nah an seinem Platz.
 const STOFF_RAUM_RUHIG := 0.07
@@ -738,6 +746,24 @@ static func stoff_echt_einrichten(skelett: Skeleton3D) -> Array:
 		stoff.visible = false
 		sichtbar.visible = true
 		stoffe.append(stoff)
+	# Flicken auf dem Rock hängen am Rockstoff (sonst blieben sie beim echten Stoff an den Rockknochen zurück)
+	for st: Node in stoffe:
+		if String(st.get_meta("quelle")) != "Kittelrock":
+			continue
+		for k in skelett.get_children():
+			if k is MeshInstance3D and String(k.name).begins_with("Flicken") and not String(k.name).ends_with("_fern") \
+					and k.get_aabb().get_center().y < 0.9:
+				if st.call("anhaengen", k):
+					k.visible = true   # fern weiter mit Federknochen; nah blendet _stoff_umschalten ihn aus
+	# Lagen: was darüber hängt, bleibt vor dem Stoff darunter (sonst sticht der Rock durch die Schürze)
+	var nach_teil := {}
+	for st: Node in stoffe:
+		nach_teil[String(st.get_meta("quelle"))] = st
+	for oben: String in STOFF_LAGEN:
+		for unten: String in STOFF_LAGEN[oben]:
+			if nach_teil.has(oben) and nach_teil.has(unten):
+				nach_teil[oben].call("unterlage_setzen", nach_teil[unten])
+				break
 	return stoffe
 
 

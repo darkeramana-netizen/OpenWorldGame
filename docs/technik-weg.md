@@ -123,3 +123,18 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
     Vorher (6×4, ein Kern, ganzes Mesh neu) kosteten 40 Menschen 44,8 ms. Bei mehreren Kernen entfallen gut 40 %
     aufs Hochladen (Hauptstrang). Auf einem Ryzen 7 9800X3D mit 16 Strängen ist deutlich weniger zu erwarten;
     nachmessen mit `tests/_stoff_last.gd`.
+- **Lagen und Flicken (22.11.2026, Zweig `stoff-5`)**:
+  - Stoff gegen Stoff:
+    - Mit `unterlage_setzen` bleibt eine Schürze, ein Wappenrock oder der Kettenhemd-Schoß vor dem Stoff darunter
+      (`STOFF_LAGEN` in `figur.gd`).
+    - Bei der Einrichtung bekommt jeder freie Punkt den nächsten Punkt der Unterlage als Partner (höchstens 10 cm).
+      In jedem Unterschritt hält er 1,2 cm Abstand vor ihm, entlang der Normalen der Unterlage, auf der Seite wie
+      am Körper.
+    - Die Unterlage wird mit ihrem Stand aus dem letzten Bild im Hauptstrang gelesen, damit beide gleichzeitig auf
+      verschiedenen Kernen rechnen können.
+  - Flicken: `anhaengen` hängt kleine Meshes an den Stoff. Jede Ecke merkt sich ihr nächstes Dreieck, ihre Lage
+    darin und ihre Höhe über der Fläche. Die Flicken auf dem Rock gehen so mit dem echten Stoff mit.
+  - Bilder: `docs/bilder/figuren-2026-11-22/stoff_lagen_vorher_nachher.jpg` (oben vorher, unten mit Lagen) und
+    `stoff_flicken.jpg`.
+  - Offen bleibt der Kittelstreifen unter dem Kettenhemd: Er legt sich wie ein Schlauch um den Oberschenkel. Das
+    lässt sich im Bauskript beheben (breiter oder weglassen) und war mit Federknochen genauso.
