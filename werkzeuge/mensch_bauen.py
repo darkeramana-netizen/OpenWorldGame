@@ -291,6 +291,62 @@ def rock_ketten(V, rock_ids, mitte, oben, unten, ketten=12, glieder=4):
     return orte
 
 
+def verschleiss(pos, nor, art, zufall):
+    """Gebrauchsspuren als Eckfarbe (multipliziert die Stofffarbe): Schmutz am Saum und an den Knien, fleckige
+    Stellen, an Schultern ausgeblichen; Leder: hellere Scheuerstellen. art: "stoff", "leder"."""
+    rng = np.random.default_rng(zufall.randint(0, 1 << 30))
+    def wellen(freq, n=6):
+        w = np.zeros(len(pos))
+        for _ in range(n):
+            d = rng.normal(size=3); d /= np.linalg.norm(d)
+            w += np.sin(pos @ d * freq * rng.uniform(0.7, 1.3) + rng.uniform(0, 6.3))
+        return w / n
+    y = pos[:, 1]
+    hell = np.ones(len(pos))
+    if art == "leder":
+        hell *= 1.0 + 0.18 * np.clip(wellen(14.0) * 2.0 - 0.6, 0, 1)        # abgescheuert
+        hell *= 1.0 + 0.12 * np.clip((0.06 - y) / 0.06, 0, 1)                  # Staub an den Sohlen
+        farbe = np.stack([hell, hell * 0.97, hell * 0.93], axis=1)
+        return np.clip(np.column_stack([farbe, np.ones(len(pos))]), 0, 2)
+    saum = np.clip((0.4 - y) / 0.35, 0, 1) ** 1.5                              # Straßenstaub und Dreck unten
+    flecken = np.clip(wellen(9.0) * 2.2 - 1.0, 0, 1) * zufall.uniform(0.3, 0.8)
+    knie = np.clip(1.0 - np.abs(y - 0.5) / 0.08, 0, 1) * (nor[:, 2] > 0.3)
+    sonne = np.clip(nor[:, 1], 0, 1) * np.clip((y - 1.2) / 0.2, 0, 1)        # Schultern und Rücken oben
+    fleckig = 1.0 + 0.06 * wellen(4.0)                                           # ungleichmäßig gefärbt
+    dunkel = (1.0 - 0.38 * saum * zufall.uniform(0.6, 1.0)) * (1.0 - 0.22 * flecken) * (1.0 - 0.15 * knie)
+    r_ = dunkel * fleckig * (1.0 + 0.12 * sonne)
+    farbe = np.stack([r_ * (1.0 - 0.03 * saum), r_ * (1.0 - 0.06 * saum), r_ * (1.0 - 0.1 * saum)], axis=1)
+    return np.clip(np.column_stack([farbe, np.ones(len(pos))]), 0, 2)
+
+
+def bahn_flaeche(oberflaeche, mitte_z, seite, y_oben, y_unten, b_oben, b_unten, haengt_ab, spalten, zeilen,
+                 abstand, falten):
+    """Gitter einer Stoffbahn vor (seite 1) oder hinter (seite -1) dem Körper: oberhalb von haengt_ab liegt sie am
+    Körper an, darunter hängt sie lotrecht vom Gürtel; leichte Falten. Gibt Ecken [zeilen, spalten, 3]."""
+    from scipy.spatial import cKDTree
+    s_ = oberflaeche[(oberflaeche[:, 2] - mitte_z) * seite > 0]
+    baum = cKDTree(s_[:, :2])
+    g = np.zeros((zeilen, spalten, 3))
+    for zi in range(zeilen):
+        y = y_oben + (y_unten - y_oben) * zi / (zeilen - 1)
+        b = b_oben + (b_unten - b_oben) * zi / (zeilen - 1)
+        for si in range(spalten):
+            x = -b / 2 + b * si / (spalten - 1)
+            idx = baum.query_ball_point([x, y], 0.05)
+            if not idx:
+                idx = [baum.query([x, y])[1]]
+            zs = s_[idx, 2]
+            z = (zs.max() if seite > 0 else zs.min()) + seite * abstand
+            g[zi, si] = (x, y, z)
+    # unterhalb des Gürtels lotrecht: nie näher am Körper als am Gürtel
+    guertel_zeile = min(range(zeilen), key=lambda zi: abs(g[zi, 0, 1] - haengt_ab))
+    for zi in range(guertel_zeile + 1, zeilen):
+        t = (haengt_ab - g[zi, 0, 1]) / max(haengt_ab - y_unten, 0.05)
+        g[zi, :, 2] = seite * np.maximum(seite * g[zi, :, 2], seite * g[guertel_zeile, :, 2]) + \
+            seite * falten * t * np.sin(g[zi, :, 0] / 0.09 * 2 * np.pi)
+    return g, guertel_zeile
+
+
 # ---------- glTF schreiben ----------
 
 class Gltf:
@@ -631,6 +687,8 @@ def main():
         for i in rock_ids:
             t_ = min(max((huefte_ - V[i][1]) / max(huefte_ - lang_, 0.1), 0.0), 1.0)
             f_ = 1.0 + weite_ * t_ ** 1.3
+            # Falten: der Stoff wirft zum Saum hin Wellen rund um den Körper
+            f_ *= 1.0 + 0.05 * t_ * np.sin(np.arctan2(V[i][0] - mx_, V[i][2] - mz_) * (13 if kleidung == "kleid" else 10))
             V[i][0] = mx_ + (V[i][0] - mx_) * f_
             V[i][2] = mz_ + (V[i][2] - mz_) * f_
         orte = rock_ketten(V, rock_ids, MHP["pelvis"], taille_ - 0.035, lang_ + 0.02)
@@ -670,8 +728,70 @@ def main():
             p_ = sorted(d.items(), key=lambda kv: -kv[1])[:4]
             sm = sum(x for _, x in p_)
             ecken_jw[i] = ([j for j, _ in p_] + [0] * (4 - len(p_)), [x / sm for _, x in p_] + [0.0] * (4 - len(p_)))
+    # Überkleidung als schwingende Stoffbahnen: Schürze (Leinen), Lederschürze (Schmied), Wappenrock (vorn und hinten)
+    ueber = opt.get("ueber", "")
+    bahnen = []        # (Teilname, Materialschlüssel, Gitter, Gewichte je Ecke)
+    verdecker = []     # (Seite, unten, oben, halbe Breite oben, unten): dahinter fällt der Rock weg
+    if ueber and kleidung != "keine" and rock_ids:
+        from scipy.spatial import cKDTree
+        tights_ids = sorted({e for g_, ecken, _ in flaechen if g_ == "helper-tights" for e in ecken})
+        oberflaeche = np.vstack([V[[i for i in tights_ids if V[i][1] > taille_ - 0.05]], V[rock_ids]])
+        ober_ids = [i for i in tights_ids if V[i][1] > taille_ - 0.05] + list(rock_ids)
+        baum_o = cKDTree(oberflaeche)
+        unten_ = lang_ + 0.03
+        plaene = {"schuerze": [("Schuerze", "schuerze", 1, taille_ + 0.01, max(unten_ - 0.06, 0.3), 0.34, 0.44)],
+                  "lederschuerze": [("Lederschuerze", "lederschuerze", 1, taille_ + 0.33, 0.42, 0.3, 0.44)],
+                  "wappenrock": [("Wappenrock", "wvorn", 1, MHP["neck_01"][1] - 0.06, 0.46, 0.36, 0.44),
+                                 ("Wappenrock_hinten", "whinten", -1, MHP["neck_01"][1] - 0.06, 0.46, 0.36, 0.44)]}[ueber]
+        for teilname, praefix, seite, y_o, y_u, b_o, b_u in plaene:
+            spalten, zeilen, ketten, glieder = 9, 14, 4, 4
+            ROCK_ANTEIL = 0.8
+            g, gz = bahn_flaeche(oberflaeche, MHP["pelvis"][2], seite, y_o, y_u, b_o, b_u, taille_, spalten, zeilen,
+                                 0.045 if praefix == "lederschuerze" else 0.04, 0.012)
+            # Ketten: an 4 Spalten, Glieder von der Gürtelzeile bis zum Saum
+            reihen = [gz + int(round((zeilen - 1 - gz) * k / (glieder - 1))) for k in range(glieder)]
+            spalten_k = [int(round((spalten - 1) * c / (ketten - 1))) for c in range(ketten)]
+            erster = len(qnamen) + len(zusatz)
+            for c, sk in enumerate(spalten_k):
+                for k, zr in enumerate(reihen):
+                    ort = g[zr, sk]
+                    runter = (g[reihen[k + 1], sk] - ort) if k + 1 < glieder else (ort - g[reihen[k - 1], sk])
+                    yb = runter / np.linalg.norm(runter)
+                    xb = np.cross(yb, [0.0, 0.0, 1.0]); xb /= (np.linalg.norm(xb) + 1e-9)
+                    zb = np.cross(xb, yb)
+                    b = np.eye(4); b[:3, 0] = xb; b[:3, 1] = yb; b[:3, 2] = zb; b[:3, 3] = ort
+                    zusatz.append((f"{praefix}_{c}_{k}", "pelvis" if k == 0 else f"{praefix}_{c}_{k - 1}", b))
+            gewichte = []
+            for zi in range(zeilen):
+                for si in range(spalten):
+                    _, naechste = baum_o.query(g[zi, si])
+                    unter = ecken_jw[ober_ids[naechste]]
+                    if zi <= gz:              # oberhalb des Gürtels: liegt an, folgt dem Körper
+                        gewichte.append(unter)
+                        continue
+                    cf = si / (spalten - 1) * (ketten - 1)
+                    c0 = min(int(cf), ketten - 2); fc = cf - c0
+                    tf = (zi - gz) / (zeilen - 1 - gz) * (glieder - 1)
+                    k0 = min(int(tf), glieder - 1); fk = tf - k0
+                    gk = {k0: 1.0 - 0.5 * fk, min(k0 + 1, glieder - 1): 0.5 * fk}
+                    d = {}
+                    for c, wc in ((c0, 1.0 - fc), (c0 + 1, fc)):
+                        for k, wk in gk.items():
+                            j = erster + c * glieder + k
+                            d[j] = d.get(j, 0.0) + wc * wk * (1.0 - ROCK_ANTEIL)
+                    for j, wv in zip(*unter):    # der größte Teil folgt dem Rock darunter (und damit den Beinen)
+                        if wv > 0:
+                            d[j] = d.get(j, 0.0) + wv * ROCK_ANTEIL
+                    p_ = sorted(d.items(), key=lambda kv: -kv[1])[:4]
+                    sm = sum(x for _, x in p_)
+                    gewichte.append(([j for j, _ in p_] + [0] * (4 - len(p_)), [x / sm for _, x in p_] + [0.0] * (4 - len(p_))))
+            bahnen.append((teilname, praefix, g, gewichte))
+            verdecker.append((seite, y_u + 0.03, taille_, b_o / 2 - 0.03, b_u / 2 - 0.03))
     alle = qnamen + [z[0] for z in zusatz]
 
+    import random as _random
+    import zlib
+    zufall_ = _random.Random(zlib.crc32(name.encode()))
     gl = Gltf()
     knoten_von = {}
     gl.g["nodes"].append({"name": "Armature", "children": []})
@@ -721,11 +841,14 @@ def main():
     gl.g["skins"].append({"joints": [knoten_von[n] for n in alle], "skeleton": knoten_von["root"],
                           "inverseBindMatrices": gl.acc(np.array(ibm), 5126, "MAT4")})
 
-    def teil(teilname, pos, tex, jw, tri, mat, nor=None):
+    def teil(teilname, pos, tex, jw, tri, mat, nor=None, abnutzung=None):
         if nor is None:
             nor = normalen(pos, tri)
         j = np.array([x[0] for x in jw]); wt = np.array([x[1] for x in jw])
-        prim = {"attributes": {"POSITION": gl.acc(pos, 5126, "VEC3", 34962, True), "NORMAL": gl.acc(nor, 5126, "VEC3", 34962),
+        extra = {}
+        if abnutzung:
+            extra["COLOR_0"] = gl.acc(verschleiss(pos, nor, abnutzung, zufall_), 5126, "VEC4", 34962)
+        prim = {"attributes": {**extra, "POSITION": gl.acc(pos, 5126, "VEC3", 34962, True), "NORMAL": gl.acc(nor, 5126, "VEC3", 34962),
                                "TEXCOORD_0": gl.acc(np.column_stack([tex[:, 0], 1.0 - tex[:, 1]]), 5126, "VEC2", 34962),
                                "JOINTS_0": gl.acc(j, 5123, "VEC4", 34962), "WEIGHTS_0": gl.acc(wt, 5126, "VEC4", 34962)},
                 "indices": gl.acc(tri.reshape(-1), 5125, "SCALAR", 34963), "material": mat}
@@ -745,9 +868,6 @@ def main():
 
     # Haut
     hm = lies_material(sysa / "skins" / haut / f"{haut}.mhmat")
-    import random as _random
-    import zlib
-    zufall_ = _random.Random(zlib.crc32(name.encode()))
     haut_info = bearbeite_haut(sysa / "skins" / haut / hm["diffuseTexture"], ziel,
                                [(e, t) for g_, e, t in flaechen if g_ == "body"], vt, V, MHP["Head"], not w, zufall_, opt)
     m_haut = gl.material("Haut", "haut.jpg", rau=1.0, normal_uri="haut_normal.png")
@@ -809,11 +929,20 @@ def main():
             if band is not None:
                 verschoben[ecken_ids, 1] = np.clip(verschoben[ecken_ids, 1], band[0], band[1])
             pos, nor, tex, jw, tri = zerlege_kasten(verschoben, n_g, [e for e, _ in sel], ecken_jw, uv_mal)
-            teil(teilname, pos, tex, jw, tri, mat, nor)
+            teil(teilname, pos, tex, jw, tri, mat, nor, "leder" if mat == m_leder else "stoff")
             return set(ecken_ids)
         oben_ids = stueck(hose_fl, ist_oben_roh, 0.011, m_kittel, "Kittel", 3.0, deckel=hals)
         oben_ids = {i for i in oben_ids if V[i][1] < hals}
-        stueck(rock_fl, lambda i: rock_lang <= V[i][1] <= taille - 0.035, 0.006, m_kittel, "Kittelrock", 3.0)
+        def hinter_bahn(i):
+            q = V[i]
+            for seite_, unten, oben, b_oben, b_unten in verdecker:
+                if (q[2] - MHP["pelvis"][2]) * seite_ > 0 and unten < q[1] < oben:
+                    t = (oben - q[1]) / max(oben - unten, 0.01)
+                    if abs(q[0]) < b_oben + (b_unten - b_oben) * t:
+                        return True
+            return False
+        stueck(rock_fl, lambda i: rock_lang <= V[i][1] <= taille - 0.035 and not hinter_bahn(i), 0.006, m_kittel,
+               "Kittelrock", 3.0)
         unten_ids = stueck(hose_fl, ist_unten, 0.003, m_bein, "Beinlinge", 3.0)
         arm = lambda i: haupt(i).startswith(("upperarm", "lowerarm", "hand", "thumb", "index", "middle", "ring", "pinky"))
         stueck(hose_fl, lambda i: not arm(i) and abs(V[i][1] - taille) < 0.15, 0.03, m_leder, "Guertel", 4.0,
@@ -826,7 +955,28 @@ def main():
             n_s = normalen(V, tri_s)
             vs = V.copy(); vs[ids_s] += n_s[ids_s] * 0.012
             pos, nor, tex, jw, tri = zerlege_kasten(vs, n_s, [e for e, _ in schuh_fl], ecken_jw, 4.0)
-            teil("Schuhe", pos, tex, jw, tri, m_leder, nor)
+            teil("Schuhe", pos, tex, jw, tri, m_leder, nor, "leder")
+        # Überkleidung (schwingende Bahnen)
+        if bahnen:
+            m_schuerze = gl.material("Schuerze", rel("kittel_farbe.jpg"), (0.8, 0.77, 0.68, 1.0), rau=0.95,
+                                     normal_uri=rel("kittel_normal.jpg"), doppelt=True)
+            m_wappen = gl.material("Wappen", rel("kittel_farbe.jpg"), (0.55, 0.1, 0.08, 1.0), rau=0.9,
+                                   normal_uri=rel("kittel_normal.jpg"), doppelt=True)
+            m_lederbahn = gl.material("Lederbahn", rel("leder_farbe.jpg"), (0.7, 0.58, 0.46, 1.0), rau=0.75,
+                                      normal_uri=rel("leder_normal.jpg"), doppelt=True)
+            for teilname, praefix, g, gewichte in bahnen:
+                zeilen, spalten = g.shape[:2]
+                pos = g.reshape(-1, 3)
+                tex = np.column_stack([pos[:, 0] * 2.5, pos[:, 1] * 2.5])
+                tri = []
+                for zi in range(zeilen - 1):
+                    for si in range(spalten - 1):
+                        a_ = zi * spalten + si; b_ = a_ + 1; c_ = a_ + spalten; d_ = c_ + 1
+                        # Vorderseite nach außen: vorn (+z) gegen, hinten (-z) mit dem Uhrzeigersinn der Zeilen
+                        tri += [(a_, c_, b_), (b_, c_, d_)] if praefix != "whinten" else [(a_, b_, c_), (b_, d_, c_)]
+                tri = np.array(tri)
+                mat = m_lederbahn if praefix == "lederschuerze" else m_wappen if praefix.startswith("w") else m_schuerze
+                teil(teilname, pos, tex, gewichte, tri, mat, None, "leder" if mat == m_lederbahn else "stoff")
         # Haut unter der Kleidung weglassen: Ecken nahe an benutztem Stoff
         bedeckt_von = np.array(sorted(oben_ids | unten_ids)) if (oben_ids | unten_ids) else np.zeros(0, int)
         bedeckt = set(schuh_ids)
@@ -880,7 +1030,8 @@ def main():
     gl.schreibe(ziel / f"{name}.gltf")
     info = {"quelle": "MakeHuman 1.x (CC0)", "geschlecht": geschlecht, "alter": alter, "muskeln": muskeln,
             "gewicht": gewicht, "groesse": groesse, "haut": haut, "haare": haare, "massstab": round(float(s), 4),
-            "hoehe_m": round(float((v[koerper_ids, 1].max() - boden) * s), 3), "haut_merkmale": haut_info}
+            "hoehe_m": round(float((v[koerper_ids, 1].max() - boden) * s), 3), "haut_merkmale": haut_info,
+            "kleidung": kleidung, "ueber": ueber}
     (ziel / "mensch.json").write_text(json.dumps(info, indent=1))
     print("gebaut:", name, info)
 

@@ -92,6 +92,11 @@ static var realistisch: bool = OS.get_environment("FIGUREN_REALISTISCH") != "" o
 const MENSCHEN := "res://modelle/figuren/menschen/"
 const MENSCHEN_MAENNER := ["probe_mann", "probe_alter"]
 const MENSCHEN_FRAUEN := ["probe_frau"]
+## Körper mit Berufskleidung aus Stoff (Schürze, Lederschürze, Wappenrock, Kutte): Beruf → [Männer, Frauen]
+const MENSCHEN_BERUF := {"schmied": [["probe_schmied"], []], "zeugwart": [["probe_schmied"], []],
+	"magd": [[], ["probe_magd"]], "koch": [["probe_schmied"], ["probe_magd"]], "wache": [["probe_wache"], []],
+	"ritter": [["probe_wache"], []], "geistlich": [["probe_moench"], []]}
+var _stoff_ueber := false     # die Berufskleidung ist schon im Körper (Stoff), keine starren Platten anhängen
 static var _modell_mats := {}
 static var _koepfe := {}
 var _anim: AnimationPlayer
@@ -533,6 +538,10 @@ func _baue_modell() -> bool:
 ## die Quaternius-Figuren; Hut, Zubehör, Blick und Handgriffe wie dort.
 func _baue_mensch(w: bool) -> bool:
 	var vorrat: Array = MENSCHEN_FRAUEN if w else MENSCHEN_MAENNER
+	_stoff_ueber = false
+	if MENSCHEN_BERUF.has(beruf) and not (MENSCHEN_BERUF[beruf][1 if w else 0] as Array).is_empty():
+		vorrat = MENSCHEN_BERUF[beruf][1 if w else 0]
+		_stoff_ueber = true
 	var name_: String = vorrat[absi(hash(_name_text)) % vorrat.size()]
 	var s := _szene(MENSCHEN + name_ + "/" + name_ + ".gltf")
 	var bib := _animationen_mensch()
@@ -571,32 +580,37 @@ func _baue_mensch(w: bool) -> bool:
 ## nachschwingen; Kapseln an Ober- und Unterschenkeln schieben den Stoff vor den Beinen her. Gibt den Simulator zurück
 ## (oder null, wenn das Modell keinen Rock hat).
 static func stoff_einrichten(skelett: Skeleton3D) -> SpringBoneSimulator3D:
-	if skelett.find_bone("rock_0_0") < 0:
+	# Ketten aller Stoffteile: Rock, Schürzen, Wappenrock vorn und hinten (rock_0_0 … <Präfix>_<Kette>_<Glied>)
+	var ketten: Array = []      # [Wurzel, Ende]
+	for praefix in ["rock", "schuerze", "lederschuerze", "wvorn", "whinten"]:
+		var c := 0
+		while skelett.find_bone("%s_%d_0" % [praefix, c]) >= 0:
+			var g := 0
+			while skelett.find_bone("%s_%d_%d" % [praefix, c, g + 1]) >= 0:
+				g += 1
+			ketten.append(["%s_%d_0" % [praefix, c], "%s_%d_%d" % [praefix, c, g]])
+			c += 1
+	if ketten.is_empty():
 		return null
-	var ketten := 0
-	while skelett.find_bone("rock_%d_0" % ketten) >= 0:
-		ketten += 1
-	var glieder := 0
-	while skelett.find_bone("rock_0_%d" % glieder) >= 0:
-		glieder += 1
 	var sim := SpringBoneSimulator3D.new()
 	sim.name = "Stoff"
 	skelett.add_child(sim)
-	sim.setting_count = ketten
+	sim.setting_count = ketten.size()
 	var kurve := Curve.new()
 	kurve.add_point(Vector2(0.0, 1.0))
 	kurve.add_point(Vector2(1.0, 0.3))
-	for c in ketten:
-		sim.set_root_bone_name(c, "rock_%d_0" % c)
-		sim.set_end_bone_name(c, "rock_%d_%d" % [c, glieder - 1])
+	for c in ketten.size():
+		var leder: bool = String(ketten[c][0]).begins_with("lederschuerze")
+		sim.set_root_bone_name(c, ketten[c][0])
+		sim.set_end_bone_name(c, ketten[c][1])
 		sim.set_extend_end_bone(c, true)
 		sim.set_end_bone_direction(c, SkeletonModifier3D.BONE_DIRECTION_PLUS_Y)
 		sim.set_end_bone_length(c, 0.05)
 		sim.set_radius(c, 0.012)
-		# oben an der Hüfte fast fest, zum Saum hin weich: so schwingt der Stoff unten, nicht als Ganzes
-		sim.set_stiffness(c, 4.0)
+		# oben fast fest, zum Saum hin weich: so schwingt der Stoff unten, nicht als Ganzes; Leder ist steifer
+		sim.set_stiffness(c, 6.0 if leder else 4.0)
 		sim.set_stiffness_damping_curve(c, kurve)
-		sim.set_drag(c, 0.6)
+		sim.set_drag(c, 0.7 if leder else 0.6)
 		sim.set_gravity(c, 1.0)
 		sim.set_enable_all_child_collisions(c, true)
 	# Beine als Kapseln (entlang der Knochenachse y)
@@ -831,7 +845,7 @@ func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
 		var b := BoxMesh.new()
 		b.size = groesse_
 		return b
-	match beruf:
+	match "" if _stoff_ueber else beruf:
 		"schmied", "zeugwart":
 			_anhaengen(skelett, "spine_02", kasten.call(Vector3(0.4, 0.95, 0.02)), "leder", Vector3(0, brust.y - 0.42, 0.16))
 			_anhaengen(skelett, "spine_03", kasten.call(Vector3(0.36, 0.02, 0.02)), "leder", Vector3(0, brust.y + 0.05, 0.15))
@@ -979,11 +993,15 @@ func _faerbe_modell() -> void:
 					ton = tracht_ton
 			elif mat_name == "Kittel":          # realistischer Mensch: Stoffe sind grau, die Tracht färbt
 				ton = klar.call(tracht, 1.7)
+			elif mat_name == "Schuerze":
+				ton = Color(0.86, 0.83, 0.75)
+			elif mat_name == "Wappen":
+				ton = klar.call(Color(0.55, 0.08, 0.06), 1.5)
 			elif mat_name == "Beinlinge":
 				ton = klar.call(HOSEN[(absi(hash(_name_text)) / 3) % HOSEN.size()], 1.4)
 			elif mat_name == "Leder" and kordel_farbe.a > 0.0 and "Guertel" in name_:
 				ton = klar.call(kordel_farbe, 1.6)
-			elif mat_name in ["Haut", "Augen", "Brauen", "Wimpern", "Leder", "Haare"]:
+			elif mat_name in ["Haut", "Augen", "Brauen", "Wimpern", "Leder", "Haare", "Lederbahn"]:
 				continue
 			elif "Eye" in mat_name:
 				continue

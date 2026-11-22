@@ -25,3 +25,13 @@ die Proportionen des MakeHuman-Körpers bleiben.
 | probe_mann | Vorgabe (Mann, 25 Jahre, Kittel) |
 | probe_frau | `geschlecht=0 alter=28 kleidung=kleid haare=braid01 kittelfarbe=0.35,0.16,0.12` |
 | probe_alter | `geschlecht=1 alter=62 gewicht=0.7 muskeln=0.6 haut=old_caucasian_male haare=short04 kittelfarbe=0.25,0.28,0.2 beinfarbe=0.3,0.24,0.16` |
+| probe_schmied | `ueber=lederschuerze kittelfarbe=0.3,0.3,0.32 haare=short01` |
+| probe_magd | `geschlecht=0 alter=34 kleidung=kleid ueber=schuerze haare=ponytail01 kittelfarbe=0.22,0.28,0.38` |
+| probe_wache | `ueber=wappenrock alter=30 muskeln=0.75 haare=short03 kittelfarbe=0.3,0.28,0.25` |
+| probe_moench | `alter=48 kleidung=kleid haare=short04 kittelfarbe=0.3,0.22,0.14 gewicht=0.6` (Kutte) |
+
+Überkleidung (`ueber=`): Schürze (Leinen, ab dem Gürtel), Lederschürze (Schmied, ab der Brust), Wappenrock (vorn und
+hinten von den Schultern bis zum Knie). Jede Bahn liegt oberhalb des Gürtels am Körper an, hängt darunter lotrecht
+mit Falten und schwingt an vier Knochenketten; 80 % folgen dem Rock darunter, der Rock hinter der Bahn entfällt.
+Gebrauchsspuren als Eckfarben (Schmutz am Saum und an den Knien, Flecken, ausgeblichene Schultern, Scheuerstellen
+am Leder); Röcke mit Falten in der Form.

@@ -1,0 +1,21 @@
+{
+ "quelle": "MakeHuman 1.x (CC0)",
+ "geschlecht": 1.0,
+ "alter": 48.0,
+ "muskeln": 0.5,
+ "gewicht": 0.6,
+ "groesse": 0.5,
+ "haut": "young_caucasian_male",
+ "haare": "short04",
+ "massstab": 0.103,
+ "hoehe_m": 1.789,
+ "haut_merkmale": {
+  "braeune": 0.33,
+  "roete": 0.29,
+  "bart": 0.85,
+  "sommersprossen": 0.0,
+  "schmutz": 0.2
+ },
+ "kleidung": "kleid",
+ "ueber": ""
+}

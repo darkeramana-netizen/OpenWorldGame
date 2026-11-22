@@ -86,6 +86,9 @@ Dreiecken (MakeHuman-Proxy `male1591` mit 1600 Ecken), Frauen im Kleid ohne Bein
 - **Haut je Figur**: Bräune an Gesicht, Hals, Händen (fleckig), Röte an Nase, Wangen, Ohren, Bartschatten mit
   Stoppeln, Sommersprossen, Schmutz an den Händen, leicht anderer Hautton; feine Poren und Falten als Normalkarte,
   Glanz an Stirn, Nase und Lippen als Rauheitskarte; in Godot Subsurface Scattering im Hautmodus.
-- **Noch offen**: Abnutzung der Stoffe (Schmutz am Saum, Flicken, ausgeblichene Stellen, Faltennormalen), bessere Haare
-  (Strähnen statt Kappe), Bärte, Berufskleidung (Schürze, Wappenrock, Kutte) als eigene schwingende Stoffbahnen, ein
-  größerer Vorrat an Körpern.
+- **Berufskleidung aus Stoff** (dritte Runde): Schürze (Magd, Koch), Lederschürze (Schmied, Zeugwart), Wappenrock
+  (Wache, Ritter, vorn und hinten), Kutte (Geistliche, langes Gewand mit Strick) als eigene Stoffbahnen mit
+  Knochenketten statt starrer Platten; `figur.gd` wählt den Körper nach dem Beruf. Gebrauchsspuren als Eckfarben,
+  Falten in der Form der Röcke.
+- **Noch offen**: Flicken und Nähte, bessere Haare (Strähnen statt Kappe), Bärte, Kettenhemd und Helm am neuen
+  Körper, ein größerer Vorrat an Körpern, eine ferne Fassung mit weniger Dreiecken.
