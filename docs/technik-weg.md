@@ -37,6 +37,21 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
 - **Messung 22.11.2026** (Ryzen 7 9800X3D, RTX 5060 Ti, Drachenstein): realistische Menschen kosten bei der Bildrate
   kaum etwas (Hoch 110 statt 103 fps, Episch 56,8 statt 58,7 fps); die Hänger beim Anlauf lagen am synchronen Laden und
   sind in GDScript behoben (Laden im Hintergrund). Menschenmengen brauchen vorerst kein Modul.
+- **Nachmessung 22.11.2026, 12:25** (Stand mit Laden im Hintergrund und geladenem Modul, DLL lädt auf Windows):
+  | | Hoch alt | Hoch neu | Episch alt | Episch neu |
+  |---|---|---|---|---|
+  | Messfahrt fps | 112,0 | 109,9 | 46,5 | 56,8 |
+  | Bild p99 ms | 15,1 | 15,5 | 25,2 | 24,0 |
+  | Hänger > 50 ms (Fahrt) | 0 | 0 | 0 | 0 |
+  | Hänger > 50 ms (Anlauf) | 3 | 4 | 3 | 4 |
+  | spielbar nach ms | 9511 | 10398 | 9337 | 10289 |
+  | Grafikspeicher MB | 1634 | 1786 | 2057 | 2230 |
+  | größter Zellbau ms | 29,7 | 134,0 | 28,1 | 60,7 |
+
+  Anlauf-Hänger von 18 auf 4 (alte Figuren 3), alle hinter dem Ladevorhang (größtes Bild danach 14 ms Hoch, 19 ms
+  Episch). Der Rest liegt an neuen Shader-Pipelines (Haut, Haar) in den Bildern 2 bis 4 und kostet knapp 0,9 s bis
+  spielbar. Episch alt ist in diesem Lauf ausgerissen (vorher 58,7 fps), also Streuung. Offen: der größte Zellbau
+  (134 ms) mit Menschen, später Pipelines vorwärmen und Zellbau mit Menschen stückeln.
 - **Erstes Modul: Stoff** (beschlossen am 22.11.2026). Echte Tuchsimulation (Positionsdynamik: jede Stoffecke einzeln,
   mehrere Durchgänge je Bild, Kollision mit Beinen, Hüfte und Armen, Wind) ist in GDScript nicht machbar. Plan:
   1. C++-Modul als GDExtension, eigenes Repository, Linux und Windows.
