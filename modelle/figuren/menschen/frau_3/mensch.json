@@ -1,0 +1,23 @@
+{
+ "quelle": "MakeHuman 1.x (CC0)",
+ "geschlecht": 0.0,
+ "alter": 46.0,
+ "muskeln": 0.5,
+ "gewicht": 0.7,
+ "groesse": 0.4,
+ "haut": "middleage_caucasian_female",
+ "haare": "bob01",
+ "massstab": 0.1232,
+ "hoehe_m": 1.883,
+ "haut_merkmale": {
+  "braeune": 0.4,
+  "roete": 0.55,
+  "bart": 0.0,
+  "sommersprossen": 0.0,
+  "schmutz": 0.06
+ },
+ "kleidung": "kleid",
+ "ueber": "",
+ "bart": "keiner",
+ "panzer": ""
+}

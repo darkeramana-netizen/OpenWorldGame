@@ -90,5 +90,8 @@ Dreiecken (MakeHuman-Proxy `male1591` mit 1600 Ecken), Frauen im Kleid ohne Bein
   (Wache, Ritter, vorn und hinten), Kutte (Geistliche, langes Gewand mit Strick) als eigene Stoffbahnen mit
   Knochenketten statt starrer Platten; `figur.gd` wählt den Körper nach dem Beruf. Gebrauchsspuren als Eckfarben,
   Falten in der Form der Röcke.
-- **Noch offen**: Flicken und Nähte, bessere Haare (Strähnen statt Kappe), Bärte, Kettenhemd und Helm am neuen
-  Körper, ein größerer Vorrat an Körpern, eine ferne Fassung mit weniger Dreiecken.
+- **Vierte Runde**: ferne Fassung jedes Teils (ab 20 m, etwa 6 000 statt 28 000 Dreiecke), Vorrat aus 17 Menschen
+  (`werkzeuge/menschen_vorrat.py`), Bärte (zwei Schichten mit selbst gezeichnetem Barthaar, Farbe aus dem Kopfhaar),
+  Kettenhemd (selbst gezeichnetes Ringgeflecht mit Lücken) unter dem Wappenrock, Flicken, weichere Haarkanten.
+- **Noch offen**: Nähte, Haare mit einzelnen Strähnenkarten, Helme passend zum neuen Kopf, Umstellung als Standard
+  (nach einer Messung der Bildrate mit vielen Menschen).

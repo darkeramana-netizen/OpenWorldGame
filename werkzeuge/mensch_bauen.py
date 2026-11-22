@@ -26,6 +26,10 @@ import json, sys, shutil
 from pathlib import Path
 import numpy as np
 from PIL import Image
+try:
+    import meshoptimizer as mo
+except ImportError:
+    mo = None
 
 REPO = Path(__file__).resolve().parent.parent
 Q_KOERPER = REPO / "modelle" / "figuren" / "Superhero_Male_FullBody.gltf"
@@ -469,20 +473,32 @@ def bearbeite_haut(farbe_bild, ziel, flaechen, vt, V, kopf, maenner, zufall, opt
     # Hände: weit außen und unterhalb der Hüfte in der A-Haltung
     haende[(np.abs(V[:, 0]) > 0.33) & (V[:, 1] < 1.05)] = 1.0
     unterarm = ((np.abs(V[:, 0]) > 0.25) & (V[:, 1] < 1.2)).astype(np.float32)
-    mund_y = hy + 0.035
-    nase = gesicht * np.clip(1.0 - np.hypot(V[:, 0] - hx, (V[:, 1] - (hy + 0.08)) * 0.8) / 0.03, 0, 1)
+    # Gesichtspunkte aus der Form: die Nasenspitze ist der vorderste Punkt in der Mitte des Kopfes
+    mittig = (np.abs(V[:, 0] - hx) < 0.015) & (V[:, 1] > hy) & (V[:, 1] < hy + 0.3)
+    nase_y = float(V[mittig][np.argmax(V[mittig][:, 2]), 1])
+    mund_y = nase_y - 0.035
+    kinn_y = nase_y - 0.075
+    # Kopf: vom Kinn (mit dem Bereich unter dem Kinn) aufwärts; das Kopfgelenk sitzt bei MakeHuman auf Nasenhöhe
+    am_kopf = (V[:, 1] > kinn_y - 0.05).astype(np.float32)
+    gesicht = am_kopf * vorn
+    nase = gesicht * np.clip(1.0 - np.hypot(V[:, 0] - hx, (V[:, 1] - (nase_y + 0.005)) * 0.8) / 0.03, 0, 1)
     wangen = gesicht * np.clip(1.0 - np.abs(np.abs(V[:, 0] - hx) - 0.045) / 0.025, 0, 1) * \
-        np.clip(1.0 - np.abs(V[:, 1] - (hy + 0.06)) / 0.035, 0, 1)
-    ohren = am_kopf * np.clip((np.abs(V[:, 0] - hx) - 0.065) / 0.01, 0, 1) * np.clip(1 - np.abs(V[:, 1] - (hy + 0.08)) / 0.04, 0, 1)
-    bart = gesicht * np.clip(((mund_y + 0.015) - V[:, 1]) / 0.02, 0, 1) * np.clip((V[:, 1] - (hy - 0.05)) / 0.02, 0, 1)
-    oberlippe = gesicht * np.clip(1.0 - np.abs(V[:, 1] - (mund_y + 0.012)) / 0.008, 0, 1) * \
+        np.clip(1.0 - np.abs(V[:, 1] - (nase_y - 0.012)) / 0.03, 0, 1)
+    ohren = am_kopf * np.clip((np.abs(V[:, 0] - hx) - 0.065) / 0.01, 0, 1) * np.clip(1 - np.abs(V[:, 1] - nase_y) / 0.04, 0, 1)
+    # Bart: Kinn, Kieferlinie bis zu den Ohren, unter dem Kinn; oben bis knapp unter die Wangenknochen
+    seitlich = np.clip(1.0 - (np.abs(V[:, 0] - hx) - 0.055) / 0.02, 0, 1)
+    bart = am_kopf * np.clip((V[:, 2] - hz + 0.02) / 0.04, 0, 1) * seitlich * \
+        np.clip(((nase_y - 0.03) - V[:, 1]) / 0.015, 0, 1) * np.clip((V[:, 1] - (kinn_y - 0.035)) / 0.015, 0, 1)
+    am_kopf_ = am_kopf
+    oberlippe = gesicht * np.clip(1.0 - np.abs(V[:, 1] - (mund_y + 0.014)) / 0.007, 0, 1) * \
         np.clip(1.0 - np.abs(V[:, 0] - hx) / 0.03, 0, 1)
     lippen = gesicht * np.clip(1.0 - np.abs(V[:, 1] - mund_y) / 0.007, 0, 1) * np.clip(1.0 - np.abs(V[:, 0] - hx) / 0.026, 0, 1)
-    stirn = gesicht * np.clip((V[:, 1] - (hy + 0.13)) / 0.03, 0, 1) * np.clip(1.0 - np.abs(V[:, 0] - hx) / 0.06, 0, 1)
+    stirn = gesicht * np.clip((V[:, 1] - (nase_y + 0.05)) / 0.03, 0, 1) * np.clip(1.0 - np.abs(V[:, 0] - hx) / 0.06, 0, 1)
     m = lambda w, b: uv_maske(g, flaechen, vt, w, b)
     M_sonne = m(np.maximum.reduce([gesicht, hals * 0.8, haende, unterarm * 0.5]), 6)
     M_rot = m(np.maximum.reduce([nase, wangen * 0.8, ohren]), 5)
-    M_bart = m(np.maximum(bart, oberlippe), 3)
+    bart = np.maximum(bart, oberlippe) * (1.0 - np.clip(lippen * 2.5, 0, 1))      # die Lippen bleiben frei
+    M_bart = m(bart, 3)
     M_haende = m(haende, 4)
     M_glanz = m(np.maximum.reduce([nase, stirn, lippen]), 4)
     M_lippen = m(lippen, 2)
@@ -542,7 +558,56 @@ def bearbeite_haut(farbe_bild, ziel, flaechen, vt, V, kopf, maenner, zufall, opt
     mr = np.zeros((g, g, 3), np.float32); mr[..., 1] = np.clip(rau, 0.25, 0.9)
     Image.fromarray((mr * 255).astype(np.uint8)).save(ziel / "haut_rau.png", optimize=True)
     return {"braeune": round(braeune, 2), "roete": round(roete, 2), "bart": round(bartschatten, 2),
-            "sommersprossen": sprossen, "schmutz": round(schmutz, 2)}
+            "sommersprossen": sprossen, "schmutz": round(schmutz, 2)}, {"bart": bart}
+
+
+# ---------- Selbst gezeichnete Texturen: Barthaar, Kettengeflecht ----------
+
+def zeichne_barthaar(datei, zufall):
+    """Kachel aus vielen kurzen, leicht gebogenen Haaren (weiß, die Figur färbt), Alpha zwischen den Haaren."""
+    from PIL import ImageDraw, ImageFilter
+    g = 512
+    im = Image.new("RGBA", (g, g), (255, 255, 255, 0))
+    z = ImageDraw.Draw(im)
+    for _ in range(9000):
+        x, y = zufall.uniform(0, g), zufall.uniform(0, g)
+        laenge = zufall.uniform(10, 34)
+        w = zufall.gauss(1.57, 0.35)             # meist nach unten
+        hell = int(zufall.uniform(150, 255))
+        punkte = []
+        for k in range(5):
+            t = k / 4
+            punkte.append((x + np.cos(w + 0.3 * t * zufall.uniform(-1, 1)) * laenge * t, y + np.sin(w) * laenge * t))
+        for dx in (-g, 0, g):                    # kachelbar
+            for dy in (-g, 0, g):
+                z.line([(px + dx, py + dy) for px, py in punkte], fill=(hell, hell, hell, int(zufall.uniform(150, 255))),
+                       width=2)
+    im = im.filter(ImageFilter.GaussianBlur(0.6))
+    im.save(datei, optimize=True)
+
+
+def zeichne_kettengeflecht(farbe_datei, normal_datei):
+    """Kachel aus versetzten Ringen (8 x 8): Farbe mit Lücken (Alpha), Normalkarte aus der Ringhöhe."""
+    g, n = 256, 8
+    yy, xx = np.mgrid[0:g, 0:g].astype(np.float32)
+    hoehe = np.zeros((g, g), np.float32)
+    zelle = g / n
+    for zi in range(-1, n + 1):
+        for si in range(-1, n + 1):
+            cx = (si + 0.5 * (zi % 2)) * zelle
+            cy = zi * zelle * 0.9
+            d = np.hypot(xx - cx, (yy - cy) * 1.15)
+            ring = np.clip(1.0 - np.abs(d - zelle * 0.42) / (zelle * 0.13), 0, 1)
+            hoehe = np.maximum(hoehe, ring * (0.7 + 0.3 * np.cos((xx - cx) / zelle * 2.0)))
+    alpha = (hoehe > 0.08).astype(np.float32)
+    hell = 0.35 + 0.55 * hoehe
+    rgba = np.stack([hell * 0.78, hell * 0.79, hell * 0.82, alpha], axis=2)
+    Image.fromarray((np.clip(rgba, 0, 1) * 255).astype(np.uint8), "RGBA").save(farbe_datei, optimize=True)
+    dx = np.roll(hoehe, -1, 1) - np.roll(hoehe, 1, 1)
+    dy = np.roll(hoehe, -1, 0) - np.roll(hoehe, 1, 0)
+    nrm = np.stack([-dx * 3, dy * 3, np.ones_like(dx)], axis=2)
+    nrm /= np.linalg.norm(nrm, axis=2, keepdims=True)
+    Image.fromarray(((nrm * 0.5 + 0.5) * 255).astype(np.uint8)).save(normal_datei, optimize=True)
 
 
 # ---------- Stoffe (Poly Haven, CC0) ----------
@@ -841,13 +906,33 @@ def main():
     gl.g["skins"].append({"joints": [knoten_von[n] for n in alle], "skeleton": knoten_von["root"],
                           "inverseBindMatrices": gl.acc(np.array(ibm), 5126, "MAT4")})
 
-    def teil(teilname, pos, tex, jw, tri, mat, nor=None, abnutzung=None):
+    FERN_ANTEIL = 0.22        # ferne Fassung (ab 20 m in figur.gd): etwa ein Fünftel der Dreiecke
+    def teil(teilname, pos, tex, jw, tri, mat, nor=None, abnutzung=None, fern=True):
         if nor is None:
             nor = normalen(pos, tri)
+        farben = verschleiss(pos, nor, abnutzung, zufall_) if abnutzung else None
+        _teil_schreiben(teilname, pos, tex, jw, tri, mat, nor, farben)
+        if fern and mo is not None and len(tri) > 300 and teilname not in ("Augen", "Brauen", "Wimpern"):
+            flach = tri.astype(np.uint32).ravel()
+            ziel_n = int(len(flach) * FERN_ANTEIL) // 3 * 3
+            neu = np.zeros(len(flach), dtype=np.uint32)
+            n = mo.simplify(neu, flach, np.ascontiguousarray(pos.astype(np.float32)), len(flach), len(pos), 12, ziel_n, 0.02)
+            if n > ziel_n * 1.5:
+                grob = np.zeros(len(flach), dtype=np.uint32)
+                m_ = mo.simplify_sloppy(grob, flach, np.ascontiguousarray(pos.astype(np.float32)), len(flach), len(pos), 12, ziel_n, 0.1)
+                if 0 < m_ < n:
+                    neu, n = grob, m_
+            neu = neu[:n]
+            if n >= 3:
+                benutzt, idx = np.unique(neu, return_inverse=True)
+                _teil_schreiben(teilname + "_fern", pos[benutzt], tex[benutzt], [jw[i] for i in benutzt],
+                                idx.reshape(-1, 3), mat, nor[benutzt], None if farben is None else farben[benutzt])
+
+    def _teil_schreiben(teilname, pos, tex, jw, tri, mat, nor, farben):
         j = np.array([x[0] for x in jw]); wt = np.array([x[1] for x in jw])
         extra = {}
-        if abnutzung:
-            extra["COLOR_0"] = gl.acc(verschleiss(pos, nor, abnutzung, zufall_), 5126, "VEC4", 34962)
+        if farben is not None:
+            extra["COLOR_0"] = gl.acc(farben, 5126, "VEC4", 34962)
         prim = {"attributes": {**extra, "POSITION": gl.acc(pos, 5126, "VEC3", 34962, True), "NORMAL": gl.acc(nor, 5126, "VEC3", 34962),
                                "TEXCOORD_0": gl.acc(np.column_stack([tex[:, 0], 1.0 - tex[:, 1]]), 5126, "VEC2", 34962),
                                "JOINTS_0": gl.acc(j, 5123, "VEC4", 34962), "WEIGHTS_0": gl.acc(wt, 5126, "VEC4", 34962)},
@@ -868,7 +953,7 @@ def main():
 
     # Haut
     hm = lies_material(sysa / "skins" / haut / f"{haut}.mhmat")
-    haut_info = bearbeite_haut(sysa / "skins" / haut / hm["diffuseTexture"], ziel,
+    haut_info, haut_masken = bearbeite_haut(sysa / "skins" / haut / hm["diffuseTexture"], ziel,
                                [(e, t) for g_, e, t in flaechen if g_ == "body"], vt, V, MHP["Head"], not w, zufall_, opt)
     m_haut = gl.material("Haut", "haut.jpg", rau=1.0, normal_uri="haut_normal.png")
     gl.g["materials"][m_haut]["pbrMetallicRoughness"]["metallicRoughnessTexture"] = {"index": gl.textur("haut_rau.png")}
@@ -941,8 +1026,40 @@ def main():
                     if abs(q[0]) < b_oben + (b_unten - b_oben) * t:
                         return True
             return False
-        stueck(rock_fl, lambda i: rock_lang <= V[i][1] <= taille - 0.035 and not hinter_bahn(i), 0.006, m_kittel,
-               "Kittelrock", 3.0)
+        panzer = opt.get("panzer", "")
+        if panzer == "kettenhemd":
+            if not (stoffe / "kette_farbe.png").exists():
+                zeichne_kettengeflecht(stoffe / "kette_farbe.png", stoffe / "kette_normal.png")
+            m_kette = gl.material("Kettenhemd", rel("kette_farbe.png"), (0.85, 0.86, 0.9, 1.0), rau=0.45,
+                                  normal_uri=rel("kette_normal.png"), alpha="MASK", doppelt=True)
+            gl.g["materials"][m_kette]["pbrMetallicRoughness"]["metallicFactor"] = 0.85
+            KETTE_UNTEN = 0.58           # das Kettenhemd reicht bis zur Mitte des Oberschenkels
+            stueck(rock_fl, lambda i: rock_lang <= V[i][1] <= KETTE_UNTEN + 0.03 and not hinter_bahn(i), 0.006,
+                   m_kittel, "Kittelrock", 3.0)
+            stueck(rock_fl, lambda i: KETTE_UNTEN <= V[i][1] <= taille - 0.035 and not hinter_bahn(i), 0.011,
+                   m_kette, "Kettenhemd_rock", 9.0)
+            stueck(hose_fl, lambda i: ist_oben_roh(i) and V[i][1] < hals - 0.01, 0.02, m_kette, "Kettenhemd", 9.0)
+        else:
+            stueck(rock_fl, lambda i: rock_lang <= V[i][1] <= taille - 0.035 and not hinter_bahn(i), 0.006, m_kittel,
+                   "Kittelrock", 3.0)
+        # Flicken: kleine Stücke in anderem Ton an Ellbogen und Rock
+        flicken = int(opt.get("flicken", zufall_.choice([0, 1, 1, 2, 3])))
+        if flicken and panzer == "":
+            ton = [c * zufall_.uniform(0.75, 1.25) for c in farbe_kittel[:3]] + [1.0]
+            m_flicken = gl.material("Flicken", rel("beinlinge_farbe.jpg"), ton, rau=0.95,
+                                    normal_uri=rel("beinlinge_normal.jpg"), doppelt=True)
+            orte_f = [MHP["lowerarm_l"], MHP["lowerarm_r"]]
+            for _ in range(3):
+                wf = zufall_.uniform(-np.pi, np.pi)
+                orte_f.append(MHP["pelvis"] + np.array([np.sin(wf) * 0.2, -0.25 - zufall_.uniform(0, 0.15), np.cos(wf) * 0.2]))
+            zufall_.shuffle(orte_f)
+            for nr, ort in enumerate(orte_f[:flicken]):
+                fl_ = hose_fl if ort[1] > taille else rock_fl
+                abst = 0.015 if ort[1] > taille else 0.01
+                naechste = min(((e, t) for e, t in fl_), key=lambda f_: np.linalg.norm(V[f_[0]].mean(0) - ort))
+                mitte_f = V[naechste[0]].mean(0)
+                stueck(fl_, lambda i, m_=mitte_f: np.linalg.norm(V[i] - m_) < 0.06 and not hinter_bahn(i), abst,
+                       m_flicken, f"Flicken{nr}", 3.0)
         unten_ids = stueck(hose_fl, ist_unten, 0.003, m_bein, "Beinlinge", 3.0)
         arm = lambda i: haupt(i).startswith(("upperarm", "lowerarm", "hand", "thumb", "index", "middle", "ring", "pinky"))
         stueck(hose_fl, lambda i: not arm(i) and abs(V[i][1] - taille) < 0.15, 0.03, m_leder, "Guertel", 4.0,
@@ -992,6 +1109,31 @@ def main():
         koerper_fl = [(e, t) for e, t in koerper_fl if not all(i in bedeckt for i in e)]
     pos, tex, jw, tri = zerlege_nach_uv(V, vt, koerper_fl, ecken_jw)
     teil("Koerper", pos, tex, jw, tri, m_haut)
+    # Bart: zwei Schichten über Kinn, Wangen und Oberlippe mit selbst gezeichnetem Barthaar
+    bart_art = opt.get("bart_art", "keiner" if w else zufall_.choice(["keiner", "kurz", "voll"]))
+    if bart_art != "keiner":
+        stoffe_b = REPO / "modelle" / "figuren" / "menschen" / "stoffe"
+        stoffe_b.mkdir(parents=True, exist_ok=True)
+        if not (stoffe_b / "barthaar.png").exists():
+            zeichne_barthaar(stoffe_b / "barthaar.png", _random.Random(7))
+        hm_ = lies_material(sysa / "hair" / haare / f"{haare}.mhmat") if haare != "keine" else {}
+        ton_b = (0.25, 0.18, 0.12)
+        if hm_.get("diffuseTexture"):
+            hb = np.asarray(Image.open(sysa / "hair" / haare / hm_["diffuseTexture"]).convert("RGBA").resize((128, 128)), np.float32) / 255
+            gw_ = hb[..., 3:4]
+            ton_b = tuple(float(x) for x in (hb[..., :3] * gw_).sum((0, 1)) / max(float(gw_.sum()), 1.0))
+        m_bart = gl.material("Bart", "../stoffe/barthaar.png", tuple(ton_b) + (1.0,), rau=0.8, alpha="MASK", doppelt=True)
+        maske_b = haut_masken["bart"]
+        schwelle = 0.25 if bart_art == "voll" else 0.45
+        bart_fl = [e for g_, e, _ in flaechen if g_ == "body" and all(maske_b[i] > schwelle for i in e)]
+        if bart_fl:
+            ids_b = sorted({i for e in bart_fl for i in e})
+            tri_b = np.array(dreiecke(bart_fl))
+            n_b = normalen(V, tri_b)
+            for schicht, abst in enumerate([0.002, 0.006] if bart_art == "voll" else [0.0015]):
+                vb = V.copy(); vb[ids_b] += n_b[ids_b] * abst
+                pos, nor, tex, jw, tri = zerlege_kasten(vb, n_b, bart_fl, ecken_jw, 12.0)
+                teil(f"Bart{schicht}", pos, tex, jw, tri, m_bart, nor, fern=False)
     # Proxies: Augen, Brauen, Wimpern, Haare (jede Ecke erbt die Gewichte ihrer drei Bezugsecken)
     def proxy(datei, teilname, mat):
         if not datei.exists():
@@ -1023,15 +1165,17 @@ def main():
     proxy(sysa / "eyelashes" / "eyelashes01" / "eyelashes01.mhclo", "Wimpern", m_wimpern)
     if haare != "keine":
         hm2 = lies_material(sysa / "hair" / haare / f"{haare}.mhmat")
+        normal_h = hm2.get("normalmapTexture") or ("%s_normal.png" % haare if (sysa / "hair" / haare / f"{haare}_normal.png").exists() else None)
         m_haare = gl.material("Haare", bild(sysa / "hair" / haare / hm2["diffuseTexture"], "haare.png", 1024),
-                              alpha="MASK", doppelt=True, rau=0.75)
+                              alpha="MASK", doppelt=True, rau=0.6,
+                              normal_uri=bild(sysa / "hair" / haare / normal_h, "haare_normal.png", 1024) if normal_h else None)
         proxy(sysa / "hair" / haare / f"{haare}.mhclo", "Haare", m_haare)
 
     gl.schreibe(ziel / f"{name}.gltf")
     info = {"quelle": "MakeHuman 1.x (CC0)", "geschlecht": geschlecht, "alter": alter, "muskeln": muskeln,
             "gewicht": gewicht, "groesse": groesse, "haut": haut, "haare": haare, "massstab": round(float(s), 4),
             "hoehe_m": round(float((v[koerper_ids, 1].max() - boden) * s), 3), "haut_merkmale": haut_info,
-            "kleidung": kleidung, "ueber": ueber}
+            "kleidung": kleidung, "ueber": ueber, "bart": bart_art, "panzer": opt.get("panzer", "")}
     (ziel / "mensch.json").write_text(json.dumps(info, indent=1))
     print("gebaut:", name, info)
 

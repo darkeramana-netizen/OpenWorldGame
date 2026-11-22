@@ -1,0 +1,23 @@
+{
+ "quelle": "MakeHuman 1.x (CC0)",
+ "geschlecht": 0.0,
+ "alter": 20.0,
+ "muskeln": 0.5,
+ "gewicht": 0.5,
+ "groesse": 0.5,
+ "haut": "young_caucasian_female",
+ "haare": "braid01",
+ "massstab": 0.1252,
+ "hoehe_m": 1.859,
+ "haut_merkmale": {
+  "braeune": 0.33,
+  "roete": 0.18,
+  "bart": 0.0,
+  "sommersprossen": 0.5,
+  "schmutz": 0.04
+ },
+ "kleidung": "kleid",
+ "ueber": "",
+ "bart": "keiner",
+ "panzer": ""
+}

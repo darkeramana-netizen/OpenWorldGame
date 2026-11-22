@@ -90,12 +90,13 @@ static var _bibliothek_mensch: AnimationLibrary
 static var realistisch: bool = OS.get_environment("FIGUREN_REALISTISCH") != "" or \
 	bool(ProjectSettings.get_setting("sorrowland/figuren_realistisch", false))
 const MENSCHEN := "res://modelle/figuren/menschen/"
-const MENSCHEN_MAENNER := ["probe_mann", "probe_alter"]
-const MENSCHEN_FRAUEN := ["probe_frau"]
-## Körper mit Berufskleidung aus Stoff (Schürze, Lederschürze, Wappenrock, Kutte): Beruf → [Männer, Frauen]
-const MENSCHEN_BERUF := {"schmied": [["probe_schmied"], []], "zeugwart": [["probe_schmied"], []],
-	"magd": [[], ["probe_magd"]], "koch": [["probe_schmied"], ["probe_magd"]], "wache": [["probe_wache"], []],
-	"ritter": [["probe_wache"], []], "geistlich": [["probe_moench"], []]}
+## Vorrat (werkzeuge/menschen_vorrat.py): nach Geschlecht, Berufe mit eigener Kleidung aus Stoff
+const MENSCHEN_MAENNER := ["mann_1", "mann_2", "mann_3", "mann_4", "mann_5", "mann_6"]
+const MENSCHEN_FRAUEN := ["frau_1", "frau_2", "frau_3", "frau_4", "frau_5"]
+## Körper mit Berufskleidung aus Stoff (Schürze, Lederschürze, Wappenrock mit Kettenhemd, Kutte): Beruf → [Männer, Frauen]
+const MENSCHEN_BERUF := {"schmied": [["schmied"], []], "zeugwart": [["schmied"], []],
+	"magd": [[], ["magd"]], "koch": [["koch"], ["magd"]], "wache": [["wache_1", "wache_2"], []],
+	"ritter": [["wache_1", "wache_2"], []], "geistlich": [["moench"], []]}
 var _stoff_ueber := false     # die Berufskleidung ist schon im Körper (Stoff), keine starren Platten anhängen
 static var _modell_mats := {}
 static var _koepfe := {}
@@ -119,6 +120,7 @@ const SCHULTER := 1.43
 ## Bild), außerhalb der Sichtweite gar nicht.
 const SICHT_GROSS := 130.0
 const SICHT_KLEIN := 35.0
+const SICHT_FERN := 20.0     # realistische Menschen: ab hier die vereinfachte Fassung
 const SICHT_RAND := 10.0
 const KLEIN := 0.35
 const ANIM_STUFEN := [[25.0, 1], [60.0, 2], [SICHT_GROSS, 4]]
@@ -639,7 +641,7 @@ static func haut_verfeinern(modell: Node) -> void:
 	for m: MeshInstance3D in modell.find_children("*", "MeshInstance3D", true, false):
 		for i in m.mesh.get_surface_count():
 			var basis := m.mesh.surface_get_material(i) as StandardMaterial3D
-			if basis == null or not basis.resource_name in ["Haut", "Augen"]:
+			if basis == null or not basis.resource_name in ["Haut", "Augen", "Haare", "Bart", "Brauen", "Wimpern"]:
 				continue
 			if not _haut_mats.has(basis.get_instance_id()):
 				var neu: StandardMaterial3D = basis.duplicate()
@@ -647,8 +649,15 @@ static func haut_verfeinern(modell: Node) -> void:
 					neu.subsurf_scatter_enabled = true
 					neu.subsurf_scatter_skin_mode = true
 					neu.subsurf_scatter_strength = 0.35
-				else:
+				elif basis.resource_name == "Augen":
 					neu.roughness = 0.3
+				else:
+					# Haar: weiche Kanten statt harter Schnitte (Alpha zu Abdeckung), leichter Glanz entlang der Strähnen
+					neu.alpha_antialiasing_mode = BaseMaterial3D.ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
+					neu.alpha_scissor_threshold = 0.3
+					if basis.resource_name == "Haare":
+						neu.anisotropy_enabled = true
+						neu.anisotropy = 0.4
 				_haut_mats[basis.get_instance_id()] = neu
 			m.set_surface_override_material(i, _haut_mats[basis.get_instance_id()])
 
@@ -1001,7 +1010,7 @@ func _faerbe_modell() -> void:
 				ton = klar.call(HOSEN[(absi(hash(_name_text)) / 3) % HOSEN.size()], 1.4)
 			elif mat_name == "Leder" and kordel_farbe.a > 0.0 and "Guertel" in name_:
 				ton = klar.call(kordel_farbe, 1.6)
-			elif mat_name in ["Haut", "Augen", "Brauen", "Wimpern", "Leder", "Haare", "Lederbahn"]:
+			elif mat_name in ["Haut", "Augen", "Brauen", "Wimpern", "Leder", "Haare", "Lederbahn", "Bart", "Kettenhemd", "Flicken"]:
 				continue
 			elif "Eye" in mat_name:
 				continue
@@ -1050,6 +1059,14 @@ func _sichtweiten() -> void:
 		m.visibility_range_end = SICHT_KLEIN if klein else SICHT_GROSS
 		m.visibility_range_end_margin = SICHT_RAND * (0.4 if klein else 1.0)
 		m.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		# realistische Menschen: nah die volle Fassung, ab SICHT_FERN die vereinfachte (<Teil>_fern)
+		var name_ := String(m.name)
+		if name_.ends_with("_fern"):
+			m.visibility_range_begin = SICHT_FERN
+			m.visibility_range_begin_margin = 2.0
+		elif m.get_parent() != null and m.get_parent().has_node(name_ + "_fern"):
+			m.visibility_range_end = SICHT_FERN
+			m.visibility_range_end_margin = 2.0
 		if klein:
 			m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 

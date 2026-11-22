@@ -1,0 +1,23 @@
+{
+ "quelle": "MakeHuman 1.x (CC0)",
+ "geschlecht": 1.0,
+ "alter": 52.0,
+ "muskeln": 0.4,
+ "gewicht": 0.4,
+ "groesse": 0.55,
+ "haut": "middleage_caucasian_male",
+ "haare": "short02",
+ "massstab": 0.0984,
+ "hoehe_m": 1.778,
+ "haut_merkmale": {
+  "braeune": 0.34,
+  "roete": 0.32,
+  "bart": 0.32,
+  "sommersprossen": 0.0,
+  "schmutz": 0.16
+ },
+ "kleidung": "kittel",
+ "ueber": "",
+ "bart": "voll",
+ "panzer": ""
+}
