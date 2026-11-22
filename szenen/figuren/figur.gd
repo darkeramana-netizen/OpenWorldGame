@@ -589,7 +589,7 @@ func _baue_mensch(w: bool) -> bool:
 			k.visible = false
 	_stoff = stoff_einrichten(skelett)
 	# echter Stoff erst nah (_stoff_umschalten): spart Einrichtung und Speicher für alle Figuren in der Ferne
-	_stoff_skelett = skelett if ClassDB.class_exists("Stoff") else null
+	_stoff_skelett = skelett if ClassDB.class_exists("Stoff") and OS.get_environment("STOFF_AUS") == "" else null
 	# Die erste Figur je Modell richtet ihn gleich beim Bau ein (meist hinter dem Ladevorhang): Danach liegt alles im
 	# Zwischenspeicher des Moduls, und spätere Figuren brauchen unter 1 ms statt 6 bis 14 ms.
 	if _stoff_skelett != null and not _stoff_gewaermt.has(pfad):
