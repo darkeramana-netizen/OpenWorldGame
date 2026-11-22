@@ -97,7 +97,8 @@ const MENSCHEN_FRAUEN := ["frau_1", "frau_2", "frau_3", "frau_4", "frau_5"]
 const MENSCHEN_BERUF := {"schmied": [["schmied"], []], "zeugwart": [["schmied"], []],
 	"magd": [[], ["magd"]], "koch": [["koch"], ["magd"]], "wache": [["wache_1", "wache_2"], []],
 	"ritter": [["wache_1", "wache_2"], []], "geistlich": [["moench"], []]}
-var _stoff_ueber := false     # die Berufskleidung ist schon im Körper (Stoff), keine starren Platten anhängen
+var _stoff_ueber := false
+var _wartet_auf_koerper := false   # realistischer Körper lädt noch im Hintergrund     # die Berufskleidung ist schon im Körper (Stoff), keine starren Platten anhängen
 static var _modell_mats := {}
 static var _koepfe := {}
 var _anim: AnimationPlayer
@@ -193,6 +194,8 @@ func _baue() -> void:
 	_anim = null
 	_blick = null
 	if not einfach and not Engine.is_editor_hint() and _baue_modell():
+		if _wartet_auf_koerper:
+			return
 		_faerben()
 		_sichtweiten()
 		return
@@ -545,7 +548,22 @@ func _baue_mensch(w: bool) -> bool:
 		vorrat = MENSCHEN_BERUF[beruf][1 if w else 0]
 		_stoff_ueber = true
 	var name_: String = vorrat[absi(hash(_name_text)) % vorrat.size()]
-	var s := _szene(MENSCHEN + name_ + "/" + name_ + ".gltf")
+	var pfad := MENSCHEN + name_ + "/" + name_ + ".gltf"
+	# Messung 22.11.2026: das erste Laden eines Menschen kostet 100 bis 1300 ms. Alle werden im Hintergrund geladen;
+	# bis ihr Körper da ist, wartet die Figur (kein Stocken im Spiel).
+	if not _szenen.has(pfad):
+		_menschen_vorladen()
+		var stand := ResourceLoader.load_threaded_get_status(pfad)
+		if stand == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			get_tree().create_timer(0.25).timeout.connect(func() -> void:
+				if is_instance_valid(self):
+					_plane_bau(true))
+			_wartet_auf_koerper = true
+			return true
+		if stand == ResourceLoader.THREAD_LOAD_LOADED:
+			_szenen[pfad] = ResourceLoader.load_threaded_get(pfad)
+	_wartet_auf_koerper = false
+	var s := _szene(pfad)
 	var bib := _animationen_mensch()
 	if s == null or bib == null:
 		return false
@@ -660,6 +678,22 @@ static func haut_verfeinern(modell: Node) -> void:
 						neu.anisotropy = 0.4
 				_haut_mats[basis.get_instance_id()] = neu
 			m.set_surface_override_material(i, _haut_mats[basis.get_instance_id()])
+
+
+static var _vorladen_gestartet := false
+## Alle realistischen Menschen im Hintergrund laden (einmal, beim ersten Bedarf).
+static func _menschen_vorladen() -> void:
+	if _vorladen_gestartet:
+		return
+	_vorladen_gestartet = true
+	var namen: Array = MENSCHEN_MAENNER + MENSCHEN_FRAUEN
+	for liste: Array in MENSCHEN_BERUF.values():
+		for teil: Array in liste:
+			namen += teil
+	for n: String in namen:
+		var pfad := MENSCHEN + n + "/" + n + ".gltf"
+		if ResourceLoader.exists(pfad) and not _szenen.has(pfad):
+			ResourceLoader.load_threaded_request(pfad)
 
 
 ## Die Animationen für die MakeHuman-Körper: ohne Positionsspuren außer Wurzel und Becken, sonst zögen sie die
