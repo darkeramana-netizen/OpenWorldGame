@@ -31,6 +31,10 @@ set FIGUREN_REALISTISCH=1
 "%GODOT%" --path . --script res://werkzeuge/messen/messung.gd -- --name hoch_figuren_neu --grafik hoch --aufloesung 1280x720
 echo === Messung Episch, realistische Figuren
 "%GODOT%" --path . --script res://werkzeuge/messen/messung.gd -- --name episch_figuren_neu --grafik episch --aufloesung 1280x720
+echo === Messung Hoch, realistische Figuren ohne echten Stoff (Vergleich)
+set STOFF_AUS=1
+"%GODOT%" --path . --script res://werkzeuge/messen/messung.gd -- --name hoch_figuren_neu_ohne_stoff --grafik hoch --aufloesung 1280x720
+set STOFF_AUS=
 echo === Rundgang Hoch, realistische Figuren
 "%GODOT%" --path . --script res://werkzeuge/rundgang/rundgang.gd -- --grafik hoch --aufloesung 1280x720
 set FIGUREN_REALISTISCH=

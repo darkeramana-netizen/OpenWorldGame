@@ -165,5 +165,19 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
       - Die Flicken nehmen denselben Weg.
       - Jeder Abbruch meldet sich jetzt mit einer Warnung, und `schnell_aktiv()` zeigt den Stand je Stoff.
     - Container mit 40 Menschen, mehrere Kerne: Hochladen 0,9 statt 4,4 ms, insgesamt 7,2 statt 10,5 ms je Bild.
+  - Nachmessung 22.11.2026, 18:52 (mit schnellem Hochladen): Der Anlauf ist auf Windows weiter 8 ms (Hoch) bzw.
+    16 ms (Episch) teurer, im Wechsel mit Bildern ohne Mehrkosten. Der Grafikspeicher liegt weiter 400 MB höher.
+    - Messung ohne Grafik im Container: Im Anlauf rechnet der Stoff 1 bis 3 nahe Stoffe in etwa 0,5 ms je Bild.
+      Läuft der Stoff, wird aber nie nah, kostet der Anlauf so viel wie ganz ohne Stoff. Die Mehrkosten entstehen
+      also erst, wenn Figuren nah umschalten. Wiederholungen streuen im Container allerdings um bis zu 5 ms, daher
+      ist das kein Beweis.
+    - Verdacht: Der Takt hat auf Godots Thread-Pool gewartet. Der ist im Anlauf mit Shadern und Hintergrund-Laden
+      voll, und der Hauptstrang wartete, bis der Pool überhaupt zum Stoff kam.
+    - Geändert:
+      - Der Hauptstrang rechnet selbst mit und nimmt sich jeden Stoff, den noch kein Helfer angefangen hat. Er
+        wartet nur auf Stoffe, die gerade in Arbeit sind.
+      - Helfer, die später drankommen, finden nichts mehr vor. Ihre Gruppen werden im nächsten Bild aufgeräumt.
+    - Zum Gegenprüfen misst `werkzeuge\messung_figuren.bat` jetzt zusätzlich `hoch_figuren_neu_ohne_stoff`
+      (`STOFF_AUS=1`). `STOFF_STATISTIK=1` gibt alle 60 Bilder Anzahl und Zeit des Stoffs aus.
   - Offen bleibt der Kittelstreifen unter dem Kettenhemd: Er legt sich wie ein Schlauch um den Oberschenkel. Das
     lässt sich im Bauskript beheben (breiter oder weglassen) und war mit Federknochen genauso.
