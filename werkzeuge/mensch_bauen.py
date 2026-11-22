@@ -996,6 +996,17 @@ def main():
             h = haupt(i)
             return h.startswith(("foot", "ball")) or (h.startswith("calf") and V[i][1] < 0.12)
         hose_fl = [(e, t) for g_, e, t in flaechen if g_ == "helper-tights"]
+        # Übergang bis zum Stoffmodul (docs/technik-weg.md): unter dem Kittel die Oberschenkel 1,5 cm schmaler, damit
+        # sie beim Gehen nicht durch den Rock stechen; unter dem Saum unverändert
+        if kleidung == "kittel":
+            bein_ids = [i for i in sorted({i for g_, e, _ in flaechen if g_ in ("body", "helper-tights") for i in e})
+                        if haupt(i).startswith(("thigh", "pelvis")) and rock_lang + 0.06 < V[i][1] < taille - 0.06]
+            if bein_ids:
+                tri_bein = np.array(dreiecke([e for g_, e, _ in flaechen if g_ in ("body", "helper-tights")]))
+                n_bein = normalen(V, tri_bein)
+                for i in bein_ids:
+                    t_ = min((V[i][1] - (rock_lang + 0.06)) / 0.08, 1.0)
+                    V[i] -= n_bein[i] * 0.015 * t_
         rock_fl = [(e, t) for g_, e, t in flaechen if g_ == "helper-skirt"]
         def stueck(fl, wahl, abstand, mat, teilname, uv_mal, deckel=None, band=None):
             sel = [(e, t) for e, t in fl if all(wahl(i) for i in e)]

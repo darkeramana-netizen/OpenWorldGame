@@ -34,5 +34,11 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
 
 ## Stand
 
-Noch kein Modul. Die erste Bildratenmessung mit vielen realistischen Menschen entscheidet, ob die Menschenmengen das
-erste werden.
+- **Messung 22.11.2026** (Ryzen 7 9800X3D, RTX 5060 Ti, Drachenstein): realistische Menschen kosten bei der Bildrate
+  kaum etwas (Hoch 110 statt 103 fps, Episch 56,8 statt 58,7 fps); die Hänger beim Anlauf lagen am synchronen Laden und
+  sind in GDScript behoben (Laden im Hintergrund). Menschenmengen brauchen vorerst kein Modul.
+- **Erstes Modul: Stoff** (beschlossen am 22.11.2026). Echte Tuchsimulation (Positionsdynamik: jede Stoffecke einzeln,
+  mehrere Durchgänge je Bild, Kollision mit Beinen, Hüfte und Armen, Wind) ist in GDScript nicht machbar. Plan:
+  1. C++-Modul als GDExtension, eigenes Repository, Linux und Windows.
+  2. Echter Stoff nur nah (etwa bis 15 m), weiter weg die heutigen Federknochen als Rückfall.
+  3. Prototyp mit einem Kittel und einem Kleid, Bildfolgen im Gang, Messung, wie viele Figuren gleichzeitig gehen.
