@@ -782,6 +782,10 @@ def main():
             d = {}
             # vorn und hinten (dort schwingen die Beine durch) folgt der Stoff stärker den Beinen, seitlich freier
             BEIN_ANTEIL = 0.55 + 0.3 * abs(np.cos(wi))
+            # am Bund folgt der Stoff nur dem Becken (sonst reißt er beim Gehen unter dem Gürtel auf), zur Hüfte hin
+            # wächst der Anteil der Beine
+            tb = min(max((taille_ - 0.035 - q[1]) / max(taille_ - 0.035 - (huefte_ - 0.08), 0.05), 0.0), 1.0)
+            BEIN_ANTEIL *= tb * tb * (3.0 - 2.0 * tb)
             for c, wc in ((c0, 1.0 - fc), (c1, fc)):
                 for k, wk in gk.items():
                     j = basis_ + c * glieder_n + k
@@ -981,7 +985,9 @@ def main():
         rock_lang = 0.5 if kleidung == "kittel" else 0.1     # Kittel bis zum Knie, Kleid bis zum Knöchel
         def ist_oben_roh(i):
             h = haupt(i)
-            return (h.startswith(oben_k + ("neck",)) or (h == "pelvis" and V[i][1] > taille - 0.13)) and hand(i) < 0.25
+            # beim Kleid reicht das Oberteil auch über Gesäß und Hüfte (dort fehlen die Beinlinge, sonst Haut am Bund)
+            becken = h == "pelvis" or (kleidung == "kleid" and h.startswith("thigh"))
+            return (h.startswith(oben_k + ("neck",)) or (becken and V[i][1] > taille - 0.13)) and hand(i) < 0.25
         def ist_oben(i):
             return ist_oben_roh(i) and V[i][1] < hals
         def ist_unten(i):
@@ -1118,7 +1124,7 @@ def main():
         # Beine und Becken unter dem Rock weglassen (sonst stechen sie beim Gehen durch den Stoff)
         if kleidung == "kleid":
             bedeckt |= {i for i in koerper_ids if (haupt(i).startswith(("thigh", "calf")) or haupt(i) == "pelvis")
-                        and rock_lang + 0.2 < V[i][1] < taille}
+                        and rock_lang + 0.2 < V[i][1] < MHP["thigh_l"][1] - 0.04}   # Gesäß und Hüfte bleiben (kein Durchblick am Bund)
         koerper_fl = [(e, t) for e, t in koerper_fl if not all(i in bedeckt for i in e)]
     pos, tex, jw, tri = zerlege_nach_uv(V, vt, koerper_fl, ecken_jw)
     teil("Koerper", pos, tex, jw, tri, m_haut)

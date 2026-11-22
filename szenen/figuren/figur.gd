@@ -112,6 +112,9 @@ var _blickziel: Marker3D
 var _anim_rest := 0.0      # noch nicht abgespielte Zeit (Animation in der Ferne seltener)
 var _anim_takt := 0
 var _stoff: SpringBoneSimulator3D     # schwingender Rock (realistische Menschen), nah aktiv
+var _stoff_echt: MeshInstance3D       # echter Stoff (Klasse Stoff aus dem Modul sorrowland), ganz nah statt Federknochen
+var _stoff_nah := false
+const STOFF_NAH := 12.0               # bis hier echter Stoff (Rückweg mit 2 m Spielraum)
 
 const HUEFTE := 0.93
 const SCHULTER := 1.43
@@ -193,6 +196,9 @@ func _baue() -> void:
 	_modell = null
 	_anim = null
 	_blick = null
+	_stoff = null
+	_stoff_echt = null
+	_stoff_nah = false
 	if not einfach and not Engine.is_editor_hint() and _baue_modell():
 		if _wartet_auf_koerper:
 			return
@@ -574,6 +580,7 @@ func _baue_mensch(w: bool) -> bool:
 	add_child(_modell)
 	var skelett: Skeleton3D = _modell.get_node("Armature/Skeleton3D")
 	_stoff = stoff_einrichten(skelett)
+	_stoff_echt = stoff_echt_einrichten(skelett)
 	haut_verfeinern(_modell)
 	if _stoff != null:
 		_stoff.reset.call_deferred()          # nach dem Aufstellen nicht vom Sprung an den Platz losschwingen
@@ -650,6 +657,67 @@ static func stoff_einrichten(skelett: Skeleton3D) -> SpringBoneSimulator3D:
 		k.position_offset = Vector3(0, (anfang + laenge) * 0.5, 0)
 		sim.add_child(k)
 	return sim
+
+
+## Echter Stoff (Modul sorrowland, docs/technik-weg.md): Der Rock wird nah als Tuch gerechnet (jede Stoffecke einzeln,
+## Kollision mit den Beinen), weiter weg bleibt es bei den Federknochen. Ohne Bibliothek oder bei Überkleidung
+## (Schürzen, Wappenrock: deren Federknochen hängen am selben Simulator) gibt es null, und alles bleibt wie bisher.
+static var _haftungen := {}
+static func stoff_echt_einrichten(skelett: Skeleton3D) -> MeshInstance3D:
+	if not ClassDB.class_exists("Stoff"):
+		return null
+	for praefix in ["schuerze", "lederschuerze", "wvorn", "whinten"]:
+		if skelett.find_bone(praefix + "_0_0") >= 0:
+			return null
+	var rock := skelett.find_child("Kittelrock", false, false) as MeshInstance3D
+	if rock == null or rock.mesh == null:
+		return null
+	# Haftung: oben bis über die Hüfte fest am Körper (12 cm), dann 12 cm Übergang, darunter frei
+	var schluessel := rock.mesh.get_rid()
+	if not _haftungen.has(schluessel):
+		var ecken: PackedVector3Array = rock.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+		var oben := -1e9
+		for e in ecken:
+			oben = maxf(oben, e.y)
+		var haftung := PackedFloat32Array()
+		haftung.resize(ecken.size())
+		for i in ecken.size():
+			haftung[i] = clampf((ecken[i].y - (oben - 0.24)) / 0.12, 0.0, 1.0)
+		_haftungen[schluessel] = haftung
+	var stoff: MeshInstance3D = ClassDB.instantiate("Stoff")
+	stoff.name = "StoffEcht"
+	stoff.set("selbst_rechnen", false)
+	stoff.set_meta("stoff_echt", true)
+	skelett.add_child(stoff)
+	if not stoff.call("einrichten", rock, _haftungen[schluessel]):
+		stoff.free()
+		rock.visible = true
+		return null
+	for b: Array in [["thigh_l", "calf_l", 0.075], ["thigh_r", "calf_r", 0.075], ["calf_l", "foot_l", 0.055],
+			["calf_r", "foot_r", 0.055]]:
+		stoff.call("kapsel_hinzufuegen", b[0], b[1], b[2])
+	# zu Beginn fern: Rock mit Federknochen sichtbar, der Stoff wartet
+	stoff.visible = false
+	rock.visible = true
+	return stoff
+
+
+## Nah echter Stoff, fern Federknochen; beim Wechsel nach nah setzt sich der Stoff an seinen Platz am Körper.
+func _stoff_umschalten(d: float) -> void:
+	var nah := d < (STOFF_NAH + 2.0 if _stoff_nah else STOFF_NAH)
+	if nah == _stoff_nah:
+		return
+	_stoff_nah = nah
+	var rock := _stoff_echt.get_parent().get_node_or_null("Kittelrock") as MeshInstance3D
+	if rock != null:
+		rock.visible = not nah
+		if nah:   # gefärbt wird erst nach dem Bau (Tracht): das Material des Rocks übernehmen
+			_stoff_echt.material_override = rock.get_active_material(0)
+	_stoff_echt.visible = nah
+	if _stoff != null:
+		_stoff.active = not nah
+	if nah:
+		_stoff_echt.call("zuruecksetzen")
 
 
 ## Haut und Augen der realistischen Menschen: Licht scheint durch die Haut (Subsurface Scattering im Hautmodus, an
@@ -1068,7 +1136,9 @@ func _spiele_animation(delta: float) -> void:
 	var n := 1
 	if kamera != null:
 		var d := kamera.global_position.distance_to(global_position)
-		if _stoff != null:
+		if _stoff_echt != null:
+			_stoff_umschalten(d)
+		if _stoff != null and not _stoff_nah:
 			_stoff.active = d < 30.0      # schwingender Stoff nur nah
 		n = 0
 		for stufe: Array in ANIM_STUFEN:
@@ -1079,15 +1149,18 @@ func _spiele_animation(delta: float) -> void:
 		return
 	_anim_takt += 1
 	if _anim_takt % n == 0:
+		var schritt := _anim_rest
 		_anim.advance(_anim_rest)
 		_anim_rest = 0.0
+		if _stoff_nah:
+			_stoff_echt.schritt(schritt)   # nach der Animation, damit der Stoff der neuen Haltung folgt
 
 
 ## Sichtweiten und Schatten aller Teile (nach jedem Bau): kleine Teile ohne Schatten und nur nah, große mit weichem
 ## Ausblenden am Ende der Sichtweite.
 func _sichtweiten() -> void:
 	for m: MeshInstance3D in find_children("*", "MeshInstance3D", true, false):
-		if m.mesh == null:
+		if m.mesh == null or m.has_meta("stoff_echt"):
 			continue
 		var klein := m.mesh.get_aabb().get_longest_axis_size() < KLEIN
 		m.visibility_range_end = SICHT_KLEIN if klein else SICHT_GROSS

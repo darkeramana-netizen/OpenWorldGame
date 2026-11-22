@@ -63,3 +63,21 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
   Kittel 396 Punkte, etwa 0,5 ms je Figur und Bild (Debug, ein Kern). Bild:
   `docs/bilder/figuren-2026-11-21/stoff_federknochen_gegen_echt.jpg` (Zeilen 1 und 3 Federknochen, 2 und 4 Stoff).
   Noch nicht in `figur.gd` eingebunden.
+- **Stoff im Spiel (22.11.2026, Zweig `stoff-2`)**:
+  - Feinschliff: Der Stoff wird beidseitig gezeichnet (Falten zeigen die Innenseite, vorher Löcher). Er haftet oben
+    bis über die Hüfte (12 cm fest, 12 cm Übergang). Ruhigere Standardwerte: Biegung 0,0003, Dämpfung 0,05,
+    Mitnahme 0,97, vier Durchgänge.
+  - Heller Streifen an der Taille des Kleids: Die Ursache lag im Bauskript, nicht in der Physik. Die oberste
+    Rockreihe folgte zu gut der Hälfte den Beinen und riss beim Gehen unter dem Gürtel auf, und unter dem Kleid
+    fehlten Hüfte und Gesäß. Behoben: Der Anteil der Beine wächst erst zur Hüfte hin, und das Oberteil reicht beim
+    Kleid über die Hüfte.
+  - Eingebunden in `figur.gd` (`stoff_echt_einrichten`, `_stoff_umschalten`):
+    - Bis 12 m echter Stoff (zurück erst ab 14 m), die Federknochen sind dann aus.
+    - Weiter weg wie bisher Federknochen, ab 20 m die vereinfachte Fassung.
+    - Ohne Bibliothek (`ClassDB.class_exists("Stoff")`) und bei Überkleidung (Schürzen, Wappenrock) bleibt alles
+      bei den Federknochen.
+  - Rechenzeit: 6 Figuren nah zusammen 3,3 ms je Bild (Debug-Bibliothek, ein Kern, Container).
+  - Bilder: `docs/bilder/figuren-2026-11-22/stoff_vorher_nachher.jpg` und `stoff_nah_fern_umschalten.jpg`.
+  - Probe: `tests/_figur_stoff.gd`.
+  - Nächste Schritte: Schürzen und Wappenröcke als echter Stoff, Rechnung auf mehrere Kerne, Messung mit vielen
+    Figuren.
