@@ -152,5 +152,18 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
       - Die erste Figur je Modell richtet den Stoff schon beim Bau ein, meist noch hinter dem Ladevorhang.
       - Die beidseitige Materialkopie gibt es nur einmal je Ausgangsmaterial (`material_setzen`); vorher
         überschrieb `figur.gd` sie beim Umschalten mit dem einseitigen Material.
+  - Nachmessung 22.11.2026, 18:05 (nach „erst nah einrichten"):
+    - Anlauf unverändert: Ab Bild 5 kostete jedes Bild 8 ms (Hoch) bis 16 ms (Episch) mehr.
+    - Grafikspeicher: rund 400 MB mehr als mit alten Figuren.
+    - Eigentliche Ursache: Das schnelle Hochladen griff nie. Godot legt die Ecken in Blöcken ab: erst alle Orte
+      (12 Byte je Ecke), dann alle Normalen mit Tangenten (8 Byte je Ecke). Die Prüfung erwartete eine verschachtelte
+      Anordnung und brach stumm ab. Dadurch baute jeder nahe Stoff sein Mesh jedes Bild neu, mit Arbeit im
+      Hauptstrang und neuem Grafikspeicher, den Godot erst verzögert freigibt.
+    - Behoben:
+      - Beide Anordnungen werden unterstützt: Schrittweite der Orte und der Normalen getrennt, vom RenderingServer
+        erfragt.
+      - Die Flicken nehmen denselben Weg.
+      - Jeder Abbruch meldet sich jetzt mit einer Warnung, und `schnell_aktiv()` zeigt den Stand je Stoff.
+    - Container mit 40 Menschen, mehrere Kerne: Hochladen 0,9 statt 4,4 ms, insgesamt 7,2 statt 10,5 ms je Bild.
   - Offen bleibt der Kittelstreifen unter dem Kettenhemd: Er legt sich wie ein Schlauch um den Oberschenkel. Das
     lässt sich im Bauskript beheben (breiter oder weglassen) und war mit Federknochen genauso.
