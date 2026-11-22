@@ -81,3 +81,22 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
   - Probe: `tests/_figur_stoff.gd`.
   - Nächste Schritte: Schürzen und Wappenröcke als echter Stoff, Rechnung auf mehrere Kerne, Messung mit vielen
     Figuren.
+- **Überkleidung als Stoff (22.11.2026, Zweig `stoff-3`)**:
+  - Teile: Schürze, Lederschürze, Wappenrock (vorn und hinten) und der Kettenhemd-Schoß laufen nah ebenfalls als
+    Stoff (`STOFF_TEILE` in `figur.gd`).
+  - Werte je Teil: Biegung, Dämpfung, Beinkapseln und Bewegungsraum. Bahnen bekommen dickere Kapseln, weil der Rock
+    dazwischen liegt, und nur 6 bis 7 cm Bewegungsraum, weil sie flach sind. Leder und Kettengeflecht sind steifer.
+  - Modul:
+    - Ein Punkt im Bein wird zu der Seite geschoben, auf der sein Platz am Körper liegt, nicht einfach von der
+      Achse weg. Sonst rutschte die Schürze beim Schritt hinter den Oberschenkel.
+    - Die Beine werden am Ende jedes Unterschritts noch einmal geprüft und haben Vorrang vor dem Bewegungsraum.
+  - Bauskript: Unter Bahnen hat der Rock für die Federknochen eine Aussparung. Mit echtem Stoff klaffte sie auf.
+    Deshalb gibt es zusätzlich `Kittelrock_voll` ohne Aussparung, unsichtbar und nur Quelle des Stoffs.
+  - Rock-Flicken hängen an den Rockknochen und werden nah ausgeblendet.
+  - Bilder: `docs/bilder/figuren-2026-11-22/ueberkleidung_stoff_seite.jpg` (Koch, Schmied, Magd, Wache) und
+    `ueberkleidung_aussparung_gegen_voll.jpg` (oben mit Aussparung, unten voller Rock).
+  - Offen:
+    - Der graue Kittelstreifen unter dem Kettenhemd legt sich wie ein Schlauch um den Oberschenkel (auch mit
+      Federknochen).
+    - Am Saum der Schürze sticht der Rock stellenweise durch; dagegen hilft Kollision Stoff gegen Stoff.
+    - Flicken in den Stoff übernehmen.

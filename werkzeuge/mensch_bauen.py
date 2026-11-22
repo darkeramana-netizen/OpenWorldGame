@@ -1014,7 +1014,7 @@ def main():
                     t_ = min((V[i][1] - (rock_lang + 0.06)) / 0.08, 1.0)
                     V[i] -= n_bein[i] * 0.015 * t_
         rock_fl = [(e, t) for g_, e, t in flaechen if g_ == "helper-skirt"]
-        def stueck(fl, wahl, abstand, mat, teilname, uv_mal, deckel=None, band=None):
+        def stueck(fl, wahl, abstand, mat, teilname, uv_mal, deckel=None, band=None, fern=True):
             sel = [(e, t) for e, t in fl if all(wahl(i) for i in e)]
             if deckel is not None:   # Flächen bis knapp über die Kante, die Ecken darüber auf die Kante ziehen (glatter Saum)
                 sel = [(e, t) for e, t in sel if min(V[i][1] for i in e) < deckel]
@@ -1032,7 +1032,7 @@ def main():
             if band is not None:
                 verschoben[ecken_ids, 1] = np.clip(verschoben[ecken_ids, 1], band[0], band[1])
             pos, nor, tex, jw, tri = zerlege_kasten(verschoben, n_g, [e for e, _ in sel], ecken_jw, uv_mal)
-            teil(teilname, pos, tex, jw, tri, mat, nor, "leder" if mat == m_leder else "stoff")
+            teil(teilname, pos, tex, jw, tri, mat, nor, "leder" if mat == m_leder else "stoff", fern=fern)
             return set(ecken_ids)
         oben_ids = stueck(hose_fl, ist_oben_roh, 0.011, m_kittel, "Kittel", 3.0, deckel=hals)
         oben_ids = {i for i in oben_ids if V[i][1] < hals}
@@ -1058,8 +1058,17 @@ def main():
                    m_kette, "Kettenhemd_rock", 9.0)
             stueck(hose_fl, lambda i: ist_oben_roh(i) and V[i][1] < hals - 0.01, 0.02, m_kette, "Kettenhemd", 9.0)
         else:
+            z0 = zufall_.getstate()
             stueck(rock_fl, lambda i: rock_lang <= V[i][1] <= taille - 0.035 and not hinter_bahn(i), 0.006, m_kittel,
                    "Kittelrock", 3.0)
+            if verdecker:
+                # Echter Stoff (figur.gd, nah): Rock und Bahn bewegen sich getrennt, die Aussparung hinter der Bahn
+                # würde aufklaffen. Dafür ein voller Rock ohne Aussparung (unsichtbar, nur Quelle des Stoffs).
+                z1 = zufall_.getstate()
+                zufall_.setstate(z0)
+                stueck(rock_fl, lambda i: rock_lang <= V[i][1] <= taille - 0.035, 0.006, m_kittel, "Kittelrock_voll",
+                       3.0, fern=False)
+                zufall_.setstate(z1)
         # Flicken: kleine Stücke in anderem Ton an Ellbogen und Rock
         flicken = int(opt.get("flicken", zufall_.choice([0, 1, 1, 2, 3])))
         if flicken and panzer == "":
