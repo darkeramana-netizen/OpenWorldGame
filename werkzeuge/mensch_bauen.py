@@ -987,10 +987,11 @@ def main():
         def ist_unten(i):
             h = haupt(i)
             # Beinlinge bis zur Taille: der Rock schwingt (Federknochen) und weicht den Beinen aus
-            if V[i][1] > rock_lang + (0.2 if kleidung == "kleid" else 0.1):   # unter dem Rock unsichtbar
+            if kleidung == "kleid" and V[i][1] > rock_lang + 0.2:   # unter dem langen Kleid unsichtbar
                 return False
-            return (h.startswith(("thigh", "calf")) or (h == "pelvis" and V[i][1] <= taille + 0.02)) and \
-                not ist_schuh(i)
+            # bis in den Schuh hinein (sonst bliebe am Knöchel ein Streifen Haut)
+            return h.startswith(("thigh", "calf")) or (h == "pelvis" and V[i][1] <= taille + 0.02) or \
+                (ist_schuh(i) and V[i][1] > 0.055)
         def ist_schuh(i):
             h = haupt(i)
             return h.startswith(("foot", "ball")) or (h.startswith("calf") and V[i][1] < 0.12)
@@ -1104,8 +1105,9 @@ def main():
             unter = lambda i: (ist_oben(i) and hand(i) < 0.12 and V[i][1] < hals - 0.012) or ist_unten(i)
             bedeckt |= {i for i, dd in zip(koerper_ids, d) if dd < 0.025 and unter(i)}
         # Beine und Becken unter dem Rock weglassen (sonst stechen sie beim Gehen durch den Stoff)
-        bedeckt |= {i for i in koerper_ids if (haupt(i).startswith(("thigh", "calf")) or haupt(i) == "pelvis")
-                    and rock_lang + (0.2 if kleidung == "kleid" else 0.1) < V[i][1] < taille}
+        if kleidung == "kleid":
+            bedeckt |= {i for i in koerper_ids if (haupt(i).startswith(("thigh", "calf")) or haupt(i) == "pelvis")
+                        and rock_lang + 0.2 < V[i][1] < taille}
         koerper_fl = [(e, t) for e, t in koerper_fl if not all(i in bedeckt for i in e)]
     pos, tex, jw, tri = zerlege_nach_uv(V, vt, koerper_fl, ecken_jw)
     teil("Koerper", pos, tex, jw, tri, m_haut)
