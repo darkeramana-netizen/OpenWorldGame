@@ -100,3 +100,26 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
       Federknochen).
     - Am Saum der Schürze sticht der Rock stellenweise durch; dagegen hilft Kollision Stoff gegen Stoff.
     - Flicken in den Stoff übernehmen.
+- **Stoff auf mehreren Kernen (22.11.2026, Zweig `stoff-4`)**:
+  - Aufbau:
+    - Jeder Stoffschritt ist dreigeteilt: `vorbereiten` (Hauptstrang, liest Knochen), `rechnen` (beliebiger Strang,
+      nur eigene Daten) und `hochladen` (Hauptstrang).
+    - Die Figuren melden ihre Stoffe mit `vormerken(delta)` an. Der Knoten `StoffTakt` (unter der Wurzel, von
+      `figur.gd` angelegt) rechnet am Ende des Bildes alle gemeinsam, verteilt über Godots `WorkerThreadPool`.
+    - Hochladen schreibt nur noch den Eckpuffer (Ort, Normale), statt das Mesh jedes Bild neu aufzubauen. Beim
+      ersten Mal wird das eigene Format gegen Godots Puffer geprüft; passt es nicht, gibt es eine Warnung und den
+      alten Weg.
+  - Statt 6 Unterschritten mit 4 Durchgängen jetzt 8 Unterschritte mit 1 Durchgang. Das Rechnen kostet die Hälfte,
+    und im Bild ist kaum ein Unterschied zu sehen. Die Beine werden nur noch am Ende jedes Unterschritts geprüft.
+  - Messung im Container (4 Kerne, Software-Renderer, `tests/_stoff_last.gd`), alle Menschen gehen nah mit
+    echtem Stoff:
+
+    | Menschen | Stoffe | Punkte | ein Kern | mehrere Kerne |
+    |---|---|---|---|---|
+    | 10 | 16 | 5 267 | 5,7 ms | 3,2 ms |
+    | 20 | 28 | 10 153 | 10,6 ms | 5,6 ms |
+    | 40 | 58 | 20 787 | 21,6 ms | 10,5 ms |
+
+    Vorher (6×4, ein Kern, ganzes Mesh neu) kosteten 40 Menschen 44,8 ms. Bei mehreren Kernen entfallen gut 40 %
+    aufs Hochladen (Hauptstrang). Auf einem Ryzen 7 9800X3D mit 16 Strängen ist deutlich weniger zu erwarten;
+    nachmessen mit `tests/_stoff_last.gd`.

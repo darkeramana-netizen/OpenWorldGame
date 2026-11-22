@@ -747,6 +747,8 @@ func _stoff_umschalten(d: float) -> void:
 	if nah == _stoff_nah:
 		return
 	_stoff_nah = nah
+	if nah:
+		_stoff_takt_sicher()
 	var skelett: Node = (_stoff_echt[0] as Node).get_parent()
 	for st: MeshInstance3D in _stoff_echt:
 		var quelle := skelett.get_node_or_null(String(st.get_meta("quelle"))) as MeshInstance3D
@@ -763,6 +765,16 @@ func _stoff_umschalten(d: float) -> void:
 			k.visible = not nah
 	if _stoff != null:
 		_stoff.active = not nah
+
+
+## Ein Takt für alle Stoffe (Modul sorrowland): rechnet am Ende jedes Bildes alle vorgemerkten Stoffe gemeinsam.
+static var _stoff_takt: Node
+func _stoff_takt_sicher() -> void:
+	if is_instance_valid(_stoff_takt):   # (frisch angelegt hängt er erst am Ende des Bildes im Baum)
+		return
+	_stoff_takt = ClassDB.instantiate("StoffTakt")
+	_stoff_takt.name = "StoffTakt"
+	get_tree().root.add_child.call_deferred(_stoff_takt)
 
 
 ## Haut und Augen der realistischen Menschen: Licht scheint durch die Haut (Subsurface Scattering im Hautmodus, an
@@ -1198,8 +1210,9 @@ func _spiele_animation(delta: float) -> void:
 		_anim.advance(_anim_rest)
 		_anim_rest = 0.0
 		if _stoff_nah:
+			# gerechnet wird am Ende des Bildes für alle Figuren gemeinsam, verteilt auf alle Kerne (StoffTakt)
 			for st in _stoff_echt:
-				st.schritt(schritt)   # nach der Animation, damit der Stoff der neuen Haltung folgt
+				st.vormerken(schritt)
 
 
 ## Sichtweiten und Schatten aller Teile (nach jedem Bau): kleine Teile ohne Schatten und nur nah, große mit weichem
