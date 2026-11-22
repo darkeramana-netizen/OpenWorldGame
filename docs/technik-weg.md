@@ -42,3 +42,9 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
   1. C++-Modul als GDExtension, eigenes Repository, Linux und Windows.
   2. Echter Stoff nur nah (etwa bis 15 m), weiter weg die heutigen Federknochen als Rückfall.
   3. Prototyp mit einem Kittel und einem Kleid, Bildfolgen im Gang, Messung, wie viele Figuren gleichzeitig gehen.
+- **Repository** `darkeramana-netizen/sorrowland-module` (eine Bibliothek `sorrowland` für alle Module, godot-cpp 4.5,
+  Linux und Windows aus diesem Container gebaut). Im Spiel unter `addons/sorrowland_module/`.
+- **Stand Stoff (22.11.2026)**: Klasse `Stoff` läuft im Spiel (Probe `tests/_stoff_foto.gd`): Kleid 625 Punkte,
+  Kittel 396 Punkte, etwa 0,5 ms je Figur und Bild (Debug, ein Kern). Bild:
+  `docs/bilder/figuren-2026-11-21/stoff_federknochen_gegen_echt.jpg` (Zeilen 1 und 3 Federknochen, 2 und 4 Stoff).
+  Noch nicht in `figur.gd` eingebunden.

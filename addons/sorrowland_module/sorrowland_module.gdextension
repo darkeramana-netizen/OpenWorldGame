@@ -1,0 +1,12 @@
+[configuration]
+
+entry_symbol = "sorrowland_init"
+compatibility_minimum = 4.5
+reloadable = true
+
+[libraries]
+
+linux.debug.x86_64 = "res://addons/sorrowland_module/bin/libsorrowland.linux.debug.x86_64.so"
+linux.release.x86_64 = "res://addons/sorrowland_module/bin/libsorrowland.linux.release.x86_64.so"
+windows.debug.x86_64 = "res://addons/sorrowland_module/bin/libsorrowland.windows.debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/sorrowland_module/bin/libsorrowland.windows.release.x86_64.dll"
