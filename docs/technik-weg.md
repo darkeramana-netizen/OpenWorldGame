@@ -136,5 +136,21 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
     darin und ihre Höhe über der Fläche. Die Flicken auf dem Rock gehen so mit dem echten Stoff mit.
   - Bilder: `docs/bilder/figuren-2026-11-22/stoff_lagen_vorher_nachher.jpg` (oben vorher, unten mit Lagen) und
     `stoff_flicken.jpg`.
+  - Nachmessung 22.11.2026, 17:08 (Windows, mit echtem Stoff):
+    - Messfahrt: Hoch 112,5 / 109,2 fps (alt/neu), Episch 58,1 / 57,4 fps, Bild p99 15,1 / 15,5 und
+      22,9 / 23,7 ms, keine Hänger über 50 ms.
+    - Anlauf: Die ersten Bilder nach dem Laden kosteten 8 bis 16 ms mehr. Das größte Bild nach dem Vorhang war
+      20,6 statt 11,9 ms (Hoch) und 30,7 statt 20,4 ms (Episch).
+    - Grafikspeicher: rund 280 MB mehr als mit alten Figuren (vorher 150 MB).
+    - Ursache: Der Stoff wurde für alle 138 Figuren schon beim Bau eingerichtet, auch für ferne. Eine Einrichtung
+      dauerte im Container 6 bis 14 ms, und der größte Teil davon steckte in der Haftung, die GDScript für jede
+      Ecke einzeln ausrechnete.
+    - Behoben:
+      - Der Stoff wird erst eingerichtet, wenn eine Figur zum ersten Mal nah kommt, höchstens 2 Figuren je Bild.
+      - Haftung nach Höhe im Modul (`einrichten_huefte`), mit Zwischenspeicher je Quelle: Ist das Modell schon
+        bekannt, kostet die Einrichtung 0,6 ms (höchstens 1,1).
+      - Die erste Figur je Modell richtet den Stoff schon beim Bau ein, meist noch hinter dem Ladevorhang.
+      - Die beidseitige Materialkopie gibt es nur einmal je Ausgangsmaterial (`material_setzen`); vorher
+        überschrieb `figur.gd` sie beim Umschalten mit dem einseitigen Material.
   - Offen bleibt der Kittelstreifen unter dem Kettenhemd: Er legt sich wie ein Schlauch um den Oberschenkel. Das
     lässt sich im Bauskript beheben (breiter oder weglassen) und war mit Federknochen genauso.

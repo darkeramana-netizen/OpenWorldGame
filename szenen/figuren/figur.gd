@@ -114,6 +114,10 @@ var _anim_takt := 0
 var _stoff: SpringBoneSimulator3D     # schwingender Rock (realistische Menschen), nah aktiv
 var _stoff_echt: Array = []           # echte Stoffe (Klasse Stoff aus dem Modul sorrowland), ganz nah statt Federknochen
 var _stoff_nah := false
+var _stoff_skelett: Skeleton3D        # echter Stoff wird erst eingerichtet, wenn die Figur das erste Mal nah kommt
+static var _stoff_einrichtungen := {"bild": -1, "anzahl": 0}
+static var _stoff_gewaermt := {}      # Modellpfade, deren Stoff schon einmal eingerichtet wurde
+const STOFF_EINRICHTEN_JE_BILD := 2
 const STOFF_NAH := 12.0               # bis hier echter Stoff (Rückweg mit 2 m Spielraum)
 
 const HUEFTE := 0.93
@@ -199,6 +203,7 @@ func _baue() -> void:
 	_stoff = null
 	_stoff_echt = []
 	_stoff_nah = false
+	_stoff_skelett = null
 	if not einfach and not Engine.is_editor_hint() and _baue_modell():
 		if _wartet_auf_koerper:
 			return
@@ -583,7 +588,15 @@ func _baue_mensch(w: bool) -> bool:
 		if String(k.name).ends_with("_voll"):   # nur Quelle des echten Stoffs (stoff_echt_einrichten)
 			k.visible = false
 	_stoff = stoff_einrichten(skelett)
-	_stoff_echt = stoff_echt_einrichten(skelett)
+	# echter Stoff erst nah (_stoff_umschalten): spart Einrichtung und Speicher für alle Figuren in der Ferne
+	_stoff_skelett = skelett if ClassDB.class_exists("Stoff") else null
+	# Die erste Figur je Modell richtet ihn gleich beim Bau ein (meist hinter dem Ladevorhang): Danach liegt alles im
+	# Zwischenspeicher des Moduls, und spätere Figuren brauchen unter 1 ms statt 6 bis 14 ms.
+	if _stoff_skelett != null and not _stoff_gewaermt.has(pfad):
+		_stoff_gewaermt[pfad] = true
+		_stoff_echt = stoff_echt_einrichten(skelett)
+		if _stoff_echt.is_empty():
+			_stoff_skelett = null
 	haut_verfeinern(_modell)
 	if _stoff != null:
 		_stoff.reset.call_deferred()          # nach dem Aufstellen nicht vom Sprung an den Platz losschwingen
@@ -687,7 +700,6 @@ const STOFF_LAGEN := {
 ## Unter Bahnen hat der Rock eine Aussparung (werkzeuge/mensch_bauen.py, hinter_bahn), unter dem Kettenhemd ist er nur
 ## ein schmaler Streifen: dann bleibt er nah an seinem Platz.
 const STOFF_RAUM_RUHIG := 0.07
-static var _haftungen := {}
 static func stoff_echt_einrichten(skelett: Skeleton3D) -> Array:
 	var stoffe: Array = []
 	if not ClassDB.class_exists("Stoff"):
@@ -702,22 +714,6 @@ static func stoff_echt_einrichten(skelett: Skeleton3D) -> Array:
 		var quelle := skelett.find_child(teil + "_voll", false, false) as MeshInstance3D
 		if quelle == null or quelle.mesh == null:
 			quelle = sichtbar
-		# Haftung: oben fest am Körper bis zur Hüfte (oder bis 0 cm unter der Oberkante, wenn das Teil erst tiefer
-		# beginnt), dann 12 cm Übergang, darunter frei
-		var schluessel := quelle.mesh.get_rid()
-		if not _haftungen.has(schluessel):
-			var ecken: PackedVector3Array = quelle.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
-			var oben := -1e9
-			for e in ecken:
-				oben = maxf(oben, e.y)
-			var fest := minf(oben, huefte)
-			# der schmale Streifen unter dem Kettenhemd haftet nur oben (sonst kippt er als steifer Ring mit dem Bein)
-			var rampe := 0.04 if teil == "Kittelrock" and skelett.has_node("Kettenhemd_rock") else 0.12
-			var haftung := PackedFloat32Array()
-			haftung.resize(ecken.size())
-			for i in ecken.size():
-				haftung[i] = clampf((ecken[i].y - (fest - rampe)) / rampe, 0.0, 1.0)
-			_haftungen[schluessel] = haftung
 		var werte: Array = STOFF_TEILE[teil]
 		var raum: float = werte[4]
 		if teil == "Kittelrock" and (skelett.has_node("Schuerze") or skelett.has_node("Lederschuerze") or
@@ -732,7 +728,10 @@ static func stoff_echt_einrichten(skelett: Skeleton3D) -> Array:
 		stoff.set_meta("stoff_echt", true)
 		stoff.set_meta("quelle", teil)
 		skelett.add_child(stoff)
-		var ok: bool = stoff.call("einrichten", quelle, _haftungen[schluessel])
+		# Haftung: oben fest am Körper bis zur Hüfte (oder ab der Oberkante, wenn das Teil erst tiefer beginnt), dann
+		# ein Übergang; der schmale Streifen unter dem Kettenhemd haftet nur oben (sonst kippt er als steifer Ring mit)
+		var rampe := 0.04 if teil == "Kittelrock" and skelett.has_node("Kettenhemd_rock") else 0.12
+		var ok: bool = stoff.call("einrichten_huefte", quelle, huefte, rampe)
 		if quelle != sichtbar:
 			quelle.visible = false
 		if not ok:
@@ -772,6 +771,19 @@ func _stoff_umschalten(d: float) -> void:
 	var nah := d < (STOFF_NAH + 2.0 if _stoff_nah else STOFF_NAH)
 	if nah == _stoff_nah:
 		return
+	if nah and _stoff_echt.is_empty():
+		# höchstens STOFF_EINRICHTEN_JE_BILD Figuren je Bild einrichten (sonst ein Hänger, wenn viele zugleich nah kommen)
+		var bild := Engine.get_process_frames()
+		if _stoff_einrichtungen["bild"] != bild:
+			_stoff_einrichtungen["bild"] = bild
+			_stoff_einrichtungen["anzahl"] = 0
+		if _stoff_einrichtungen["anzahl"] >= STOFF_EINRICHTEN_JE_BILD:
+			return
+		_stoff_einrichtungen["anzahl"] += 1
+		_stoff_echt = stoff_echt_einrichten(_stoff_skelett)
+		if _stoff_echt.is_empty():
+			_stoff_skelett = null   # nichts zu rechnen (kein Rock): bei den Federknochen bleiben
+			return
 	_stoff_nah = nah
 	if nah:
 		_stoff_takt_sicher()
@@ -781,7 +793,7 @@ func _stoff_umschalten(d: float) -> void:
 		if quelle != null:
 			quelle.visible = not nah
 			if nah:   # gefärbt wird erst nach dem Bau (Tracht): das Material des Teils übernehmen
-				st.material_override = quelle.get_active_material(0)
+				st.call("material_setzen", quelle.get_active_material(0))
 		st.visible = nah
 		if nah:
 			st.call("zuruecksetzen")
@@ -1219,7 +1231,7 @@ func _spiele_animation(delta: float) -> void:
 	var n := 1
 	if kamera != null:
 		var d := kamera.global_position.distance_to(global_position)
-		if not _stoff_echt.is_empty():
+		if _stoff_skelett != null:
 			_stoff_umschalten(d)
 		if _stoff != null and not _stoff_nah:
 			_stoff.active = d < 30.0      # schwingender Stoff nur nah
