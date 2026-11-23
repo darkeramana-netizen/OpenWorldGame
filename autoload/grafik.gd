@@ -97,6 +97,8 @@ func _anwenden_global() -> void:
 	vp.msaa_3d = w["msaa"]
 	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if w["fxaa"] else Viewport.SCREEN_SPACE_AA_DISABLED
 	vp.mesh_lod_threshold = w["lod_schwelle"]
+	# Verdeckungsprüfung (project.godot, Verdecker an Mauern und Häusern); VERDECKUNG_AUS=1 schaltet sie zum Vergleich ab
+	vp.use_occlusion_culling = OS.get_environment("VERDECKUNG_AUS") == ""
 	if "anisotropic_filtering_level" in vp:
 		vp.set("anisotropic_filtering_level", {2: 1, 4: 2, 8: 3, 16: 4}.get(int(w["anisotrop"]), 2))
 	RenderingServer.directional_shadow_atlas_set_size(int(w["schattenkarte"]), true)

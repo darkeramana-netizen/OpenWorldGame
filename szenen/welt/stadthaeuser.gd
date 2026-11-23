@@ -10,6 +10,7 @@ extends Node3D
 ## Schattenhülle (eine Oberfläche je Bau, nur für den Sonnenschatten)
 const Schattenhuelle := preload("res://szenen/welt/schattenhuelle.gd")
 const Baucache := preload("res://szenen/welt/baucache.gd")
+const Verdecker := preload("res://szenen/welt/verdecker.gd")
 
 ## Je Haus (x, y, z, Gier in Grad)
 @export var haeuser: PackedVector4Array = PackedVector4Array():
@@ -90,10 +91,30 @@ func _baue() -> void:
 	# Beim zweiten Start nur laden statt bauen (szenen/welt/baucache.gd)
 	var schl := Baucache.schluessel(self) if Baucache.an(self) else ""
 	if schl != "" and Baucache.lade(self, schl, _material):
+		_verdecker()
 		return
 	_baue_neu()
 	if schl != "":
 		Baucache.speichere(self, schl)
+	_verdecker()
+
+
+## Verdecker für die Verdeckungsprüfung (szenen/welt/verdecker.gd): je Haus ein Quader innerhalb der Mauern, vom
+## Erdgeschoss bis unter die Traufe (ohne Dach). Begehbare Häuser bekommen keinen (von innen sieht man hinaus).
+func _verdecker() -> void:
+	if begehbar or Engine.is_editor_hint():
+		return
+	var ecken := PackedVector3Array()
+	var dreiecke := PackedInt32Array()
+	for i in haeuser.size():
+		var h: Vector4 = haeuser[i]
+		var form: Array = FORMEN[formen[i] if i < formen.size() else i % FORMEN.size()]
+		var hoehe: float = EG + OG * float(form[2]) - 0.3
+		var t := Transform3D(Basis(Vector3.UP, deg_to_rad(h.w)), Vector3(h.x, h.y + 0.2 + hoehe * 0.5, h.z))
+		Verdecker.quader(ecken, dreiecke, t, Vector3(float(form[0]) * 0.5 - 0.2, hoehe * 0.5, float(form[1]) * 0.5 - 0.2))
+	var k := Verdecker.knoten(ecken, dreiecke)
+	if k != null:
+		add_child(k)
 
 
 func _baue_neu() -> void:

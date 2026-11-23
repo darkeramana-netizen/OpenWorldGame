@@ -14,6 +14,7 @@ extends Node3D
 const Schattenhuelle := preload("res://szenen/welt/schattenhuelle.gd")
 const Baucache := preload("res://szenen/welt/baucache.gd")
 const Zellteil := preload("res://szenen/welt/zellteil.gd")
+const Verdecker := preload("res://szenen/welt/verdecker.gd")
 
 ## Je Mauerstück 10 Werte: ax, az, bx, bz, unten, oben (Wehrgang), Dicke, außen x, außen z, Zinnen (0/1)
 @export var mauern := PackedFloat32Array():
@@ -176,11 +177,55 @@ func _baue() -> void:
 	# Beim zweiten Start nur laden statt bauen (szenen/welt/baucache.gd); Zellen kommen dort als Platzhalter
 	var schl := Baucache.schluessel(self) if Baucache.an(self) else ""
 	if schl != "" and Baucache.lade(self, schl, _material):
+		_verdecker()
 		return
 	_baue_neu()
 	if schl != "":
 		Baucache.speichere(self, schl)
 	_zerlege()
+	_verdecker()
+
+
+## Verdecker für die Verdeckungsprüfung (szenen/welt/verdecker.gd): jedes Mauerstück als Quader vom Fuß bis knapp
+## unter den Wehrgang, frei an Toren, Tortürmen und Türmen (dort kann man hindurch oder hinein). Türme und Gebäude
+## bekommen keine (sie sind hohl und begehbar).
+func _verdecker() -> void:
+	if Engine.is_editor_hint() or mauern.is_empty():
+		return
+	var ecken := PackedVector3Array()
+	var dreiecke := PackedInt32Array()
+	var i := 0
+	while i + 9 < mauern.size():
+		var a := Vector2(mauern[i], mauern[i + 1])
+		var b := Vector2(mauern[i + 2], mauern[i + 3])
+		var dicke := mauern[i + 6]
+		var u := (b - a).normalized()
+		var laenge := a.distance_to(b)
+		var luecken: Array = []
+		var frei := func(p: Vector2, halb: float) -> void:
+			var t := (p - a).dot(u)
+			var quer := absf((p - a).cross(u))
+			if quer < halb + dicke and t > -halb and t < laenge + halb:
+				luecken.append([t - halb, t + halb])
+		var j := 0
+		for liste: PackedFloat32Array in [tore, nachbar_tore]:
+			j = 0
+			while j + 7 < liste.size():
+				frei.call(Vector2(liste[j], liste[j + 1]), liste[j + 5] * 0.5 + 1.5)
+				j += 8
+		j = 0
+		while j + 9 < torbauten.size():
+			frei.call(Vector2(torbauten[j], torbauten[j + 1]), maxf(torbauten[j + 6], torbauten[j + 7]) * 0.5 + 1.0)
+			j += 10
+		j = 0
+		while j + 6 < tuerme.size():
+			frei.call(Vector2(tuerme[j], tuerme[j + 1]), tuerme[j + 4] + 0.6)
+			j += 7
+		Verdecker.mauer(ecken, dreiecke, a, b, mauern[i + 4], mauern[i + 5], dicke, luecken)
+		i += 10
+	var k := Verdecker.knoten(ecken, dreiecke)
+	if k != null:
+		add_child(k)
 
 
 func _baue_neu() -> void:
