@@ -181,3 +181,37 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
       (`STOFF_AUS=1`). `STOFF_STATISTIK=1` gibt alle 60 Bilder Anzahl und Zeit des Stoffs aus.
   - Offen bleibt der Kittelstreifen unter dem Kettenhemd: Er legt sich wie ein Schlauch um den Oberschenkel. Das
     lässt sich im Bauskript beheben (breiter oder weglassen) und war mit Federknochen genauso.
+
+## Verdeckungsprüfung (Occlusion Culling), 23.11.2026
+
+Was hinter Mauern und Häusern liegt, wird nicht mehr gezeichnet. Godot bringt das mit (`project.godot`:
+`rendering/occlusion_culling/use_occlusion_culling`), dafür ist kein Modul nötig. Die Verdecker baut
+`szenen/welt/verdecker.gd`:
+
+- **Mauern** (`burgbau.gd`): Jedes Mauerstück wird ein Quader vom Fuß bis knapp unter den Wehrgang, ohne Zinnen.
+  Frei bleibt er an Toren und Nachbartoren, Tortürmen und Türmen, denn dort kann man hindurch- oder hineinsehen.
+- **Häuser** (`stadthaeuser.gd`): je Haus ein Quader innerhalb der Mauern, vom Erdgeschoss bis unter die Traufe.
+  Begehbare Häuser bekommen keinen, damit man von innen durch die Fenster hinaussieht.
+- Grundsatz: Ein Verdecker ist immer etwas kleiner als der Bau. Er darf nie mehr verdecken als der Bau selbst.
+- `VERDECKUNG_AUS=1` schaltet die Verdeckung zum Vergleich ab (`autoload/grafik.gd`).
+
+Probe `tests/_verdeckung_probe.gd`: 10 feste Blickpunkte in Drachenstein, je mit und ohne Verdeckung.
+
+| Blickpunkt | Objekte | Draw Calls | Dreiecke |
+|---|---|---|---|
+| Markt | 2836 → 2643 | 2110 → 1917 | 9,07 → 8,16 Mio. |
+| Nordtor | 2397 → 1814 | 1793 → 1210 | 7,78 → 6,78 Mio. |
+| Südtor | 5235 → 4066 | 4583 → 3444 | 11,29 → 9,98 Mio. |
+| Vorburg | 5277 → 4405 | 4494 → 3702 | 9,56 → 9,06 Mio. |
+| Mittelburg | 3972 → 2451 | 3370 → 1855 | 5,74 → 4,20 Mio. |
+| Oberburg | 2803 → 2535 | 2162 → 1918 | 4,51 → 4,11 Mio. |
+| Stadt aus der Luft | 5192 → 5184 | 4588 → 4580 | 11,41 → 11,41 Mio. |
+| Summe (10 Punkte) | −15 % | −17 % | −8 % |
+
+Die Bildpaare unterscheiden sich nur durch bewegte Menschen, Tiere, Bäume, Namensschilder und Schattenkanten.
+Es fehlt nichts, was man sehen müsste. Aus der Luft verdeckt erwartungsgemäß nichts.
+
+Noch nicht verdeckt und als Nächstes lohnend:
+- das Gelände (Burgberg und Hügel verdecken ganze Stadtteile);
+- die massiven unteren Teile von Türmen und Burggebäuden;
+- Bewuchs als Ganzes: Ein MultiMesh wird nur als Ganzes verdeckt, nicht je Baum.
