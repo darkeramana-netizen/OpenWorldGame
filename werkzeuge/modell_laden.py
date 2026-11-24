@@ -191,3 +191,8 @@ def verarbeite(name):
 
 for name in args:
     verarbeite(name)
+
+# Texturen komprimiert mit Mipmaps importieren (werkzeuge/textur_import.py)
+import subprocess as _sp
+_sp.run([sys.executable, str(Path(__file__).with_name("textur_import.py")),
+         str(Path(__file__).resolve().parent.parent / "modelle" / "ausstattung")])

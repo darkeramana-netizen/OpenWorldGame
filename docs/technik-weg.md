@@ -243,3 +243,20 @@ Messung 24.11.2026, 16:31 (Windows, mit Verdeckung), Anlauf auf Hoch, Bild 6 bis
   den neuen Figuren selbst, nicht vom Stoff. Die Modelldateien sind seit der Messung vom 22.11. (+150 MB) gleich
   groß; der Zuwachs ist noch offen.
 - Verdeckungsprüfung auf der Messfahrt Hoch: Draw Calls 2410 → 1608 (−33 %), Grafikkarte 8,2 → 7,7 ms.
+
+## Grafikspeicher der neuen Figuren (24.11.2026)
+
+Die rund 380 MB mehr Grafikspeicher mit realistischen Menschen kamen nicht vom Stoff (Messung mit `STOFF_AUS=1`:
+gleich viel). Ursache waren die Texturen. Alle 130 Bilder der Menschen und 39 der Ausstattung waren verlustfrei
+ohne Mipmaps importiert (`compress/mode=0`, `mipmaps/generate=false`). Godot stellt Bilder neben einem glTF erst im
+geöffneten Editor auf komprimiert um (`detect_3d`). Ohne Editor blieben sie unkomprimiert, und ohne Mipmaps
+flimmerten feine Muster in der Ferne.
+
+- Behoben:
+  - Alle diese Importe sind jetzt VRAM-komprimiert mit Mipmaps, Normalmaps als Normalmap.
+  - `werkzeuge/textur_import.py` setzt das nach jedem Bau (`menschen_vorrat.py`, `modell_laden.py`).
+  - Gelände-Daten (Höhen) bleiben bewusst verlustfrei.
+- Probe `tests/_grafikspeicher_modelle.gd` (alle 17 Menschenmodelle je einmal): 415 → 126 MB.
+- Je Exemplar (`tests/_grafikspeicher.gd`) kostet ein Mensch nur etwa 0,6 MB; davon gehen 0,13 MB auf die
+  Fern-Fassungen.
+- Bildvergleich: Gesichter, Haare und Leder sehen gleich aus, Stoffe flimmern nicht mehr (kein Moiré).

@@ -38,3 +38,6 @@ if __name__ == "__main__":
         r = subprocess.run([sys.executable, str(Path(__file__).with_name("mensch_bauen.py")), mh, sysa, name] +
                            VORRAT[name].split(), capture_output=True, text=True)
         print(name, "ok" if r.returncode == 0 else "FEHLER\n" + r.stderr[-800:])
+    # Texturen komprimiert mit Mipmaps importieren (werkzeuge/textur_import.py)
+    subprocess.run([sys.executable, str(Path(__file__).with_name("textur_import.py")),
+                    str(Path(__file__).resolve().parent.parent / "modelle" / "figuren" / "menschen")])

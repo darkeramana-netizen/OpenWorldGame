@@ -3,19 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://0qnfr4qf67ph"
-path="res://.godot/imported/wicker_basket_02_arm_1k.jpg-1324c718b67ccc461ddb050d82e6a33d.ctex"
+path.s3tc="res://.godot/imported/wicker_basket_02_arm_1k.jpg-1324c718b67ccc461ddb050d82e6a33d.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://modelle/ausstattung/wicker_basket_02/wicker_basket_02_arm_1k.jpg"
-dest_files=["res://.godot/imported/wicker_basket_02_arm_1k.jpg-1324c718b67ccc461ddb050d82e6a33d.ctex"]
+dest_files=["res://.godot/imported/wicker_basket_02_arm_1k.jpg-1324c718b67ccc461ddb050d82e6a33d.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -23,7 +24,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
