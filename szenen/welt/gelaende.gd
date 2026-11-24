@@ -8,6 +8,9 @@ extends Node3D
 const KACHEL := 64
 ## Bis zu dieser Höhe reichen die Wände am Rand des Geländes hinunter.
 const RAND_UNTEN := -45.0
+## Rasterpunkte je Zelle des Verdeckers (2,5 m Abstand: 20 m)
+const VERDECKER_SCHRITT := 8
+const Verdecker := preload("res://szenen/welt/verdecker.gd")
 const Terrain3DBau := preload("res://szenen/welt/gelaende_terrain3d.gd")
 
 @export var material: Material
@@ -44,6 +47,8 @@ func _ready() -> void:
 			_baue_kacheln()
 		_baue_rand()
 		_baue_kollision()
+		if not Engine.is_editor_hint() and OS.get_environment("GELAENDE_VERDECKER_AUS") == "":
+			_baue_verdecker()
 
 
 ## Höhe des Geländes an einer Weltposition (bilinear). Außerhalb: Rand.
@@ -255,3 +260,65 @@ func _hoehenform(koerper: StaticBody3D, x0: int, z0: int, nx: int, nz: int) -> v
 	kollision.position = Vector3(ursprung.x + (x0 + nx / 2.0) * abstand, 0.0, ursprung.y + (z0 + nz / 2.0) * abstand)
 	kollision.scale = Vector3(abstand, 1.0, abstand)
 	koerper.add_child(kollision)
+
+
+## Verdecker für die Verdeckungsprüfung (szenen/welt/verdecker.gd): Hügel und Hänge verdecken, was dahinter liegt.
+## Ein grobes Gitter (VERDECKER_SCHRITT), jeder Gitterpunkt auf der tiefsten Höhe der angrenzenden Zellen und 0,3 m
+## darunter: Jedes Dreieck bleibt so überall unter der Geländefläche und verdeckt nie mehr als das Gelände selbst.
+## Zellen mit Loch (Tunnel) bleiben frei. Ein Verdecker je Kachel.
+func _baue_verdecker() -> void:
+	var s := VERDECKER_SCHRITT
+	var zx := ceili(float(breite - 1) / s)
+	var zz := ceili(float(tiefe - 1) / s)
+	# tiefste Höhe je Zelle (NAN: Zelle mit Loch)
+	var zelle := PackedFloat32Array()
+	zelle.resize(zx * zz)
+	for cz in zz:
+		var z1 := mini((cz + 1) * s, tiefe - 1)
+		for cx in zx:
+			var x1 := mini((cx + 1) * s, breite - 1)
+			var tief := INF
+			var loch := false
+			for z in range(cz * s, z1 + 1):
+				var zeile := z * breite
+				for x in range(cx * s, x1 + 1):
+					tief = minf(tief, _hoehen[zeile + x])
+					if _loch[zeile + x] == 1:
+						loch = true
+			zelle[cz * zx + cx] = NAN if loch else tief
+	# Gitterpunkte: tiefste der bis zu vier angrenzenden Zellen
+	var punkt := PackedFloat32Array()
+	punkt.resize((zx + 1) * (zz + 1))
+	for pz in zz + 1:
+		for px in zx + 1:
+			var tief := INF
+			for dz in [-1, 0]:
+				for dx in [-1, 0]:
+					var cx: int = px + dx
+					var cz: int = pz + dz
+					if cx >= 0 and cz >= 0 and cx < zx and cz < zz and not is_nan(zelle[cz * zx + cx]):
+						tief = minf(tief, zelle[cz * zx + cx])
+			punkt[pz * (zx + 1) + px] = tief - 0.3
+	var je := maxi(1, KACHEL / s)   # Zellen je Kachel und Richtung
+	for kz in range(0, zz, je):
+		for kx in range(0, zx, je):
+			var ecken := PackedVector3Array()
+			var dreiecke := PackedInt32Array()
+			var nummer := {}
+			for cz in range(kz, mini(kz + je, zz)):
+				for cx in range(kx, mini(kx + je, zx)):
+					if is_nan(zelle[cz * zx + cx]):
+						continue
+					var ids: Array[int] = []
+					for e: Vector2i in [Vector2i(cx, cz), Vector2i(cx + 1, cz), Vector2i(cx, cz + 1), Vector2i(cx + 1, cz + 1)]:
+						if not nummer.has(e):
+							nummer[e] = ecken.size()
+							ecken.append(Vector3(ursprung.x + mini(e.x * s, breite - 1) * abstand,
+									punkt[e.y * (zx + 1) + e.x],
+									ursprung.y + mini(e.y * s, tiefe - 1) * abstand))
+						ids.append(nummer[e])
+					dreiecke.append_array([ids[0], ids[1], ids[2], ids[1], ids[3], ids[2]])
+			var k := Verdecker.knoten(ecken, dreiecke)
+			if k != null:
+				k.name = "Verdecker_%d_%d" % [kx / je, kz / je]
+				add_child(k)
