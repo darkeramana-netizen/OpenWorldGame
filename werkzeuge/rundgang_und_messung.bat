@@ -20,6 +20,8 @@ echo %GODOT%>"werkzeuge\godot_pfad.txt"
 
 echo === Neuesten Stand holen
 git checkout main && git pull
+echo === Geaenderte Dateien importieren (z. B. Texturen nach neuen Importeinstellungen)
+"%GODOT%" --headless --path . --import
 
 echo === Rundgang Hoch
 "%GODOT%" --path . --script res://werkzeuge/rundgang/rundgang.gd -- --grafik hoch --aufloesung 1280x720
