@@ -307,8 +307,16 @@ func _bild() -> void:
 		Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
 		RenderingServer.viewport_get_measured_render_time_cpu(root.get_viewport_rid()) + RenderingServer.get_frame_setup_time_cpu(),
 		RenderingServer.viewport_get_measured_render_time_gpu(root.get_viewport_rid()),
-		kp, _pipelines()] + _teile(jetzt))
+		kp, _pipelines()] + _teile(jetzt) + _stoff())
 	_t_vorher = jetzt
+
+
+## Echter Stoff (Modul sorrowland, StoffTakt unter der Wurzel): Zeit im Hauptstrang und Zahl der Stoffe dieses Bildes
+func _stoff() -> Array:
+	var t := root.get_node_or_null("StoffTakt")
+	if t == null:
+		return [0.0, 0]
+	return [float(t.get("letzte_ms")), int(t.get("letzte_anzahl"))]
 
 
 func _fahre(s: Dictionary) -> Dictionary:
@@ -648,6 +656,18 @@ func _statistik(phase: String) -> Dictionary:
 	var aus := {"bilder": (werte[0] as Array).size()}
 	if (werte[0] as Array).is_empty():
 		return aus
+	# echter Stoff: Zeit je Bild (Hauptstrang) und Zahl der gerechneten Stoffe
+	var stoff_ms: Array = []
+	var stoff_n := 0
+	for f: Array in _frames:
+		if f[0] == phase and f.size() > 17:
+			stoff_ms.append(float(f[16]))
+			stoff_n = maxi(stoff_n, int(f[17]))
+	if not stoff_ms.is_empty():
+		var sw := PackedFloat64Array(stoff_ms)
+		sw.sort()
+		aus["stoff_ms"] = {"p50": snappedf(_q(sw, 0.5), 0.01), "p95": snappedf(_q(sw, 0.95), 0.01),
+			"max": snappedf(sw[sw.size() - 1], 0.01), "stoffe_max": stoff_n}
 	for i in spalten.size():
 		var w := PackedFloat64Array(werte[i] as Array)
 		w.sort()

@@ -215,3 +215,31 @@ Noch nicht verdeckt und als Nächstes lohnend:
 - das Gelände (Burgberg und Hügel verdecken ganze Stadtteile);
 - die massiven unteren Teile von Türmen und Burggebäuden;
 - Bewuchs als Ganzes: Ein MultiMesh wird nur als Ganzes verdeckt, nicht je Baum.
+
+## Stoff: Warten auf die Grafikkarte (24.11.2026)
+
+Messung 24.11.2026, 16:31 (Windows, mit Verdeckung), Anlauf auf Hoch, Bild 6 bis 12:
+
+| | Bildzeit | davon nach dem Zeichnen |
+|---|---|---|
+| alte Figuren | 10 bis 12 ms | 5 ms |
+| neue Figuren mit Stoff | 19 bis 21 ms | 12 bis 13 ms |
+| neue Figuren ohne Stoff (`STOFF_AUS=1`) | 11 bis 13 ms | 5 ms |
+
+- Der teurere Anlauf kommt vom Stoff. Er kostet etwa eine Bildzeit der Grafikkarte (Hoch etwa 9 ms, Episch etwa
+  17 ms): Der Prozessor wartet auf die Grafikkarte.
+- Im Anlauf wird gar kein Stoff gerechnet. Die Messung weist jetzt `stoff_ms` mit `stoffe_max` je Abschnitt aus.
+  Ursache ist das Einrichten: `surface_get_arrays` und `mesh_get_surface` lesen die Mesh-Daten von der Grafikkarte
+  zurück. Godot 4 hält sie nicht im Arbeitsspeicher und wartet dafür, bis die Grafikkarte alles Bisherige fertig hat.
+  Das Vorwärmen je Modell beim Bau tat das mehrfach je Figur, ebenso jede Figur, die nah kam, und jeder Flicken.
+  Im Software-Renderer des Containers kostet das nichts, deshalb war es dort nicht zu sehen.
+- Behoben:
+  - Mesh-Daten und Anordnung des Eckpuffers werden je Quelle nur einmal gelesen und zwischengespeichert. Neue
+    Meshes entstehen aus den eigenen Daten statt aus Rücklesungen.
+  - Dreifache Pufferung: Je Stoff und Flicken gibt es drei Meshes. Beschrieben wird immer das, das die Grafikkarte
+    seit zwei Bildern nicht mehr liest.
+  - Einrichten mit bekanntem Modell: 0,3 ms je Mensch.
+- Grafikspeicher: Mit und ohne Stoff gleich (2017 MB gegen 1633 MB mit alten Figuren). Die rund 380 MB kommen von
+  den neuen Figuren selbst, nicht vom Stoff. Die Modelldateien sind seit der Messung vom 22.11. (+150 MB) gleich
+  groß; der Zuwachs ist noch offen.
+- Verdeckungsprüfung auf der Messfahrt Hoch: Draw Calls 2410 → 1608 (−33 %), Grafikkarte 8,2 → 7,7 ms.
