@@ -260,3 +260,39 @@ flimmerten feine Muster in der Ferne.
 - Je Exemplar (`tests/_grafikspeicher.gd`) kostet ein Mensch nur etwa 0,6 MB; davon gehen 0,13 MB auf die
   Fern-Fassungen.
 - Bildvergleich: Gesichter, Haare und Leder sehen gleich aus, Stoffe flimmern nicht mehr (kein Moiré).
+- Die Messskripte (`messung_figuren.bat`, `rundgang_und_messung.bat`) importieren nach dem Holen geänderte Dateien
+  (`--import`). Sonst greifen neue Importeinstellungen erst beim nächsten Öffnen des Editors; die Messung von 18 Uhr
+  zeigte deshalb noch die alten 2021 MB.
+
+## Stoff: kein Zurücklesen mehr (24.11.2026, Messung 18 Uhr)
+
+Nachmessung nach dem Zwischenspeicher (Windows, Hoch, Anlauf Bild 6 bis 12):
+
+| | Bildzeit | nach dem Zeichnen | Grafikkarte |
+|---|---|---|---|
+| alte Figuren | 10 bis 17 ms | 5 bis 11 ms | 9,7 ms |
+| neue Figuren mit Stoff | 18 bis 21 ms | 12 bis 14 ms | 10 ms |
+| neue Figuren ohne Stoff | 11 bis 13 ms | 4 bis 6 ms | 8,8 ms |
+
+Auf Episch dasselbe Bild: mit Stoff 27 bis 32 ms (nach dem Zeichnen 20 bis 22 ms, Grafikkarte 18 ms), alte Figuren
+15 bis 19 ms. Der Mehraufwand ist weiter fast genau eine Bildzeit der Grafikkarte; auf der Messfahrt und im übrigen
+Anlauf (Mittelwert 9,9 gegen 9,8 ms) ist er weg. Die Zählung im Modul (`STOFF_STATISTIK=1` meldet jedes
+Zurücklesen mit Bildnummer) zeigt den Grund: Der Zwischenspeicher hilft erst beim zweiten Mal. Die Körper laden im
+Hintergrund und kommen über viele Bilder verteilt an. Jedes Modell liest beim ersten Stoff seine Quellen und die
+Anordnung des Eckpuffers einmal zurück, und jedes solche Bild wartet auf die Grafikkarte.
+
+- Behoben, ohne jedes Zurücklesen:
+  - Anordnung des Eckpuffers: Schrittweiten und Versätze sagt der RenderingServer aus dem Format, das das ArrayMesh
+    im Arbeitsspeicher kennt. Ort, Normale und Tangente schreibt der Stoff selbst. Die Tangente kodiert er wie Godot
+    ohne Tangenten-Array (beliebig senkrecht zur Normale) und schreibt sie jetzt jedes Bild mit; vorher blieb sie
+    auf dem Stand des ersten Bildes.
+  - Quellen: `werkzeuge/stoff_daten.gd` schreibt je Modell die Daten der Stoffquellen nach
+    `modelle/figuren/menschen/<name>/stoff_daten.res` (alle 17 zusammen 472 KB). `figur.gd` lädt sie mit dem
+    Körper im Hintergrund und gibt sie dem Modul vor (`Stoff.quelle_vorgeben`), bevor es den ersten Stoff
+    einrichtet. Passen sie nicht mehr zum Modell (andere Ecken- oder Indexzahl), nimmt das Modul sie nicht an und
+    liest wie früher zurück. `menschen_vorrat.py` ruft das Werkzeug nach dem Bau auf (mit `GODOT=<pfad>`).
+  - `STOFF_PRUEFEN=1` vergleicht einmal je Anordnung den selbst gefüllten Puffer mit Godots eigenem (liest dafür
+    zurück, nur für Tests).
+- Probe `tests/_stoff_ruecklesen.gd` (alle 17 Modelle mit Stoff, Vulkan im Container): ohne Stoffdaten 35
+  Rücklesungen, mit Stoffdaten keine. Alle 12 geprüften Anordnungen sind genau gleich mit Godots Puffer, alle
+  25 Stoffe laden schnell hoch. Bild vorher/nachher: höchstens 2 von 255 Unterschied je Bildpunkt.

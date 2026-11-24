@@ -594,6 +594,7 @@ func _baue_mensch(w: bool) -> bool:
 	# Zwischenspeicher des Moduls, und spätere Figuren brauchen unter 1 ms statt 6 bis 14 ms.
 	if _stoff_skelett != null and not _stoff_gewaermt.has(pfad):
 		_stoff_gewaermt[pfad] = true
+		stoff_daten_vorgeben(pfad, skelett)
 		_stoff_echt = stoff_echt_einrichten(skelett)
 		if _stoff_echt.is_empty():
 			_stoff_skelett = null
@@ -857,6 +858,33 @@ static func _menschen_vorladen() -> void:
 		var pfad := MENSCHEN + n + "/" + n + ".gltf"
 		if ResourceLoader.exists(pfad) and not _szenen.has(pfad):
 			ResourceLoader.load_threaded_request(pfad)
+			if ResourceLoader.exists(_stoff_daten_pfad(pfad)):
+				ResourceLoader.load_threaded_request(_stoff_daten_pfad(pfad))
+
+
+static func _stoff_daten_pfad(modell: String) -> String:
+	return modell.get_base_dir() + "/stoff_daten.res"
+
+
+## Daten der Stoffquellen aus der Datei dem Modul vorgeben (werkzeuge/stoff_daten.gd). Sonst liest der Stoff sie beim
+## ersten Mal von der Grafikkarte zurück und wartet dafür eine ganze Bildzeit der Grafikkarte (Messung 24.11.2026).
+## Passt eine Angabe nicht zum Modell, nimmt das Modul sie nicht an und liest wie früher zurück.
+static func stoff_daten_vorgeben(modell: String, skelett: Skeleton3D) -> void:
+	var pfad := _stoff_daten_pfad(modell)
+	var daten: Resource
+	if ResourceLoader.load_threaded_get_status(pfad) != ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+		daten = ResourceLoader.load_threaded_get(pfad)
+	elif ResourceLoader.exists(pfad):
+		daten = load(pfad)
+	if daten == null or not daten.has_meta("teile"):
+		return
+	var teile: Dictionary = daten.get_meta("teile")
+	var stoff: Object = ClassDB.instantiate("Stoff")
+	for teil: String in teile:
+		var m := skelett.get_node_or_null(teil) as MeshInstance3D
+		if m != null and m.mesh != null:
+			stoff.call("quelle_vorgeben", m.mesh, teile[teil])
+	stoff.free()
 
 
 ## Die Animationen für die MakeHuman-Körper: ohne Positionsspuren außer Wurzel und Becken, sonst zögen sie die

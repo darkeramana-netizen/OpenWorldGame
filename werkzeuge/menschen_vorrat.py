@@ -41,3 +41,13 @@ if __name__ == "__main__":
     # Texturen komprimiert mit Mipmaps importieren (werkzeuge/textur_import.py)
     subprocess.run([sys.executable, str(Path(__file__).with_name("textur_import.py")),
                     str(Path(__file__).resolve().parent.parent / "modelle" / "figuren" / "menschen")])
+    # Daten der Stoffquellen für das Modul (werkzeuge/stoff_daten.gd): erst importieren, dann auslesen. Godot aus der
+    # Umgebungsvariable GODOT, sonst nur ein Hinweis.
+    import os
+    godot = os.environ.get("GODOT")
+    projekt = str(Path(__file__).resolve().parent.parent)
+    if godot:
+        subprocess.run([godot, "--headless", "--path", projekt, "--import"], capture_output=True)
+        subprocess.run([godot, "--headless", "--path", projekt, "--script", "res://werkzeuge/stoff_daten.gd"])
+    else:
+        print("Danach: godot --headless --path . --import && godot --headless --path . --script res://werkzeuge/stoff_daten.gd")
