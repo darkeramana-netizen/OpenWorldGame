@@ -296,3 +296,26 @@ Anordnung des Eckpuffers einmal zurück, und jedes solche Bild wartet auf die Gr
 - Probe `tests/_stoff_ruecklesen.gd` (alle 17 Modelle mit Stoff, Vulkan im Container): ohne Stoffdaten 35
   Rücklesungen, mit Stoffdaten keine. Alle 12 geprüften Anordnungen sind genau gleich mit Godots Puffer, alle
   25 Stoffe laden schnell hoch. Bild vorher/nachher: höchstens 2 von 255 Unterschied je Bildpunkt.
+
+## Gelände als Verdecker (24.11.2026)
+
+`gelaende.gd` baut aus den Höhen ein grobes Gitter (20 m, `VERDECKER_SCHRITT`). Jeder Gitterpunkt liegt auf der
+tiefsten Höhe der angrenzenden Zellen, 0,3 m darunter. So bleibt jedes Dreieck überall unter der Geländefläche und
+verdeckt nie mehr als das Gelände selbst. Zellen mit Loch (Tunnel) bleiben frei, je Kachel gibt es einen
+Verdecker. `GELAENDE_VERDECKER_AUS=1` schaltet ihn zum Vergleich ab.
+
+Probe `tests/_verdeckung_probe.gd` (Container, 10 Punkte der Strecke stadt_palas und 4 Blicke von außen):
+
+| | Objekte | Draw Calls | Dreiecke |
+|---|---|---|---|
+| Summe ohne → mit | 47 122 → 44 973 (−5 %) | 35 512 → 33 357 (−6 %) | 112,2 → 108,3 Mio. (−3 %) |
+| bester Punkt (Strecke 35, Zwinger) | 2797 → 2389 | 2033 → 1625 (−20 %) | 5,68 → 4,83 Mio. |
+| Nordhang | 4917 → 4545 | 3961 → 3589 (−9 %) | 10,44 → 9,56 Mio. |
+| Feld Ost | 4881 → 4517 | 3997 → 3633 (−9 %) | 10,95 → 10,66 Mio. |
+
+- Bilder: Es fehlt nichts. Ein scheinbar fehlender Fels bei Strecke 56 kam von einer noch laufenden Überblendung
+  (nur 8 Bilder Wartezeit). Mit 60 Bildern sind beide Bilder gleich.
+- Bauzeit: 80 bis 115 ms im Container (140 Verdecker, 8000 Zellen), einmal beim Laden der Region. Kandidat fürs
+  Modul, falls es auf Windows spürbar ist.
+- Der Gewinn ist kleiner als bei Mauern und Häusern: Drachenstein liegt meist offen am Hang, und das grobe Gitter
+  liegt in Senken deutlich unter der Fläche.
