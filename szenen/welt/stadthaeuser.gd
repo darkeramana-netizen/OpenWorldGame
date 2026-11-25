@@ -54,7 +54,7 @@ const SOCKEL_TIEFE := 7.0  # Mauern reichen so weit hinunter (Hanglage)
 const WAND := 0.3          # Mauerstärke begehbarer Häuser
 const TREPPE_B := 1.0      # Breite der Treppen
 ## Kachelgröße der MultiMeshes in m (0: eins je Form über die ganze Stadt)
-const KACHEL := 64.0
+const KACHEL := 128.0
 
 ## Formen: [Breite, Tiefe, Obergeschosse, Stil, Giebel zur Straße, Putzfarbe, Dach]
 ## Stil 0 Fachwerk über Stein, 1 Fachwerk über Putz, 2 ganz Stein, 3 verputzt mit Fensterläden

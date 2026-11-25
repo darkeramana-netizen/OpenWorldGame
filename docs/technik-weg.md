@@ -345,3 +345,27 @@ Probe wie oben, 20 Bilder je Punkt (deshalb andere Ausgangswerte als im Abschnit
 - Folgerung für die Reihenfolge: Mehr Verdecker an Bauten bringen kaum noch etwas. Der nächste Hebel liegt bei dem,
   was hinter den Verdeckern trotzdem gezählt wird. Pflanzen im MultiMesh werden nur als ganzer Block verworfen, also
   kommt als Nächstes die Blockgröße der Vegetation.
+
+## Stadthäuser, Felsen und Ersatzbäume in Kacheln (25.11.2026)
+
+Ein MultiMesh hat **einen** Begrenzungsquader über alle Exemplare. Ein Häuser-MultiMesh über die ganze Stadt
+(oder Felsen über die ganze Region) ist deshalb fast immer irgendwo im Bild und wird nie weggeschnitten –
+weder vom Sichtkegel noch von den Verdeckern. Jetzt:
+
+- `stadthaeuser.gd`: Häuser je Form, Variante **und Kachel** (`KACHEL` = 128 m) in einem MultiMesh.
+- `bewuchs.gd` (`_zeige`): Felsen und die Ersatz-Bäume/Büsche je `BAUM_KACHEL` (128 m), unter einem Gruppenknoten.
+
+Probe Drachenstein, 14 Blickpunkte (Objekte | Draw Calls | Mio. Dreiecke | Schatten-Draw-Calls | Mio. Schattendreiecke):
+
+| Stand | Draw Calls | Dreiecke | Schatten-DC | Schattendreiecke |
+|---|---|---|---|---|
+| vorher (ein MultiMesh je Form) | 31 454 | 105,9 | 10 123 | 59,2 |
+| Kacheln, Häuser 64 m | 34 810 | 86,5 | 10 701 | 47,2 |
+| Kacheln, Häuser 128 m (genommen) | ≈ 33 700 | ≈ 88 | – | ≈ 48 |
+
+Auf der Strecke durch die Stadt (Strecke 0–42) fallen die Dreiecke um rund 30 %. An den Feldpunkten mit Blick
+auf die Stadt bleiben die Dreiecke gleich, die Draw Calls steigen (128-m-Häuser: +1000 statt +1400 je Punkt).
+Weil auf dem Messrechner die GPU der Engpass ist (Hoch: GPU p50 7,8 ms, Render-CPU 2,5–3,5 ms), ist weniger
+Dreiecke den kleinen Draw-Call-Aufschlag wert. Bilder alt/neu sind gleich (Unterschiede nur in Einblendtexten).
+
+Damit ist die Optimierungsrunde abgeschlossen; weiter geht es mit dem Ausbau des Spiels.
