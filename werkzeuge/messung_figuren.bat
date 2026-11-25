@@ -21,6 +21,8 @@ echo === Neuesten Stand holen
 git checkout main && git pull
 echo === Geaenderte Dateien importieren (z. B. Texturen nach neuen Importeinstellungen)
 "%GODOT%" --headless --path . --import
+echo === Baucache fuellen (nach Codeaenderungen sonst Neubau in der ersten Messung)
+"%GODOT%" --headless --path . --script res://werkzeuge/baucache_fuellen.gd
 
 echo === Messung Hoch, alte Figuren
 set FIGUREN_REALISTISCH=
