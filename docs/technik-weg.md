@@ -319,3 +319,29 @@ Probe `tests/_verdeckung_probe.gd` (Container, 10 Punkte der Strecke stadt_palas
   Modul, falls es auf Windows spürbar ist.
 - Der Gewinn ist kleiner als bei Mauern und Häusern: Drachenstein liegt meist offen am Hang, und das grobe Gitter
   liegt in Senken deutlich unter der Fläche.
+
+## Verdecker für massive Türme und Gebäude (25.11.2026)
+
+Neu sind Quader nur dort, wo man sicher nicht hineinsieht:
+- **Volle Rundtürme** (`burgbau.gd`, Typ ≠ 2 und ohne Zugang): Quader mit halber Kante r·0,7 − 0,15 bis unter das Gesims.
+- **Nicht begehbare Gebäude**: der Mauerkörper bis unter die Traufe, je Seite 0,15 m nach innen.
+- **Wandseiten eigenständiger Türme** (`turm.gd`): je Ebene, nur Seiten ohne Tür.
+
+Hohle Türme, begehbare Gebäude und Tortürme bleiben frei. `MASSIV_VERDECKER_AUS=1` schaltet die neuen Verdecker
+zum Vergleich ab.
+
+Probe wie oben, 20 Bilder je Punkt (deshalb andere Ausgangswerte als im Abschnitt davor):
+
+| | Objekte | Draw Calls | Dreiecke |
+|---|---|---|---|
+| Summe ohne → mit | 42 568 → 42 551 | 31 496 → 31 458 (−0,1 %) | 105,96 → 105,89 Mio. |
+| Strecke 0 | 2303 → 2291 | 1429 → 1407 (−1,5 %) | 7,45 → 7,40 Mio. |
+| Feld Ost | 4517 → 4506 | 3633 → 3622 | 10,66 → 10,64 Mio. |
+
+- Bilder: Es fehlt nichts. Die Unterschiede kommen nur von der Spielerfigur (Bewegung) und dem eingeblendeten Ortsnamen.
+- Gewinn: fast keiner. Die Blickpunkte liegen in der Stadt und auf offenem Feld. Dort verdecken Mauern, Häuser und
+  Gelände schon, was die massiven Teile verdecken würden. Die Verdecker bleiben trotzdem drin, weil sie wenig kosten:
+  wenige Quader, einmal beim Laden gebaut. Bei Blicken über eine Burg hinweg (Türme vor Stadtteilen) können sie helfen.
+- Folgerung für die Reihenfolge: Mehr Verdecker an Bauten bringen kaum noch etwas. Der nächste Hebel liegt bei dem,
+  was hinter den Verdeckern trotzdem gezählt wird. Pflanzen im MultiMesh werden nur als ganzer Block verworfen, also
+  kommt als Nächstes die Blockgröße der Vegetation.
