@@ -190,10 +190,11 @@ func _baue() -> void:
 ## unter den Wehrgang, frei an Toren, Tortürmen und Türmen (dort kann man hindurch oder hinein). Türme und Gebäude
 ## bekommen keine (sie sind hohl und begehbar).
 func _verdecker() -> void:
-	if Engine.is_editor_hint() or mauern.is_empty():
+	if Engine.is_editor_hint():
 		return
 	var ecken := PackedVector3Array()
 	var dreiecke := PackedInt32Array()
+	_verdecker_massiv(ecken, dreiecke)
 	var i := 0
 	while i + 9 < mauern.size():
 		var a := Vector2(mauern[i], mauern[i + 1])
@@ -226,6 +227,39 @@ func _verdecker() -> void:
 	var k := Verdecker.knoten(ecken, dreiecke)
 	if k != null:
 		add_child(k)
+
+
+## Massive Teile (Verdeckungsprüfung, 25.11.2026): volle Rundtürme (ohne Zugang) als Quader innerhalb des runden
+## Mantels bis unter das Gesims, nicht begehbare Gebäude als Mauerkörper bis unter die Traufe (Fenster sind dort nur
+## aufgesetzt). Hohle Türme, Schalentürme, Tortürme und begehbare Gebäude bleiben frei (man sieht hinein).
+func _verdecker_massiv(ecken: PackedVector3Array, dreiecke: PackedInt32Array) -> void:
+	if OS.get_environment("MASSIV_VERDECKER_AUS") != "":   # zum Vergleich
+		return
+	var i := 0
+	while i + 6 < tuerme.size():
+		var c := Vector2(tuerme[i], tuerme[i + 1])
+		var unten := tuerme[i + 2]
+		var oben := tuerme[i + 3]
+		var r := tuerme[i + 4]
+		if int(tuerme[i + 5]) != 2 and _turm_zugang(c, r, oben).is_empty():
+			var halb := r * 0.7 - 0.15      # Quader im Kreis (r/√2) mit Rand
+			var y1 := oben - 0.7            # unter dem Gesims
+			Verdecker.quader(ecken, dreiecke, Transform3D(Basis(), Vector3(c.x, (unten + y1) * 0.5, c.y)),
+					Vector3(halb, (y1 - unten) * 0.5, halb))
+		i += 7
+	i = 0
+	while i + 11 < gebaeude.size():
+		var roh := int(gebaeude[i + 11])
+		if (roh / 10) % 10 == 0:          # nicht begehbar: ein massiver Klotz
+			var g := deg_to_rad(gebaeude[i + 2])
+			var nx := Vector3(cos(g), 0, -sin(g))
+			var uz := Vector3(sin(g), 0, cos(g))
+			var unten := gebaeude[i + 6]
+			var traufe := gebaeude[i + 5] + gebaeude[i + 7] - 0.45   # unter dem Traufgesims
+			var t := Transform3D(Basis(nx, Vector3.UP, uz), Vector3(gebaeude[i], (unten + traufe) * 0.5, gebaeude[i + 1]))
+			Verdecker.quader(ecken, dreiecke, t, Vector3(gebaeude[i + 3] * 0.5 - 0.15, (traufe - unten) * 0.5,
+					gebaeude[i + 4] * 0.5 - 0.15))
+		i += 12
 
 
 func _baue_neu() -> void:

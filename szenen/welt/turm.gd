@@ -53,6 +53,7 @@ extends Node3D
 	set(_wert):
 		_baue()
 
+const Verdecker := preload("res://szenen/welt/verdecker.gd")
 const TREPPENHAUS_WAND := 0.4
 const TUER_TREPPE_BREITE := 1.9
 const TUER_TREPPE_HOEHE := 2.8
@@ -130,6 +131,8 @@ func _baue() -> void:
 	if mit_licht or mit_schildern:
 		for i in n:
 			_baue_licht_und_schild(i)
+	if not Engine.is_editor_hint():
+		_baue_verdecker()
 
 
 func _beginne_mesh() -> void:
@@ -158,6 +161,39 @@ func _beende_mesh(name: String) -> PackedVector3Array:
 func _neu(knoten: Node) -> void:
 	knoten.set_meta("turm_gebaut", true)
 	add_child(knoten)
+
+
+## Verdecker (szenen/welt/verdecker.gd): je Ebene die Wandseiten ohne Tür als Quader innerhalb der Mauer (kürzer und
+## dünner als die Wand, die Ecken bleiben frei). Seiten mit Tür bekommen keinen, Böden auch nicht.
+func _baue_verdecker() -> void:
+	if OS.get_environment("MASSIV_VERDECKER_AUS") != "":   # zum Vergleich
+		return
+	if ohne_mauer:
+		return
+	var ecken_ := PackedVector3Array()
+	var dreiecke := PackedInt32Array()
+	for i in ebenen_anzahl():
+		var unten := boden_hoehen[i] + 0.05
+		var oben := boden_hoehen[i + 1] - 0.05
+		var staerke := wandstaerken[i]
+		var apothem := aussen_radien[i] * cos(deg_to_rad(_halb()))
+		var laenge := 2.0 * (apothem - staerke) * tan(deg_to_rad(_halb())) - 0.2
+		for k in ecken:
+			var winkel := achteck_winkel + k * 360.0 / ecken
+			var tuer := false
+			for e in eingaenge:
+				if int(e.x) == ebenen_nummern[i] and absf(angle_difference(deg_to_rad(e.y), deg_to_rad(winkel))) < deg_to_rad(_halb()):
+					tuer = true
+			if tuer:
+				continue
+			var w := deg_to_rad(winkel)
+			var radial := Vector3(cos(w), 0.0, sin(w))
+			var tangente := Vector3(-sin(w), 0.0, cos(w))
+			var t := Transform3D(Basis(tangente, Vector3.UP, radial), radial * (apothem - staerke / 2.0) + Vector3.UP * (unten + oben) / 2.0)
+			Verdecker.quader(ecken_, dreiecke, t, Vector3(laenge / 2.0, (oben - unten) / 2.0, staerke / 2.0 - 0.1))
+	var k_ := Verdecker.knoten(ecken_, dreiecke)
+	if k_ != null:
+		_neu(k_)
 
 
 # ---------- Bauteile ----------
