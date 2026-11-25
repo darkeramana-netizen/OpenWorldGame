@@ -318,23 +318,34 @@ func _exemplar(zufall: RandomNumberGenerator, x: float, h: float, z: float, s_mi
 	return [Transform3D(basis, Vector3(x, h, z)), farbe]
 
 
+## Je Kachel (BAUM_KACHEL) ein MultiMesh: eins über die ganze Region wäre fast immer irgendwo sichtbar und würde nie
+## verdeckt. Die Exemplare behalten ihre Weltlage, die Grenzen jedes MultiMeshes ergeben sich daraus.
 func _zeige(name_: String, mesh: Mesh, exemplare: Array, material: Material, schatten: bool) -> void:
 	if exemplare.is_empty():
 		return
-	var mm := MultiMesh.new()
-	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.use_custom_data = true
-	mm.mesh = mesh
-	mm.instance_count = exemplare.size()
-	for i in exemplare.size():
-		mm.set_instance_transform(i, exemplare[i][0])
-		mm.set_instance_custom_data(i, exemplare[i][1])
-	var mmi := MultiMeshInstance3D.new()
-	mmi.name = name_
-	mmi.multimesh = mm
-	mmi.material_override = material
-	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if schatten else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(mmi)
+	var gruppen := {}
+	for ex: Array in exemplare:
+		var o: Vector3 = (ex[0] as Transform3D).origin
+		(gruppen.get_or_add(Vector2i(floori(o.x / BAUM_KACHEL), floori(o.z / BAUM_KACHEL)), []) as Array).append(ex)
+	var knoten := Node3D.new()
+	knoten.name = name_
+	add_child(knoten)
+	for k: Vector2i in gruppen:
+		var liste: Array = gruppen[k]
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.use_custom_data = true
+		mm.mesh = mesh
+		mm.instance_count = liste.size()
+		for i in liste.size():
+			mm.set_instance_transform(i, liste[i][0])
+			mm.set_instance_custom_data(i, liste[i][1])
+		var mmi := MultiMeshInstance3D.new()
+		mmi.name = "%s_%d_%d" % [name_, k.x, k.y]
+		mmi.multimesh = mm
+		mmi.material_override = material
+		mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if schatten else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		knoten.add_child(mmi)
 
 
 const BAUM_KACHEL := 128.0

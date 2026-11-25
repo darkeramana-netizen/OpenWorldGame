@@ -148,8 +148,8 @@ func _initialize() -> void:
 	Z.pruefe_sofort()
 	await _warte(func() -> bool: return Z.wartend() == 0)
 	var staemme_nah := bw.find_children("*", "CollisionShape3D", true, false).size()
-	# Arten: einfache Formen als MultiMesh direkt am Bewuchs, Modellbäume in Gruppen je Art (Kacheln darunter)
-	var arten := func(k: Node) -> bool: return k is MultiMeshInstance3D or (k.name in ["Nadelbaeume", "Laubbaeume", "Buesche"] and k.get_child_count() > 0)
+	# Arten: je Art eine Gruppe mit Kacheln darunter
+	var arten := func(k: Node) -> bool: return k is MultiMeshInstance3D or (k.name in ["Nadelbaeume", "Laubbaeume", "Buesche", "Felsen"] and k.get_child_count() > 0)
 	var sichtbar := bw.get_children().filter(arten).size()
 	pruefe(staemme_nah < staemme_alle and sichtbar >= 2, "Am Ursprung nur nahe Stämme mit Kollision (%d von %d), Bäume sichtbar (%d Arten)" % [staemme_nah, staemme_alle, sichtbar])
 	r.free()

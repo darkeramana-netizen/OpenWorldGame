@@ -53,6 +53,8 @@ const VARIANTEN := 3       # Ausstattungen je Hausform
 const SOCKEL_TIEFE := 7.0  # Mauern reichen so weit hinunter (Hanglage)
 const WAND := 0.3          # Mauerstärke begehbarer Häuser
 const TREPPE_B := 1.0      # Breite der Treppen
+## Kachelgröße der MultiMeshes in m (0: eins je Form über die ganze Stadt)
+const KACHEL := 64.0
 
 ## Formen: [Breite, Tiefe, Obergeschosse, Stil, Giebel zur Straße, Putzfarbe, Dach]
 ## Stil 0 Fachwerk über Stein, 1 Fachwerk über Putz, 2 ganz Stein, 3 verputzt mit Fensterläden
@@ -119,26 +121,31 @@ func _verdecker() -> void:
 
 func _baue_neu() -> void:
 	# je Hausform drei Ausstattungen (Balkon, Schild, Laterne, Gaube, Schornstein gewürfelt), je Haus eine davon
+	# und je Kachel (KACHEL): ein MultiMesh über die ganze Stadt wäre fast immer irgendwo sichtbar und würde nie verdeckt
 	var je_form := {}
 	for i in haeuser.size():
 		var f := formen[i] if i < formen.size() else i % FORMEN.size()
-		je_form.get_or_add(f * VARIANTEN + (i * 7 + 3) % VARIANTEN, []).append(i)
+		var h: Vector4 = haeuser[i]
+		var kx := floori(h.x / KACHEL) if KACHEL > 0.0 else 0
+		var kz := floori(h.z / KACHEL) if KACHEL > 0.0 else 0
+		je_form.get_or_add(Vector3i(f * VARIANTEN + (i * 7 + 3) % VARIANTEN, kx, kz), []).append(i)
 	var koerper := StaticBody3D.new()
 	koerper.name = "Kollision"
 	add_child(koerper)
-	for fv: int in je_form:
+	for gruppe: Vector3i in je_form:
+		var fv := gruppe.x
 		var f := fv / VARIANTEN
 		var mesh := _form_mesh(f, fv % VARIANTEN)
 		var mm := MultiMesh.new()
 		mm.transform_format = MultiMesh.TRANSFORM_3D
 		mm.mesh = mesh
-		mm.instance_count = je_form[fv].size()
+		mm.instance_count = je_form[gruppe].size()
 		var form: Array = FORMEN[f]
 		var kiste := BoxShape3D.new()
 		kiste.size = Vector3(form[0] + 2 * VORKRAGUNG, EG + OG * form[2], form[1] + 2 * VORKRAGUNG)
 		var lagen: Array[Transform3D] = []
-		for k in je_form[fv].size():
-			var h: Vector4 = haeuser[je_form[fv][k]]
+		for k in je_form[gruppe].size():
+			var h: Vector4 = haeuser[je_form[gruppe][k]]
 			var t := Transform3D(Basis(Vector3.UP, deg_to_rad(h.w)), Vector3(h.x, h.y, h.z))
 			mm.set_instance_transform(k, t)
 			lagen.append(t)
@@ -162,7 +169,7 @@ func _baue_neu() -> void:
 				form_k.transform = t * Transform3D(Basis(), Vector3(0, kiste.size.y / 2.0, 0))
 			koerper.add_child(form_k)
 		var mmi := MultiMeshInstance3D.new()
-		mmi.name = "Form%d_%d" % [f, fv % VARIANTEN]
+		mmi.name = "Form%d_%d_%d_%d" % [f, fv % VARIANTEN, gruppe.y, gruppe.z]
 		mmi.multimesh = mm
 		mmi.set_meta(Baucache.LAGEN, lagen)    # die Lagen gehören in die Daten (siehe baucache.gd)
 		add_child(mmi)
@@ -170,10 +177,10 @@ func _baue_neu() -> void:
 		if huelle != null:
 			add_child(Schattenhuelle.zwilling(mmi, huelle))
 		# Rauch aus etwa jedem dritten Schornstein (dort brennt ein Herdfeuer)
-		for k in je_form[fv].size():
-			if je_form[fv][k] % 3 != 1:
+		for k in je_form[gruppe].size():
+			if je_form[gruppe][k] % 3 != 1:
 				continue
-			var h: Vector4 = haeuser[je_form[fv][k]]
+			var h: Vector4 = haeuser[je_form[gruppe][k]]
 			var t := Transform3D(Basis(Vector3.UP, deg_to_rad(h.w)), Vector3(h.x, h.y, h.z))
 			add_child(Rauch.erzeuge(t * (_schornsteine[_schluessel(f, fv % VARIANTEN)] as Vector3)))
 
