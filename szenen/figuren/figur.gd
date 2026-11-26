@@ -99,8 +99,8 @@ const MENSCHEN_MAENNER := ["mann_1", "mann_2", "mann_3", "mann_4", "mann_5", "ma
 const MENSCHEN_FRAUEN := ["frau_1", "frau_2", "frau_3", "frau_4", "frau_5"]
 ## Körper mit Berufskleidung aus Stoff (Schürze, Lederschürze, Wappenrock mit Kettenhemd, Kutte): Beruf → [Männer, Frauen]
 const MENSCHEN_BERUF := {"schmied": [["schmied"], []], "zeugwart": [["schmied"], []],
-	"magd": [[], ["magd"]], "koch": [["koch"], ["magd"]], "wache": [["wache_1", "wache_2"], []],
-	"ritter": [["wache_1", "wache_2"], []], "geistlich": [["moench"], []]}
+	"magd": [[], ["magd"]], "koch": [["koch"], ["magd"]], "wache": [["wache_1", "wache_2"], ["wache_frau"]],
+	"ritter": [["wache_1", "wache_2"], ["wache_frau"]], "geistlich": [["moench"], []]}
 var _stoff_ueber := false
 var _wartet_auf_koerper := false   # realistischer Körper lädt noch im Hintergrund     # die Berufskleidung ist schon im Körper (Stoff), keine starren Platten anhängen
 static var _modell_mats := {}
@@ -275,14 +275,24 @@ func _baue_einfach() -> void:
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint() or (_teile.is_empty() and _anim == null):
 		return
-	# Eigene Geschwindigkeit über dem Boden messen
+	# Eigene Geschwindigkeit über dem Boden messen: nur wenn sich die Lage geändert hat, über die Zeit seit der letzten
+	# Änderung. Wer im Physiktakt bewegt wird (die Spielfigur, 60 je Sekunde), steht bei mehr Bildern je Sekunde in
+	# manchen Bildern still; sonst sprang das Tempo zwischen 0 und dem Doppelten, die Animation wechselte an der Grenze
+	# zum Sprint ständig und die Figur glitt (Rückmeldung 26.11.2026).
 	var p := global_position
-	var tempo := 0.0
-	if _letzte != Vector3.INF and delta > 0.0:
-		tempo = Vector2(p.x - _letzte.x, p.z - _letzte.z).length() / delta
-	_letzte = p
-	if tempo > 12.0:
-		tempo = 0.0   # gesprungen (Laden, Reise): nicht gehen
+	_mess_zeit += delta
+	if _letzte == Vector3.INF:
+		_letzte = p
+		_mess_zeit = 0.0
+	elif p != _letzte:
+		_tempo = Vector2(p.x - _letzte.x, p.z - _letzte.z).length() / maxf(_mess_zeit, 0.001)
+		_letzte = p
+		_mess_zeit = 0.0
+		if _tempo > 12.0:
+			_tempo = 0.0   # gesprungen (Laden, Reise): nicht gehen
+	elif _mess_zeit > 0.12:
+		_tempo = 0.0
+	var tempo := _tempo
 	if _anim != null:
 		_bewege_modell(delta, tempo)
 		_spiele_animation(delta)
@@ -600,6 +610,12 @@ func _baue_mensch(w: bool) -> bool:
 	_modell.rotation.y = PI
 	add_child(_modell)
 	var skelett: Skeleton3D = _modell.get_node("Armature/Skeleton3D")
+	# Natürliche Größe: Die Körper sind so skaliert, dass das Becken so hoch sitzt wie beim Skelett der Animationen;
+	# Frauen (tieferes Becken) wurden dadurch 1,86 m groß, größer als die Männer (1,79 m). Das ganze Modell samt
+	# Animation wird auf etwa 1,62 m (Frauen) bzw. 1,74 m (Männer) gebracht, die Streuung kommt von groesse.
+	var oben := _kopf_oben(skelett)
+	if oben > 1.0:
+		_modell.scale = Vector3.ONE * ((1.62 if w else 1.74) / oben)
 	for k in skelett.get_children():
 		if String(k.name).ends_with("_voll"):   # nur Quelle des echten Stoffs (stoff_echt_einrichten)
 			k.visible = false
@@ -1100,7 +1116,12 @@ func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
 		var b := BoxMesh.new()
 		b.size = groesse_
 		return b
-	match "" if _stoff_ueber else beruf:
+	# Realistische Menschen tragen Berufskleidung aus Stoff (Körper aus MENSCHEN_BERUF); wo es keinen gibt, bleibt es
+	# beim Kittel: keine starren Platten als Schürze, Wappenrock oder Talar (sahen aus wie aufgeklebt)
+	var platten := beruf
+	if _stoff_ueber or (realistisch and beruf != "kind" and beruf != "haendler"):
+		platten = ""
+	match platten:
 		"schmied", "zeugwart":
 			_anhaengen(skelett, "spine_02", kasten.call(Vector3(0.4, 0.95, 0.02)), "leder", Vector3(0, brust.y - 0.42, 0.16))
 			_anhaengen(skelett, "spine_03", kasten.call(Vector3(0.36, 0.02, 0.02)), "leder", Vector3(0, brust.y + 0.05, 0.15))
@@ -1123,7 +1144,7 @@ func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
 	# Gürteltasche bei manchen anderen auch
 	if beruf in ["", "knecht", "fischer"] and h % 3 == 0:
 		_anhaengen(skelett, "pelvis", kasten.call(Vector3(0.12, 0.14, 0.06)), "leder", Vector3(-0.2, becken.y - 0.05, 0.05))
-	var oben := kopf.y + 0.12
+	var oben := _kopf_oben(skelett)
 	match _kopfbedeckung(w):
 		"kopftuch":
 			var tuch := SphereMesh.new()
@@ -1139,7 +1160,7 @@ func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
 			_anhaengen(skelett, "Head", m, "leinen", Vector3(0, oben + 0.04, -0.01))
 		"eisenhut":
 			# etwas länger als breit (wie ein Kopf) und nach hinten gesetzt, sonst sticht der Hinterkopf durch
-			_anhaengen(skelett, "Head", _eisenhut(), "eisen", Vector3(0, oben - 0.035, -0.028),
+			_anhaengen(skelett, "Head", _eisenhut(), "eisen", Vector3(0, oben - 0.072, -0.028),
 				Basis().scaled(Vector3(1.04, 1.0, 1.1)))
 			# Polsterhaube aus Leinen darunter: bedeckt Scheitel, Hinterkopf und Ohren, das Gesicht bleibt frei
 			var haube := SphereMesh.new()
@@ -1148,7 +1169,7 @@ func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
 			haube.is_hemisphere = true
 			haube.radial_segments = 24
 			haube.rings = 8
-			_anhaengen(skelett, "Head", haube, "leinen", Vector3(0, oben - 0.075, -0.025),
+			_anhaengen(skelett, "Head", haube, "leinen", Vector3(0, oben - 0.112, -0.025),
 				Basis(Vector3.RIGHT, deg_to_rad(-38)).scaled(Vector3(0.95, 1.25, 1.12)))
 		"strohhut":
 			var krempe2 := CylinderMesh.new()
@@ -1166,6 +1187,15 @@ func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
 			haube.radius = 0.13
 			haube.height = 0.19
 			_anhaengen(skelett, "Head", haube, "leinen", Vector3(0, oben - 0.01, -0.02))
+
+
+## Oberkante des Kopfes im Raum des Skeletts: bei realistischen Menschen der Scheitel des Körpers (ohne Haare), sonst
+## wie bisher 12 cm über dem Kopfknochen (Quaternius)
+func _kopf_oben(skelett: Skeleton3D) -> float:
+	var koerper := skelett.get_node_or_null("Koerper") as MeshInstance3D
+	if koerper != null and koerper.mesh != null:
+		return koerper.mesh.get_aabb().end.y
+	return _knochen_ort(skelett, "Head").y + 0.12
 
 
 ## Eisenhut (Kesselhut, 13.–15. Jh.): gewölbte Glocke mit leichtem Grat, Verstärkungsband mit Nieten, abfallende
@@ -1385,22 +1415,55 @@ func aktion(name_: String) -> void:
 	_anim.play(name_, 0.15)
 
 
-## Schritte der Leute nahe der Kamera (autoload/klang.gd), leiser als die eigenen; Untergrund nach der Geländemaske
-var _schrittweg := 0.0
-func _schritte(delta: float, tempo: float) -> void:
-	if tempo < 0.4:
-		_schrittweg = 0.0
+## Schritte (autoload/klang.gd) genau dann, wenn ein Fuß aufsetzt: Die Höhe der Fußknochen kommt aus der Animation;
+## sinkt ein Fuß und steht dann (tiefster Punkt nahe seiner Ruhehöhe), ist das ein Schritt. Für Leute nur nahe der
+## Kamera; die Spielfigur stellt Lautstärke und Untergrund selbst ein (schritt_laut, schritt_untergrund).
+var _tempo := 0.0
+var _mess_zeit := 0.0
+var schritt_laut := -6.0
+var schritt_untergrund := Callable()
+var _fuss_y := [INF, INF]
+var _fuss_sinkt := [false, false]
+var _fuss_knochen := [-1, -1]
+var _fuss_ruhe := [0.0, 0.0]
+var _fuss_skelett: Skeleton3D = null
+func _schritte(_delta: float, tempo: float) -> void:
+	if tempo < 0.4 or _modell == null:
+		_fuss_y = [INF, INF]
 		return
-	var kamera := get_viewport().get_camera_3d()
-	if kamera == null or kamera.global_position.distance_squared_to(global_position) > 144.0:
-		return
-	_schrittweg += tempo * delta
-	if _schrittweg < (0.7 if tempo < 2.3 else 1.05):
-		return
-	_schrittweg = 0.0
+	if schritt_untergrund.is_null():
+		var kamera := get_viewport().get_camera_3d()
+		if kamera == null or kamera.global_position.distance_squared_to(global_position) > 196.0:
+			return
+	if _fuss_skelett == null or not is_instance_valid(_fuss_skelett):
+		_fuss_skelett = _modell.find_child("Skeleton3D", true, false) as Skeleton3D
+		if _fuss_skelett == null:
+			return
+		for i in 2:
+			_fuss_knochen[i] = _fuss_skelett.find_bone(["foot_l", "foot_r"][i])
+			if _fuss_knochen[i] >= 0:
+				_fuss_ruhe[i] = _fuss_skelett.get_bone_global_rest(_fuss_knochen[i]).origin.y
+	for i in 2:
+		if _fuss_knochen[i] < 0:
+			continue
+		var y := _fuss_skelett.get_bone_global_pose(_fuss_knochen[i]).origin.y
+		if _fuss_y[i] != INF:
+			var dy: float = y - _fuss_y[i]
+			if _fuss_sinkt[i] and dy >= -0.0005 and y < _fuss_ruhe[i] + 0.06:
+				_schritt_hoeren(i)
+			_fuss_sinkt[i] = dy < -0.002
+		_fuss_y[i] = y
+
+
+func _schritt_hoeren(fuss: int) -> void:
 	var klang := get_node_or_null("/root/Klang")
-	if klang != null:
-		klang.schritt(global_position, klang.untergrund_gelaende(global_position), -13.0)
+	if klang == null:
+		return
+	var ort := global_position
+	if _fuss_skelett != null:
+		ort = _fuss_skelett.global_transform * _fuss_skelett.get_bone_global_pose(_fuss_knochen[fuss]).origin
+	var untergrund: String = schritt_untergrund.call() if schritt_untergrund.is_valid() else klang.untergrund_gelaende(ort)
+	klang.schritt(ort, untergrund, schritt_laut)
 
 
 func _bewege_modell(delta: float, tempo: float) -> void:
@@ -1413,10 +1476,12 @@ func _bewege_modell(delta: float, tempo: float) -> void:
 	_gang = lerpf(_gang, tempo, clampf(delta * 6.0, 0.0, 1.0))
 	var ziel := HALTUNGEN.get(haltung, "Idle") as String
 	var tempo_anim := 1.0
-	if _gang > 4.2:
+	# mit Spielraum an den Grenzen (sonst wechselt die Animation hin und her)
+	var jetzt := _anim.current_animation
+	if _gang > (4.0 if jetzt == "Sprint" else 4.5):
 		ziel = "Sprint"
 		tempo_anim = _gang / 6.0
-	elif _gang > 2.3:
+	elif _gang > (2.1 if jetzt in ["Jog_Fwd", "Sprint"] else 2.5):
 		ziel = "Jog_Fwd"
 		tempo_anim = _gang / 3.4
 	elif _gang > 0.25:

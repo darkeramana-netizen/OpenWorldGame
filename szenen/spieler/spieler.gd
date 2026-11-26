@@ -154,36 +154,25 @@ func _physics_process(delta: float) -> void:
 	_aktualisiere_ziel()
 
 
-## Schritte hörbar machen (autoload/klang.gd): je nach Tempo alle 0,75 bis 1,1 m einer, leiser beim Schleichen; der
-## Untergrund kommt von dem Körper, auf dem man steht (Bau, Holz, Gelände nach der Maske). Dazu ein Aufsetzen nach
-## einem Sprung oder Fall.
-var _schrittweg := 0.0
-func _schritte(delta: float, war_am_boden: bool, fallen: float) -> void:
+## Schritte (autoload/klang.gd): Die Figur meldet jeden Fußkontakt aus der Animation (figur.gd, _schritte); hier
+## kommen Lautstärke und Untergrund dazu (der Körper, auf dem man steht: Bau, Holz, Gelände nach der Maske). Dazu ein
+## Aufsetzen nach einem Sprung oder Fall.
+var _unter: Object = null
+func _schritte(_delta: float, war_am_boden: bool, fallen: float) -> void:
 	var klang := get_node_or_null("/root/Klang")
 	if klang == null:
 		return
-	var boden := get_last_slide_collision()
-	var unter: Object = null
 	for i in get_slide_collision_count():
 		var k := get_slide_collision(i)
 		if k.get_normal().y > 0.6:
-			unter = k.get_collider()
+			_unter = k.get_collider()
 			break
+	if _figur != null and _figur.schritt_untergrund.is_null():
+		_figur.schritt_untergrund = func() -> String: return klang.untergrund(_unter if is_instance_valid(_unter) else null, global_position)
+	if _figur != null:
+		_figur.schritt_laut = -10.0 if schleicht else 0.0
 	if is_on_floor() and not war_am_boden and fallen < -4.0:
-		klang.schritt(global_position, klang.untergrund(unter, global_position), -2.0)
-		_schrittweg = 0.0
-		return
-	if not is_on_floor() or boden == null and unter == null:
-		return
-	var v := Vector2(velocity.x, velocity.z).length()
-	if v < 0.5:
-		_schrittweg = 0.0
-		return
-	_schrittweg += v * delta
-	var laenge := 0.75 if v < gehen * 1.1 else 1.1
-	if _schrittweg >= laenge:
-		_schrittweg = 0.0
-		klang.schritt(global_position, klang.untergrund(unter, global_position), -14.0 if schleicht else -6.0)
+		klang.schritt(global_position, klang.untergrund(_unter if is_instance_valid(_unter) else null, global_position), 2.0)
 
 
 func _in_wasserdichtem_bau(p: Vector3) -> bool:

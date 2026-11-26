@@ -18,13 +18,15 @@ func _initialize() -> void:
 		return
 	var noetig := ["wind_sanft", "wind_stark", "feuer", "brandung", "amboss_1", "glocke_gross", "glocke_klein", "schuss",
 		"schritt_stein_1", "schritt_gras_1", "schritt_erde_1", "schritt_holz_1", "tuer_auf_1", "tuer_zu_1", "tor_auf_1",
-		"tor_zu", "riegel", "vogel_amsel_1", "schwung_1", "metall_1", "metall_klingt", "schwert_ziehen_1", "leder"]
+		"tor_zu", "riegel", "vogel_amsel_1", "schwung_1", "metall_1", "metall_klingt", "schwert_ziehen_1", "leder",
+		"huhn_1", "hahn_1", "pferd_wiehern_1", "pferd_schnauben_1", "huf_1", "hund_1", "schwein_1", "kuh_1", "schaf_1",
+		"katze_1", "markt", "ausruf_1"]
 	var fehlen := noetig.filter(func(n: String) -> bool: return klang.stream(n) == null)
 	pruefe(fehlen.is_empty(), "Alle %d Geräusche laden (fehlen: %s)" % [noetig.size(), fehlen])
-	var schleifen := ["wind_sanft", "wind_stark", "feuer", "brandung"].filter(func(n: String) -> bool:
+	var schleifen := ["wind_sanft", "wind_stark", "feuer", "brandung", "markt"].filter(func(n: String) -> bool:
 		var s = klang.stream(n)
 		return s is AudioStreamOggVorbis and s.loop)
-	pruefe(schleifen.size() == 4, "Wind, Feuer und Brandung laufen als Schleife")
+	pruefe(schleifen.size() == 5, "Wind, Feuer, Brandung und Markt laufen als Schleife")
 	pruefe(klang.varianten("schritt_stein") >= 8 and klang.varianten("vogel_amsel") == 2 and klang.varianten("tor_zu") == 0,
 		"Varianten: %d Steinschritte, %d Amselrufe" % [klang.varianten("schritt_stein"), klang.varianten("vogel_amsel")])
 	# Untergrund: ohne Region Gras, auf einem Bau Stein, auf einem Steg Holz
@@ -60,6 +62,14 @@ func _initialize() -> void:
 	for i in 120:
 		await process_frame
 	pruefe(klang._naechster != vorher, "Am Amboss wird tagsüber gehämmert")
+	# Markt: eine Marke an einem Stand, vormittags läuft das Stimmengewirr dort
+	var stand := Node3D.new()
+	stand.add_to_group("klang_markt")
+	root.add_child(stand)
+	stand.global_position = Vector3(5, 0, 5)
+	await create_timer(1.2).timeout      # der nächste Stand wird alle halbe Sekunde gesucht
+	pruefe(klang._markt.playing and klang._markt.global_position.distance_to(Vector3(5, 0, 5)) < 3.0,
+		"Vormittags ist am Marktstand Stimmengewirr zu hören")
 	# Volle Stunde: Glocken schlagen die Stunde (ohne Region: keine Glocke, kein Fehler)
 	klang._glocken = [[Vector3(0, 10, 0), true]]
 	klang._minute(15 * 60)

@@ -28,6 +28,7 @@ VORRAT = {
     "magd": "geschlecht=0 alter=30 kleidung=kleid ueber=schuerze haare=ponytail01 kittelfarbe=0.22,0.28,0.38 flicken=1",
     "wache_1": "ueber=wappenrock panzer=kettenhemd alter=30 muskeln=0.75 haare=short03 kittelfarbe=0.3,0.28,0.25 bart_art=kurz",
     "wache_2": "ueber=wappenrock panzer=kettenhemd alter=41 muskeln=0.7 gewicht=0.6 haare=short01 kittelfarbe=0.3,0.28,0.25 bart_art=voll haut=middleage_caucasian_male",
+    "wache_frau": "geschlecht=0 ueber=wappenrock panzer=kettenhemd alter=29 muskeln=0.6 haare=ponytail01 kittelfarbe=0.3,0.28,0.25",
     "moench": "alter=48 kleidung=kleid haare=short04 kittelfarbe=0.3,0.22,0.14 gewicht=0.6 bart_art=kurz flicken=1 haut=middleage_caucasian_male",
 }
 

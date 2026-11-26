@@ -257,6 +257,13 @@ func _baue_arten(je_art: Dictionary, ziel: Node3D) -> void:
 			var feuer_ort: Vector3 = {14: Vector3(0, 2.2, 0), 16: Vector3(0, 0.9, 0), 21: Vector3(-2.2, 0.9, -1.6)}[art]
 			for lage: Transform3D in lagen:
 				klang.dauerklang(ziel, "feuer", -10.0 if art == 14 else -6.0, 12.0 if art == 14 else 16.0, lage * feuer_ort)
+		if art == 3:            # Marktstand: hier ist Markt (Stimmengewirr und Ausrufe, autoload/klang.gd)
+			for lage: Transform3D in lagen:
+				var markt := Node3D.new()
+				markt.name = "Markt"
+				markt.position = lage.origin + Vector3.UP * 1.6
+				markt.add_to_group("klang_markt")
+				ziel.add_child(markt)
 		if art == 21:
 			for lage: Transform3D in lagen:
 				var amboss := Node3D.new()

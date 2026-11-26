@@ -250,15 +250,17 @@ def glocke(grund, dauer):
     n = int(dauer * RATE)
     t = np.arange(n) / RATE
     x = np.zeros(n)
-    teile = ((0.5, 0.9, 1.0), (1.0, 0.8, 0.55), (1.2, 0.7, 0.45), (1.5, 0.35, 0.35), (2.0, 1.0, 0.3),
-             (2.5, 0.4, 0.18), (3.0, 0.35, 0.14), (4.0, 0.2, 0.1), (5.33, 0.15, 0.07))
+    # Der Unterton (0,5) bleibt leise, die Nominale (2,0) und die oberen Teiltöne tragen den Klang (vorher zu
+    # basslastig, Rückmeldung 26.11.2026)
+    teile = ((0.5, 0.3, 1.0), (1.0, 0.55, 0.6), (1.2, 0.6, 0.45), (1.5, 0.3, 0.35), (2.0, 1.0, 0.32),
+             (2.5, 0.55, 0.2), (3.0, 0.45, 0.15), (4.0, 0.35, 0.11), (5.33, 0.25, 0.08), (6.66, 0.15, 0.06))
     for verh, staerke, anteil in teile:
         f = grund * verh
         ab = dauer * anteil
         schweb = 1.0 + 0.004 * np.sin(2 * np.pi * ZUFALL.uniform(0.3, 1.2) * t)
         x += staerke * np.sin(2 * np.pi * f * t * schweb + ZUFALL.uniform(0, 6)) * np.exp(-t / ab)
     x += band(rauschen(n), 1500, 9000) * np.exp(-t / 0.008) * 0.6
-    return normiere(x, 0.85)
+    return normiere(hoch(x, 180.0), 0.85)
 
 
 def schuss():
@@ -269,6 +271,216 @@ def schuss():
     wumm = tief(rauschen(n), 180, 4) * np.exp(-t / 0.18) * 6.0
     hall = band(rauschen(n), 150, 3000) * np.exp(-t / 0.7) * 0.35 * np.clip(t / 0.06, 0, 1)
     return normiere(tief(knall, 9000) + wumm + hall, 0.95)
+
+
+# ---------- Stimmen (Tiere, Markt): Stimmton durch Formanten ----------
+
+def stimmton(f0, rau=0.0, offen=0.6):
+    """Stimmton mit Tonhöhenverlauf f0 (Hz je Abtastwert): Pulsfolge wie bei Stimmlippen (Sägezahn mit weichem
+    Abfall), dazu rau (0..1) Rauschen für Hauch und Heiserkeit."""
+    ph = np.cumsum(f0) / RATE
+    saw = 2.0 * (ph - np.floor(ph)) - 1.0
+    puls = np.where(saw > (1 - 2 * offen), saw, -1.0) - np.mean(saw)
+    x = puls * (1 - rau) + rauschen(len(f0)) * rau * 0.8
+    return x
+
+
+def formanten(x, forms, breite=(80, 110, 160, 220)):
+    """Formanten (Resonanzen des Rachen- und Mundraums), je Abschnitt eine Folge [(f1, f2, f3), ...] gleich lang
+    verteilt; zwischen den Abschnitten weich überblendet."""
+    n = len(x)
+    if isinstance(forms[0], (int, float)):
+        forms = [forms]
+    teile = len(forms)
+    aus = np.zeros(n)
+    gewicht = np.zeros(n)
+    lang = n // teile
+    for k, ff in enumerate(forms):
+        a0 = max(0, k * lang - lang // 3)
+        a1 = min(n, (k + 1) * lang + lang // 3)
+        seg = x[a0:a1]
+        y = np.zeros(len(seg))
+        for j, f in enumerate(ff):
+            b = breite[min(j, len(breite) - 1)]
+            y += band(seg, max(f - b, 40), min(f + b, RATE / 2 - 100)) * (1.0 / (1 + j * 0.6))
+        w = np.hanning(len(seg) + 2)[1:-1]
+        aus[a0:a1] += y * w
+        gewicht[a0:a1] += w
+    return aus / np.maximum(gewicht, 1e-3)
+
+
+def verlauf(n, punkte):
+    """Linearer Verlauf über n Abtastwerte durch die Stützpunkte [(Anteil 0..1, Wert), ...]."""
+    t = np.linspace(0, 1, n)
+    xs, ys = zip(*punkte)
+    return np.interp(t, xs, ys)
+
+
+def ruf(dauer, f0_punkte, forms, rau=0.0, vibrato=(0.0, 0.0), an=0.02, ab=0.08, offen=0.6):
+    n = int(dauer * RATE)
+    f0 = verlauf(n, f0_punkte)
+    if vibrato[0] > 0:
+        t = np.arange(n) / RATE
+        f0 = f0 * (1 + vibrato[1] * np.sin(2 * np.pi * vibrato[0] * t))
+    x = formanten(stimmton(f0, rau, offen), forms)
+    t = np.arange(n) / RATE
+    h = np.minimum(t / an, 1.0) * np.minimum((dauer - t) / ab, 1.0)
+    return x * np.clip(h, 0, 1)
+
+
+def stille(d):
+    return np.zeros(int(d * RATE))
+
+
+def huhn():
+    """Gackern: kurze „Bock“-Laute mit fallender Tonhöhe, dann ein längeres, ansteigendes „Bagaak“."""
+    teile = []
+    for _ in range(ZUFALL.integers(3, 7)):
+        f = ZUFALL.uniform(350, 480)
+        teile += [ruf(ZUFALL.uniform(0.06, 0.1), [(0, f * 1.15), (1, f * 0.85)], [(900, 1900, 3100)], 0.25, an=0.005, ab=0.03),
+                  stille(ZUFALL.uniform(0.08, 0.25))]
+    if ZUFALL.random() < 0.6:
+        f = ZUFALL.uniform(420, 520)
+        teile += [ruf(0.07, [(0, f), (1, f * 0.9)], [(800, 1700, 3000)], 0.3, an=0.005, ab=0.02), stille(0.04),
+                  ruf(0.32, [(0, f), (0.6, f * 1.55), (1, f * 1.3)], [(700, 1600, 2900), (1000, 2100, 3300)], 0.3, (9, 0.02))]
+    return normiere(np.concatenate(teile + [stille(0.15)]), 0.8)
+
+
+def hahn():
+    """Kikeriki: drei kurze, ansteigende Silben, dann eine lange, fallende mit Zittern."""
+    f = ZUFALL.uniform(560, 660)
+    teile = [ruf(0.13, [(0, f * 0.9), (1, f * 1.1)], [(1100, 2200, 3300)], 0.15), stille(0.03),
+             ruf(0.12, [(0, f * 1.1), (1, f * 1.25)], [(1300, 2500, 3500)], 0.15), stille(0.03),
+             ruf(0.16, [(0, f * 1.25), (1, f * 1.35)], [(1200, 2300, 3400)], 0.15), stille(0.04),
+             ruf(0.95, [(0, f * 1.4), (0.3, f * 1.45), (1, f * 0.95)], [(1200, 2300, 3400), (900, 1900, 3000)], 0.2, (11, 0.025), ab=0.25)]
+    return normiere(np.concatenate(teile + [stille(0.2)]), 0.85)
+
+
+def pferd_wiehern():
+    """Wiehern: hoch ansetzend, mit starkem, schnellem Zittern absteigend, am Ende ein tiefes Brummen."""
+    f = ZUFALL.uniform(780, 950)
+    hoch_ = ruf(1.3, [(0, f), (0.15, f * 1.1), (0.7, f * 0.62), (1, f * 0.45)], [(900, 1700, 2600), (700, 1300, 2400)], 0.35, (24, 0.08), ab=0.3)
+    tief_ = ruf(0.45, [(0, 160), (1, 120)], [(400, 900, 2200)], 0.55, (18, 0.05), an=0.05, ab=0.2)
+    return normiere(np.concatenate([hoch_, tief_ * 0.6, stille(0.2)]), 0.85)
+
+
+def pferd_schnauben():
+    n = int(0.55 * RATE)
+    t = np.arange(n) / RATE
+    x = band(rauschen(n), 180, 1400) * (np.exp(-t / 0.12) + 0.4 * np.exp(-((t - 0.25) / 0.06) ** 2))
+    flattern = 1 + 0.6 * np.sin(2 * np.pi * 32 * t)       # Lippenflattern
+    return normiere(x * flattern, 0.8)
+
+
+def huf():
+    """Hufschlag auf Stein: zwei kurze, harte Anschläge (vorn, hinten)."""
+    teile = []
+    for k in range(2):
+        n = int(0.09 * RATE)
+        t = np.arange(n) / RATE
+        f = ZUFALL.uniform(700, 1100)
+        x = (band(rauschen(n), 500, 4000) * np.exp(-t / 0.008) * 1.2 + np.sin(2 * np.pi * f * t) * np.exp(-t / 0.02) * 0.5
+             + tief(rauschen(n), 250) * np.exp(-t / 0.015) * 1.5)
+        teile += [x, stille(ZUFALL.uniform(0.05, 0.09))]
+    return normiere(np.concatenate(teile), 0.8)
+
+
+def hund():
+    """Bellen: ein bis drei kurze, kräftige Laute mit Hauch."""
+    teile = []
+    f = ZUFALL.uniform(380, 520)
+    for _ in range(ZUFALL.integers(1, 4)):
+        teile += [ruf(ZUFALL.uniform(0.12, 0.18), [(0, f * 0.8), (0.25, f * 1.15), (1, f * 0.7)],
+                      [(650, 1400, 2700), (500, 1100, 2500)], 0.35, an=0.006, ab=0.05, offen=0.7), stille(ZUFALL.uniform(0.12, 0.3))]
+    return normiere(np.concatenate(teile), 0.85)
+
+
+def schwein():
+    """Grunzen: tiefe, rau gepulste Laute durch die Nase."""
+    teile = []
+    for _ in range(ZUFALL.integers(2, 5)):
+        f = ZUFALL.uniform(85, 130)
+        teile += [ruf(ZUFALL.uniform(0.15, 0.3), [(0, f), (1, f * 0.85)], [(350, 900, 2300)], 0.5, (14, 0.15), an=0.03, ab=0.06, offen=0.4),
+                  stille(ZUFALL.uniform(0.1, 0.35))]
+    return normiere(np.concatenate(teile), 0.8)
+
+
+def kuh():
+    """Muhen: „Mmmuuuh“, erst geschlossen (nasal), dann offen, Tonhöhe hebt sich und fällt."""
+    f = ZUFALL.uniform(130, 165)
+    x = ruf(ZUFALL.uniform(1.4, 1.9), [(0, f * 0.9), (0.3, f * 1.15), (0.8, f), (1, f * 0.8)],
+            [(250, 1000, 2400), (450, 900, 2300), (600, 1000, 2400)], 0.2, (4, 0.01), an=0.15, ab=0.4)
+    return normiere(np.concatenate([x, stille(0.2)]), 0.85)
+
+
+def schaf():
+    """Blöken: „Mäh“ mit dem typischen Zittern der Stimme."""
+    f = ZUFALL.uniform(260, 340)
+    x = ruf(ZUFALL.uniform(0.7, 1.0), [(0, f * 0.95), (0.3, f * 1.05), (1, f * 0.9)], [(400, 1700, 2600), (650, 1800, 2700)],
+            0.3, (7, 0.08), an=0.05, ab=0.2)
+    zittern = 1 + 0.35 * np.sin(2 * np.pi * 7 * np.arange(len(x)) / RATE)
+    return normiere(np.concatenate([x * zittern, stille(0.2)]), 0.8)
+
+
+def katze():
+    """Miauen: Vokal von i über a nach u, Tonhöhe steigt und fällt."""
+    f = ZUFALL.uniform(520, 700)
+    x = ruf(ZUFALL.uniform(0.55, 0.8), [(0, f * 0.9), (0.35, f * 1.25), (1, f * 0.85)],
+            [(400, 2300, 3100), (850, 1500, 2800), (500, 900, 2600)], 0.12, (6, 0.01), an=0.04, ab=0.15)
+    return normiere(np.concatenate([x, stille(0.15)]), 0.8)
+
+
+VOKALE = [(730, 1090, 2440), (530, 1840, 2480), (270, 2290, 3010), (570, 840, 2410), (300, 870, 2240), (660, 1720, 2410)]
+
+
+def stimme(dauer, f0_mitte, laut=False):
+    """Eine Kunststimme, die redet: Silben (4 bis 6 je Sekunde) mit wechselnden Vokalen, Tonhöhe wie im Satz,
+    kurze Pausen; nichts davon sind echte Wörter."""
+    teile = []
+    t = 0.0
+    while t < dauer:
+        silben = ZUFALL.integers(3, 9)
+        f0 = f0_mitte * ZUFALL.uniform(0.9, 1.15)
+        for k in range(silben):
+            d = ZUFALL.uniform(0.12, 0.24)
+            ff = VOKALE[ZUFALL.integers(len(VOKALE))]
+            sinken = 1.0 - 0.15 * k / max(silben - 1, 1)          # der Satz fällt zum Ende
+            teile.append(ruf(d, [(0, f0 * sinken * ZUFALL.uniform(0.95, 1.08)), (1, f0 * sinken * ZUFALL.uniform(0.9, 1.0))],
+                             [ff], 0.12 if not laut else 0.08, an=0.015, ab=0.04, offen=0.55))
+            t += d
+        p = ZUFALL.uniform(0.15, 0.8)
+        teile.append(stille(p))
+        t += p
+    x = np.concatenate(teile)
+    return x[:int(dauer * RATE)]
+
+
+def markt():
+    """Stimmengewirr auf dem Markt: 22 Kunststimmen in verschiedener Entfernung (leiser und dumpfer), Männer und
+    Frauen, dazu leises Klappern; als nahtlose Schleife."""
+    n = 26 * RATE
+    x = np.zeros(n)
+    for k in range(22):
+        frau = ZUFALL.random() < 0.45
+        s = stimme(26.0, ZUFALL.uniform(190, 250) if frau else ZUFALL.uniform(100, 150))
+        s = np.concatenate([s, np.zeros(max(0, n - len(s)))])[:n]
+        ferne = ZUFALL.uniform(0.0, 1.0)
+        s = tief(s, 4500 - 3000 * ferne) * (1.0 - 0.75 * ferne)
+        x += np.roll(s, ZUFALL.integers(0, n))
+    klappern = np.zeros(n)
+    for _ in range(40):
+        i = ZUFALL.integers(0, n - 3000)
+        m = 2000
+        klappern[i:i + m] += band(rauschen(m), 1500, 6000) * np.exp(-np.arange(m) / 250) * ZUFALL.uniform(0.1, 0.4)
+    return normiere(schleife(x + klappern, 2.0), 0.7)
+
+
+def ausruf():
+    """Ein Marktschreier: eine laute Stimme, langgezogen am Ende (wie „Frische Fische!“, ohne echte Wörter)."""
+    f0 = ZUFALL.uniform(120, 170) if ZUFALL.random() < 0.6 else ZUFALL.uniform(210, 270)
+    s = stimme(ZUFALL.uniform(0.9, 1.4), f0 * 1.15, laut=True)
+    lang = ruf(0.6, [(0, f0 * 1.3), (1, f0 * 1.05)], [VOKALE[0]], 0.08, ab=0.25)
+    return normiere(np.concatenate([s, lang, stille(0.2)]), 0.85)
 
 
 def weiche_schritte(quellen, art):
@@ -303,8 +515,24 @@ def main():
     for k in range(3):
         schreibe(f"amboss_{k + 1}", amboss(k))
     schreibe("schuss", schuss())
-    schreibe("glocke_gross", glocke(196.0, 9.0))     # G3: Glocke von St. Marien
-    schreibe("glocke_klein", glocke(392.0, 5.0))     # G4: Kapellenglocke
+    for k in range(4):
+        schreibe(f"huhn_{k + 1}", huhn())
+    schreibe("hahn_1", hahn())
+    for k in range(3):
+        schreibe(f"pferd_wiehern_{k + 1}", pferd_wiehern())
+        schreibe(f"pferd_schnauben_{k + 1}", pferd_schnauben())
+        schreibe(f"hund_{k + 1}", hund())
+        schreibe(f"schwein_{k + 1}", schwein())
+        schreibe(f"kuh_{k + 1}", kuh())
+        schreibe(f"schaf_{k + 1}", schaf())
+        schreibe(f"katze_{k + 1}", katze())
+    for k in range(4):
+        schreibe(f"huf_{k + 1}", huf())
+    schreibe("markt", markt())
+    for k in range(5):
+        schreibe(f"ausruf_{k + 1}", ausruf())
+    schreibe("glocke_gross", glocke(294.0, 8.0))     # D4: Glocke von St. Marien
+    schreibe("glocke_klein", glocke(587.0, 4.5))     # D5: Kapellenglocke
     if kenney is not None:
         k = next(kenney.rglob("footstep00.ogg")).parent
         schritte = sorted(k.glob("footstep0*.ogg"))

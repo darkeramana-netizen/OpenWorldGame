@@ -1279,7 +1279,9 @@ def main():
         if hm_.get("diffuseTexture"):
             hb = np.asarray(Image.open(sysa / "hair" / haare / hm_["diffuseTexture"]).convert("RGBA").resize((128, 128)), np.float32) / 255
             gw_ = hb[..., 3:4]
-            ton_b = tuple(float(x) for x in (hb[..., :3] * gw_).sum((0, 1)) / max(float(gw_.sum()), 1.0))
+            # Mittel der Haartextur (sRGB) in lineare Farbe (der glTF-Farbfaktor ist linear; sonst wurde der Bart grau
+            # statt in der Haarfarbe), etwas dunkler: Barthaar steht dichter
+            ton_b = tuple(float(x) ** 2.2 * 0.85 for x in (hb[..., :3] * gw_).sum((0, 1)) / max(float(gw_.sum()), 1.0))
         m_bart = gl.material("Bart", "../stoffe/barthaar.png", tuple(ton_b) + (1.0,), rau=0.8, alpha="MASK", doppelt=True)
         maske_b = haut_masken["bart"]
         schwelle = 0.25 if bart_art == "voll" else 0.45

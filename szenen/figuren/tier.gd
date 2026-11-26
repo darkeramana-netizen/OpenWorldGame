@@ -201,6 +201,41 @@ func _process(delta: float) -> void:
 	if ziel != "" and _anim.current_animation != ziel:
 		_anim.play(ziel)
 	_anim.speed_scale = s
+	_laute(delta)
+
+
+## Geräusche (autoload/klang.gd), nur bis 40 m um die Kamera: ab und zu ein Ruf der Art (Pferde wiehern oder schnauben,
+## Hunde bellen, wenn jemand nahe kommt), Hufschlag, wenn ein Pferd geht oder läuft
+const RUFE := ["pferd_schnauben", "kuh", "schaf", "schwein", "hund", "katze", "hund", ""]
+const RUF_ABSTAND := [[12.0, 40.0], [20.0, 60.0], [10.0, 35.0], [6.0, 20.0], [25.0, 70.0], [30.0, 90.0], [20.0, 60.0], [0.0, 0.0]]
+var _ruf_in := -1.0
+var _huf_weg := 0.0
+func _laute(delta: float) -> void:
+	var kamera := get_viewport().get_camera_3d()
+	if kamera == null or kamera.global_position.distance_squared_to(global_position) > 1600.0:
+		return
+	var klang := get_node_or_null("/root/Klang")
+	if klang == null or RUFE[art] == "":
+		return
+	if _ruf_in < 0.0:
+		_ruf_in = randf_range(2.0, RUF_ABSTAND[art][1])
+	_ruf_in -= delta
+	# ein Hund schlägt an, wenn jemand nahe kommt
+	var sp := _spieler()
+	if art == 4 and sp != null and sp.global_position.distance_to(global_position) < 6.0 and _ruf_in > 3.0:
+		_ruf_in = 0.0
+	if _ruf_in <= 0.0:
+		_ruf_in = randf_range(RUF_ABSTAND[art][0], RUF_ABSTAND[art][1])
+		var ruf: String = RUFE[art]
+		if art == 0 and randf() < 0.3:
+			ruf = "pferd_wiehern"
+		klang.spiele(ruf, global_position + Vector3.UP * HOEHEN[art] * 0.8, -6.0 if art in [3, 5] else -2.0, 35.0)
+	# Hufschlag auf Stein und Erde
+	if art == 0 and _gang > 0.3:
+		_huf_weg += _gang * delta
+		if _huf_weg > 0.9:
+			_huf_weg = 0.0
+			klang.spiele("huf", global_position, -6.0, 25.0)
 
 
 # ---------- Verhalten ----------

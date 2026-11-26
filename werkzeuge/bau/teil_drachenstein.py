@@ -921,9 +921,14 @@ def _werkplatz_im_hof(name, teile, hof_w, boden):
                 raster_.append((x_, z_))
             z_ += 2.0
         x_ += 2.0
-    # nahe der Hofmitte zuerst (dort sieht man sie, wenn man den Hof betritt), mit etwas Zufall
+    # nahe der Hofmitte, aber mit Abstand zu den Gruppen, die schon frei im Hof stehen (sonst lag alles auf einem
+    # Haufen in der Mitte, Rückmeldung 26.11.2026): je näher eine andere Gruppe (bis 22 m), desto schlechter
     mx_, mz_ = sum(xs_) / len(xs_), sum(zs_) / len(zs_)
-    raster_.sort(key=lambda q_: math.dist(q_, (mx_, mz_)) + random.uniform(0.0, 6.0))
+    andere_ = _FREI_IM_HOF.setdefault(_hof_schluessel(hof_w), [])
+    def _guete(q_):
+        naechste_ = min((math.dist(q_, o_) for o_ in andere_), default=99.0)
+        return math.dist(q_, (mx_, mz_)) * 0.35 + random.uniform(0.0, 4.0) + max(0.0, 22.0 - naechste_) * 1.6
+    raster_.sort(key=_guete)
     for px_, pz_ in raster_:
         for g0_ in random.sample((0.0, 90.0, 180.0, 270.0), 4):
             a_ = math.radians(g0_)
@@ -934,8 +939,16 @@ def _werkplatz_im_hof(name, teile, hof_w, boden):
                 for art_, x_, z_, g_ in lagen_:
                     stelle(art_, x_, z_, g_, hof_w, boden, wegabstand=3.0)
                 WERKPLAETZE[name] = (px_, pz_, (ux_, uz_), (nx_, nz_), boden)
+                andere_.append((px_, pz_))
                 return True
     return False
+
+
+_FREI_IM_HOF = {}        # Hof → Mitten der Gruppen, die frei im Hof stehen (auch Brunnen und Linde)
+
+
+def _hof_schluessel(hof_w):
+    return (round(hof_w[0][0], 1), round(hof_w[0][1], 1))
 
 
 _hoefe = [("Vorburg", PD.VORBURG, PD.H_VORBURG), ("Mittelburg", PD.MITTELBURG, PD.H_BURGHOF2),
@@ -955,6 +968,7 @@ for name_, hof_, boden_ in _hoefe:
                           wegabstand=2.0):
                     break
             _vorplaetze_w.append(_rechteck_w(x_, z_, 5.4, 5.4, 0.0))   # rund um den Brunnen bleibt Platz zum Wasserholen
+            _FREI_IM_HOF.setdefault(_hof_schluessel(hof_w_), []).append((x_, z_))
             break
     # Hoflinde (Laubbaum) unweit des Brunnens: Stamm abseits der Wege, die Krone (7 m) über keinem Haus und keinem Bau
     if name_ in BURG_BRUNNEN and name_ != "Palas":
@@ -967,6 +981,7 @@ for name_, hof_, boden_ in _hoefe:
                 continue
             if stelle(10, x_, z_, 0.0, hof_w_, boden_, wegabstand=3.0, probe=True):
                 BURGBAEUME.append((round(x_, 2), round(boden_, 2), round(z_, 2), -1.25))
+                _FREI_IM_HOF.setdefault(_hof_schluessel(hof_w_), []).append((x_, z_))
                 BURG_SPERREN.append(_rechteck_w(x_, z_, 1.6, 1.6, 0.0))
                 # Tisch mit Bänken im Schatten der Linde (M21): dort sitzen Leute bei der Rast
                 for k2_ in range(24):

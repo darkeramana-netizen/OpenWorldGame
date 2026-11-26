@@ -135,6 +135,7 @@ func _process(delta: float) -> void:
 		for p in get_tree().get_nodes_in_group("interagierbar"):
 			if p.has_method("unterwegs") and p.unterwegs() and (p as Node3D).global_position.distance_to(global_position) < weite + 4.0:
 				stoerer.append(to_local((p as Node3D).global_position))
+	_gackern(delta, sp)
 	for h in _huehner:
 		var k: Node3D = h["knoten"]
 		# zu nahe? weglaufen, vom Störer fort, im Revier (etwas darüber hinaus)
@@ -227,3 +228,30 @@ func _lebe(h: Dictionary, delta: float) -> void:
 				else:
 					h["tun"] = "umsehen"
 				h["takt"] = _zufall.randf_range(0.5, 2.5)
+
+
+## Gackern (autoload/klang.gd): bis 30 m um den Spieler alle paar Sekunden eine Henne der Schar, aufgeregt, wenn eine
+## wegläuft; morgens kräht in jeder dritten Schar ein Hahn
+var _gackern_in := 2.0
+func _gackern(delta: float, sp: Node3D) -> void:
+	if _huehner.is_empty() or sp.global_position.distance_to(global_position) > 30.0:
+		return
+	var klang := get_node_or_null("/root/Klang")
+	if klang == null:
+		return
+	_gackern_in -= delta
+	var aufgeregt := _huehner.any(func(h: Dictionary) -> bool: return h["tun"] == "rennen")
+	if aufgeregt and _gackern_in > 1.2:
+		_gackern_in = 0.3
+	if _gackern_in > 0.0:
+		return
+	# eigener Zufall der Schar bleibt für die Wege (randf statt _zufall)
+	_gackern_in = randf_range(3.0, 12.0) / maxf(sqrt(float(_huehner.size())), 1.0)
+	var h: Dictionary = _huehner[randi() % _huehner.size()]
+	var ort: Vector3 = (h["knoten"] as Node3D).global_position + Vector3.UP * 0.3
+	var zeit := get_node_or_null("/root/Spielzeit")
+	var stunde := float(zeit.minuten) / 60.0 if zeit != null else 10.0
+	if stunde > 4.5 and stunde < 7.5 and absi(hash(name)) % 3 == 0 and randf() < 0.25:
+		klang.spiele("hahn", ort, 0.0, 120.0)
+	else:
+		klang.spiele("huhn", ort, -4.0 if not aufgeregt else 0.0, 28.0, 1.0 if not aufgeregt else 1.12)

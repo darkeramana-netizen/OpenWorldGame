@@ -15,12 +15,15 @@ extends Node
 
 const ORDNER := "res://klaenge/"
 const POOL := 24
-const SCHLEIFEN := ["wind_sanft", "wind_stark", "feuer", "brandung"]
+const SCHLEIFEN := ["wind_sanft", "wind_stark", "feuer", "brandung", "markt"]
 
 var _streams := {}                  # Name → AudioStream (oder null, wenn es die Datei nicht gibt)
 var _varianten := {}                # Grundname → Anzahl Varianten
 var _pool: Array[AudioStreamPlayer3D] = []
 var _naechster := 0
+var _markt: AudioStreamPlayer3D
+var _markt_ort := Vector3.INF
+var _ausruf_in := 5.0
 var _wind_sanft: AudioStreamPlayer
 var _wind_stark: AudioStreamPlayer
 var _brandung: AudioStreamPlayer
@@ -84,6 +87,14 @@ func _ready() -> void:
 		p.doppler_tracking = AudioStreamPlayer3D.DOPPLER_TRACKING_DISABLED
 		add_child(p)
 		_pool.append(p)
+	_markt = AudioStreamPlayer3D.new()
+	_markt.name = "Markt"
+	_markt.bus = "Umgebung"
+	_markt.stream = stream("markt")
+	_markt.max_distance = 70.0
+	_markt.unit_size = 12.0
+	_markt.volume_db = -80.0
+	add_child(_markt)
 	_wind_sanft = _umgebung("wind_sanft")
 	_wind_stark = _umgebung("wind_stark")
 	_brandung = _umgebung("brandung")
@@ -144,8 +155,8 @@ func spiele(name_: String, ort: Vector3, laut := 0.0, reichweite := 25.0, tonhoe
 
 
 ## Ein Schritt am Ort (Fuß), Untergrund "stein", "erde", "gras" oder "holz"
-func schritt(ort: Vector3, untergrund_: String, laut := -6.0) -> void:
-	spiele("schritt_" + untergrund_, ort, laut, 18.0)
+func schritt(ort: Vector3, untergrund_: String, laut := 0.0) -> void:
+	spiele("schritt_" + untergrund_, ort, laut + 3.0, 22.0)
 
 
 ## Untergrund unter einem Punkt: Bauten und Pflaster Stein, Holzböden und Ausstattung Holz, im Gelände nach der Maske
@@ -220,6 +231,7 @@ func _process(delta: float) -> void:
 		_brandung.volume_db = -80.0
 	_voegel(delta, k)
 	_hammer(delta, k)
+	_markttag(delta, k)
 	_glocken_schlagen(delta)
 
 
@@ -281,6 +293,37 @@ func _voegel(delta: float, k: Vector3) -> void:
 	var r := randf_range(10.0, 35.0)
 	spiele("vogel_" + arten[randi() % arten.size()], k + Vector3(cos(w) * r, randf_range(3.0, 12.0), sin(w) * r),
 		-9.0, 60.0)
+
+
+## Markt (Marken "klang_markt" an den Marktständen, ausstattung.gd): ein Stimmengewirr am nächsten Stand in Hörweite,
+## von 7 bis 17 Uhr, am Vormittag am lautesten; dazu ab und zu ein Marktschreier in der Nähe
+func _markttag(delta: float, k: Vector3) -> void:
+	if _markt.stream == null:
+		return
+	if _pruef >= 0.49:            # alle halbe Sekunde (mit _umgebung_pruefen): nächster Stand
+		_markt_ort = Vector3.INF
+		for m in get_tree().get_nodes_in_group("klang_markt"):
+			var p: Vector3 = (m as Node3D).global_position
+			if p.distance_squared_to(k) < 4900.0 and (_markt_ort == Vector3.INF or p.distance_squared_to(k) < _markt_ort.distance_squared_to(k)):
+				_markt_ort = p
+	var zeit := get_node_or_null("/root/Spielzeit")
+	var stunde := float(zeit.minuten) / 60.0 if zeit != null else 10.0
+	var tag := smoothstep(6.5, 7.5, stunde) * (1.0 - smoothstep(16.0, 17.5, stunde)) * (1.0 - 0.4 * smoothstep(12.0, 14.0, stunde))
+	if _markt_ort == Vector3.INF or tag <= 0.01:
+		_markt.volume_db = -80.0
+		if _markt.playing:
+			_markt.stop()
+		return
+	if not _markt.playing:
+		_markt.global_position = _markt_ort
+		_markt.play(randf() * 20.0)
+	_markt.global_position = _markt.global_position.lerp(_markt_ort, clampf(delta * 0.5, 0.0, 1.0))
+	_markt.volume_db = linear_to_db(maxf(tag, 0.0001)) - 4.0
+	_ausruf_in -= delta
+	if _ausruf_in <= 0.0:
+		_ausruf_in = randf_range(6.0, 16.0)
+		var w := randf() * TAU
+		spiele("ausruf", _markt_ort + Vector3(cos(w) * 6.0, 0.0, sin(w) * 6.0), -4.0 + linear_to_db(maxf(tag, 0.0001)), 55.0)
 
 
 ## Amboss: tagsüber (7 bis 18 Uhr) in der nächsten Schmiede in Hörweite Folgen von drei bis sechs Schlägen
