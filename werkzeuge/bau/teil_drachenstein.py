@@ -789,6 +789,10 @@ for b_ in _BEGEHBAR + [PD.PALAS]:
     a_ = math.radians(dr_)
     vx_, vy_ = -math.sin(a_), math.cos(a_)
     _tueren_w.append([W(q) for q in _ecken_plan(((pp_[0] + vx_ * (br_ / 2 + 7), pp_[1] + vy_ * (br_ / 2 + 7)), 16, 14, dr_))])
+# Tür des begehbaren Bergfrieds (zum Hof, Welt -u): davor bleibt eine Fläche frei (test_innen geht dort hinein)
+_bt_ = (bx - _bu[0] * (PD.BERGFRIED_SEITE / 2 + 5.0), bz - _bu[1] * (PD.BERGFRIED_SEITE / 2 + 5.0))
+_tueren_w.append([(_bt_[0] + _bu[0] * a_ + _bn[0] * b_, _bt_[1] + _bu[1] * a_ + _bn[1] * b_)
+                  for a_, b_ in ((-6.0, -6.0), (6.0, -6.0), (6.0, 6.0), (-6.0, 6.0))])
 _haeuser_w = [_haus_rechteck(h_, 0.3) for h_ in HOFHAEUSER]
 _alle_wege_w = [WL(w_) for w_ in PD.BURGWEGE] + [WL(w_) for w_ in _HOF_WEGE] if "_HOF_WEGE" in globals() else [WL(w_) for w_ in PD.BURGWEGE]
 
@@ -1453,9 +1457,14 @@ _HOFMITTE = {"Vorburg": [("Misthaufen", _MISTHAUFEN)],
              "Mittelburg": [("Misthaufen", _MISTHAUFEN), ("Fässerlager", _FAESSERLAGER)],
              "Oberburg": [("Kräutergarten", _KRAEUTERGARTEN), ("Fässerlager", _FAESSERLAGER)],
              "Palas": [("Kräutergarten", _KRAEUTERGARTEN), ("Fässerlager", _FAESSERLAGER), ("Kräutergarten 2", _KRAEUTERGARTEN)]}
+# Fässer, Kisten und Säcke dürfen sonst auf Vorplätze (neben Türen); die Gruppen hier nicht, sonst stünde ein Lager vor
+# einer Tür oder in einem Blickpunkt des Foto-Rundgangs
+_erlaubt_ = set(VORPLATZ_ERLAUBT)
+VORPLATZ_ERLAUBT.difference_update({0, 1, 2})
 for name_, hof_, boden_ in _hoefe:
     for was_, teile_ in _HOFMITTE.get(name_, []):
         werkplatz(f"{was_} {name_}", teile_, WL(hof_), boden_, frei_im_hof=True, mitte=True)
+VORPLATZ_ERLAUBT.update(_erlaubt_)
 print("Mauerschuppen:", sorted(k_ for k_ in WERKPLAETZE if k_.startswith(("Schuppen", "Gerüst"))))
 print("Hofmitte:", sorted(k_ for k_ in WERKPLAETZE if k_.startswith(("Misthaufen", "Fässerlager", "Kräutergarten"))))
 random.setstate(_zustand_)
