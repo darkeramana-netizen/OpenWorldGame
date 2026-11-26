@@ -924,8 +924,9 @@ def main():
         unten_ = lang_ + 0.03
         plaene = {"schuerze": [("Schuerze", "schuerze", 1, taille_ + 0.01, max(unten_ - 0.06, 0.3), 0.34, 0.44)],
                   "lederschuerze": [("Lederschuerze", "lederschuerze", 1, taille_ + 0.33, 0.42, 0.3, 0.44)],
-                  "wappenrock": [("Wappenrock", "wvorn", 1, MHP["neck_01"][1] - 0.06, 0.46, 0.36, 0.44),
-                                 ("Wappenrock_hinten", "whinten", -1, MHP["neck_01"][1] - 0.06, 0.46, 0.36, 0.44)]}[ueber]
+                  # Wappenrock bis zur Wadenmitte (13./14. Jh.), unten nicht breiter als die Hüfte samt Kettenhemd
+                  "wappenrock": [("Wappenrock", "wvorn", 1, MHP["neck_01"][1] - 0.06, 0.34, 0.36, 0.4),
+                                 ("Wappenrock_hinten", "whinten", -1, MHP["neck_01"][1] - 0.06, 0.34, 0.36, 0.4)]}[ueber]
         for teilname, praefix, seite, y_o, y_u, b_o, b_u in plaene:
             spalten, zeilen, ketten, glieder = 9, 14, 4, 4
             ROCK_ANTEIL = 0.8
@@ -958,13 +959,18 @@ def main():
                     k0 = min(int(tf), glieder - 1); fk = tf - k0
                     gk = {k0: 1.0 - 0.5 * fk, min(k0 + 1, glieder - 1): 0.5 * fk}
                     d = {}
+                    # Wappenrock: die Seitenkanten folgen ganz dem Rock darunter (wie eine Seitennaht bis zur Hüfte),
+                    # nur die Mitte schwingt frei; sonst stehen vorn und hinten zwei lose Bahnen seitlich ab
+                    rand_ = abs(si - (spalten - 1) / 2) / ((spalten - 1) / 2)
+                    ra_ = ROCK_ANTEIL + (1.0 - ROCK_ANTEIL) * rand_ ** 2 if praefix.startswith("w") else ROCK_ANTEIL
                     for c, wc in ((c0, 1.0 - fc), (c0 + 1, fc)):
                         for k, wk in gk.items():
                             j = erster + c * glieder + k
-                            d[j] = d.get(j, 0.0) + wc * wk * (1.0 - ROCK_ANTEIL)
+                            if 1.0 - ra_ > 1e-6:
+                                d[j] = d.get(j, 0.0) + wc * wk * (1.0 - ra_)
                     for j, wv in zip(*unter):    # der größte Teil folgt dem Rock darunter (und damit den Beinen)
                         if wv > 0:
-                            d[j] = d.get(j, 0.0) + wv * ROCK_ANTEIL
+                            d[j] = d.get(j, 0.0) + wv * ra_
                     p_ = sorted(d.items(), key=lambda kv: -kv[1])[:4]
                     sm = sum(x for _, x in p_)
                     gewichte.append(([j for j, _ in p_] + [0] * (4 - len(p_)), [x / sm for _, x in p_] + [0.0] * (4 - len(p_))))

@@ -106,6 +106,9 @@ Dreiecken (MakeHuman-Proxy `male1591` mit 1600 Ecken), Frauen im Kleid ohne Bein
   - Eisenhut als Kesselhut: gewölbte Glocke mit leichtem Grat, Band mit zwölf Nieten, abfallende Krempe mit
     gerolltem Rand, darunter eine Polsterhaube aus Leinen (statt Haaren, die durch die Glocke stachen). Eisen hat
     Hammerschlag und Rauheit aus der Metalltextur, die Farbe ist Stahlgrau statt Chrom.
+  - Wappenrock bis zur Wadenmitte (vorher knapp unter dem Knie), unten 4 cm schmaler; mit Federknochen folgen seine
+    Seitenkanten ganz dem Kettenhemd darunter (wie eine Seitennaht). Nah, mit echtem Stoff, schwingen vorn und hinten
+    weiter als zwei Bahnen wie bei einem an den Seiten offenen Tappert.
   - Bilder im Container: `tests/_figur_bild.gd` (nicht im Repo) fotografiert Figuren im Gehen von vier Seiten.
 - **Noch offen**: Nähte, Haare mit einzelnen Strähnenkarten, Bärte wirken aus der Nähe noch wie ein graues Netz,
-  der Wappenrock flattert seitlich zu weit (vorn und hinten sind zwei lose Bahnen ohne Seitennaht).
+  eine echte Seitennaht für den Stoff im Modul (Punkte zweier Teile aneinander binden).
