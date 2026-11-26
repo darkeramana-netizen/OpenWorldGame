@@ -64,5 +64,12 @@ func _initialize() -> void:
 	klang._glocken = [[Vector3(0, 10, 0), true]]
 	klang._minute(15 * 60)
 	pruefe(klang._glocken_noch == 3, "Um 15 Uhr schlägt die Glocke dreimal")
+	# Lautstärke im Menü: fünf Stufen bis „aus“, dann wieder voll
+	var texte := []
+	for i in 5:
+		klang.naechste_lautstaerke()
+		texte.append(klang.lautstaerke_text())
+	pruefe(texte == ["75 %", "50 %", "25 %", "aus", "100 %"] and not AudioServer.is_bus_mute(0),
+		"Ton im Menü: %s" % ", ".join(texte))
 	print("Fehler: %d" % fehler)
 	quit(1 if fehler > 0 else 0)

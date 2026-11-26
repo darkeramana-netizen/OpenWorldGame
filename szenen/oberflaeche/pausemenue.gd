@@ -45,6 +45,12 @@ func _zeige_start() -> void:
 		Grafik.naechste()
 		grafik.text = "Grafik: " + Grafik.name_())
 	_liste.add_child(grafik)
+	# Lautstärke (autoload/klang.gd): jeder Druck eine Stufe leiser, nach „aus“ wieder voll
+	var ton := MenueStil.knopf("Ton: " + Klang.lautstaerke_text(), func() -> void: pass)
+	ton.pressed.connect(func() -> void:
+		Klang.naechste_lautstaerke()
+		ton.text = "Ton: " + Klang.lautstaerke_text())
+	_liste.add_child(ton)
 	_liste.add_child(MenueStil.knopf("Hauptmenü", Speicher.zum_hauptmenue))
 	_liste.add_child(MenueStil.knopf("Beenden", func() -> void: get_tree().quit()))
 

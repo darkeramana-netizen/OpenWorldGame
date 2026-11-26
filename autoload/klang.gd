@@ -40,8 +40,37 @@ var _glocken_noch := 0
 var _glocken_in := 0.0
 
 
+## Gesamtlautstärke (Menü: „Ton“), gespeichert in user://einstellungen.cfg (wie die Grafikstufe)
+const LAUTSTAERKEN := [1.0, 0.75, 0.5, 0.25, 0.0]
+const EINSTELLUNGEN := "user://einstellungen.cfg"
+var lautstaerke := 1.0
+
+
+func naechste_lautstaerke() -> void:
+	var i := LAUTSTAERKEN.find(lautstaerke)
+	lautstaerke = LAUTSTAERKEN[(i + 1) % LAUTSTAERKEN.size()]
+	_lautstaerke_anwenden()
+	var cfg := ConfigFile.new()
+	cfg.load(EINSTELLUNGEN)
+	cfg.set_value("klang", "lautstaerke", lautstaerke)
+	cfg.save(EINSTELLUNGEN)
+
+
+func lautstaerke_text() -> String:
+	return "aus" if lautstaerke <= 0.0 else "%d %%" % roundi(lautstaerke * 100.0)
+
+
+func _lautstaerke_anwenden() -> void:
+	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(lautstaerke, 0.0001)))
+	AudioServer.set_bus_mute(0, lautstaerke <= 0.0)
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	var cfg := ConfigFile.new()
+	if cfg.load(EINSTELLUNGEN) == OK:
+		lautstaerke = float(cfg.get_value("klang", "lautstaerke", 1.0))
+	_lautstaerke_anwenden()
 	for bus in ["Umgebung", "Geraeusche"]:
 		if AudioServer.get_bus_index(bus) < 0:
 			AudioServer.add_bus()
