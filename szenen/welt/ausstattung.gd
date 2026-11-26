@@ -249,6 +249,21 @@ func _baue_arten(je_art: Dictionary, ziel: Node3D) -> void:
 		if art == 21:
 			for lage: Transform3D in lagen:
 				ziel.add_child(Rauch.erzeuge(lage * Vector3(-2.2, 6.95, -2.85), 1.8))   # die Esse brennt immer
+		# Geräusche (autoload/klang.gd): Feuer knistert in Feuerkorb, Esse und Schmiede; am Amboss der Schmiede hämmert
+		# tagsüber jemand (Marke in der Gruppe "klang_amboss")
+		var klang := (Engine.get_main_loop() as SceneTree).root.get_node_or_null("Klang") \
+			if not Engine.is_editor_hint() and Engine.get_main_loop() is SceneTree else null
+		if klang != null and art in [14, 16, 21]:
+			var feuer_ort: Vector3 = {14: Vector3(0, 2.2, 0), 16: Vector3(0, 0.9, 0), 21: Vector3(-2.2, 0.9, -1.6)}[art]
+			for lage: Transform3D in lagen:
+				klang.dauerklang(ziel, "feuer", -10.0 if art == 14 else -6.0, 12.0 if art == 14 else 16.0, lage * feuer_ort)
+		if art == 21:
+			for lage: Transform3D in lagen:
+				var amboss := Node3D.new()
+				amboss.name = "Amboss"
+				amboss.position = lage * Vector3(-1.4, 0.9, 0.0)
+				amboss.add_to_group("klang_amboss")
+				ziel.add_child(amboss)
 		var inst := MultiMeshInstance3D.new()
 		inst.name = "Art%d" % art
 		inst.multimesh = mm

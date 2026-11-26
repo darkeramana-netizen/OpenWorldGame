@@ -369,3 +369,33 @@ Weil auf dem Messrechner die GPU der Engpass ist (Hoch: GPU p50 7,8 ms, Render-C
 Dreiecke den kleinen Draw-Call-Aufschlag wert. Bilder alt/neu sind gleich (Unterschiede nur in Einblendtexten).
 
 Damit ist die Optimierungsrunde abgeschlossen; weiter geht es mit dem Ausbau des Spiels.
+
+## Geräusche (26.11.2026)
+
+Bis hierher war das Spiel stumm. Jetzt (`autoload/klang.gd`, Dateien in `klaenge/`, Quellen in `klaenge/QUELLEN.md`):
+
+- **Quellen**, alles CC0:
+  - Eigene Synthese mit numpy (`werkzeuge/klaenge_erzeugen.py`): Wind (sanft, stark mit Pfeifen), Feuer, Brandung,
+    sechs Vogelarten, Amboss, zwei Kirchenglocken nach der Teiltonreihe, Musketenschuss, Schritte auf Gras, Erde und
+    Holz (aus Kenneys Schritten abgeleitet).
+  - Kenney „50 RPG sound effects“ und artisticdude „RPG Sound Pack“ von OpenGameArt: Schritte auf Stein, Türen,
+    Knarren, Riegel, Kettenhemd, Schwert, Metall, Leder, Stoff.
+  - 91 Dateien, 1,6 MB (OGG).
+- **Umgebung**: sanfter Wind überall draußen, starker Wind mit Pfeifen ab etwa 6 m über dem Boden (Wehrgang, Turm);
+  drinnen (Decke über dem Kopf, Strahl nach oben alle 0,5 s) gedämpft. Vogelrufe bei Tag um den Hörer, morgens und
+  abends vor allem Amseln. Brandung nahe der Meereshöhe.
+- **Orte**: Feuer knistert in Feuerkörben, Essen und der Schmiede. In der Schmiede hämmert tagsüber jemand auf den
+  Amboss (drei bis sechs Schläge, dann eine Pause). Zur vollen Stunde schlagen die Glocken von St. Marien, im
+  Bergfried und in Gravemarch die Stunde.
+- **Bewegung**: eigene Schritte je nach Untergrund (Bau: Stein, Steg und Ausstattung: Holz, Gelände nach der Maske:
+  Burghof Stein, Weg Erde, sonst Gras), leiser beim Schleichen, ein Aufsetzen nach Sprung oder Fall. Die Leute bis
+  12 m um die Kamera sind ebenfalls zu hören.
+- **Tore und Türen** (`fluegel.gd`): Tore knarren schwer beim Öffnen, schlagen dumpf zu, danach fällt der Riegel.
+  Türen öffnen und schließen leichter.
+- **Kampf** (`kampf.gd`): Schwert ziehen, Schwung, Treffer auf Metall, Parade, Musketenschuss (bis 300 m zu hören).
+- Jedes Geräusch hat Varianten oder eine leicht schwankende Tonhöhe und Lautstärke, damit nichts maschinell klingt.
+  Ein Pool aus 24 Klangquellen spielt die einzelnen Geräusche. Die Busse „Umgebung“ und „Geraeusche“ liegen unter
+  Master, die Regler im Menü folgen.
+- Test: `tests/test_klang.gd`.
+- Offen: Regler im Menü, Hall in Innenräumen und Gewölben, Tiere (Hühner, Pferde, Hunde), Stimmengewirr auf dem
+  Markt, Regen.

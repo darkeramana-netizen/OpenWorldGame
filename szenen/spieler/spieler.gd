@@ -146,9 +146,44 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, tempo * 10.0 * delta)
 		velocity.z = move_toward(velocity.z, 0.0, tempo * 10.0 * delta)
 
+	var war_am_boden := is_on_floor()
+	var fallen := velocity.y
 	move_and_slide()
+	_schritte(delta, war_am_boden, fallen)
 	_pruefe_grenzen()
 	_aktualisiere_ziel()
+
+
+## Schritte hörbar machen (autoload/klang.gd): je nach Tempo alle 0,75 bis 1,1 m einer, leiser beim Schleichen; der
+## Untergrund kommt von dem Körper, auf dem man steht (Bau, Holz, Gelände nach der Maske). Dazu ein Aufsetzen nach
+## einem Sprung oder Fall.
+var _schrittweg := 0.0
+func _schritte(delta: float, war_am_boden: bool, fallen: float) -> void:
+	var klang := get_node_or_null("/root/Klang")
+	if klang == null:
+		return
+	var boden := get_last_slide_collision()
+	var unter: Object = null
+	for i in get_slide_collision_count():
+		var k := get_slide_collision(i)
+		if k.get_normal().y > 0.6:
+			unter = k.get_collider()
+			break
+	if is_on_floor() and not war_am_boden and fallen < -4.0:
+		klang.schritt(global_position, klang.untergrund(unter, global_position), -2.0)
+		_schrittweg = 0.0
+		return
+	if not is_on_floor() or boden == null and unter == null:
+		return
+	var v := Vector2(velocity.x, velocity.z).length()
+	if v < 0.5:
+		_schrittweg = 0.0
+		return
+	_schrittweg += v * delta
+	var laenge := 0.75 if v < gehen * 1.1 else 1.1
+	if _schrittweg >= laenge:
+		_schrittweg = 0.0
+		klang.schritt(global_position, klang.untergrund(unter, global_position), -14.0 if schleicht else -6.0)
 
 
 func _in_wasserdichtem_bau(p: Vector3) -> bool:

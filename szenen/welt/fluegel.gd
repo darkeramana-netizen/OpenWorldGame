@@ -200,6 +200,24 @@ func _process(delta: float) -> void:
 		var dauer := 0.9 if regel == "tuer" else 3.5
 		_auf = move_toward(_auf, _ziel, delta / dauer)
 		_stelle()
+		if _auf <= 0.0:            # zugefallen: Schlag und Riegel
+			_klang("tuer_zu" if regel == "tuer" else "tor_zu")
+			if regel != "tuer":
+				_klang("riegel", 0.8)
+
+
+## Geräusch an diesem Tor bzw. dieser Tür (autoload/klang.gd); über den Baum, damit das Skript ohne Autoload übersetzt
+var _bereit_klang := false        # nicht beim ersten Entscheiden nach dem Laden
+func _klang(name_: String, verzug := 0.0) -> void:
+	var klang := get_node_or_null("/root/Klang")
+	if klang == null or not is_inside_tree():
+		return
+	if verzug > 0.0:
+		await get_tree().create_timer(verzug).timeout
+		if not is_inside_tree():
+			return
+	var tor := regel != "tuer"
+	klang.spiele(name_, global_position + Vector3.UP * 1.5, 0.0 if tor else -4.0, 45.0 if tor else 20.0)
 
 
 func _entscheide() -> void:
@@ -223,7 +241,11 @@ func _entscheide() -> void:
 		_hat_gemeldet = true
 	if not spieler_nah:
 		_hat_gemeldet = false
-	_ziel = 1.0 if offen else 0.0
+	var ziel_neu := 1.0 if offen else 0.0
+	if ziel_neu != _ziel and _bereit_klang and ziel_neu > 0.5:
+		_klang("tuer_auf" if regel == "tuer" else "tor_auf")
+	_ziel = ziel_neu
+	_bereit_klang = true
 	var ansprechbar := regel != "tuer" and not offen and not _spieler_darf()
 	if ansprechbar and not is_in_group("interagierbar"):
 		add_to_group("interagierbar")

@@ -26,6 +26,7 @@ Ereignisse="*res://autoload/ereignisse.gd"
 Ladevorhang="*res://autoload/ladevorhang.gd"
 Zellwelt="*res://autoload/zellwelt.gd"
 Grafik="*res://autoload/grafik.gd"
+Klang="*res://autoload/klang.gd"
 
 [display]
 

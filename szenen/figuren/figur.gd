@@ -286,6 +286,7 @@ func _process(delta: float) -> void:
 	if _anim != null:
 		_bewege_modell(delta, tempo)
 		_spiele_animation(delta)
+		_schritte(delta, tempo)
 		return
 	_gang = lerpf(_gang, clampf(tempo / 1.6, 0.0, 1.6), clampf(delta * 8.0, 0.0, 1.0))
 	_phase = fmod(_phase + delta * (2.2 + tempo * 2.4) * minf(_gang * 4.0, 1.0), TAU)
@@ -1382,6 +1383,24 @@ func aktion(name_: String) -> void:
 		return
 	_einmal = name_
 	_anim.play(name_, 0.15)
+
+
+## Schritte der Leute nahe der Kamera (autoload/klang.gd), leiser als die eigenen; Untergrund nach der Geländemaske
+var _schrittweg := 0.0
+func _schritte(delta: float, tempo: float) -> void:
+	if tempo < 0.4:
+		_schrittweg = 0.0
+		return
+	var kamera := get_viewport().get_camera_3d()
+	if kamera == null or kamera.global_position.distance_squared_to(global_position) > 144.0:
+		return
+	_schrittweg += tempo * delta
+	if _schrittweg < (0.7 if tempo < 2.3 else 1.05):
+		return
+	_schrittweg = 0.0
+	var klang := get_node_or_null("/root/Klang")
+	if klang != null:
+		klang.schritt(global_position, klang.untergrund_gelaende(global_position), -13.0)
 
 
 func _bewege_modell(delta: float, tempo: float) -> void:

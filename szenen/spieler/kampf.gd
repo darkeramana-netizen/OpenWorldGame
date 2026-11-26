@@ -55,6 +55,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("waffe_ziehen"):
 		gezogen = not gezogen
 		_zeige_waffe()
+		_klang("schwert_ziehen" if gezogen and waffe == "saebel" else "leder", -6.0)
 	elif event.is_action_pressed("waffe_wechseln") and _ausholen <= 0.0:
 		waffe = "muskete" if waffe == "saebel" else "saebel"
 		nachladen_rest = 0.0
@@ -74,6 +75,7 @@ func angreifen() -> void:
 	else:
 		_angriff = "hieb" if waffe == "saebel" else "bajonett"
 		_ausholen = ANGRIFFE[_angriff][2]
+		_klang("schwung", -6.0)
 		var teil := _saebel if waffe == "saebel" else _muskete
 		var figur := _koerper.get_node_or_null("Figur")
 		if figur and figur.has_method("hat_modell") and figur.hat_modell():
@@ -139,6 +141,7 @@ func _nahkampf(schaden: float, reichweite: float) -> void:
 			beste_distanz = d.length()
 			bestes = ziel
 	if bestes:
+		_klang("metall", -4.0, bestes.global_position + Vector3.UP)
 		bestes.treffer(schaden, _spieler, _angriff)
 
 
@@ -152,6 +155,7 @@ func _schiessen() -> void:
 	abfrage.exclude = [_spieler.get_rid()]
 	var treffer_info := _spieler.get_world_3d().direct_space_state.intersect_ray(abfrage)
 	Spielstand.meldung.emit("Der Schuss kracht. Pulverdampf hängt in der Luft.")
+	_klang("schuss", 6.0, Vector3.INF, 300.0)
 	if treffer_info and treffer_info.collider.has_method("treffer"):
 		treffer_info.collider.treffer(SCHUSS_SCHADEN, _spieler, "schuss")
 	zustand_geaendert.emit()
@@ -163,6 +167,7 @@ func treffer(schaden: float, quelle: Node3D, art: String) -> void:
 		var zu_quelle := (quelle.global_position - _spieler.global_position).normalized()
 		if -_koerper.global_basis.z.dot(zu_quelle) > 0.3:
 			schaden *= BLOCK_FAKTOR
+			_klang("metall_klingt", -2.0)
 	leben -= schaden
 	_seit_treffer = 0.0
 	var figur := _koerper.get_node_or_null("Figur")
@@ -202,3 +207,10 @@ func aus_dict(daten: Dictionary) -> void:
 	waffe = daten.get("waffe", "saebel")
 	geladen = bool(daten.get("geladen", true))
 	_zeige_waffe()
+
+
+## Geräusch am Spieler (oder am Ort ort) über autoload/klang.gd
+func _klang(name_: String, laut := 0.0, ort := Vector3.INF, reichweite := 25.0) -> void:
+	var klang := get_node_or_null("/root/Klang")
+	if klang != null and _spieler != null:
+		klang.spiele(name_, _spieler.global_position + Vector3.UP * 1.2 if ort == Vector3.INF else ort, laut, reichweite)
