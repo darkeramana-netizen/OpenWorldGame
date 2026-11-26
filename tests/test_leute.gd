@@ -64,7 +64,9 @@ func _initialize() -> void:
 		"Sie weicht zurück (%.1f m)" % buerger.global_position.distance_to(vorher))
 	pruefe(wache.get_node("Figur").haltung == "schwert", "Die Wache zieht selbst")
 	kampf.gezogen = false
-	await create_timer(4.5).timeout
-	pruefe(wache.get_node("Figur").haltung == "", "Waffe weg: die Wache steckt wieder ein")
+	var bis := Time.get_ticks_msec() + 12000      # unter Last (parallele Tests) laufen weniger Bilder
+	while wache.get_node("Figur").haltung == "schwert" and Time.get_ticks_msec() < bis:
+		await process_frame
+	pruefe(wache.get_node("Figur").haltung != "schwert", "Waffe weg: die Wache steckt wieder ein")
 	print("Fehler: %d" % fehler)
 	quit(1 if fehler > 0 else 0)
