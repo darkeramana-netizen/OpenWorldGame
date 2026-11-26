@@ -247,9 +247,13 @@ _SOCKEL = [v_ for k_ in range(0, len(_SOCKEL), 7) if _zahl[_SOCKEL[k_ + 6]] > 1 
 N("Felssockel", "Node3D", DS, f"""script = ExtResource("31_felssockel")
 saeulen = PackedFloat32Array({", ".join(f"{v:.6g}" for v in _SOCKEL)})
 material = ExtResource("32_felssockel_mat")
-haut_modelle = PackedStringArray("res://modelle/felsen/rock_face_02/rock_face_02.gltf")
-haut_masse = PackedVector3Array(2.7, 2.5, 0.9)
-haut_farben = PackedColorArray(0.95, 0.97, 1.0, 1)""")
+haut_modelle = PackedStringArray()
+haut_masse = PackedVector3Array()
+haut_farben = PackedColorArray()""")
+# Fels-Haut (rock_face_02, Mängelliste M17) abgeschaltet (26.11.2026): Sie lag hinter den vorspringenden Blöcken der
+# erzeugten Wand, nur einzelne Kanten ragten als helle, waagrechte Bretter heraus; weiter vorn standen die Stücke wie
+# Regalbretter ab (der Scan liegt nicht wie erwartet mit der Front nach lokal +z). Wieder einschalten mit
+# haut_modelle = "res://modelle/felsen/rock_face_02/rock_face_02.gltf", haut_masse 2,7 / 2,5 / 0,9, wenn das geklärt ist.
 print("Felssockel unter den Hofmauern:", len(_SOCKEL) // 7, "Säulen in", _abschnitt, "Abschnitten")
 
 # Küstenfels (wie im Referenzbild): Wo vor der Ringmauer das Meer liegt, steht dieselbe zerklüftete, hellgraue
