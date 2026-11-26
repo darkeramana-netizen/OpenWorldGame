@@ -185,7 +185,8 @@ void gelaende_material(vec3 welt_pos, vec3 welt_normale, out vec3 albedo, out ve
 		float bahn = 1.0 - abs(rauschen(p * 0.035 + vec2(3.0, -11.0)) * 2.0 - 1.0);
 		bahn = smoothstep(0.935, 0.985, bahn + (klein - 0.5) * 0.05);
 		// fehlende Steine: kleine Erdflecken
-		float luecke = smoothstep(0.74, 0.8, rauschen(p * 0.9 + vec2(-4.0, 9.0))) * 0.8;
+		float luecke = smoothstep(0.78, 0.84, rauschen(p * 2.4 + vec2(-4.0, 9.0)) * 0.7 + rauschen(p * 5.1 + vec2(2.0, 1.0)) * 0.3)
+			* smoothstep(0.35, 0.6, rauschen(p * 0.15 + vec2(9.0, -2.0))) * 0.85;
 		// Matsch in Mulden, darin Pfützen
 		float matsch = smoothstep(0.72, 0.84, rauschen(p * 0.07 + vec2(21.0, 5.0)) + (klein - 0.5) * 0.12);
 		float pfuetze = matsch * smoothstep(0.58, 0.66, rauschen(p * 0.21 + vec2(-9.0, 14.0)));

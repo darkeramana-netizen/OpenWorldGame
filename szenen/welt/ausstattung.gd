@@ -1077,7 +1077,7 @@ func _stab(mat: String, a: Vector3, b: Vector3, breite: float, hoehe: float) -> 
 	var f := [b - quer - auf, b + quer - auf, b + quer + auf, b - quer + auf]
 	for k in 4:
 		var k2 := (k + 1) % 4
-		var mitte := (e[k] + e[k2]) / 2.0 - (a)
+		var mitte: Vector3 = (e[k] + e[k2]) / 2.0 - a
 		_viereck(mat, e[k], e[k2], f[k2], f[k], mitte)
 	_viereck(mat, e[0], e[1], e[2], e[3], a - b)
 	_viereck(mat, f[0], f[1], f[2], f[3], b - a)
@@ -1128,8 +1128,8 @@ func _schuppen(hb: float) -> void:
 			var b := zufall.randf_range(0.16, 0.26)
 			var lang := zufall.randf_range(0.38, 0.46)
 			var z1 := minf(z + lang, VORN + 0.72)
-			var y0 := dach_y.call(z) + 0.15 + 0.012
-			var y1 := dach_y.call(z1) + 0.15 + zufall.randf_range(0.0, 0.025)
+			var y0: float = dach_y.call(z) + 0.15 + 0.012
+			var y1: float = dach_y.call(z1) + 0.15 + zufall.randf_range(0.0, 0.025)
 			var x1 := minf(x + b - 0.012, hb + 0.1)
 			var mat := "schindel" if zufall.randf() < 0.6 else "schindel_hell"
 			var a_ := Vector3(x, y0, z)
@@ -1149,7 +1149,7 @@ func _schuppen(hb: float) -> void:
 		while zb < VORN - 0.05:
 			var bb := zufall.randf_range(0.18, 0.26)
 			var z2 := minf(zb + bb, VORN - 0.1)
-			var hoch := dach_y.call(z2) + 0.1
+			var hoch: float = dach_y.call(z2) + 0.1
 			_klotz("holz" if zufall.randf() < 0.5 else "holz_dunkel", Vector3(sx * (hb - 0.1) - 0.02, 0.05, zb),
 				Vector3(sx * (hb - 0.1) + 0.02, hoch, z2 - 0.018))
 			zb = z2

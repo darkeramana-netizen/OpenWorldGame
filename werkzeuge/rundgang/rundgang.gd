@@ -9,7 +9,7 @@ extends SceneTree
 ## %APPDATA%\Godot\app_userdata\Sorrowland_ In Silentio\rundgang\); der Ordner steht am Ende der Ausgabe.
 
 const WARTEN_MIN := 90       # so viele Bilder je Blickpunkt mindestens (SDFGI, Schatten und Ausblenden setzen sich)
-const WARTEN_MAX_S := 20.0
+const WARTEN_MAX_S := 40.0
 
 var _args := {}
 
@@ -78,9 +78,12 @@ func _initialize() -> void:
 		zw.pruefe_sofort()
 		var ende := Time.get_ticks_msec() + int(WARTEN_MAX_S * 1000.0)
 		var bilder := 0
-		while (bilder < WARTEN_MIN or zw.wartend() > 0) and Time.get_ticks_msec() < ende:
+		var figuren := _figuren_nah()
+		while (bilder < WARTEN_MIN or zw.wartend() > 0 or _wartend(figuren) > 0) and Time.get_ticks_msec() < ende:
 			await process_frame
 			bilder += 1
+			if bilder % 30 == 0:      # nachgeladene Zellen bringen weitere Figuren
+				figuren = _figuren_nah()
 		var datei: String = ausgabe.path_join(String(p["name"]) + ".png")
 		var bild := root.get_viewport().get_texture().get_image()
 		if bild == null:
@@ -109,3 +112,21 @@ func _lies_args() -> void:
 			i += 2
 		else:
 			i += 1
+
+
+## Figuren nahe der Kamera (realistische Menschen laden ihren Körper im Hintergrund; bis er da ist, fehlen sie im Bild)
+func _figuren_nah() -> Array:
+	var kamera := root.get_viewport().get_camera_3d()
+	var liste := []
+	for f in root.find_children("*", "Node3D", true, false):
+		if f is Figur and (kamera == null or kamera.global_position.distance_to(f.global_position) < 80.0):
+			liste.append(f)
+	return liste
+
+
+func _wartend(figuren: Array) -> int:
+	var n := 0
+	for f in figuren:
+		if is_instance_valid(f) and (f._wartet_auf_koerper or f._bau_geplant):
+			n += 1
+	return n
