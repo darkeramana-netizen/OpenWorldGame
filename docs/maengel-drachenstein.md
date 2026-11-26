@@ -100,6 +100,8 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | M45 | 16 | nichts zeigt, dass an der Burg gebaut wird | – | behoben (Art 55): Baugerüst vor der Hofmauer der Mittelburg (Standbäume, Streichstangen, Netzriegel in den Rüstlöchern, Flechtwerk, Streben, Leiter, oben frische Quader, am Fuß Quader, Mörteltrog, Eimer) |
 | M46 | 12, 15–19 | Wachen barfuß, Kettenhemd endet mitten am Oberschenkel, Eisenhut wie Chrom-Plastik | Füße des Grundkörpers mit Zehen; Kettenhemd-Schoß kurz; Hut aus Kugel und Zylinder | behoben (`docs/grafik-richtung.md`, fünfte Runde): Wendeschuhe, Haubert bis zum Knie, Kesselhut mit Nieten und Polsterhaube |
 | M47 | alle | kein Ton: kein Wind, keine Schritte, kein Hämmern, keine Glocken | Das Spiel hat bisher keine Geräusche | offen |
+| M48 | 18, 19 | Palashof und Übungsplatz: riesige leere Pflasterflächen | Werkplätze stehen am Rand, die Mitte bleibt frei | behoben (erste Runde): Misthaufen mit Forke und Jauchepfütze (Art 56) und Karren in Vorburg und Mittelburg, Kräutergärten im Flechtzaun aus Weidenruten (Art 57) mit zwei Beeten in Oberburg und Palashof (dort zwei), Fässerlager in Mittelburg, Oberburg und Palashof |
+| M49 | – | Rundgang-Fotos im Container: Stücke und Leute fehlten auf den ersten Bildern | Die Ausstattung meldet ihre Zellen erst an, wenn alles auf dem Boden steht; die Körper der realistischen Menschen laden im Hintergrund | behoben (`rundgang.gd`): wartet auf die Ausstattung und auf die Körper der Figuren nahe der Kamera (bis 40 s je Blickpunkt) |
 
 ## Nächste Schritte
 
