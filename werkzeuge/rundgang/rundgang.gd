@@ -41,6 +41,14 @@ func _initialize() -> void:
 	current_scene = szene
 	for i in 10:
 		await process_frame
+	# Die Ausstattung meldet ihre Zellen erst bei der Zellwelt an, wenn alle Stücke auf dem Boden stehen (ausstattung.gd,
+	# _setze_auf_boden); bis dahin wartet die Zellwelt auf nichts, und die ersten Fotos wären leer
+	var ausstattung := szene.find_children("*", "Node3D", true, false).filter(func(n: Node) -> bool:
+		return n.get("_bereit") != null)
+	var bis := Time.get_ticks_msec() + 120000
+	while ausstattung.any(func(n: Node) -> bool: return is_instance_valid(n) and not n.get("_bereit")) \
+			and Time.get_ticks_msec() < bis:
+		await process_frame
 	# Alles auf dem Bildschirm (HUD, Entwickler-Anzeige, Meldungen) und den Spieler ausblenden
 	for n in szene.find_children("*", "CanvasLayer", true, false):
 		(n as CanvasLayer).visible = false
