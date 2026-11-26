@@ -424,7 +424,8 @@ func _initialize() -> void:
 					kram_orte.append(p_)
 			i_ += sch
 	for t_ in current_scene.find_children("Schwarm*", "Node3D", true, false):
-		if t_.get("sitzend"):
+		# nur Tauben, die gerade sitzen (aufgescheucht von einer Wache auf dem Wehrgang fliegen sie, Zustand nicht RUHE)
+		if t_.get("sitzend") and int(t_.get("_zustand")) == 0:
 			for kind_ in t_.get_children():
 				if kind_ is Node3D:
 					var p_: Vector3 = (kind_ as Node3D).global_position

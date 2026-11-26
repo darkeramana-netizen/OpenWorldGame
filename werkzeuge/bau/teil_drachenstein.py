@@ -910,6 +910,11 @@ def werkplatz(name, teile, hof_w, boden, tiefe=1.0, frei_im_hof=False, mitte=Fal
             t_ += 1.5
     random.shuffle(versuche_)
     for px_, pz_, ux_, uz_, nx_, nz_ in versuche_:
+        # vor dem Platz steht jemand bei der Arbeit (teil_burgleben.py, etwa 2 m vor den Stücken): nicht auf einem Weg
+        # und nicht auf dem Weg von Tor zu Tor (sonst stand der Holzhacker der Vorburg mitten im Torweg)
+        vor_ = (px_ + nx_ * 2.6, pz_ + nz_ * 2.6)
+        if any(abstand_linie(w_, *vor_) < 1.6 for w_ in _alle_wege_w + _torgassen(hof_w)):
+            continue
         g0_ = math.degrees(math.atan2(nx_, nz_))            # lokal +z zeigt in den Hof
         lagen_ = [(art_, px_ + ux_ * e_ + nx_ * i_, pz_ + uz_ * e_ + nz_ * i_, g0_ + d_) for art_, e_, i_, d_ in teile]
         if all(stelle(art_, x_, z_, g_, hof_w, boden, wegabstand=2.6, probe=True) for art_, x_, z_, g_ in lagen_):
@@ -921,6 +926,17 @@ def werkplatz(name, teile, hof_w, boden, tiefe=1.0, frei_im_hof=False, mitte=Fal
     if not frei_im_hof:
         return False
     return _werkplatz_im_hof(name, teile, hof_w, boden)
+
+
+_TORGASSEN = {}          # Hof → Strecken zwischen seinen Toren (dort bleibt frei, wer durch den Hof geht)
+
+
+def _torgassen(hof_w):
+    k_ = _hof_schluessel(hof_w)
+    if k_ not in _TORGASSEN:
+        tore_ = [t_ for t_ in _tore_w if _abstand_rand(t_, hof_w) < 8.0]
+        _TORGASSEN[k_] = [[a_, b_] for i_, a_ in enumerate(tore_) for b_ in tore_[i_ + 1:]]
+    return _TORGASSEN[k_]
 
 
 def _werkplatz_im_hof(name, teile, hof_w, boden):
@@ -951,6 +967,10 @@ def _werkplatz_im_hof(name, teile, hof_w, boden):
             nx_, nz_ = math.sin(a_), math.cos(a_)
             ux_, uz_ = nz_, -nx_
             lagen_ = [(art_, px_ + ux_ * e_ + nx_ * i_, pz_ + uz_ * e_ + nz_ * i_, g0_ + d_) for art_, e_, i_, d_ in teile]
+            # frei im Hof nicht auf dem Weg von Tor zu Tor (4 m zu beiden Seiten)
+            if any(abstand_linie(g_, x_, z_) < 4.0 + max(_A_GROESSE[art_]) / 2 for g_ in _torgassen(hof_w)
+                   for art_, x_, z_, _ in lagen_):
+                continue
             if all(stelle(art_, x_, z_, g_, hof_w, boden, wegabstand=3.0, probe=True) for art_, x_, z_, g_ in lagen_):
                 for art_, x_, z_, g_ in lagen_:
                     stelle(art_, x_, z_, g_, hof_w, boden, wegabstand=3.0)
