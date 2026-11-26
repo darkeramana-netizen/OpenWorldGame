@@ -180,18 +180,18 @@ void gelaende_material(vec3 welt_pos, vec3 welt_normale, out vec3 albedo, out ve
 			rand_b = min(rand_b, texture(maske, (q - welt_ursprung) / welt_groesse).b);
 		}
 		float am_rand = a_hof * (1.0 - smoothstep(0.75, 0.95, rand_b));
-		vec3 erde = zwei(erde_farbe, p, M_ERDE) * vec3(0.82, 0.76, 0.68);
+		vec3 erde = zwei(erde_farbe, p, M_ERDE) * vec3(0.86, 0.84, 0.8);
 		// ausgetretene Bahnen (Wagen und Fußwege): geschwungene Linien aus Rauschen
 		float bahn = 1.0 - abs(rauschen(p * 0.035 + vec2(3.0, -11.0)) * 2.0 - 1.0);
-		bahn = smoothstep(0.86, 0.97, bahn + (klein - 0.5) * 0.08);
+		bahn = smoothstep(0.935, 0.985, bahn + (klein - 0.5) * 0.05);
 		// fehlende Steine: kleine Erdflecken
 		float luecke = smoothstep(0.74, 0.8, rauschen(p * 0.9 + vec2(-4.0, 9.0))) * 0.8;
 		// Matsch in Mulden, darin Pfützen
-		float matsch = smoothstep(0.62, 0.78, rauschen(p * 0.07 + vec2(21.0, 5.0)) + (klein - 0.5) * 0.12);
+		float matsch = smoothstep(0.72, 0.84, rauschen(p * 0.07 + vec2(21.0, 5.0)) + (klein - 0.5) * 0.12);
 		float pfuetze = matsch * smoothstep(0.58, 0.66, rauschen(p * 0.21 + vec2(-9.0, 14.0)));
-		hof_erde = max(max(bahn * 0.75, luecke), max(matsch, am_rand * 0.85));
+		hof_erde = max(max(bahn * 0.6, luecke), max(matsch * 0.9, am_rand * 0.8));
 		vec3 hof = mix(pf, erde, hof_erde);
-		hof = mix(hof, hof * vec3(0.55, 0.52, 0.48), matsch * 0.7);                  // feuchte, dunkle Erde
+		hof = mix(hof, hof * vec3(0.5, 0.52, 0.54), matsch * 0.7);                   // feuchte, dunkle Erde (graubraun)
 		// am Rand: Unkraut und Gras in Büscheln zwischen Mauerfuß und Pflaster, dazu Moos auf den Steinen
 		float kraut = am_rand * smoothstep(0.35, 0.6, rauschen(p * 1.3 + vec2(7.0, 2.0)) + (gross - 0.5) * 0.3);
 		hof = mix(hof, g * vec3(0.8, 0.95, 0.7), kraut * 0.85);
