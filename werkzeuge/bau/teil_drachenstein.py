@@ -775,7 +775,8 @@ _A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2
               27: (0.6, 1.1), 28: (4.2, 0.6), 29: (1.2, 1.2), 30: (1.6, 1.2), 31: (0.2, 0.3),
               40: (2.0, 0.8), 41: (3.4, 0.9), 42: (1.3, 0.9), 43: (1.5, 3.7), 44: (1.8, 0.4), 45: (2.2, 2.0), 46: (1.4, 1.3),
               47: (2.2, 1.5), 48: (0.9, 0.9), 3: (3.2, 2.2), 49: (2.1, 4.8), 33: (3.2, 0.5),
-              50: (0.4, 0.4), 51: (0.65, 0.65), 52: (0.45, 0.45), 53: (8.4, 3.0), 54: (5.3, 3.0), 55: (6.2, 3.0)}
+              50: (0.4, 0.4), 51: (0.65, 0.65), 52: (0.45, 0.45), 53: (8.4, 3.0), 54: (5.3, 3.0), 55: (6.2, 3.0),
+              56: (3.4, 2.4), 57: (2.0, 0.12)}
 _treppen_w = []
 for k_ in range(0, len(TREPPEN), 7):
     fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
@@ -1440,7 +1441,23 @@ for name_, hof_, boden_ in _hoefe:
         # erst die lange Fassung, wo die Mauer frei genug ist, sonst die kurze
         if not werkplatz(f"Schuppen {name_} {k_ + 1}", [(53, 0.0, 0.0, 0)], WL(hof_), boden_, tiefe=0.7):
             werkplatz(f"Schuppen {name_} {k_ + 1}", [(54, 0.0, 0.0, 0)], WL(hof_), boden_, tiefe=0.7)
+# Hofleben in der Mitte der großen Höfe (Echtheit, Mängelliste M48): Kräutergarten im Flechtzaun mit zwei Beeten und
+# Eingang, Misthaufen mit Karren (Wirtschaftshöfe), Fässerlager
+_KRAEUTERGARTEN = [(57, -1.1, 2.35, 0), (57, -2.35, -1.1, 90), (57, -2.35, 1.1, 90), (57, 2.35, -1.1, 90),
+                   (57, 2.35, 1.1, 90), (57, -1.1, -2.35, 0), (57, 1.1, -2.35, 0),
+                   (43, -1.0, 0.0, 0), (43, 1.0, 0.0, 0)]          # vorn rechts bleibt der Eingang offen
+_MISTHAUFEN = [(56, 0.0, 0.0, 0), (4, 3.4, 0.6, 80)]
+_FAESSERLAGER = [(0, 0.0, 0.0, 0), (0, 0.8, 0.1, 0), (0, 0.4, 0.75, 0), (1, -1.3, 0.0, 15), (1, -1.4, 1.0, 40),
+                 (2, 1.6, 0.9, 0), (0, -0.4, -0.8, 0)]
+_HOFMITTE = {"Vorburg": [("Misthaufen", _MISTHAUFEN)],
+             "Mittelburg": [("Misthaufen", _MISTHAUFEN), ("Fässerlager", _FAESSERLAGER)],
+             "Oberburg": [("Kräutergarten", _KRAEUTERGARTEN), ("Fässerlager", _FAESSERLAGER)],
+             "Palas": [("Kräutergarten", _KRAEUTERGARTEN), ("Fässerlager", _FAESSERLAGER), ("Kräutergarten 2", _KRAEUTERGARTEN)]}
+for name_, hof_, boden_ in _hoefe:
+    for was_, teile_ in _HOFMITTE.get(name_, []):
+        werkplatz(f"{was_} {name_}", teile_, WL(hof_), boden_, frei_im_hof=True, mitte=True)
 print("Mauerschuppen:", sorted(k_ for k_ in WERKPLAETZE if k_.startswith(("Schuppen", "Gerüst"))))
+print("Hofmitte:", sorted(k_ for k_ in WERKPLAETZE if k_.startswith(("Misthaufen", "Fässerlager", "Kräutergarten"))))
 random.setstate(_zustand_)
 print("Ausstattung der Höfe:", len(BURG_AUSSTATTUNG), "Stücke, davon", sum(1 for a_ in BURG_AUSSTATTUNG if a_[0] == 14), "Feuerkörbe;",
       "Brunnen in", sorted(BURG_BRUNNEN), "abgelehnt:", _GRUND)

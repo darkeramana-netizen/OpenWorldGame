@@ -185,6 +185,10 @@ func _initialize() -> void:
 	for bau in current_scene.find_children("*", "Node3D", true, false):
 		if not is_instance_valid(bau) or not ("_hohle" in bau and "tuerme" in bau and "tore" in bau):
 			continue
+		if typeof(bau.get("tuerme")) != TYPE_PACKED_FLOAT32_ARRAY:
+			print("       DEBUG Knoten ohne tuerme: %s, Skript %s, im Baum %s, wird gelöscht %s" % [bau.get_path() if bau.is_inside_tree() else bau.name,
+				bau.get_script().resource_path if bau.get_script() else "-", bau.is_inside_tree(), bau.is_queued_for_deletion()])
+			continue
 		var tu: PackedFloat32Array = bau.tuerme
 		var i := 0
 		while i + 6 < tu.size() and turm_alle < 8:

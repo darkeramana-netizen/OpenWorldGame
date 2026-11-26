@@ -18,7 +18,8 @@ extends Node3D
 ## angeschlagen), 36 Schlamm, 37 Netzgestell mit Fischernetz (3,2 m), 38 Fischkorb, 21 Schmiede (gemauerte
 ## Werkstatt mit Pultdach, Rücken an der Hofmauer bei lokal -z, offen nach +z; innen Esse, Amboss, Werkbank),
 ## 53 Mauerschuppen (8 m; 54: 5,2 m; Pultdach aus Schindeln auf einer Mauerlatte in der Hofmauer, die etwa bei lokal z = -2,4
-## steht; offen nach +z; darin Brennholz, Fässer, Wagenrad, Werkzeug), 55 Baugerüst vor der Hofmauer (6 m, ebenso)
+## steht; offen nach +z; darin Brennholz, Fässer, Wagenrad, Werkzeug), 55 Baugerüst vor der Hofmauer (6 m, ebenso),
+## 56 Misthaufen mit Forke, 57 Flechtzaun (2 m entlang x)
 @export var stuecke := PackedFloat32Array():
 	set(w):
 		stuecke = w
@@ -49,7 +50,7 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(1.0, 0.95, 0.4), Vector3(1.6, 0.95, 0.45), Vector3(0.65, 1.6, 0.35), Vector3(0.75, 0.3, 1.85),
 	Vector3(0.9, 0.5, 0.2), Vector3(1.0, 0.85, 1.0), Vector3(0.35, 0.6, 0.35), Vector3(1.1, 0.9, 0.7),
 	Vector3(0.55, 1.75, 0.35), Vector3(1.05, 1.9, 2.4),
-	Vector3.ZERO, Vector3(0.31, 0.35, 0.31), Vector3.ZERO, Vector3(4.1, 3.6, 1.6), Vector3(2.6, 3.6, 1.6), Vector3(3.0, 6.3, 1.5)]
+	Vector3.ZERO, Vector3(0.31, 0.35, 0.31), Vector3.ZERO, Vector3(4.1, 3.6, 1.6), Vector3(2.6, 3.6, 1.6), Vector3(3.0, 6.3, 1.5), Vector3(1.4, 0.9, 1.2), Vector3(1.0, 1.0, 0.06)]
 ## Fotoscans (Poly Haven, CC0; werkzeuge/modell_laden.py, modelle/ausstattung): Art → Teile [Modell, Ort, Drehung in Grad
 ## (x, y, z), Maßstab]. Ein Teil mit einer Zahl statt eines Namens ist eine selbst gebaute Form: 100 + Art ist die Art ohne
 ## die Dinge, die ein Scan ersetzt (Werkzeug, Axt, Schild, Laterne, Korb). Bis SCAN_NAH Meter zeigt jede Art die volle
@@ -476,6 +477,10 @@ func _mesh(art: int) -> ArrayMesh:
 			_schuppen(2.6)
 		55:  # Baugerüst an der Hofmauer (Ausbesserung)
 			_geruest()
+		56:  # Misthaufen mit Stroh, Forke und Jauchepfütze
+			_misthaufen()
+		57:  # Flechtzaun (2 m): Pfähle, dazwischen Weidenruten im Wechsel vor und hinter den Pfählen geflochten
+			_flechtzaun()
 		18:  # Heuhaufen
 			_zylinder("heu", Vector3.ZERO, 0.95, 0.95, 0.45, 12)
 			_zylinder("heu", Vector3(0, 0.4, 0), 0.75, 0.8, 0.35, 12)
@@ -1267,6 +1272,68 @@ func _geruest() -> void:
 	_zylinder("holz_dunkel", Vector3(-0.6, 0, 0.7), 0.16, 0.17, 0.32, 9)                # Eimer
 
 
+## Misthaufen (Art 56): flacher, unregelmäßiger Hügel aus Mist (Ringe mit Rauschen in Radius und Höhe), obenauf frisches
+## Stroh, eine Forke steckt schräg darin, daneben eine Jauchepfütze.
+func _misthaufen() -> void:
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = 5656
+	const TEILE := 16
+	var ringe := [[1.25, 0.0], [1.1, 0.32], [0.85, 0.62], [0.5, 0.85], [0.0, 0.95]]
+	var rand := []
+	for k in TEILE:
+		rand.append(zufall.randf_range(0.82, 1.12))
+	var punkt := func(r_i: int, k: int) -> Vector3:
+		var w := TAU * k / TEILE
+		var r: float = ringe[r_i][0] * rand[k % TEILE] * (1.0 + 0.08 * sin(w * 3.0 + r_i))
+		return Vector3(cos(w) * r * 1.25, ringe[r_i][1] * (0.9 + 0.2 * rand[(k + r_i) % TEILE]), sin(w) * r)
+	for r_i in ringe.size() - 1:
+		for k in TEILE:
+			var a: Vector3 = punkt.call(r_i, k)
+			var b: Vector3 = punkt.call(r_i, k + 1)
+			var c: Vector3 = punkt.call(r_i + 1, k + 1)
+			var d: Vector3 = punkt.call(r_i + 1, k)
+			var mitte := (a + b + c + d) / 4.0
+			_viereck("mist", a, b, c, d, Vector3(mitte.x, 0.6, mitte.z))
+	# frisches Stroh obenauf und am Rand
+	for k in 14:
+		var w := zufall.randf_range(0, TAU)
+		var r := zufall.randf_range(0.0, 1.0)
+		var m := Vector3(cos(w) * r * 1.2, 0.0, sin(w) * r * 0.9)
+		m.y = 0.95 * (1.0 - r * r) * 0.9 + 0.03
+		var lw := zufall.randf_range(0, PI)
+		var ax := Vector3(cos(lw), 0, sin(lw)) * zufall.randf_range(0.15, 0.3)
+		var az := Vector3(-sin(lw), 0, cos(lw)) * zufall.randf_range(0.1, 0.2)
+		_viereck("heu", m - ax - az, m + ax - az, m + ax + az + Vector3(0, 0.03, 0), m - ax + az, Vector3.UP)
+	# Forke: Stiel schräg, Zinken im Mist
+	var f0 := Vector3(0.35, 0.45, 0.1)
+	var f1 := Vector3(0.95, 1.85, -0.25)
+	_stab("holz", f0, f1, 0.04, 0.04)
+	for z_: float in [-0.06, 0.0, 0.06]:
+		_stab("metall", f0 + Vector3(0, 0, z_), f0 + Vector3(-0.12, -0.32, z_ * 1.4), 0.012, 0.012)
+	# Jauchepfütze
+	_zylinder("schlamm", Vector3(1.55, 0.01, 0.6), 0.55, 0.55, 0.006, 12)
+	_zylinder("wasser", Vector3(1.6, 0.018, 0.65), 0.32, 0.32, 0.004, 10)
+
+
+## Flechtzaun (Art 57), 2 m entlang x: fünf Rundpfähle, dazwischen waagrechte Weidenruten in neun Lagen, jede Rute
+## abwechselnd vor und hinter den Pfählen (die nächste Lage umgekehrt).
+func _flechtzaun() -> void:
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = 5757
+	var pfaehle := [-1.0, -0.5, 0.0, 0.5, 1.0]
+	for x: float in pfaehle:
+		_zylinder("holz_dunkel", Vector3(x, -0.15, 0), 0.035, 0.032, 1.08 + zufall.randf_range(-0.04, 0.06), 6)
+	for lage in 9:
+		var y := 0.12 + lage * 0.095
+		for i in pfaehle.size() - 1:
+			var vorn := 1.0 if (i + lage) % 2 == 0 else -1.0
+			var a := Vector3(pfaehle[i], y, -vorn * 0.035)
+			var b := Vector3(pfaehle[i + 1], y + zufall.randf_range(-0.01, 0.01), vorn * 0.035)
+			var m := (a + b) / 2.0 + Vector3(0, 0, vorn * 0.02)
+			_stab("weide", a, m, 0.024, 0.024)
+			_stab("weide", m, b, 0.024, 0.024)
+
+
 func _fleck(mat: String, mitte: Vector3, r: float, phase: float) -> void:
 	var st := _st(mat)
 	var teile := 20
@@ -1590,7 +1657,7 @@ func _material(name_: String) -> Material:
 				pass
 			elif name_ in ["fell", "haar", "taube", "taube_hals", "taube_dunkel"]:
 				pass
-			elif not name_ in ["holz_dunkel", "korb", "rumpf_teer", "deck", "rumpf", "rumpf_innen", "schindel", "schindel_hell"]:
+			elif not name_ in ["holz_dunkel", "korb", "rumpf_teer", "deck", "rumpf", "rumpf_innen", "schindel", "schindel_hell", "mist", "weide"]:
 				s.albedo_texture = load("res://texturen/stoff_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(3, 3, 3)
@@ -1618,7 +1685,8 @@ func _material(name_: String) -> Material:
 				"schlamm": Color(0.2, 0.15, 0.1), "taube": Color(0.55, 0.57, 0.62), "taube_hals": Color(0.35, 0.45, 0.42), "taube_dunkel": Color(0.32, 0.33, 0.37),
 				"ruß": Color(0.07, 0.06, 0.055), "netz": Color(0.3, 0.26, 0.2), "kork": Color(0.62, 0.45, 0.26),
 				"fisch": Color(0.68, 0.72, 0.74), "fisch_dunkel": Color(0.3, 0.34, 0.38),
-				"schindel": Color(0.4, 0.36, 0.33), "schindel_hell": Color(0.55, 0.49, 0.42)}.get(name_, Color(0.6, 0.6, 0.6))
+				"schindel": Color(0.4, 0.36, 0.33), "schindel_hell": Color(0.55, 0.49, 0.42),
+				"mist": Color(0.2, 0.14, 0.09), "weide": Color(0.55, 0.43, 0.3)}.get(name_, Color(0.6, 0.6, 0.6))
 			if name_ in ["spaene", "splitter"]:
 				s.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 				s.albedo_color = Color(0.78, 0.64, 0.44, 0.7) if name_ == "spaene" else Color(0.55, 0.53, 0.49, 0.55)
