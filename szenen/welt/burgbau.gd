@@ -86,6 +86,13 @@ const Verdecker := preload("res://szenen/welt/verdecker.gd")
 		kollision = w
 		_neu_bauen()
 ## Steinart der Mauern: Name eines Materials in material/ (mauer, basalt, kai, hell, bruchstein)
+## Mauern mit schräger Krone entlang von Rampen und ansteigenden Wegen (Brüstungen): je Stück 7 Werte ax, az, bx, bz,
+## unten, oben am Anfang, oben am Ende; Dicke 1,2 m. Die Krone folgt dem Weg (vorher waagrechte Stufenblöcke, die wie
+## lose Mauerstücke wirkten, Rückmeldung 26.11.2026); darauf eine Abdeckung aus hellem Stein.
+@export var rampenmauern := PackedFloat32Array():
+	set(w):
+		rampenmauern = w
+		_neu_bauen()
 @export var stein := "mauer":
 	set(w):
 		stein = w
@@ -269,6 +276,12 @@ func _baue_neu() -> void:
 		_mauerstueck(Vector2(mauern[i], mauern[i + 1]), Vector2(mauern[i + 2], mauern[i + 3]), mauern[i + 4],
 			mauern[i + 5], mauern[i + 6], Vector2(mauern[i + 7], mauern[i + 8]), mauern[i + 9] > 0.5)
 		i += 10
+	i = 0
+	while i + 6 < rampenmauern.size():
+		_setze_zelle(Vector2(rampenmauern[i], rampenmauern[i + 1]))
+		_rampenmauer(Vector2(rampenmauern[i], rampenmauern[i + 1]), Vector2(rampenmauern[i + 2], rampenmauern[i + 3]),
+			rampenmauern[i + 4], rampenmauern[i + 5], rampenmauern[i + 6])
+		i += 7
 	i = 0
 	while i + 6 < tuerme.size():
 		_setze_zelle(Vector2(tuerme[i], tuerme[i + 1]))
@@ -1001,6 +1014,49 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 	var zm := ((a + b) / 2.0 - m).dot(u)
 	for ab_: Vector2 in _abschnitte(zinnen0, zinnen1, schalen_luecken):
 		_zinnen(m + u * zm, u, n, laenge, d - BRUSTWEHR_DICKE, d, oben + BRUSTWEHR, ab_.x - zm, ab_.y - zm)
+
+
+## Brüstung mit schräger Krone von a nach b (siehe rampenmauern): Mauerkörper 1,2 m dick, Krone von oben_a nach oben_b,
+## darauf eine 0,16 m dicke Abdeckplatte aus hellem Stein, die zu beiden Seiten 6 cm übersteht.
+func _rampenmauer(a: Vector2, b: Vector2, unten: float, oben_a: float, oben_b: float) -> void:
+	var laenge := a.distance_to(b)
+	if laenge < 0.05:
+		return
+	var u := (b - a) / laenge
+	var n := Vector2(-u.y, u.x)
+	const D := 0.6            # halbe Dicke
+	const PLATTE := 0.16
+	var p := func(t: float, sn: float, y: float) -> Vector3:
+		var q := a + u * t + n * sn
+		return Vector3(q.x, y, q.y)
+	var hoehe := func(t: float) -> float:
+		return lerpf(oben_a, oben_b, t / laenge)
+	var N3 := Vector3(n.x, 0, n.y)
+	var U3 := Vector3(u.x, 0, u.y)
+	# Mauerkörper
+	for sn: float in [-D, D]:
+		_viereck(stein, p.call(0.0, sn, unten), p.call(laenge, sn, unten), p.call(laenge, sn, oben_b - PLATTE),
+			p.call(0.0, sn, oben_a - PLATTE), N3 * signf(sn))
+	for t: float in [0.0, laenge]:
+		var h: float = hoehe.call(t)
+		_viereck(stein, p.call(t, -D, unten), p.call(t, D, unten), p.call(t, D, h - PLATTE), p.call(t, -D, h - PLATTE),
+			U3 * (1.0 if t > 0.0 else -1.0))
+	# Abdeckplatte, leicht dachförmig zur Mitte erhöht (Wasser läuft ab)
+	var ue := D + 0.06
+	var first := 0.03
+	for sn: float in [-1.0, 1.0]:
+		# Unterseite des Überstands, Stirn, Oberseite (eine Hälfte)
+		_viereck("hell", p.call(0.0, sn * D, oben_a - PLATTE), p.call(laenge, sn * D, oben_b - PLATTE),
+			p.call(laenge, sn * ue, oben_b - PLATTE), p.call(0.0, sn * ue, oben_a - PLATTE), Vector3.DOWN)
+		_viereck("hell", p.call(0.0, sn * ue, oben_a - PLATTE), p.call(laenge, sn * ue, oben_b - PLATTE),
+			p.call(laenge, sn * ue, oben_b), p.call(0.0, sn * ue, oben_a), N3 * sn)
+		_viereck("hell", p.call(0.0, sn * ue, oben_a), p.call(laenge, sn * ue, oben_b),
+			p.call(laenge, 0.0, oben_b + first), p.call(0.0, 0.0, oben_a + first), Vector3.UP + N3 * sn * 0.1)
+	for t: float in [0.0, laenge]:
+		var h: float = hoehe.call(t)
+		var aussen := U3 * (1.0 if t > 0.0 else -1.0)
+		_viereck("hell", p.call(t, -ue, h - PLATTE), p.call(t, ue, h - PLATTE), p.call(t, ue, h), p.call(t, -ue, h), aussen)
+		_dreieck("hell", p.call(t, -ue, h), p.call(t, ue, h), p.call(t, 0.0, h + first), aussen)
 
 
 ## Teilstrecken von von bis bis ohne die Lücken (je Vector2(Anfang, Ende))

@@ -61,5 +61,8 @@ func _process(_delta: float) -> void:
 			else:
 				_himmel.sky_horizon_color = farbe
 				_himmel.ground_horizon_color = farbe
+			# für die Spiegelung des Himmels im Wasser (wasser.gdshader), so hell wie der Hintergrund
+			RenderingServer.global_shader_parameter_set("himmel_oben" if i == 0 else "himmel_horizont",
+				farbe * lerpf(0.6, 1.0, tag))
 		# Unter dem Horizont (hinter der Sichtweite der Kamera) liegt Meer, kein brauner Boden
 		_himmel.ground_bottom_color = MEER_FERN.lerp(Color(0.02, 0.03, 0.05), clampf(-hoehe * 4.0, 0.0, 1.0))

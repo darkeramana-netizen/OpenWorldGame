@@ -616,6 +616,9 @@ func _baue_mensch(w: bool) -> bool:
 	var oben := _kopf_oben(skelett)
 	if oben > 1.0:
 		_modell.scale = Vector3.ONE * ((1.62 if w else 1.74) / oben)
+	# 2,5 cm höher: Die Leute stehen auf der Kollision des Geländes, das gezeichnete Netz liegt an Hängen etwas höher
+	# (andere Dreiecksteilung), dazu das Relief des Pflasters; vorher verschwanden die Füße fast im Boden
+	_modell.position.y = 0.025
 	for k in skelett.get_children():
 		if String(k.name).ends_with("_voll"):   # nur Quelle des echten Stoffs (stoff_echt_einrichten)
 			k.visible = false
@@ -719,13 +722,15 @@ static func stoff_einrichten(skelett: Skeleton3D) -> SpringBoneSimulator3D:
 ## Je Teil: [Nachgiebigkeit der Biegung, Dämpfung, Radius der Beinkapseln oben, unten, Bewegungsraum am Saum in m].
 ## Was über dem Rock hängt, hat dickere Kapseln (der Rock liegt dazwischen) und wenig Bewegungsraum: Bahnen sind flach
 ## und würden sonst hinter das Bein rutschen. Leder und Kettengeflecht sind schwer und steif.
+## Dämpfung 26.11.2026 etwa verdoppelt und der Bewegungsraum des Rocks kleiner: Der Stoff schwang zu stark hin und her
+## (dazu die Zeitkorrektur im Modul gegen das Zittern bei schwankender Bildzeit)
 const STOFF_TEILE := {
-	"Kittelrock": [0.0003, 0.05, 0.075, 0.055, 0.2],
-	"Kettenhemd_rock": [0.00008, 0.12, 0.085, 0.06, 0.1],
-	"Schuerze": [0.0003, 0.08, 0.1, 0.075, 0.07],
-	"Lederschuerze": [0.00005, 0.12, 0.105, 0.08, 0.06],
-	"Wappenrock": [0.0002, 0.08, 0.105, 0.08, 0.07],
-	"Wappenrock_hinten": [0.0002, 0.08, 0.105, 0.08, 0.07],
+	"Kittelrock": [0.0003, 0.13, 0.075, 0.055, 0.15],
+	"Kettenhemd_rock": [0.00008, 0.22, 0.085, 0.06, 0.08],
+	"Schuerze": [0.0003, 0.16, 0.1, 0.075, 0.06],
+	"Lederschuerze": [0.00005, 0.22, 0.105, 0.08, 0.05],
+	"Wappenrock": [0.0002, 0.16, 0.105, 0.08, 0.06],
+	"Wappenrock_hinten": [0.0002, 0.16, 0.105, 0.08, 0.06],
 }
 ## Teil → mögliche Unterlagen (die erste vorhandene zählt)
 const STOFF_LAGEN := {

@@ -164,3 +164,11 @@ gelaende_rahmen={
 "type": "vec4",
 "value": Vector4(0, 0, 0, 0)
 }
+himmel_oben={
+"type": "color",
+"value": Color(0.25, 0.4, 0.62, 1)
+}
+himmel_horizont={
+"type": "color",
+"value": Color(0.62, 0.68, 0.74, 1)
+}

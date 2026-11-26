@@ -163,6 +163,17 @@ func _ist_frei(x: float, z: float) -> bool:
 	return false
 
 
+## So tief muss ein Stamm am Hang einsinken, damit er auch auf der Talseite im Boden steckt: der tiefste Punkt im
+## Umkreis r unter dem Mittelpunkt, dazu 10 cm (vorher schwebten Stämme am Hang talseitig über dem Boden)
+func _einsinken(x: float, z: float, r: float) -> float:
+	var h: float = _gelaende.hoehe_bei(x, z)
+	var tiefst: float = h
+	for k in 8:
+		var w := TAU * k / 8.0
+		tiefst = minf(tiefst, _gelaende.hoehe_bei(x + cos(w) * r, z + sin(w) * r))
+	return h - tiefst + 0.1
+
+
 ## Darf hier etwas stehen? Gibt die Bodenhöhe zurück oder NAN.
 func _platz(x: float, z: float, steil_max: float, raum: float) -> float:
 	var h: float = _gelaende.hoehe_bei(x, z)
@@ -292,11 +303,11 @@ func _berechne_pflanzen() -> Dictionary:
 				var h := _platz(px, pz, STEIL_BAUM, 1.6)
 				if not is_nan(h):
 					var art := "nadel" if zufall.randf() < lerpf(nadel_anteil, minf(nadel_anteil + 0.25, 1.0), wald) else "laub"
-					listen[art].append(_exemplar(zufall, px, h, pz, 0.75, 1.35))
+					listen[art].append(_exemplar(zufall, px, h - _einsinken(px, pz, 0.6), pz, 0.75, 1.35))
 			elif wurf < (dichte + busch_dichte * (1.0 + wald)) * zelle_ha:
 				var h := _platz(px, pz, STEIL_BAUM + 0.05, 0.6)
 				if not is_nan(h):
-					listen["busch"].append(_exemplar(zufall, px, h, pz, 0.6, 1.4))
+					listen["busch"].append(_exemplar(zufall, px, h - _einsinken(px, pz, 0.5), pz, 0.6, 1.4))
 			elif wurf < (dichte + busch_dichte * (1.0 + wald) + fels_dichte) * zelle_ha:
 				var h := _platz(px, pz, 0.6, 1.0)
 				if not is_nan(h):

@@ -7,6 +7,10 @@ shader_type spatial;
 
 global uniform sampler2D gelaende_hoehe : filter_linear;
 global uniform vec4 gelaende_rahmen;
+// Himmel für die Spiegelung (tageslicht.gd setzt beide je Bild): Wasser spiegelt flach gesehen fast ganz (Fresnel)
+global uniform vec4 himmel_oben : source_color;
+global uniform vec4 himmel_horizont : source_color;
+uniform float spiegelung = 1.0;
 uniform vec3 farbe_tief = vec3(0.012, 0.05, 0.065);  // tiefes Blaugrün wie im Referenzbild
 uniform vec3 farbe_hell = vec3(0.025, 0.085, 0.095);
 uniform vec3 farbe_flach = vec3(0.06, 0.13, 0.11);   // über hellem Grund
@@ -88,6 +92,16 @@ void fragment() {
 	float hx = wellen(p + vec2(e, 0.0), TIME);
 	float hz = wellen(p + vec2(0.0, e), TIME);
 	vec3 n_welt = normalize(vec3(-(hx - h0) / e * staerke, 1.0, -(hz - h0) / e * staerke));
+	// feine Kräuselung nah an der Kamera (bis 60 m): kleine, schnelle Wellen, die das Licht brechen
+	float nah = 1.0 - smoothstep(25.0, 60.0, abstand);
+	if (nah > 0.0) {
+		float ef = 0.08;
+		vec2 q = p * 2.2;
+		float f0 = rauschen(q + vec2(TIME * 0.9, TIME * 0.6)) + rauschen(q * 1.9 - vec2(TIME * 1.3, -TIME * 0.4)) * 0.5;
+		float fx = rauschen(q + vec2(ef * 2.2, 0.0) + vec2(TIME * 0.9, TIME * 0.6)) + rauschen((q + vec2(ef * 2.2, 0.0)) * 1.9 - vec2(TIME * 1.3, -TIME * 0.4)) * 0.5;
+		float fz = rauschen(q + vec2(0.0, ef * 2.2) + vec2(TIME * 0.9, TIME * 0.6)) + rauschen((q + vec2(0.0, ef * 2.2)) * 1.9 - vec2(TIME * 1.3, -TIME * 0.4)) * 0.5;
+		n_welt = normalize(n_welt + vec3(-(fx - f0), 0.0, -(fz - f0)) * 0.35 * nah * (1.0 - im_hafen * 0.4));
+	}
 	NORMAL = normalize((VIEW_MATRIX * vec4(n_welt, 0.0)).xyz);
 
 	// großflächige, weiche Farbunterschiede (Strömung, Tiefe) statt regelmäßiger Bänder
@@ -127,4 +141,13 @@ void fragment() {
 	// eines großen weißen Flecks. Gischt ist matt.
 	ROUGHNESS = mix(mix(0.2, 0.06, staerke / max(kraeuseln, 0.001)), 0.8, schaum);
 	SPECULAR = 0.5;
+	// Spiegelung des Himmels nach Fresnel (Wasser: 2 % senkrecht, flach fast ganz), mit den Wellen verzerrt; macht aus
+	// der dunklen Fläche erkennbar Wasser (vorher wirkte es wie ein blauer Boden)
+	vec3 v = normalize(CAMERA_POSITION_WORLD - welt_pos);
+	vec3 r = reflect(-v, n_welt);
+	float cos_t = clamp(dot(v, n_welt), 0.0, 1.0);
+	float fresnel = 0.02 + 0.98 * pow(1.0 - cos_t, 5.0);
+	vec3 himmel = mix(himmel_horizont.rgb, himmel_oben.rgb, smoothstep(0.0, 0.5, r.y));
+	EMISSION = himmel * fresnel * (1.0 - schaum) * spiegelung;
+	ALPHA = max(ALPHA, fresnel);
 }

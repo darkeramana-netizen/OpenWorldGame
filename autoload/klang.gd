@@ -15,7 +15,7 @@ extends Node
 
 const ORDNER := "res://klaenge/"
 const POOL := 24
-const SCHLEIFEN := ["wind_sanft", "wind_stark", "feuer", "brandung", "markt"]
+const SCHLEIFEN := ["wind_sanft", "wind_stark", "feuer", "brandung", "markt", "brunnen"]
 
 var _streams := {}                  # Name → AudioStream (oder null, wenn es die Datei nicht gibt)
 var _varianten := {}                # Grundname → Anzahl Varianten

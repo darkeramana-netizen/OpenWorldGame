@@ -826,16 +826,26 @@ func _dach(flaechen: Dictionary, mat: String, giebel_mat: String, traufe: float,
 	_dach_details(flaechen, mat, punkt, traufe, unten, halbe, laenge, hoehe, dicke, wand_halbe)
 	# Giebelwände (Dreiecke) an beiden Enden, etwas hinter der Dachkante
 	var gs := _st(flaechen, giebel_mat)
+	# Die Giebelwand reicht bis an die Unterseite des Dachs (vorher ein Dreieck bis unter den First: zwischen Wand und
+	# Dach klaffte an der Spitze ein halber Meter, von vorn sah das Dach aus, als schwebe es, Rückmeldung 26.11.2026)
+	var dach_unten := func(q: float) -> float:
+		return unten + (traufe + hoehe - unten) * (1.0 - absf(q) / halbe) - 0.01
 	for e: int in [1, -1]:
 		var l := (laenge - 0.35) * e
 		var p1: Vector3 = punkt.call(-wand_halbe, l, traufe)
 		var p2: Vector3 = punkt.call(wand_halbe, l, traufe)
-		var p3: Vector3 = punkt.call(0.0, l, traufe + (hoehe * wand_halbe / halbe))
+		var p1o: Vector3 = punkt.call(-wand_halbe, l, dach_unten.call(wand_halbe))
+		var p2o: Vector3 = punkt.call(wand_halbe, l, dach_unten.call(wand_halbe))
+		var p3: Vector3 = punkt.call(0.0, l, dach_unten.call(0.0))
 		var aussen := (e == 1) == giebelstaendig
 		if aussen:
-			_dreieck(gs, p1, p2, p3)
+			_dreieck(gs, p1o, p2o, p3)
+			_dreieck(gs, p1, p2, p2o)
+			_dreieck(gs, p1, p2o, p1o)
 		else:
-			_dreieck(gs, p2, p1, p3)
+			_dreieck(gs, p2o, p1o, p3)
+			_dreieck(gs, p2, p1, p1o)
+			_dreieck(gs, p2, p1o, p2o)
 		# Fenster im Giebel (Dachboden): eines, bei breiten Giebeln zwei nebeneinander (M14)
 		var gh := hoehe * wand_halbe / halbe
 		if gh > 2.4:
@@ -854,7 +864,7 @@ func _dach(flaechen: Dictionary, mat: String, giebel_mat: String, traufe: float,
 			var n := 4
 			for k in range(1, n):
 				var q := -wand_halbe + 2 * wand_halbe * k / n
-				var hoch := (hoehe * wand_halbe / halbe) * (1.0 - absf(q) / wand_halbe)
+				var hoch: float = dach_unten.call(q) - traufe
 				var v := 0.06 * (1 if aussen else -1) * (1 if giebelstaendig else 1)
 				var lo: Vector3 = punkt.call(q - 0.055, l, traufe)
 				var hi: Vector3 = punkt.call(q + 0.055, l, traufe + hoch)

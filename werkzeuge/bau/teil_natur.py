@@ -124,7 +124,9 @@ for gx in range(-360, 330, 3):
                 _setze(random.choice(NESSEL + FARN_N), px, H(px, pz) - 0.05, pz, random.uniform(0, 360), 0,
                        random.uniform(0.8, 1.4))
         elif wurf < 0.018 * (0.3 + dicht):
-            _setze(WURZEL, x, h - 0.4, z, random.uniform(0, 360), 0, random.uniform(0.6, 1.1))
+            # (Wurzelstock entfällt: flach auf dem Waldboden wirkte der Scan wie eine braune Erdplatte, Rückmeldung
+            # 26.11.2026; der Zufall läuft gleich weiter, damit alles andere an seinem Platz bleibt)
+            random.uniform(0, 360); random.uniform(0.6, 1.1)
         elif wurf < 0.03 * (0.3 + dicht):
             _setze(random.choice([FLIEGENPILZ, HALLIMASCH]), x, h - 0.02, z, random.uniform(0, 360), 0, random.uniform(1.0, 1.6))
         elif wurf < 0.06 * (0.2 + dicht):

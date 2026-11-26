@@ -17,7 +17,7 @@ import numpy as np
 import meshoptimizer as mo
 
 args = sys.argv[1:]
-DREIECKE = 3000
+DREIECKE = 6000
 if "--dreiecke" in args:
     i = args.index("--dreiecke"); DREIECKE = int(args[i + 1]); del args[i:i + 2]
 KOPF = {"User-Agent": "sorrowland-werkzeuge/1.0"}
@@ -85,15 +85,17 @@ def lies_gltf(datei):
     return g, zusammen
 
 
-def vereinfache(pos, nor, uv, idx, ziel):
-    """Auf etwa ziel Dreiecke; Nähte (UV, Normalen) bleiben, weil dort getrennte Ecken liegen."""
+def vereinfache(pos, nor, uv, idx, ziel, grob_erlaubt=True):
+    """Auf etwa ziel Dreiecke; Nähte (UV, Normalen) bleiben, weil dort getrennte Ecken liegen. Bremsen die Nähte,
+    bleiben es eben mehr Dreiecke; das grobe Verfahren (simplify_sloppy, kennt keine Nähte: verzogene, fleckige
+    Texturen, so beim Fass, Rückmeldung 26.11.2026) nur für die ferne Fassung."""
     if len(idx) <= ziel:
         return pos, nor, uv, idx
     flach = idx.astype(np.uint32).ravel()
     ecken = np.ascontiguousarray(pos.astype(np.float32))
     neu = np.zeros(len(flach), dtype=np.uint32)
     n = mo.simplify(neu, flach, ecken, len(flach), len(ecken), 12, ziel * 3, 0.02)
-    if n > ziel * 3 * 1.5:   # Nähte bremsen: dann grob, aber am Ziel
+    if grob_erlaubt and n > ziel * 3 * 1.5:   # Nähte bremsen: dann grob, aber am Ziel
         grob = np.zeros(len(flach), dtype=np.uint32)
         m = mo.simplify_sloppy(grob, flach, ecken, len(flach), len(ecken), 12, ziel * 3, 0.5)
         if 0 < m < n:
@@ -180,9 +182,10 @@ def verarbeite(name):
     ergebnis = {"groesse": [round(float(v), 3) for v in hi - lo], "quelle": f"https://polyhaven.com/a/{name}",
                 "dreiecke_scan": int(gesamt)}
     # kleine Dinge brauchen weniger Dreiecke: 2500 je Meter der größten Ausdehnung, höchstens --dreiecke
-    nah = int(min(DREIECKE, max(400, 2500 * float((hi - lo).max()))))
+    # (mindestens 1500: auch kleine Dinge stehen dem Spieler oft direkt vor Augen)
+    nah = int(min(DREIECKE, max(1500, 4000 * float((hi - lo).max()))))
     for fassung, dreiecke in (("nah", nah), ("fern", max(120, nah // 6))):
-        neu = {m: vereinfache(*t, max(24, int(dreiecke * len(t[3]) / gesamt))) for m, t in teile.items()}
+        neu = {m: vereinfache(*t, max(24, int(dreiecke * len(t[3]) / gesamt)), fassung == "fern") for m, t in teile.items()}
         schreibe(ziel / f"{name}_{fassung}.gltf", neu, gq, quelle.parent)
         ergebnis[fassung] = int(sum(len(t[3]) for t in neu.values()))
     (ziel / "modell.json").write_text(json.dumps(ergebnis, indent=1))

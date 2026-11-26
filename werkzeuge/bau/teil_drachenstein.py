@@ -159,8 +159,19 @@ N("VorburgTuerme", "Node3D", BG, f"""script = ExtResource("28_burgbau")
 tuerme = PackedFloat32Array({_zahlen(_vt)})""")
 
 
+def _in_vieleck(q, poly):
+    """Liegt q im Vieleck (Strahlverfahren)?"""
+    x_, z_ = q
+    drin_ = False
+    for (ax_, az_), (bx_, bz_) in zip(poly, poly[1:] + poly[:1]):
+        if (az_ > z_) != (bz_ > z_) and x_ < ax_ + (z_ - az_) * (bx_ - ax_) / (bz_ - az_):
+            drin_ = not drin_
+    return drin_
+
+
 def bruestung(name, linie, hoehen, abstand, ab=None, nicht_bei=()):
-    """Niedrige Futtermauern mit Brüstung zu beiden Seiten eines Wegs (Rampe, gemauerter Weg)."""
+    """Niedrige Futtermauern mit Brüstung zu beiden Seiten eines Wegs (Rampe, gemauerter Weg). Die Krone folgt dem
+    Weg schräg (burgbau.gd, rampenmauern); vorher waagrechte Blöcke in Stufen, die wie lose Mauerstücke wirkten."""
     pkt, mauern = WL(linie), []
     for i_ in range(len(pkt) - 1):
         (ax_, az_), (bx_, bz_) = pkt[i_], pkt[i_ + 1]
@@ -177,15 +188,20 @@ def bruestung(name, linie, hoehen, abstand, ab=None, nicht_bei=()):
             p1_ = (ax_ + (bx_ - ax_) * t1_, az_ + (bz_ - az_) * t1_)
             if any(math.dist(p0_, W(q)) < 4.0 or math.dist(p1_, W(q)) < 4.0 for q in nicht_bei):
                 continue
+            # nicht in einem Burghof (der Weg läuft durch das Tor weiter; dort standen Brüstungsblöcke frei im Hof)
+            if any(_in_vieleck(((p0_[0] + p1_[0]) / 2, (p0_[1] + p1_[1]) / 2), WL(h_)) for h_ in
+                   (PD.VORBURG, PD.MITTELBURG, PD.OBERBURG, PD.PALAS_HOF)):
+                continue
             for e_ in (-1, 1):
                 nx_, nz_ = -uz_ * e_, ux_ * e_
                 unten_ = min(H(p0_[0] + nx_ * (abstand + 2), p0_[1] + nz_ * (abstand + 2)), h0_) - 3.0
                 MAUERLINIEN.append([(p0_[0] + nx_ * abstand, p0_[1] + nz_ * abstand), (p1_[0] + nx_ * abstand, p1_[1] + nz_ * abstand)])
-                mauern += [p0_[0] + nx_ * abstand - ux_ * 0.3, p0_[1] + nz_ * abstand - uz_ * 0.3,
-                           p1_[0] + nx_ * abstand + ux_ * 0.3, p1_[1] + nz_ * abstand + uz_ * 0.3,
-                           round(unten_, 2), round(max(h0_, h1_) + 1.0, 2), 1.2, nx_, nz_, 0]
+                unten_ = min(unten_, H(p1_[0] + nx_ * (abstand + 2), p1_[1] + nz_ * (abstand + 2)) - 3.0)
+                # Stücke stoßen stumpf aneinander, die Krone läuft durch (gleiche Höhe am gemeinsamen Ende)
+                mauern += [p0_[0] + nx_ * abstand, p0_[1] + nz_ * abstand, p1_[0] + nx_ * abstand, p1_[1] + nz_ * abstand,
+                           round(unten_, 2), round(h0_ + 1.0, 3), round(h1_ + 1.0, 3)]
     N(name, "Node3D", BG, f"""script = ExtResource("28_burgbau")
-mauern = PackedFloat32Array({_zahlen([round(v_, 3) for v_ in mauern])})""")
+rampenmauern = PackedFloat32Array({_zahlen([round(v_, 3) for v_ in mauern])})""")
 
 
 # Gemauerter Weg vom Osttor der Vorburg hinab und die Rampe hinauf zur Mittelburg: Futtermauern mit Brüstung

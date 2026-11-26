@@ -483,6 +483,28 @@ def ausruf():
     return normiere(np.concatenate([s, lang, stille(0.2)]), 0.85)
 
 
+def brunnen():
+    """Plätschern eines Brunnens: vier Strahlen fallen ins Becken (rauschendes Prasseln) und viele kleine Tropfen und
+    Blasen (kurze Töne, die schnell ansteigen), als nahtlose Schleife."""
+    n = 12 * RATE
+    t_ = np.arange(n) / RATE
+    prasseln = band(rauschen(n), 900, 7000) * (0.55 + 0.25 * glatt_zufall(n, 40, 0.0, 1.0)) * 0.35
+    tropfen = np.zeros(n)
+    t = 0.0
+    while t < 11.8:
+        t += ZUFALL.exponential(1 / 28.0)
+        i = int(t * RATE)
+        m = int(ZUFALL.uniform(0.015, 0.05) * RATE)
+        if i + m >= n:
+            break
+        tt = np.arange(m) / RATE
+        f0 = ZUFALL.uniform(700, 2200)
+        ph = 2 * np.pi * np.cumsum(f0 * (1 + 3.0 * tt / tt[-1])) / RATE
+        tropfen[i:i + m] += np.sin(ph) * np.exp(-tt / (m / RATE / 3)) * ZUFALL.uniform(0.05, 0.4)
+    gluckern = tief(rauschen(n), 400) * 0.3 * (0.6 + 0.4 * glatt_zufall(n, 60))
+    return normiere(schleife(prasseln + tropfen + gluckern, 1.0), 0.7)
+
+
 def weiche_schritte(quellen, art):
     """Schritte auf Gras oder Erde aus den Kenney-Schritten: tiefer, dumpfer, dazu Rascheln (Gras) bzw. Knirschen."""
     aus = []
@@ -529,6 +551,7 @@ def main():
     for k in range(4):
         schreibe(f"huf_{k + 1}", huf())
     schreibe("markt", markt())
+    schreibe("brunnen", brunnen())
     for k in range(5):
         schreibe(f"ausruf_{k + 1}", ausruf())
     schreibe("glocke_gross", glocke(294.0, 8.0))     # D4: Glocke von St. Marien

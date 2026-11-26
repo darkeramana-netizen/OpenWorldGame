@@ -270,9 +270,10 @@ N("Marktplatz", "Node3D", DS)
 MARKT_MITTE = W(PD.MARKT_MITTE)
 mx, mz = MARKT_MITTE
 mb = H(mx, mz)
-zyl("Brunnen", MK, mx, round(mb + 0.4, 2), mz, 2.8, 1.2, "Material_hell", 14)
-zyl("BrunnenWasser", MK, mx, round(mb + 0.95, 2), mz, 2.4, 0.1, "Material_wasser_becken", 14, False)
-zyl("BrunnenSaeule", MK, mx, round(mb + 2.2, 2), mz, 0.4, 3.0, "Material_hell", 10)
+# Stockbrunnen (szenen/welt/marktbrunnen.gd): Stufen, achteckiges Becken mit Feldern, Brunnenstock mit vier Röhren
+E("Script", "res://szenen/welt/marktbrunnen.gd", "60_marktbrunnen")
+N("Brunnen", "Node3D", MK, f"""{T(mx, round(mb, 2), mz)}
+script = ExtResource("60_marktbrunnen")""")
 schild("SchildMarkt", MK, mx, round(mb + 7, 2), mz, "Marktplatz", 64)
 # Stände in zwei Reihen an den Längsseiten; die ersten sechs haben Händler
 _STAND_PLAN = [(472, 489), (536, 489), (472, 547), (536, 547), (494, 489), (514, 547)]
