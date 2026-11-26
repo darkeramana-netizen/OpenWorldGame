@@ -103,6 +103,30 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | M48 | 18, 19 | Palashof und Übungsplatz: riesige leere Pflasterflächen | Werkplätze stehen am Rand, die Mitte bleibt frei | behoben (erste Runde): Misthaufen mit Forke und Jauchepfütze (Art 56) und Karren in Vorburg und Mittelburg, Kräutergärten im Flechtzaun aus Weidenruten (Art 57) mit zwei Beeten in Oberburg und Palashof (dort zwei), Fässerlager in Mittelburg, Oberburg und Palashof |
 | M49 | – | Rundgang-Fotos im Container: Stücke und Leute fehlten auf den ersten Bildern | Die Ausstattung meldet ihre Zellen erst an, wenn alles auf dem Boden steht; die Körper der realistischen Menschen laden im Hintergrund | behoben (`rundgang.gd`): wartet auf die Ausstattung und auf die Körper der Figuren nahe der Kamera (bis 40 s je Blickpunkt) |
 
+## H. Rückmeldung aus dem Spiel (26.11.2026, Bilder vom Referenzrechner)
+
+| Nr. | Befund | Ursache | Stand |
+|---|---|---|---|
+| M50 | schwarze Quadrate auf den Mauern | Rüstlöcher (M43) zu dunkel und zu viele | behoben: abgeschaltet |
+| M51 | Glockenton zu basslastig | Unterton so laut wie die Nominale, Glocke in G3 | behoben: Unterton leise, Nominale und obere Teiltöne tragen, D4/D5 |
+| M52 | Schritte zu leise, passen nicht zur Bewegung | Schritte nach zurückgelegter Strecke | behoben: Schritte, wenn ein Fuß aufsetzt (Fußknochen der Animation), 3 dB lauter |
+| M53 | Sprint hängt, die Figur gleitet | Tempo je Bild gemessen: bei mehr Bildern als Physikschritten sprang es zwischen 0 und dem Doppelten, die Animation wechselte ständig | behoben: Tempo nur bei Lageänderung, Spielraum an den Grenzen |
+| M54 | Stoff zittert statt zu schwingen | Schrittweite des Stoffs mit der Bildzeit schwankend | behoben (Modul): feste Schrittweite, Ruck im Stand 0,11 statt 0,63 mm; Dämpfung verdoppelt |
+| M55 | Füße verschwinden fast im Boden | Netz des Geländes liegt an Hängen höher als seine Kollision | behoben: Figuren 2,5 cm höher (im Spiel prüfen) |
+| M56 | Bäume schweben teils | Stamm an einem Punkt auf den Hang gesetzt | behoben: so tief eingesunken wie der tiefste Punkt im Umkreis, dazu 10 cm |
+| M57 | Menschen merkwürdig gebaut | Frauen 1,86 m (größer als Männer), aus der Skalierung aufs Becken der Animation | behoben: 1,62 / 1,74 m; weitere Proportionen offen |
+| M58 | Männer mit grauen Bärten | Haarfarbe als sRGB in den linearen Farbfaktor | behoben: lineare Farbe |
+| M59 | Hüte schweben oder stecken im Kopf | Hut 12 cm über dem Kopfknochen, die Köpfe sind aber verschieden hoch | behoben: auf dem Scheitel des Modells |
+| M60 | Marktbrunnen zu einfach | drei Zylinder | behoben: Stockbrunnen (`marktbrunnen.gd`) mit Stufen, Becken, Säule, Röhren, Strahlen, Plätschern |
+| M61 | Wasser wie ein blauer Boden | keine Spiegelung | behoben: Himmelsspiegelung nach Fresnel, feine Kräuselung nah |
+| M62 | Holzfässer mit verbuggter Textur | grobe Vereinfachung (simplify_sloppy) zerriss die UV-Nähte | behoben: nahe Fassung ohne grobe Vereinfachung, 3475 statt 884 Dreiecke |
+| M63 | Dach schwebt (von vorn) | Giebeldreieck endete 0,5 m unter dem Dach | behoben: Giebelwand bis an die Dachunterseite |
+| M64 | Mauerstücke am Tor der Mittelburg | Brüstung der Rampe als waagrechte Stufenblöcke | behoben: Brüstung mit schräger Krone und Abdeckplatte |
+| M65 | Platten statt Stoff an manchen Menschen | starre Schürzen, Wappenröcke und Talare für Berufe ohne eigenes Modell | behoben: nur noch Kleidung aus Stoff; neues Modell `wache_frau` |
+| M66 | letzter Burghof: alles auf einem Haufen in der Mitte | Gruppen frei im Hof suchten alle die Mitte | behoben: Abstand zu den anderen Gruppen |
+| M67 | KI der Leute zu einfach | – | erste Runde: Gruß je Tageszeit, Umschauen, Reaktion auf gezogene Waffen. Offen: Tätigkeiten mit Gegenständen, Gespräche mit Inhalt, Reaktion auf Wetter und Lärm |
+| M68 | Grafik und Detail insgesamt | – | laufend |
+
 ## Nächste Schritte
 
 1. Neuer Rundgang (Hoch und Episch) zur Bestätigung von M1–M3, M9, M11, M22, M25–M29.
