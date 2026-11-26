@@ -395,7 +395,8 @@ Bis hierher war das Spiel stumm. Jetzt (`autoload/klang.gd`, Dateien in `klaenge
 - **Kampf** (`kampf.gd`): Schwert ziehen, Schwung, Treffer auf Metall, Parade, Musketenschuss (bis 300 m zu hören).
 - Jedes Geräusch hat Varianten oder eine leicht schwankende Tonhöhe und Lautstärke, damit nichts maschinell klingt.
   Ein Pool aus 24 Klangquellen spielt die einzelnen Geräusche. Die Busse „Umgebung“ und „Geraeusche“ liegen unter
-  Master, die Regler im Menü folgen.
+  Master. Im Haupt- und Pausemenü schaltet „Ton“ die Gesamtlautstärke in fünf Stufen (100, 75, 50, 25 %, aus),
+  gespeichert in `user://einstellungen.cfg`.
 - Test: `tests/test_klang.gd`.
-- Offen: Regler im Menü, Hall in Innenräumen und Gewölben, Tiere (Hühner, Pferde, Hunde), Stimmengewirr auf dem
+- Offen: getrennte Regler für Umgebung und Geräusche, Hall in Innenräumen und Gewölben, Tiere (Hühner, Pferde, Hunde), Stimmengewirr auf dem
   Markt, Regen.
