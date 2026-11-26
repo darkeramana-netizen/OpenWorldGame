@@ -1146,7 +1146,7 @@ func _schuppen(hb: float) -> void:
 	# Seitenwände aus senkrechten Brettern mit Fugen
 	for sx: float in [-1.0, 1.0]:
 		var zb := HINTEN
-		while zb < VORN - 0.05:
+		while zb < VORN - 0.12:          # bis kurz vor den Pfosten (VORN - 0,1); jedes Brett rückt mindestens 2 cm vor
 			var bb := zufall.randf_range(0.18, 0.26)
 			var z2 := minf(zb + bb, VORN - 0.1)
 			var hoch: float = dach_y.call(z2) + 0.1
