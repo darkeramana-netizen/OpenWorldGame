@@ -28,6 +28,7 @@ func _zeige_start() -> void:
 		Klang.naechste_lautstaerke()
 		ton.text = "Ton: " + Klang.lautstaerke_text())
 	_liste.add_child(ton)
+	_liste.add_child(MenueStil.knopf("Mitwirkende", _zeige_mitwirkende))
 	_liste.add_child(MenueStil.knopf("Beenden", func() -> void: get_tree().quit()))
 	_liste.get_child(0).grab_focus()
 
@@ -56,3 +57,19 @@ func _zeige_laden() -> void:
 		_liste.add_child(MenueStil.knopf("%s: %s" % [name, Speicher.beschreibung(platz)],
 			func() -> void: Speicher.laden(platz), Speicher.existiert(platz)))
 	_liste.add_child(MenueStil.knopf("Zurück", _zeige_start))
+
+
+## Mitwirkende und freie Quellen (Namensnennung, wo die Lizenz sie verlangt; alles andere ist CC0)
+func _zeige_mitwirkende() -> void:
+	MenueStil.leeren(_liste)
+	_liste.add_child(MenueStil.titel("Mitwirkende", 26))
+	for zeile: String in [
+			"Modelle und Texturen: Poly Haven, ambientCG (CC0)",
+			"Menschen: MakeHuman (CC0), Figuren und Tiere: Quaternius (CC0)",
+			"Geräusche: Kenney, artisticdude, „Dog sounds“ (CC0)",
+			"Hühner: „Chicken Sound Effect“ von IMadeIt (CC-BY 3.0)",
+			"Weitere Geräusche selbst erzeugt"]:
+		var l := MenueStil.titel(zeile, 16)
+		_liste.add_child(l)
+	_liste.add_child(MenueStil.knopf("Zurück", _zeige_start))
+	_liste.get_child(_liste.get_child_count() - 1).grab_focus()

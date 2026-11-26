@@ -111,7 +111,8 @@ static func lies_ablauf(zeilen: PackedStringArray) -> Dictionary:
 				var v := Vector3(z[0].to_float(), z[1].to_float(), z[2].to_float())
 				punkte.append(v)
 				if z.size() >= 5:
-					halte[_schluessel(v)] = [z[3].strip_edges(), z[4].to_float()]
+					# 6. Feld: was sie nach der Rast trägt ("eimer", "kiste", "holz", "sack"; "-": ablegen)
+					halte[_schluessel(v)] = [z[3].strip_edges(), z[4].to_float(), z[5].strip_edges() if z.size() >= 6 else ""]
 		var eintrag := {"punkte": punkte, "weg": false, "runde": -1, "blick": NAN, "halte": halte}
 		for zusatz in teile.slice(1):
 			zusatz = zusatz.strip_edges()
@@ -183,6 +184,10 @@ func _physics_process(delta: float) -> void:
 		_rast -= delta
 		if _rast <= 0.0:
 			$Figur.haltung = _ziel_eintrag.get("haltung", haltung)
+			# nach der Rast aufnehmen oder ablegen, was sie trägt
+			if _traegt_nach != "":
+				$Figur.trage("" if _traegt_nach == "-" else _traegt_nach)
+				_traegt_nach = ""
 		return
 	var ziel := _route[0]
 	var weg := Vector3(ziel.x - global_position.x, 0.0, ziel.z - global_position.z)
@@ -214,6 +219,10 @@ func _physics_process(delta: float) -> void:
 		if not halt.is_empty():
 			_rast = float(halt[1])
 			$Figur.haltung = String(halt[0])
+			_traegt_nach = String(halt[2]) if halt.size() > 2 else ""
+			if _traegt_nach == "-":          # ablegen gleich zu Beginn der Rast (abliefern)
+				$Figur.trage("")
+				_traegt_nach = ""
 		if _route.is_empty():
 			_tempo_eile = 1.0
 			if not _runde.is_empty():
@@ -441,6 +450,7 @@ func hoere_laerm(ort: Vector3, art: String) -> void:
 
 
 var _laerm_bis := 0.0
+var _traegt_nach := ""          # nach der Rast tragen ("eimer", ...)
 var _zurueck := false           # nach dem Schreck zurück an den Platz aus dem Tagesablauf
 var _tempo_eile := 1.0          # Faktor auf das Tempo, solange sie flieht oder hineilt
 

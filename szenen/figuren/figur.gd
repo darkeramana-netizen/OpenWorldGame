@@ -647,6 +647,8 @@ func _baue_mensch(w: bool) -> bool:
 	_blick_einrichten(skelett)
 	_setze_handding()
 	_halte_alle()
+	if getragen != "":
+		trage.call_deferred(getragen)
 	_anim = AnimationPlayer.new()
 	_anim.name = "Anim"
 	_modell.add_child(_anim)
@@ -1044,6 +1046,67 @@ func _setze_handding() -> void:
 		_sichtweiten()
 
 
+## Etwas in der linken Hand tragen (Leute mit Arbeitsgängen, person.gd): "eimer" (mit Wasser), "kiste", "holz"
+## (Scheite unter dem Arm), "sack"; "" legt es ab
+var getragen := ""
+func trage(was: String) -> void:
+	getragen = was
+	if _modell == null:
+		return
+	var skelett: Skeleton3D = _modell.get_node_or_null("Armature/Skeleton3D")
+	if skelett == null:
+		return
+	var alt := skelett.get_node_or_null("Tragding")
+	if alt:
+		alt.free()
+	if was == "":
+		return
+	var halter := BoneAttachment3D.new()
+	halter.name = "Tragding"
+	halter.bone_name = "hand_l"
+	skelett.add_child(halter)
+	var teile: Array = []        # [Mesh, Ort, Stoff]; lokal +y zeigt zu den Fingern (hinab)
+	match was:
+		"eimer":
+			var z := CylinderMesh.new()
+			z.top_radius = 0.15
+			z.bottom_radius = 0.12
+			z.height = 0.27
+			z.radial_segments = 12
+			teile.append([z, Vector3(0, 0.3, 0), "holz"])
+			var w := CylinderMesh.new()
+			w.top_radius = 0.135
+			w.bottom_radius = 0.135
+			w.height = 0.01
+			teile.append([w, Vector3(0, 0.19, 0), "wasser"])
+			teile.append([_quader(Vector3(0.3, 0.015, 0.015)), Vector3(0, 0.04, 0), "eisen"])
+		"kiste":
+			teile.append([_quader(Vector3(0.4, 0.3, 0.3)), Vector3(0, 0.2, 0.12), "holz"])
+		"sack":
+			var k := SphereMesh.new()
+			k.radius = 0.2
+			k.height = 0.5
+			teile.append([k, Vector3(0, 0.28, 0.05), "leinen"])
+		"holz":
+			for i in 4:
+				var sch := CylinderMesh.new()
+				sch.top_radius = 0.05
+				sch.bottom_radius = 0.05
+				sch.height = 0.45
+				sch.radial_segments = 6
+				teile.append([sch, Vector3((i % 2) * 0.1 - 0.05, 0.12, 0.08 + (i / 2) * 0.09), "holz"])
+	for t: Array in teile:
+		var m := MeshInstance3D.new()
+		m.mesh = t[0]
+		m.position = t[1]
+		if was == "holz":
+			m.rotation.x = PI / 2.0
+		m.set_meta("stoff", t[2])
+		halter.add_child(m)
+	_faerben()
+	_sichtweiten()
+
+
 ## Werkzeug bei der Arbeit (Haltung "arbeiten"): nach Beruf und Name
 func werkzeug() -> String:
 	var n := _name_text.to_lower()
@@ -1357,7 +1420,7 @@ func _faerbe_modell() -> void:
 				"eisen": Color(0.62, 0.63, 0.66), "glut": Color(1.0, 0.6, 0.25), "leder": Color(0.3, 0.19, 0.11),
 				"leinen": Color(0.86, 0.83, 0.75), "stroh": Color(0.8, 0.68, 0.38), "kopftuch": _kopftuch_farbe(),
 				"wappen": Color(0.55, 0.08, 0.06), "zeichen": Color(0.85, 0.65, 0.2),
-				"talar": tracht.darkened(0.2), "netz": Color(0.45, 0.4, 0.3)}.get(st, tracht) as Color
+				"talar": tracht.darkened(0.2), "netz": Color(0.45, 0.4, 0.3), "wasser": Color(0.12, 0.16, 0.16)}.get(st, tracht) as Color
 			m.material_override = _material(farbe, st)
 			continue
 		var name_ := String(m.name)

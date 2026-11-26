@@ -231,7 +231,7 @@ func _lebe(h: Dictionary, delta: float) -> void:
 
 
 ## Gackern (autoload/klang.gd): bis 30 m um den Spieler alle paar Sekunden eine Henne der Schar, aufgeregt, wenn eine
-## wegläuft; morgens kräht in jeder dritten Schar ein Hahn
+## wegläuft (ein Hahn folgt, sobald es eine freie Aufnahme gibt)
 var _gackern_in := 2.0
 func _gackern(delta: float, sp: Node3D) -> void:
 	if _huehner.is_empty() or sp.global_position.distance_to(global_position) > 30.0:
@@ -249,9 +249,4 @@ func _gackern(delta: float, sp: Node3D) -> void:
 	_gackern_in = randf_range(3.0, 12.0) / maxf(sqrt(float(_huehner.size())), 1.0)
 	var h: Dictionary = _huehner[randi() % _huehner.size()]
 	var ort: Vector3 = (h["knoten"] as Node3D).global_position + Vector3.UP * 0.3
-	var zeit := get_node_or_null("/root/Spielzeit")
-	var stunde := float(zeit.minuten) / 60.0 if zeit != null else 10.0
-	if stunde > 4.5 and stunde < 7.5 and absi(hash(name)) % 3 == 0 and randf() < 0.25:
-		klang.spiele("hahn", ort, 0.0, 120.0)
-	else:
-		klang.spiele("huhn", ort, -4.0 if not aufgeregt else 0.0, 28.0, 1.0 if not aufgeregt else 1.12)
+	klang.spiele("huhn", ort, -4.0 if not aufgeregt else 0.0, 28.0, 1.0 if not aufgeregt else 1.12)

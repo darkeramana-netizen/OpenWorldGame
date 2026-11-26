@@ -171,35 +171,64 @@ def _in_vieleck(q, poly):
 
 def bruestung(name, linie, hoehen, abstand, ab=None, nicht_bei=()):
     """Niedrige Futtermauern mit Brüstung zu beiden Seiten eines Wegs (Rampe, gemauerter Weg). Die Krone folgt dem
-    Weg schräg (burgbau.gd, rampenmauern); vorher waagrechte Blöcke in Stufen, die wie lose Mauerstücke wirkten."""
-    pkt, mauern = WL(linie), []
+    Weg schräg (burgbau.gd, rampenmauern). Jede Seite ist eine durchgehende, um abstand versetzte Linie mit Gehrung an
+    den Knicken (vorher je Wegstück einzeln versetzt: in Kehren ragte die Innenseite quer über den Weg, Rückmeldung
+    26.11.2026); an Toren und Wegenden (nicht_bei) bleibt frei, Reststücke unter 4 m entfallen."""
+    pkt = WL(linie)
+    mauern = []
+    # Normalen je Stück, Gehrung je Knick
+    n_ = []
     for i_ in range(len(pkt) - 1):
         (ax_, az_), (bx_, bz_) = pkt[i_], pkt[i_ + 1]
-        l_ = math.hypot(bx_ - ax_, bz_ - az_)
-        if l_ < 0.5:
-            continue
-        ux_, uz_ = (bx_ - ax_) / l_, (bz_ - az_) / l_
-        n_ = max(1, math.ceil(l_ / 2.5))
-        for k_ in range(n_):
-            t0_, t1_ = k_ / n_, (k_ + 1) / n_
-            h0_ = hoehen[i_] + (hoehen[i_ + 1] - hoehen[i_]) * t0_
-            h1_ = hoehen[i_] + (hoehen[i_ + 1] - hoehen[i_]) * t1_
-            p0_ = (ax_ + (bx_ - ax_) * t0_, az_ + (bz_ - az_) * t0_)
-            p1_ = (ax_ + (bx_ - ax_) * t1_, az_ + (bz_ - az_) * t1_)
-            if any(math.dist(p0_, W(q)) < 4.0 or math.dist(p1_, W(q)) < 4.0 for q in nicht_bei):
+        l_ = max(math.hypot(bx_ - ax_, bz_ - az_), 1e-6)
+        n_.append((-(bz_ - az_) / l_, (bx_ - ax_) / l_))
+    for e_ in (-1, 1):
+        versetzt_ = []
+        for i_, (px_, pz_) in enumerate(pkt):
+            na_ = n_[max(i_ - 1, 0)]
+            nb_ = n_[min(i_, len(n_) - 1)]
+            mx_, mz_ = na_[0] + nb_[0], na_[1] + nb_[1]
+            ml_ = math.hypot(mx_, mz_)
+            if ml_ < 1e-6:
+                mx_, mz_, ml_ = nb_[0], nb_[1], 1.0
+            mx_, mz_ = mx_ / ml_, mz_ / ml_
+            k_ = min(1.0 / max(mx_ * nb_[0] + mz_ * nb_[1], 0.4), 2.5)
+            versetzt_.append((px_ + mx_ * abstand * e_ * k_, pz_ + mz_ * abstand * e_ * k_))
+        stuecke_ = []          # (Anfang, Ende, Höhe am Anfang, am Ende, frei?)
+        for i_ in range(len(pkt) - 1):
+            a_, b_ = versetzt_[i_], versetzt_[i_ + 1]
+            l_ = math.dist(a_, b_)
+            if l_ < 0.3:
                 continue
-            # nicht in einem Burghof (der Weg läuft durch das Tor weiter; dort standen Brüstungsblöcke frei im Hof)
-            if any(_in_vieleck(((p0_[0] + p1_[0]) / 2, (p0_[1] + p1_[1]) / 2), WL(h_)) for h_ in
-                   (PD.VORBURG, PD.MITTELBURG, PD.OBERBURG, PD.PALAS_HOF)):
+            k_n = max(1, math.ceil(l_ / 2.5))
+            for k_ in range(k_n):
+                t0_, t1_ = k_ / k_n, (k_ + 1) / k_n
+                p0_ = (a_[0] + (b_[0] - a_[0]) * t0_, a_[1] + (b_[1] - a_[1]) * t0_)
+                p1_ = (a_[0] + (b_[0] - a_[0]) * t1_, a_[1] + (b_[1] - a_[1]) * t1_)
+                h0_ = hoehen[i_] + (hoehen[i_ + 1] - hoehen[i_]) * t0_
+                h1_ = hoehen[i_] + (hoehen[i_ + 1] - hoehen[i_]) * t1_
+                c0_ = (pkt[i_][0] + (pkt[i_ + 1][0] - pkt[i_][0]) * t0_, pkt[i_][1] + (pkt[i_ + 1][1] - pkt[i_][1]) * t0_)
+                c1_ = (pkt[i_][0] + (pkt[i_ + 1][0] - pkt[i_][0]) * t1_, pkt[i_][1] + (pkt[i_ + 1][1] - pkt[i_][1]) * t1_)
+                frei_ = any(math.dist(c0_, W(q)) < 4.0 or math.dist(c1_, W(q)) < 4.0 for q in nicht_bei)
+                # nicht in einem Burghof (der Weg läuft durch das Tor weiter)
+                frei_ = frei_ or any(_in_vieleck(((p0_[0] + p1_[0]) / 2, (p0_[1] + p1_[1]) / 2), WL(h_)) for h_ in
+                                     (PD.VORBURG, PD.MITTELBURG, PD.OBERBURG, PD.PALAS_HOF))
+                stuecke_.append((p0_, p1_, h0_, h1_, frei_))
+        # zusammenhängende Läufe; kurze Reststücke entfallen
+        lauf_ = []
+        for st_ in stuecke_ + [(None, None, 0, 0, True)]:
+            if not st_[4]:
+                lauf_.append(st_)
                 continue
-            for e_ in (-1, 1):
-                nx_, nz_ = -uz_ * e_, ux_ * e_
-                unten_ = min(H(p0_[0] + nx_ * (abstand + 2), p0_[1] + nz_ * (abstand + 2)), h0_) - 3.0
-                MAUERLINIEN.append([(p0_[0] + nx_ * abstand, p0_[1] + nz_ * abstand), (p1_[0] + nx_ * abstand, p1_[1] + nz_ * abstand)])
-                unten_ = min(unten_, H(p1_[0] + nx_ * (abstand + 2), p1_[1] + nz_ * (abstand + 2)) - 3.0)
-                # Stücke stoßen stumpf aneinander, die Krone läuft durch (gleiche Höhe am gemeinsamen Ende)
-                mauern += [p0_[0] + nx_ * abstand, p0_[1] + nz_ * abstand, p1_[0] + nx_ * abstand, p1_[1] + nz_ * abstand,
-                           round(unten_, 2), round(h0_ + 1.0, 3), round(h1_ + 1.0, 3)]
+            if sum(math.dist(q_[0], q_[1]) for q_ in lauf_) >= 4.0:
+                for p0_, p1_, h0_, h1_, _ in lauf_:
+                    ux_, uz_ = p1_[0] - p0_[0], p1_[1] - p0_[1]
+                    l_ = math.hypot(ux_, uz_)
+                    nx_, nz_ = -uz_ / l_ * e_, ux_ / l_ * e_
+                    unten_ = min(H(p0_[0] + nx_ * 2, p0_[1] + nz_ * 2), H(p1_[0] + nx_ * 2, p1_[1] + nz_ * 2), h0_, h1_) - 3.0
+                    MAUERLINIEN.append([p0_, p1_])
+                    mauern += [p0_[0], p0_[1], p1_[0], p1_[1], round(unten_, 2), round(h0_ + 1.0, 3), round(h1_ + 1.0, 3)]
+            lauf_ = []
     N(name, "Node3D", BG, f"""script = ExtResource("28_burgbau")
 rampenmauern = PackedFloat32Array({_zahlen([round(v_, 3) for v_ in mauern])})""")
 

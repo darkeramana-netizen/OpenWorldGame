@@ -117,8 +117,8 @@ for name_, hof_, boden_ in _hoefe:
         runde_ = [heim_, b1_, b2_, arbeit_, b2_, b1_, heim_]
         # Arbeitsgang: am Brunnen Wasser schöpfen, an der anderen Tür abliefern, daheim kurz zu tun
         punkte_ = p3(runde_, boden_)
-        punkte_[1] = punkte_[1] + ("arbeiten", 7)
-        punkte_[3] = punkte_[3] + ("arbeiten", 4)
+        punkte_[1] = punkte_[1] + ("arbeiten", 7, "eimer")     # am Brunnen schöpfen, dann den Eimer tragen
+        punkte_[3] = punkte_[3] + ("arbeiten", 4, "-")         # an der Tür abliefern
         punkte_[0] = punkte_[0] + ("arbeiten", 5)
         person(f"Gesinde{_gs}", BL, round(heim_[0], 2), boden_, round(heim_[1], 2), GESINDE_NAMEN[_gs % len(GESINDE_NAMEN)],
                "burggesinde", 0, GESINDE_TRACHTEN[_gs % 4], sichtbar_wenn="alarm<3",
@@ -372,8 +372,9 @@ for wn_ in sorted(w_ for w_ in WERKPLAETZE if w_.startswith("Fuhrwerk ")):
         continue
     tuer_ = min(tueren_, key=lambda t_: math.dist(t_, hinten_))
     punkte_ = p3([hinten_, tuer_, hinten_], boden_)
-    punkte_[0] = punkte_[0] + ("arbeiten", 5)
-    punkte_[1] = punkte_[1] + ("arbeiten", 3)
+    # am Wagen eine Kiste oder einen Sack nehmen, an der Tür abladen
+    punkte_[0] = punkte_[0] + ("arbeiten", 5, "kiste" if _traeger % 2 == 0 else "sack")
+    punkte_[1] = punkte_[1] + ("arbeiten", 3, "-")
     person(f"Traeger{_traeger}", BL, round(hinten_[0], 2), boden_, round(hinten_[1], 2), TRAEGER_NAMEN[_traeger % 3],
            "burggesinde", 0, GESINDE_TRACHTEN[(_traeger + 1) % 4], sichtbar_wenn="alarm<3",
            ablauf={"vormittag": (punkte_, ["runde"]), "nachmittag": (punkte_, ["runde"]),

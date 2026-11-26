@@ -9,7 +9,7 @@ Zwei Quellen, beide frei (CC0):
     Quellen und Lizenz: klaenge/QUELLEN.md.
 
 Aufruf aus dem Projektordner:
-    python3 werkzeuge/klaenge_erzeugen.py KENNEY_ORDNER ARTISTICDUDE_ORDNER
+    python3 werkzeuge/klaenge_erzeugen.py KENNEY_ORDNER ARTISTICDUDE_ORDNER HUHN_ORDNER HUND_ORDNER
 (die entpackten Zip-Dateien; ohne Angaben nur die Synthese). Braucht numpy, scipy und ffmpeg.
 """
 import subprocess
@@ -257,8 +257,12 @@ def glocke(grund, dauer):
     for verh, staerke, anteil in teile:
         f = grund * verh
         ab = dauer * anteil
-        schweb = 1.0 + 0.004 * np.sin(2 * np.pi * ZUFALL.uniform(0.3, 1.2) * t)
-        x += staerke * np.sin(2 * np.pi * f * t * schweb + ZUFALL.uniform(0, 6)) * np.exp(-t / ab)
+        # Schwebung als zweiter, um 0,3 bis 1,2 Hz verstimmter Ton (gegossene Glocken sind nie ganz rund). Vorher stand
+        # die Schwankung in der Phase mal der Zeit: Die Verstimmung wuchs mit jeder Sekunde, der Ton wurde schief
+        # (Rückmeldung 26.11.2026)
+        d = ZUFALL.uniform(0.3, 1.2)
+        ph = ZUFALL.uniform(0, 6)
+        x += staerke * (0.6 * np.sin(2 * np.pi * f * t + ph) + 0.4 * np.sin(2 * np.pi * (f + d) * t + ph)) * np.exp(-t / ab)
     x += band(rauschen(n), 1500, 9000) * np.exp(-t / 0.008) * 0.6
     return normiere(hoch(x, 180.0), 0.85)
 
@@ -505,6 +509,33 @@ def brunnen():
     return normiere(schleife(prasseln + tropfen + gluckern, 1.0), 0.7)
 
 
+def zerlege(x, teile):
+    """Eine Aufnahme mit mehreren Lauten in teile Stücke an den leisesten Stellen (Hüllkurve über 30 ms)."""
+    h = np.convolve(np.abs(x), np.ones(int(0.03 * RATE)) / int(0.03 * RATE), mode="same")
+    schwelle = h.max() * 0.06
+    leise = h < schwelle
+    # Grenzen: Mitten der Pausen (mindestens 80 ms leise)
+    grenzen = []
+    i = 0
+    while i < len(leise):
+        if leise[i]:
+            j = i
+            while j < len(leise) and leise[j]:
+                j += 1
+            if j - i > int(0.08 * RATE):
+                grenzen.append((i + j) // 2)
+            i = j
+        else:
+            i += 1
+    stuecke = [x[a:b] for a, b in zip([0] + grenzen, grenzen + [len(x)]) if b - a > int(0.05 * RATE)
+               and np.abs(x[a:b]).max() > schwelle * 3]
+    if len(stuecke) <= teile:
+        return stuecke or [x]
+    # benachbarte Laute zu teile Gruppen zusammenfassen
+    je = int(np.ceil(len(stuecke) / teile))
+    return [np.concatenate(stuecke[k:k + je]) for k in range(0, len(stuecke), je)]
+
+
 def weiche_schritte(quellen, art):
     """Schritte auf Gras oder Erde aus den Kenney-Schritten: tiefer, dumpfer, dazu Rascheln (Gras) bzw. Knirschen."""
     aus = []
@@ -537,13 +568,20 @@ def main():
     for k in range(3):
         schreibe(f"amboss_{k + 1}", amboss(k))
     schreibe("schuss", schuss())
-    for k in range(4):
-        schreibe(f"huhn_{k + 1}", huhn())
-    schreibe("hahn_1", hahn())
+    # Hühner (Aufnahme, CC-BY 3.0, siehe QUELLEN.md): in einzelne Laute zerlegt (Pausen im Pegel), je Datei 2 bis 4
+    huhn_q = next(iter(Path(sys.argv[3]).rglob("*.ogg")), None) if len(sys.argv) > 3 else None
+    if huhn_q is not None:
+        for k, x in enumerate(zerlege(lies(huhn_q), 4)):
+            schreibe(f"huhn_{k + 1}", normiere(hoch(x, 120), 0.7))
+    # Hunde (Aufnahmen, CC0): einzelne Beller, leicht gedämpft (die Spitzen um 3 bis 6 kHz taten in den Ohren weh)
+    hund_q = Path(sys.argv[4]) if len(sys.argv) > 4 else None
+    if hund_q is not None:
+        beller = sorted(p for p in hund_q.rglob("Dog Bark*.wav") if "Raw" not in str(p))
+        for k, q in enumerate(beller):
+            schreibe(f"hund_{k + 1}", normiere(tief(hoch(lies(q), 150), 3500), 0.6))
     for k in range(3):
         schreibe(f"pferd_wiehern_{k + 1}", pferd_wiehern())
         schreibe(f"pferd_schnauben_{k + 1}", pferd_schnauben())
-        schreibe(f"hund_{k + 1}", hund())
         schreibe(f"schwein_{k + 1}", schwein())
         schreibe(f"kuh_{k + 1}", kuh())
         schreibe(f"schaf_{k + 1}", schaf())
@@ -554,8 +592,8 @@ def main():
     schreibe("brunnen", brunnen())
     for k in range(5):
         schreibe(f"ausruf_{k + 1}", ausruf())
-    schreibe("glocke_gross", glocke(294.0, 8.0))     # D4: Glocke von St. Marien
-    schreibe("glocke_klein", glocke(587.0, 4.5))     # D5: Kapellenglocke
+    schreibe("glocke_gross", glocke(294.0, 5.5))     # D4: Glocke von St. Marien
+    schreibe("glocke_klein", glocke(587.0, 3.5))     # D5: Kapellenglocke
     if kenney is not None:
         k = next(kenney.rglob("footstep00.ogg")).parent
         schritte = sorted(k.glob("footstep0*.ogg"))

@@ -19,7 +19,7 @@ func _initialize() -> void:
 	var noetig := ["wind_sanft", "wind_stark", "feuer", "brandung", "amboss_1", "glocke_gross", "glocke_klein", "schuss",
 		"schritt_stein_1", "schritt_gras_1", "schritt_erde_1", "schritt_holz_1", "tuer_auf_1", "tuer_zu_1", "tor_auf_1",
 		"tor_zu", "riegel", "vogel_amsel_1", "schwung_1", "metall_1", "metall_klingt", "schwert_ziehen_1", "leder",
-		"huhn_1", "hahn_1", "pferd_wiehern_1", "pferd_schnauben_1", "huf_1", "hund_1", "schwein_1", "kuh_1", "schaf_1",
+		"huhn_1", "pferd_wiehern_1", "pferd_schnauben_1", "huf_1", "hund_1", "schwein_1", "kuh_1", "schaf_1",
 		"katze_1", "markt", "ausruf_1"]
 	var fehlen := noetig.filter(func(n: String) -> bool: return klang.stream(n) == null)
 	pruefe(fehlen.is_empty(), "Alle %d Geräusche laden (fehlen: %s)" % [noetig.size(), fehlen])
