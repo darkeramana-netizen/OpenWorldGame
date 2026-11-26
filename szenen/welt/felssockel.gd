@@ -140,8 +140,9 @@ func _baue_haut(n: int) -> void:
 				break
 			var t := clampf((oben - (y + mass.y * groesse * 0.5)) / maxf(oben - unten, 0.01), 0.0, 1.0)
 			var wand := _punkt(i, t)
-			# Front 0,2 m vor der mittleren Wandfläche (ohne die Blöcke der erzeugten Wand)
-			var vor := ABSTAND + (oben - (y + mass.y * groesse * 0.5)) * 0.1 + 0.2 - mass.z * groesse
+			# Front 0,8 m vor der mittleren Wandfläche: so liegt sie auch vor den vorspringenden Blöcken der erzeugten Wand
+			# (mit 0,2 m steckte sie dahinter, nur einzelne Kanten ragten als helle Bretter heraus, Rundgang 26.11.2026)
+			var vor := ABSTAND + (oben - (y + mass.y * groesse * 0.5)) * 0.1 + 0.8 - mass.z * groesse
 			stuecke.append_array([m, saeulen[i] + nx * vor, y, saeulen[i + 1] + nz * vor,
 				gier + zufall.randf_range(-10.0, 10.0), zufall.randf_range(-4.0, 8.0), groesse])
 			y += mass.y * groesse * 0.8

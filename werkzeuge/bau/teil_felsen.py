@@ -249,7 +249,7 @@ saeulen = PackedFloat32Array({", ".join(f"{v:.6g}" for v in _SOCKEL)})
 material = ExtResource("32_felssockel_mat")
 haut_modelle = PackedStringArray("res://modelle/felsen/rock_face_02/rock_face_02.gltf")
 haut_masse = PackedVector3Array(2.7, 2.5, 0.9)
-haut_farben = PackedColorArray(1.4, 1.44, 1.5, 1)""")
+haut_farben = PackedColorArray(0.95, 0.97, 1.0, 1)""")
 print("Felssockel unter den Hofmauern:", len(_SOCKEL) // 7, "Säulen in", _abschnitt, "Abschnitten")
 
 # Küstenfels (wie im Referenzbild): Wo vor der Ringmauer das Meer liegt, steht dieselbe zerklüftete, hellgraue

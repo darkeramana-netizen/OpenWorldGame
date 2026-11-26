@@ -1613,7 +1613,7 @@ saeulen = PackedFloat32Array(47.43, 190.59, 0.5589, 0.8292, -8.15, -11.75, 1, 46
 material = ExtResource("32_felssockel_mat")
 haut_modelle = PackedStringArray("res://modelle/felsen/rock_face_02/rock_face_02.gltf")
 haut_masse = PackedVector3Array(2.7, 2.5, 0.9)
-haut_farben = PackedColorArray(1.4, 1.44, 1.5, 1)
+haut_farben = PackedColorArray(0.95, 0.97, 1.0, 1)
 
 [node name="Kuestenfels" type="Node3D" parent="Drachenstein"]
 script = ExtResource("31_felssockel")
