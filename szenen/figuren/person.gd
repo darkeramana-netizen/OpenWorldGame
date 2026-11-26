@@ -264,6 +264,11 @@ func _process(delta: float) -> void:
 		return
 	var figur = $Figur
 	var sp := get_tree().get_first_node_in_group("spieler") as Node3D
+	# Wahrnehmung nur für Leute nahe dem Spieler (spart Rechenzeit in der Menge)
+	if sp != null and sp.global_position.distance_squared_to(global_position) < 900.0:
+		_wahrnehmung(delta, sp)
+	elif _zuruf != null and _zuruf.visible:
+		_zuruf.visible = false
 	if sp:
 		var d := sp.global_position - global_position
 		var nah := d.length() < 5.0 and (-global_basis.z).dot(Vector3(d.x, 0, d.z).normalized()) > -0.2
@@ -291,6 +296,100 @@ func _process(delta: float) -> void:
 			_beginne_gespraech(o, jetzt + dauer)
 			o._beginne_gespraech(self, jetzt + dauer)
 			break
+
+
+# ---------- Wahrnehmung: Gruß, Umschauen, Reaktion auf gezogene Waffen ----------
+
+## Zuruf über dem Kopf (kurz eingeblendet, Text wie im Untertitel)
+var _zuruf: Label3D
+var _zuruf_bis := 0.0
+var _gegruesst_bis := 0.0          # bis dahin grüßt sie den Spieler nicht noch einmal
+var _umschau_ziel := Vector3.INF
+var _umschau_in := 0.0
+var _erschrocken_bis := 0.0
+var _waffe_vorher := false
+
+const GRUESSE := {
+	"morgengrauen": ["Guten Morgen.", "Früh auf den Beinen, wie?", "Gott zum Gruße."],
+	"vormittag": ["Gott zum Gruße.", "Guten Tag.", "Grüß Euch.", "Schöner Tag heute."],
+	"mittag": ["Mahlzeit.", "Gott zum Gruße.", "Grüß Euch."],
+	"nachmittag": ["Grüß Euch.", "Guten Tag.", "Gott mit Euch."],
+	"stille_stunde": ["Still jetzt, die Stunde.", "Leise …"],
+	"nacht": ["Gute Nacht.", "Spät noch unterwegs?", "Gebt Acht im Dunkeln."],
+}
+const GRUESSE_WACHE := ["Weitergehen.", "Ruhig bleiben, Bürger.", "Alles in Ordnung?", "Gott zum Gruße."]
+
+
+func _zurufen(text: String, dauer := 3.0) -> void:
+	if _zuruf == null:
+		_zuruf = Label3D.new()
+		_zuruf.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		_zuruf.pixel_size = 0.0032
+		_zuruf.font_size = 36
+		_zuruf.outline_size = 9
+		_zuruf.modulate = Color(1.0, 0.95, 0.82)
+		_zuruf.position = Vector3(0, 2.4, 0)
+		_zuruf.visibility_range_end = 20.0
+		add_child(_zuruf)
+	_zuruf.text = "„%s“" % text
+	_zuruf.visible = true
+	_zuruf_bis = Time.get_ticks_msec() / 1000.0 + dauer
+
+
+## Je Bild: wohin sie schaut (Spieler, Gesprächspartner, Umschauen), Gruß im Vorbeigehen, Waffen
+func _wahrnehmung(delta: float, sp: Node3D) -> void:
+	var jetzt := Time.get_ticks_msec() / 1000.0
+	if _zuruf != null and _zuruf.visible and jetzt > _zuruf_bis:
+		_zuruf.visible = false
+	if sp == null or _spricht:
+		return
+	var d := sp.global_position - global_position
+	d.y = 0.0
+	var abstand := d.length()
+	var wache: bool = $Figur.beruf in ["wache", "ritter"]
+	# gezogene Waffe in der Nähe: Bürger weichen zurück, Wachen ziehen selbst und warnen
+	var kampf := sp.get_node_or_null("Kampf")
+	var waffe: bool = kampf != null and kampf.get("gezogen") == true
+	if waffe and abstand < 7.0 and (not _waffe_vorher or jetzt > _erschrocken_bis + 6.0):
+		_erschrocken_bis = jetzt + 4.0
+		if wache:
+			$Figur.haltung = "schwert"
+			_zurufen(["Waffe weg!", "Steckt das Eisen ein!", "Keinen Schritt weiter mit der Klinge!"][randi() % 3])
+		else:
+			_zurufen(["Heilige Mutter …!", "Steckt das weg, um Himmels willen!", "Nicht! Ich hab nichts getan!"][randi() % 3])
+			if _route.is_empty() and _rast <= 0.0 and abstand > 0.1:
+				var fort := -d.normalized() * 2.5
+				_route.assign([global_position + fort])
+				_runde.clear()
+	_waffe_vorher = waffe
+	if not waffe and jetzt > _erschrocken_bis and wache and $Figur.haltung == "schwert" and haltung != "schwert" \
+			and _ziel_eintrag.get("haltung", "") != "schwert":
+		$Figur.haltung = ""
+	# Gruß: wer dem Spieler nah kommt und frei ist, grüßt (dieselbe Person höchstens alle 90 s)
+	if not waffe and abstand < 3.2 and jetzt > _gegruesst_bis and _gespraech_bis == 0.0 and _rast <= 0.0:
+		var vorn := -global_basis.z
+		if vorn.dot(d.normalized()) > -0.3 or _route.is_empty():
+			_gegruesst_bis = jetzt + 90.0
+			var liste: Array = GRUESSE_WACHE if wache else GRUESSE.get(String(Spielzeit.abschnitt), GRUESSE["vormittag"])
+			if randf() < 0.75:
+				_zurufen(liste[randi() % liste.size()], 2.6)
+	# Umschauen im Stand: ab und zu zu etwas in der Nähe (andere Leute, Tiere) oder einfach in die Gegend
+	_umschau_in -= delta
+	if _umschau_in <= 0.0:
+		_umschau_in = randf_range(4.0, 12.0)
+		_umschau_ziel = Vector3.INF
+		if _route.is_empty() and _gespraech_bis == 0.0 and randf() < 0.6:
+			var kandidaten: Array = []
+			for o in get_tree().get_nodes_in_group("personen") + get_tree().get_nodes_in_group("tiere"):
+				if o != self and o is Node3D and (o as Node3D).global_position.distance_squared_to(global_position) < 144.0:
+					kandidaten.append(o)
+			if not kandidaten.is_empty() and randf() < 0.7:
+				_umschau_ziel = (kandidaten[randi() % kandidaten.size()] as Node3D).global_position + Vector3.UP * 1.3
+			else:
+				var w := rotation.y + randf_range(-1.3, 1.3)
+				_umschau_ziel = global_position + Vector3(-sin(w), 0.0, -cos(w)) * 8.0 + Vector3.UP * randf_range(1.0, 2.5)
+	if _umschau_ziel != Vector3.INF and abstand > 5.0 and _partner == null:
+		$Figur.schaue_auf(_umschau_ziel, 0.7, delta)
 
 
 func _bereit_zum_reden() -> bool:
