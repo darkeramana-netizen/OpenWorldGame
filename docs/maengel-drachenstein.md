@@ -90,6 +90,17 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 |---|---|---|---|---|
 | M30 | 15, 16, 18 | Pferde einfarbig braun, Figuren aus der Nähe einfach | Modelle aus Detailstufe 3 | teilweise: Pferde mit sechs Fellfarben je nach Platz (Brauner, Fuchs, Rappe, Schimmel, Falbe, Dunkelbrauner; `tier.gd`); bessere Modelle für Figuren offen. Ausstattung: erste Stücke aus Fotoscans (Fass, Kisten, Korb, Werkzeug, Schild, Laterne, neu Eimer, Waschzuber und Hocker; `werkzeuge/modell_laden.py`, `docs/grafik-richtung.md`) |
 
+## G. Echtheit (Runde vom 26.11.2026: „wie eine echte Burg“, Maßstab Kingdom Come 2)
+
+| Nr. | Foto | Befund | Ursache | Stand |
+|---|---|---|---|---|
+| M42 | 16, 17, 18 (Hofbilder vom 21.11.) | Höfe als große, völlig gleichmäßige Pflasterflächen | Geländeshader: Burghof = Pflaster überall | behoben (`gelaende_material.gdshaderinc`): am Hofrand (Maske ringsum in 2,5 m abgetastet) Erde, Feuchte und Unkraut in Büscheln; ausgetretene Bahnen, kleine Erdlücken zwischen den Steinen, Matschflecken mit Pfützen (glatt und spiegelnd), Strohhalme im Dreck (nur nah) |
+| M43 | 14–18 | Mauern glatt und überall gleich | Steinshader ohne Spuren der Bauzeit | behoben (`stein.gdshader`): Rüstlöcher in Reihen (Gerüstlagen alle 1,32 m, etwa jede dritte Stelle, ganze Lagen ohne), darunter helle Laufspuren; Flickstellen (spätere Ausbesserungen in hellerem Stein). Nur Mauer, Bruchstein und Basalt, nicht die hellen Gewände |
+| M44 | 16, 17, 18 | an den Hofmauern nur Häuser, keine einfachen Holzbauten | – | behoben (`ausstattung.gd`, Art 53/54): Mauerschuppen mit Schindeldach auf Mauerlatte und Kragsteinen, Pfosten auf Steinsockeln mit Kopfbändern, Bretterwände; darin Brennholz, Fässer, Wagenrad, Werkzeug. Fünf Stück in Oberburg und Palashof (an den übrigen Mauern stehen schon Häuser) |
+| M45 | 16 | nichts zeigt, dass an der Burg gebaut wird | – | behoben (Art 55): Baugerüst vor der Hofmauer der Mittelburg (Standbäume, Streichstangen, Netzriegel in den Rüstlöchern, Flechtwerk, Streben, Leiter, oben frische Quader, am Fuß Quader, Mörteltrog, Eimer) |
+| M46 | 12, 15–19 | Wachen barfuß, Kettenhemd endet mitten am Oberschenkel, Eisenhut wie Chrom-Plastik | Füße des Grundkörpers mit Zehen; Kettenhemd-Schoß kurz; Hut aus Kugel und Zylinder | behoben (`docs/grafik-richtung.md`, fünfte Runde): Wendeschuhe, Haubert bis zum Knie, Kesselhut mit Nieten und Polsterhaube |
+| M47 | alle | kein Ton: kein Wind, keine Schritte, kein Hämmern, keine Glocken | Das Spiel hat bisher keine Geräusche | offen |
+
 ## Nächste Schritte
 
 1. Neuer Rundgang (Hoch und Episch) zur Bestätigung von M1–M3, M9, M11, M22, M25–M29.
