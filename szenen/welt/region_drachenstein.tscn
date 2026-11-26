@@ -1633,7 +1633,7 @@ bewuchs_modelle = PackedStringArray("res://modelle/pflanzen/grass_medium_01/gras
 bewuchs_arten = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
 brocken_modelle = PackedStringArray("res://modelle/felsen/boulder_01/boulder_01.gltf", "res://modelle/felsen/rock_07/rock_07.gltf", "res://modelle/felsen/namaqualand_boulder_03/namaqualand_boulder_03.gltf", "res://modelle/felsen/namaqualand_boulder_05/namaqualand_boulder_05.gltf")
 brocken_masse = PackedFloat32Array(1.4, 0.3, 2.6, 1.2)
-brocken_farben = PackedColorArray(1.2, 1.19, 1.17, 1, 1.45, 1.44, 1.42, 1, 1.45, 1.44, 1.42, 1, 1.15, 1.14, 1.12, 1)
+brocken_farben = PackedColorArray(0.82, 0.84, 0.87, 1, 0.9, 0.92, 0.95, 1, 0.78, 0.8, 0.84, 1, 0.76, 0.78, 0.82, 1)
 
 [node name="Felsen" type="Node3D" parent="Drachenstein"]
 script = ExtResource("30_felsen")

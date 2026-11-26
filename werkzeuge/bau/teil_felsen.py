@@ -391,8 +391,10 @@ _frei_fels += [_bfm[0], _bfm[1], 9.6]
 _BEWUCHS_MASSIV = list(range(GRAS, GRAS + 17)) + list(range(MOOS, MOOS + 12))
 # Felsbrocken aus Fotoscans vor den Stufen des Felsmassivs (Mängelliste M7, M18): Modell, größte Ausdehnung (m), Tönung
 # (Farbtexturen beim Laden entsättigt: werkzeuge/felsen_laden.py --grau 0.15; die Tönung hellt wie bei den übrigen Brocken auf)
-BROCKEN_MASSIV = [("boulder_01", 1.4, "1.2, 1.19, 1.17, 1"), ("rock_07", 0.3, "1.45, 1.44, 1.42, 1"),
-                  ("namaqualand_boulder_03", 2.6, "1.45, 1.44, 1.42, 1"), ("namaqualand_boulder_05", 1.2, "1.15, 1.14, 1.12, 1")]
+# Farbe: so grau und dunkel wie der Fels ringsum (vorher bis 1,45-fach aufgehellt: auf den Absätzen lagen dann helle,
+# beige Kappen wie Pilze auf dem grauen Fels, Rundgang 21. und 26.11.2026)
+BROCKEN_MASSIV = [("boulder_01", 1.4, "0.82, 0.84, 0.87, 1"), ("rock_07", 0.3, "0.9, 0.92, 0.95, 1"),
+                  ("namaqualand_boulder_03", 2.6, "0.78, 0.8, 0.84, 1"), ("namaqualand_boulder_05", 1.2, "0.76, 0.78, 0.82, 1")]
 # Mauern im Bereich des Felsmassivs (Mängelliste M34): daneben nur ein flacher Felssockel, keine Brocken
 _fm_bereich = (min(_rx) - 10, min(_rz) - 10, max(_rx) + 10, max(_rz) + 10)
 _fm_mauern = []
