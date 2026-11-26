@@ -1326,7 +1326,9 @@ for name_, hof_, boden_ in _hoefe:
             for versuch_ in range(80):
                 x_ = random.uniform(min(q[0] for q in rev_), max(q[0] for q in rev_))
                 z_ = random.uniform(min(q[1] for q in rev_), max(q[1] for q in rev_))
-                if _im_poly((x_, z_), rev_) and not any(_im_poly((x_, z_), f_) for f_ in _haeuser_w + _feste_w + BURG_SPERREN):
+                # nicht mitten auf einem Weg oder im Torweg liegen (dort stand der Hof-Hund im Weg)
+                if _im_poly((x_, z_), rev_) and not any(_im_poly((x_, z_), f_) for f_ in _haeuser_w + _feste_w + BURG_SPERREN) \
+                        and not any(abstand_linie(w_, x_, z_) < 2.0 for w_ in _alle_wege_w + _torgassen(hof_w_)):
                     TIERE_BURG.append((TIERART[art_], round(x_, 2), boden_, round(z_, 2), round(random.uniform(0, 360), 1), rev_))
                     break
 
