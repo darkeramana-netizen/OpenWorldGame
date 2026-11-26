@@ -238,7 +238,9 @@ void fragment() {
 		float ver = zufall(vec2(reihe, 3.7)) * ABSTAND;          // jede Lage etwas versetzt
 		float spalte = floor((quer + ver) / ABSTAND);
 		vec2 in_zelle = vec2(fract((quer + ver) / ABSTAND) * ABSTAND, fract(welt_pos.y / LAGE) * LAGE);
-		float da = step(0.45, zufall(vec2(spalte, reihe) + floor(welt_pos.xz * 0.02) * 7.0)) * step(1.6, ueber2);
+		// etwa jede dritte Stelle, und ganze Lagen bleiben ohne Löcher (dort wurde das Gerüst anders gesetzt)
+		float da = step(0.66, zufall(vec2(spalte, reihe) + floor(welt_pos.xz * 0.02) * 7.0)) * step(1.6, ueber2)
+			* step(0.3, zufall(vec2(reihe, 17.0) + floor(welt_pos.xz * 0.02)));
 		vec2 d = abs(in_zelle - vec2(ABSTAND * 0.5, LAGE * 0.5));
 		float r = 0.075 + 0.02 * zufall(vec2(spalte, reihe + 9.0));
 		loch = da * (1.0 - smoothstep(r - 0.012, r + 0.004, max(d.x, d.y))) * ruestloecher;
@@ -246,7 +248,7 @@ void fragment() {
 		float lauf = da * ruestloecher * (1.0 - smoothstep(0.02, r * 0.8, d.x))
 			* step(in_zelle.y, LAGE * 0.5 - r) * (1.0 - smoothstep(0.0, 0.55, LAGE * 0.5 - r - in_zelle.y));
 		alb = mix(alb, alb * vec3(0.7, 0.72, 0.7), lauf * 0.6);
-		alb = mix(alb, vec3(0.025, 0.022, 0.02), loch);
+		alb = mix(alb, alb * 0.12, loch);
 	}
 
 	// Moos und Flechten auf Oberseiten (Zinnen, Gesimse, Mauerkronen), bevorzugt in Vertiefungen
