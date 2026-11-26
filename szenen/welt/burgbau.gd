@@ -1418,10 +1418,11 @@ func _sammle_nachbarn() -> void:
 		var schluessel := oben_.get_instance_id()
 		if not _bauten_je_region.has(schluessel):
 			_bauten_je_region[schluessel] = oben_.find_children("*", "Node3D", true, false).filter(
-				func(k: Node) -> bool: return "mauern" in k and "tuerme" in k)
+				func(k: Node) -> bool: return k.get_script() == get_script())   # nicht "in": der Federknochen-Simulator der
+				# Figuren bejaht beliebige Eigenschaftsnamen
 		knoten = _bauten_je_region[schluessel]
 	for k: Node in knoten:
-		if not ("mauern" in k and "tuerme" in k):
+		if not is_instance_valid(k) or k.get_script() != get_script():
 			continue
 		if "riegel_tuerme" in k:
 			for q: Vector2 in k.riegel_tuerme:
@@ -1442,7 +1443,7 @@ func _sammle_nachbarn() -> void:
 				_nachbarn_mauern.append([Vector2(m[i], m[i + 1]), Vector2(m[i + 2], m[i + 3]), m[i + 5], m[i + 6], Vector2(m[i + 7], m[i + 8])])
 			i += 10
 	for k: Node in knoten:
-		if not ("mauern" in k and "tuerme" in k):
+		if not is_instance_valid(k) or k.get_script() != get_script():
 			continue
 		var t: PackedFloat32Array = k.tuerme
 		var i := 0

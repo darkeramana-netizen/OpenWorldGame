@@ -37,6 +37,10 @@ func setze(pos: Vector3, blick_grad: float = 0.0) -> void:
 	for i in 6: await physics_frame
 
 ## Läuft nacheinander zu den Wegpunkten (nur x und z zählen). Gibt zurück, ob alle erreicht wurden.
+func _ist_burgbau(n: Node) -> bool:
+	var sk: Script = n.get_script()
+	return sk != null and sk.resource_path == "res://szenen/welt/burgbau.gd"
+
 func gehe_ueber(punkte: Array, zeit_pro_punkt: float = 20.0, genau: float = 0.8) -> bool:
 	Input.action_press("vor")
 	var alle := true
@@ -183,11 +187,9 @@ func _initialize() -> void:
 	var tor_ok := 0
 	var tor_alle := 0
 	for bau in current_scene.find_children("*", "Node3D", true, false):
-		if not is_instance_valid(bau) or not ("_hohle" in bau and "tuerme" in bau and "tore" in bau):
-			continue
-		if typeof(bau.get("tuerme")) != TYPE_PACKED_FLOAT32_ARRAY:
-			print("       DEBUG Knoten ohne tuerme: %s, Skript %s, im Baum %s, wird gelöscht %s" % [bau.get_path() if bau.is_inside_tree() else bau.name,
-				bau.get_script().resource_path if bau.get_script() else "-", bau.is_inside_tree(), bau.is_queued_for_deletion()])
+		# am Skript erkennen: der Federknochen-Simulator der Figuren (SpringBoneSimulator3D) bejaht beliebige
+		# Eigenschaftsnamen mit "in"
+		if not is_instance_valid(bau) or not _ist_burgbau(bau):
 			continue
 		var tu: PackedFloat32Array = bau.tuerme
 		var i := 0
@@ -264,7 +266,7 @@ func _initialize() -> void:
 	var stuecke := []
 	var hindernisse := []     # Türme: [Mitte, Abstand]
 	for bau in current_scene.find_children("*", "Node3D", true, false):
-		if not ("mauern" in bau and "tuerme" in bau):
+		if not _ist_burgbau(bau):
 			continue
 		var mw: PackedFloat32Array = bau.mauern
 		var k := 0
@@ -496,7 +498,7 @@ func _initialize() -> void:
 	var gebaeude_ok := 0
 	var gebaeude_alle := 0
 	for bau in current_scene.find_children("*", "Node3D", true, false):
-		if not is_instance_valid(bau) or not "gebaeude" in bau or not "hallen" in bau:
+		if not is_instance_valid(bau) or not _ist_burgbau(bau):
 			continue
 		var w: PackedFloat32Array = bau.gebaeude
 		# Torhäuser (Art 4) haben keine Tür unten: man betritt sie aus den Tortürmen (siehe "Tore" oben)
