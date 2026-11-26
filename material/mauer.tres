@@ -17,3 +17,5 @@ shader_parameter/schwankung = 0.18
 shader_parameter/moos = 0.2
 shader_parameter/hoehe = ExtResource("5_hoehe")
 shader_parameter/tiefe = 0.05
+shader_parameter/ruestloecher = 1.0
+shader_parameter/flicken = 1.0

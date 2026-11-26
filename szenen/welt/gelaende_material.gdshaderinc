@@ -100,6 +100,12 @@ float gepflastert(vec2 p) {
 	return 0.0;
 }
 
+// Strohhalme liegen kreuz und quer: Koordinaten in Zellen von 1,5 m je um einen eigenen Winkel gedreht
+vec2 drehe_hof(vec2 p) {
+	float w = zufall(floor(p / 1.5)) * 6.2832;
+	return mat2(vec2(cos(w), sin(w)), vec2(-sin(w), cos(w))) * p;
+}
+
 vec3 dreiseitig(sampler2D t, vec3 p, vec3 gewicht, float massstab) {
 	return texture(t, p.zy * massstab).rgb * gewicht.x
 		+ texture(t, p.xz * massstab).rgb * gewicht.y
@@ -162,6 +168,43 @@ void gelaende_material(vec3 welt_pos, vec3 welt_normale, out vec3 albedo, out ve
 	// In Städten und Höfen: Kopfsteinpflaster mit ausgetretenen Erdstellen
 	vec3 pf = texture(pflaster_farbe, p / M_PFLASTER).rgb * mix(1.0, 0.85, klein);
 	pf = mix(pf, zwei(erde_farbe, p, M_ERDE) * 0.9, smoothstep(0.68, 0.85, gross) * 0.7);
+	// Burghöfe wie benutzt: kein gleichförmiger Platz, sondern Pflaster mit Spuren von Wagen, Vieh und Wetter
+	float nass = 0.0;            // 0 trocken .. 1 Pfütze (glänzt, glatt)
+	float hof_erde = 0.0;        // Anteil Erde und Matsch im Hof (für die Normale)
+	if (a_hof > 0.01) {
+		// Nähe zum Hofrand (Mauern, Gebäude): die Maske ringsum in 2,5 m abtasten
+		float rand_b = 1.0;
+		for (int i = 0; i < 8; i++) {
+			float w = float(i) * TAU / 8.0;
+			vec2 q = p + vec2(cos(w), sin(w)) * 2.5;
+			rand_b = min(rand_b, texture(maske, (q - welt_ursprung) / welt_groesse).b);
+		}
+		float am_rand = a_hof * (1.0 - smoothstep(0.75, 0.95, rand_b));
+		vec3 erde = zwei(erde_farbe, p, M_ERDE) * vec3(0.82, 0.76, 0.68);
+		// ausgetretene Bahnen (Wagen und Fußwege): geschwungene Linien aus Rauschen
+		float bahn = 1.0 - abs(rauschen(p * 0.035 + vec2(3.0, -11.0)) * 2.0 - 1.0);
+		bahn = smoothstep(0.86, 0.97, bahn + (klein - 0.5) * 0.08);
+		// fehlende Steine: kleine Erdflecken
+		float luecke = smoothstep(0.74, 0.8, rauschen(p * 0.9 + vec2(-4.0, 9.0))) * 0.8;
+		// Matsch in Mulden, darin Pfützen
+		float matsch = smoothstep(0.62, 0.78, rauschen(p * 0.07 + vec2(21.0, 5.0)) + (klein - 0.5) * 0.12);
+		float pfuetze = matsch * smoothstep(0.58, 0.66, rauschen(p * 0.21 + vec2(-9.0, 14.0)));
+		hof_erde = max(max(bahn * 0.75, luecke), max(matsch, am_rand * 0.85));
+		vec3 hof = mix(pf, erde, hof_erde);
+		hof = mix(hof, hof * vec3(0.55, 0.52, 0.48), matsch * 0.7);                  // feuchte, dunkle Erde
+		// am Rand: Unkraut und Gras in Büscheln zwischen Mauerfuß und Pflaster, dazu Moos auf den Steinen
+		float kraut = am_rand * smoothstep(0.35, 0.6, rauschen(p * 1.3 + vec2(7.0, 2.0)) + (gross - 0.5) * 0.3);
+		hof = mix(hof, g * vec3(0.8, 0.95, 0.7), kraut * 0.85);
+		// Stroh im Dreck: einzelne helle Halme (nur nah, sonst ein leichter Schimmer)
+		float fein_h = clamp(1.0 - length(fwidth(p)) * 5.0, 0.0, 1.0);
+		vec2 halm_p = drehe_hof(p) * vec2(2.5, 22.0);
+		float halm = smoothstep(0.86, 0.92, rauschen(halm_p)) * smoothstep(0.4, 0.7, rauschen(p * 0.3 + vec2(1.0, 8.0)));
+		hof = mix(hof, vec3(0.42, 0.33, 0.14), mix(halm * 0.1, halm * 0.8, fein_h) * hof_erde);
+		// Pfützen: Wasser über dem Matsch, spiegelt
+		hof = mix(hof, hof * vec3(0.32, 0.33, 0.33), pfuetze);
+		nass = max(pfuetze, matsch * 0.4) * a_hof;
+		pf = mix(pf, hof, a_hof);
+	}
 	farbe = mix(farbe, pf, a_pflaster);
 	// Flur: Äcker mit Furchen, goldenes Getreide in Reihen, kurz gefressene Weide, Wiese mit Blüten
 	float a_acker = 0.0;
@@ -216,7 +259,9 @@ void gelaende_material(vec3 welt_pos, vec3 welt_normale, out vec3 albedo, out ve
 
 	// Normalen ohne Tangenten: die Normalenkarte kippt die Weltnormale
 	vec3 nk_boden = texture(gras_normal, p / M_GRAS).rgb * (1.0 - a_weg - a_erde) + texture(erde_normal, p / M_ERDE).rgb * (a_weg + a_erde);
-	nk_boden = mix(nk_boden, texture(pflaster_normal, p / M_PFLASTER).rgb, a_pflaster);
+	vec3 nk_pf = mix(texture(pflaster_normal, p / M_PFLASTER).rgb, texture(erde_normal, p / M_ERDE).rgb, hof_erde);
+	nk_pf = mix(nk_pf, vec3(0.5, 0.5, 1.0), nass);          // Wasser ist glatt
+	nk_boden = mix(nk_boden, nk_pf, a_pflaster);
 	vec3 nk_fels = texture(fels_normal, welt_pos.zy * (1.0 / M_FELS)).rgb * gewicht.x + texture(fels_normal, welt_pos.xz * (1.0 / M_FELS)).rgb * gewicht.y + texture(fels_normal, welt_pos.xy * (1.0 / M_FELS)).rgb * gewicht.z;
 	if (mit_klippe) {
 		vec3 nk_klippe = texture(klippe_normal, welt_pos.zy * (1.0 / M_KLIPPE)).rgb * gewicht.x + texture(klippe_normal, welt_pos.xz * (1.0 / M_KLIPPE)).rgb * gewicht.y + texture(klippe_normal, welt_pos.xy * (1.0 / M_KLIPPE)).rgb * gewicht.z;
@@ -232,5 +277,5 @@ void gelaende_material(vec3 welt_pos, vec3 welt_normale, out vec3 albedo, out ve
 	normale = neu;
 
 	albedo = farbe;
-	rauheit = mix(0.95, 0.75, a_schnee);
+	rauheit = mix(mix(0.95, 0.75, a_schnee), 0.08, nass * a_pflaster);
 }

@@ -27,6 +27,11 @@ uniform float fugen = 0.45;              // wie dunkel die tiefsten Stellen werd
 uniform float regen = 0.38;              // Stärke der Regenspuren auf Wänden
 uniform float feuchte = 1.0;             // Stärke der Feuchte am Mauerfuß
 uniform float parallax_weite = 28.0;     // bis zu dieser Entfernung (m) wird Parallax gerechnet
+// Rüstlöcher (Gerüstlöcher): In jeder Lage des Baugerüsts (etwa 1,3 m) steckten Querhölzer in der Mauer; die Löcher
+// blieben offen. 0: keine, 1: in Reihen auf allen geraden Wänden ab 1,6 m über dem Boden.
+uniform float ruestloecher = 0.0;
+// Flickstellen: spätere Ausbesserungen in etwas anderem Stein (hellere, kühlere Partien mit scharfer Grenze)
+uniform float flicken = 0.0;
 // Eigene Steine für Oberseiten (z. B. Kaiplatten auf der Krone der Kaimauer statt Bruchstein)
 uniform bool mit_deckel = false;
 uniform sampler2D deckel_farbe : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
@@ -216,12 +221,40 @@ void fragment() {
 		alb = mix(alb, vec3(0.12, 0.15, 0.07), algen * 0.6);
 	}
 
+	// Flickstellen: spätere Ausbesserungen, heller und kühler, mit unregelmäßiger, aber klarer Grenze
+	if (flicken > 0.0) {
+		float fl = smoothstep(0.66, 0.69, rauschen3(welt_pos * vec3(0.05, 0.09, 0.05) + 11.0) + (hh - 0.5) * 0.06);
+		alb = mix(alb, alb * vec3(1.12, 1.1, 1.08), fl * flicken * senkrecht);
+	}
+	// Rüstlöcher: dunkle Löcher in Reihen (Gerüstlagen), nicht an jeder Stelle; nicht auf Rundtürmen (dort verzieht
+	// die Koordinate entlang der Wand) und nicht in der Feuchte am Fuß
+	float loch = 0.0;
+	if (ruestloecher > 0.0 && senkrecht > 0.5 && rund < 0.5 && gelaende_rahmen.z > 0.0) {
+		vec2 guv2 = (welt_pos.xz - gelaende_rahmen.xy) / gelaende_rahmen.zw;
+		float ueber2 = welt_pos.y - textureLod(gelaende_hoehe, guv2, 0.0).r;
+		const float LAGE = 1.32;
+		const float ABSTAND = 1.75;
+		float reihe = floor(welt_pos.y / LAGE);
+		float ver = zufall(vec2(reihe, 3.7)) * ABSTAND;          // jede Lage etwas versetzt
+		float spalte = floor((quer + ver) / ABSTAND);
+		vec2 in_zelle = vec2(fract((quer + ver) / ABSTAND) * ABSTAND, fract(welt_pos.y / LAGE) * LAGE);
+		float da = step(0.45, zufall(vec2(spalte, reihe) + floor(welt_pos.xz * 0.02) * 7.0)) * step(1.6, ueber2);
+		vec2 d = abs(in_zelle - vec2(ABSTAND * 0.5, LAGE * 0.5));
+		float r = 0.075 + 0.02 * zufall(vec2(spalte, reihe + 9.0));
+		loch = da * (1.0 - smoothstep(r - 0.012, r + 0.004, max(d.x, d.y))) * ruestloecher;
+		// unter dem Loch eine helle Laufspur (Kalk und Schmutz, vom Regen herausgewaschen)
+		float lauf = da * ruestloecher * (1.0 - smoothstep(0.02, r * 0.8, d.x))
+			* step(in_zelle.y, LAGE * 0.5 - r) * (1.0 - smoothstep(0.0, 0.55, LAGE * 0.5 - r - in_zelle.y));
+		alb = mix(alb, alb * vec3(0.7, 0.72, 0.7), lauf * 0.6);
+		alb = mix(alb, vec3(0.025, 0.022, 0.02), loch);
+	}
+
 	// Moos und Flechten auf Oberseiten (Zinnen, Gesimse, Mauerkronen), bevorzugt in Vertiefungen
 	float oben = smoothstep(0.45, 0.85, n.y) * moos * smoothstep(0.35, 0.75, rauschen3(welt_pos * 0.9 + 3.0) + (0.5 - hh) * 0.3);
 	alb = mix(alb, moos_farbe, oben);
 	ALBEDO = alb;
 	ROUGHNESS = clamp(rau + oben * 0.2 - feucht * 0.25, 0.0, 1.0);
-	AO = mix(fuge, 1.0, 0.25);
+	AO = mix(fuge, 1.0, 0.25) * (1.0 - loch * 0.9);
 	AO_LIGHT_AFFECT = 0.25;
 	// Normalenkarte ohne Tangenten: in die Weltnormale kippen (wie im Geländeshader)
 	vec3 t = nk * 2.0 - 1.0;

@@ -84,11 +84,15 @@ const HALTUNGEN := {"": "Idle", "reden": "Idle_Talking", "sitzen": "Sitting_Idle
 static var _szenen := {}
 static var _bibliothek: AnimationLibrary
 static var _bibliothek_mensch: AnimationLibrary
-## Prototyp (docs/grafik-richtung.md): realistische Menschen aus MakeHuman (modelle/figuren/menschen, gebaut mit
-## werkzeuge/mensch_bauen.py) statt der Quaternius-Körper. Einschalten mit der Projekteinstellung
-## sorrowland/figuren_realistisch oder der Umgebungsvariablen FIGUREN_REALISTISCH=1.
-static var realistisch: bool = OS.get_environment("FIGUREN_REALISTISCH") != "" or \
-	bool(ProjectSettings.get_setting("sorrowland/figuren_realistisch", false))
+## Realistische Menschen aus MakeHuman (modelle/figuren/menschen, gebaut mit werkzeuge/mensch_bauen.py) statt der
+## Quaternius-Körper, seit 26.11.2026 Standard (docs/grafik-richtung.md). Die alten Figuren zum Vergleich: Umgebungs-
+## variable FIGUREN_REALISTISCH=0 (oder Projekteinstellung sorrowland/figuren_realistisch = false).
+static var realistisch: bool = _realistisch_schalter()
+static func _realistisch_schalter() -> bool:
+	var e := OS.get_environment("FIGUREN_REALISTISCH")
+	if e != "":
+		return e != "0"
+	return bool(ProjectSettings.get_setting("sorrowland/figuren_realistisch", true))
 const MENSCHEN := "res://modelle/figuren/menschen/"
 ## Vorrat (werkzeuge/menschen_vorrat.py): nach Geschlecht, Berufe mit eigener Kleidung aus Stoff
 const MENSCHEN_MAENNER := ["mann_1", "mann_2", "mann_3", "mann_4", "mann_5", "mann_6"]
@@ -407,8 +411,19 @@ static func _material(farbe: Color, stoff: String) -> StandardMaterial3D:
 	m.albedo_color = Color(farbe, 1.0)
 	m.roughness = 0.55 if stoff == "haut" else (0.4 if stoff in ["stiefel", "guertel"] else 0.9)
 	if stoff == "eisen":
-		m.metallic = 0.8
-		m.roughness = 0.35
+		# geschmiedetes Eisen: Hammerschlag und Gebrauchsspuren aus der Metalltextur, matt mit hellen Kanten statt
+		# glattem Chrom (dreiplanar im Raum des Teils, wandert also mit)
+		# die Farbtextur ist rostig; gepflegtes Eisen der Wachen bekommt nur Rauheit und Relief daraus, die Farbe ist
+		# Stahlgrau
+		m.albedo_color = Color(farbe.r * 0.8, farbe.g * 0.8, farbe.b * 0.82)
+		m.metallic = 0.85
+		m.roughness = 1.0
+		m.roughness_texture = load("res://texturen/metall_rau.jpg")
+		m.normal_enabled = true
+		m.normal_texture = load("res://texturen/metall_normal.jpg")
+		m.normal_scale = 0.8
+		m.uv1_triplanar = true
+		m.uv1_scale = Vector3(5, 5, 5)
 	if stoff == "glut":
 		m.emission_enabled = true
 		m.emission = Color(1.0, 0.55, 0.2)
@@ -604,6 +619,11 @@ func _baue_mensch(w: bool) -> bool:
 	if frisur == 3 and beruf in ["", "haendler"]:
 		_hut(skelett)
 	_zubehoer(skelett, w)
+	# unter dem Eisenhut trägt man eine Polsterhaube: keine Haare, die durch die Glocke stechen
+	if _kopfbedeckung(w) == "eisenhut":
+		for k in skelett.get_children():
+			if k is MeshInstance3D and String(k.name).begins_with("Haare"):
+				k.visible = false
 	_blick_einrichten(skelett)
 	_setze_handding()
 	_halte_alle()
@@ -1117,15 +1137,18 @@ func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
 			m.height = 0.16
 			_anhaengen(skelett, "Head", m, "leinen", Vector3(0, oben + 0.04, -0.01))
 		"eisenhut":
-			var krone := SphereMesh.new()
-			krone.radius = 0.13
-			krone.height = 0.17
-			_anhaengen(skelett, "Head", krone, "eisen", Vector3(0, oben + 0.01, -0.01))
-			var krempe := CylinderMesh.new()
-			krempe.top_radius = 0.24
-			krempe.bottom_radius = 0.25
-			krempe.height = 0.02
-			_anhaengen(skelett, "Head", krempe, "eisen", Vector3(0, oben - 0.04, -0.01))
+			# etwas länger als breit (wie ein Kopf) und nach hinten gesetzt, sonst sticht der Hinterkopf durch
+			_anhaengen(skelett, "Head", _eisenhut(), "eisen", Vector3(0, oben - 0.035, -0.028),
+				Basis().scaled(Vector3(1.04, 1.0, 1.1)))
+			# Polsterhaube aus Leinen darunter: bedeckt Scheitel, Hinterkopf und Ohren, das Gesicht bleibt frei
+			var haube := SphereMesh.new()
+			haube.radius = 0.1
+			haube.height = 0.1
+			haube.is_hemisphere = true
+			haube.radial_segments = 24
+			haube.rings = 8
+			_anhaengen(skelett, "Head", haube, "leinen", Vector3(0, oben - 0.075, -0.025),
+				Basis(Vector3.RIGHT, deg_to_rad(-38)).scaled(Vector3(0.95, 1.25, 1.12)))
 		"strohhut":
 			var krempe2 := CylinderMesh.new()
 			krempe2.top_radius = 0.26
@@ -1142,6 +1165,55 @@ func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
 			haube.radius = 0.13
 			haube.height = 0.19
 			_anhaengen(skelett, "Head", haube, "leinen", Vector3(0, oben - 0.01, -0.02))
+
+
+## Eisenhut (Kesselhut, 13.–15. Jh.): gewölbte Glocke mit leichtem Grat, Verstärkungsband mit Nieten, abfallende
+## Krempe mit gerolltem Rand. Ein Drehkörper aus einem geschlossenen Profil (außen, Rand, unten, innen), damit man
+## auch von unten keine Lücke sieht. Der Ursprung liegt auf Höhe des Bandes.
+static var _eisenhut_mesh: ArrayMesh
+static func _eisenhut() -> ArrayMesh:
+	if _eisenhut_mesh != null:
+		return _eisenhut_mesh
+	var profil: Array[Vector2] = []       # (Radius, Höhe), von der Spitze außen herum bis zur Spitze innen
+	for k in 13:                          # Glocke: oben leicht spitz (Grat), unten fast senkrecht
+		var t := float(k) / 12.0
+		var w := t * PI / 2.0
+		profil.append(Vector2(0.122 * sin(w), 0.004 + 0.128 * pow(cos(w), 0.85)))
+	profil.append_array([Vector2(0.127, 0.0), Vector2(0.13, -0.006), Vector2(0.128, -0.014),       # Band
+		Vector2(0.16, -0.026), Vector2(0.19, -0.04), Vector2(0.212, -0.051),                           # Krempe
+		Vector2(0.219, -0.056), Vector2(0.218, -0.063), Vector2(0.211, -0.062),                        # Rollrand
+		Vector2(0.188, -0.047), Vector2(0.158, -0.032), Vector2(0.124, -0.018)])                       # unten zurück
+	for k in range(12, -1, -1):           # innen, 4 mm dünner
+		var t := float(k) / 12.0
+		var w := t * PI / 2.0
+		profil.append(Vector2(0.118 * sin(w), -0.012 + 0.14 * pow(cos(w), 0.85)))
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	const SEG := 40
+	for i in SEG:
+		var a0 := TAU * i / SEG
+		var a1 := TAU * (i + 1) / SEG
+		for k in profil.size() - 1:
+			var p := profil[k]
+			var q := profil[k + 1]
+			var ecken := [Vector3(cos(a0) * p.x, p.y, sin(a0) * p.x), Vector3(cos(a0) * q.x, q.y, sin(a0) * q.x),
+				Vector3(cos(a1) * q.x, q.y, sin(a1) * q.x), Vector3(cos(a1) * p.x, p.y, sin(a1) * p.x)]
+			for j: int in [0, 1, 2, 0, 2, 3]:
+				st.add_vertex(ecken[j])
+	st.generate_normals()
+	_eisenhut_mesh = st.commit()
+	# Nieten am Band (eigene Fläche: SurfaceTool mischt Ecken ohne und mit Normalen nicht)
+	var niete := SphereMesh.new()
+	niete.radius = 0.0055
+	niete.height = 0.008
+	niete.radial_segments = 6
+	niete.rings = 3
+	var st2 := SurfaceTool.new()
+	for i in 12:
+		var a := TAU * (i + 0.5) / 12.0
+		st2.append_from(niete, 0, Transform3D(Basis(Vector3.UP, -a), Vector3(cos(a) * 0.131, -0.007, sin(a) * 0.131)))
+	st2.commit(_eisenhut_mesh)
+	return _eisenhut_mesh
 
 
 ## Kopf dreht sich zu einem Ziel (schaue_auf), weich und innerhalb natürlicher Grenzen
@@ -1235,7 +1307,7 @@ func _faerbe_modell() -> void:
 				ton = klar.call(HOSEN[(absi(hash(_name_text)) / 3) % HOSEN.size()], 1.4)
 			elif mat_name == "Leder" and kordel_farbe.a > 0.0 and "Guertel" in name_:
 				ton = klar.call(kordel_farbe, 1.6)
-			elif mat_name in ["Haut", "Augen", "Brauen", "Wimpern", "Leder", "Haare", "Lederbahn", "Bart", "Kettenhemd", "Flicken"]:
+			elif mat_name in ["Haut", "Augen", "Brauen", "Wimpern", "Leder", "Schuhleder", "Haare", "Lederbahn", "Bart", "Kettenhemd", "Flicken"]:
 				continue
 			elif "Eye" in mat_name:
 				continue

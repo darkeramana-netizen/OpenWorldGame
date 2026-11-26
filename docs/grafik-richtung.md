@@ -68,8 +68,9 @@ Werkzeug `werkzeuge/mensch_bauen.py`, Quellen in `modelle/figuren/menschen/QUELL
   Knie, oder Kleid bis zum Knöchel; Beinlinge, Gürtel als Ring, Lederschuhe. Stoffe aus Poly-Haven-Scans, grau, die
   Tracht der Figur färbt sie. Haut unter der Kleidung fällt weg (nichts sticht durch).
 - **Kosten**: etwa 28 000 Dreiecke je Figur, wie die heutigen (Körper 14 000 und Kleidung 13 000).
-- **Schalter**: `figur.gd` baut mit `FIGUREN_REALISTISCH=1` (oder Projekteinstellung `sorrowland/figuren_realistisch`)
-  die neuen Körper; Kinder bleiben vorerst Quaternius.
+- **Schalter**: Seit 26.11.2026 sind die neuen Körper Standard. Die alten Figuren zum Vergleich gibt es mit
+  `FIGUREN_REALISTISCH=0` (oder Projekteinstellung `sorrowland/figuren_realistisch = false`). Kinder bleiben vorerst
+  Quaternius.
 
 Offen bis zur Umstellung: mehr Körper im Vorrat (Alter, Statur, Hautton, Frisuren), Bärte (MakeHuman hat keine
 CC0-Bärte; eigene Karte nötig), Berufskleidung (Schürze, Kettenhemd, Wappenrock, Kutte), eine ferne Fassung mit weniger
@@ -93,5 +94,18 @@ Dreiecken (MakeHuman-Proxy `male1591` mit 1600 Ecken), Frauen im Kleid ohne Bein
 - **Vierte Runde**: ferne Fassung jedes Teils (ab 20 m, etwa 6 000 statt 28 000 Dreiecke), Vorrat aus 17 Menschen
   (`werkzeuge/menschen_vorrat.py`), Bärte (zwei Schichten mit selbst gezeichnetem Barthaar, Farbe aus dem Kopfhaar),
   Kettenhemd (selbst gezeichnetes Ringgeflecht mit Lücken) unter dem Wappenrock, Flicken, weichere Haarkanten.
-- **Noch offen**: Nähte, Haare mit einzelnen Strähnenkarten, Helme passend zum neuen Kopf, Umstellung als Standard
-  (nach einer Messung der Bildrate mit vielen Menschen).
+- **Fünfte Runde (26.11.2026, Standard)**:
+  - Realistische Menschen sind Standard. Die Messung vom 25.11. zeigte keine nennenswerten Kosten.
+  - Wendeschuhe statt Füßen mit Zehen: Je Fuß ein eigenes, glattes Netz. Ein Gitter aus Strahlen von der Fußachse
+    trifft auf die konvexe Hülle des Fußes, oben bei 10 cm gerade abgeschnitten (Öffnung für das Bein). Dazu
+    gerundet, mit flacher Sohle, und am Schaft steht das Leder etwas vom Bein ab. Die Gewichte sind über den Schuh
+    geglättet, so biegt er sich beim Abrollen als Ganzes. Dunkleres Schuhleder als Gürtel und Haut. Der Beinling endet
+    im Schuh und liegt dort enger an.
+  - Kettenhemd bis zum Knie (Haubert): Der schmale Kittelstreifen darunter, der sich wie ein Schlauch um den
+    Oberschenkel legte, entfällt.
+  - Eisenhut als Kesselhut: gewölbte Glocke mit leichtem Grat, Band mit zwölf Nieten, abfallende Krempe mit
+    gerolltem Rand, darunter eine Polsterhaube aus Leinen (statt Haaren, die durch die Glocke stachen). Eisen hat
+    Hammerschlag und Rauheit aus der Metalltextur, die Farbe ist Stahlgrau statt Chrom.
+  - Bilder im Container: `tests/_figur_bild.gd` (nicht im Repo) fotografiert Figuren im Gehen von vier Seiten.
+- **Noch offen**: Nähte, Haare mit einzelnen Strähnenkarten, Bärte wirken aus der Nähe noch wie ein graues Netz,
+  der Wappenrock flattert seitlich zu weit (vorn und hinten sind zwei lose Bahnen ohne Seitennaht).

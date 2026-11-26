@@ -25,7 +25,7 @@ echo === Baucache fuellen (nach Codeaenderungen sonst Neubau in der ersten Messu
 "%GODOT%" --headless --path . --script res://werkzeuge/baucache_fuellen.gd
 
 echo === Messung Hoch, alte Figuren
-set FIGUREN_REALISTISCH=
+set FIGUREN_REALISTISCH=0
 "%GODOT%" --path . --script res://werkzeuge/messen/messung.gd -- --name hoch_figuren_alt --grafik hoch --aufloesung 1280x720
 echo === Messung Episch, alte Figuren
 "%GODOT%" --path . --script res://werkzeuge/messen/messung.gd -- --name episch_figuren_alt --grafik episch --aufloesung 1280x720

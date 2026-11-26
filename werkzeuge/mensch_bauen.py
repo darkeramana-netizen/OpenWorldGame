@@ -22,7 +22,7 @@ Aufruf aus dem Projektordner (braucht numpy, Pillow):
                                       groesse=0.5 haut=young_caucasian_male haare=short02 augen=brown brauen=eyebrow001]
 MH_DATA: Ordner makehuman/data aus dem MakeHuman-Repository, SYSTEM_ASSETS: entpacktes Systemasset-Paket.
 """
-import json, sys, shutil
+import json, os, sys, shutil
 from pathlib import Path
 import numpy as np
 from PIL import Image
@@ -636,6 +636,120 @@ def lade_stoffe(ordner):
             Image.fromarray(np.clip(np.repeat(grau, 3, axis=2), 0, 255).astype(np.uint8)).save(ordner / f"{name}_farbe.jpg", quality=90)
 
 
+SCHUH_RAND = 0.1      # Oberkante der Schuhe (knapp über dem Knöchel)
+
+
+def wendeschuhe(V, ids, ecken_jw, mitte_x, dicke=0.006):
+    """Wendeschuhe als eigenes, glattes Netz (der Fuß des Grundkörpers hat Zehen, die sich in jeder Verformung
+    wieder abzeichneten). Je Seite: konvexe Hülle des Fußes (oben bei SCHUH_RAND abgeschnitten), eine Achse von der
+    Ferse zu den Zehen durch die Mitte des Querschnitts, darum ein regelmäßiges Gitter von Strahlen (Fersenkappe,
+    Mittelteil, Zehenkappe), jeder bis zur Hülle. Was auf dem Deckel der Hülle landet, bleibt offen (Öffnung für das
+    Bein, gerader Rand). Dann runden, Sohle flach, um die Lederdicke nach außen, der Schaft steht oben etwas ab.
+    Gewichte: von der nächsten Fußecke, über das Gitter geglättet (der Schuh biegt sich als Ganzes).
+    Rückgabe: Ecken, Flächen (Indizes in diese Ecken), Gewichte je Ecke."""
+    from scipy.spatial import ConvexHull, cKDTree
+    alle_pos, alle_fl, alle_jw = [], [], []
+    for seite in (-1, 1):
+        s_ids = [i for i in ids if (V[i][0] - mitte_x) * seite > 0]
+        if len(s_ids) < 8:
+            continue
+        p = V[s_ids].copy()
+        p[:, 1] = np.minimum(p[:, 1], SCHUH_RAND)
+        gl_ = ConvexHull(p).equations       # a·x + d <= 0 innen
+        z0, z1 = p[:, 2].min() + 0.045, p[:, 2].max() - 0.045
+        stufen = np.linspace(z0, z1, 24)
+        mitten = []
+        for zs in stufen:
+            q = p[(np.abs(p[:, 2] - zs) < 0.012) & (p[:, 1] < 0.07)]
+            mitten.append([(q[:, 0].min() + q[:, 0].max()) / 2, min((q[:, 1].min() + q[:, 1].max()) / 2, 0.04)]
+                          if len(q) else [np.nan, np.nan])
+        mitten = np.array(mitten)
+        for k_ in (0, 1):
+            ok_ = ~np.isnan(mitten[:, k_])
+            mitten[:, k_] = np.interp(stufen, stufen[ok_], mitten[ok_, k_])
+        achse = lambda z: np.array([np.interp(z, stufen, mitten[:, 0]), np.interp(z, stufen, mitten[:, 1]), z])
+        def treffer(o, r):
+            r = r / np.linalg.norm(r)
+            nenner = gl_[:, :3] @ r
+            zaehler = -(gl_[:, :3] @ o + gl_[:, 3])
+            t_ = np.where(nenner > 1e-9, zaehler / np.maximum(nenner, 1e-9), np.inf).min()
+            return o + r * t_
+        RING, KAPPE, MITTE = 28, 7, 22
+        zeilen = []           # je Zeile: Ursprung, Längsrichtung, Anteil quer (cos) und längs (sin)
+        for k in range(KAPPE, 0, -1):
+            al = np.pi / 2 * k / KAPPE
+            zeilen.append((z0, -1.0, np.cos(al), np.sin(al)))
+        for k in range(MITTE):
+            zeilen.append((z0 + (z1 - z0) * k / (MITTE - 1), 0.0, 1.0, 0.0))
+        for k in range(1, KAPPE + 1):
+            al = np.pi / 2 * k / KAPPE
+            zeilen.append((z1, 1.0, np.cos(al), np.sin(al)))
+        netz = np.zeros((len(zeilen), RING, 3))
+        for zi, (z, laengs, quer, sl) in enumerate(zeilen):
+            o = achse(z)
+            for ri in range(RING):
+                ph = 2 * np.pi * ri / RING
+                r = np.array([np.cos(ph) * quer, np.sin(ph) * quer, laengs * sl if laengs else 0.0])
+                if quer < 1e-6:
+                    r = np.array([0.0, 0.0, laengs])
+                netz[zi, ri] = treffer(o, r)
+        oben = netz[:, :, 1] > SCHUH_RAND - 1e-4
+        # runden (Taubin über das Gitter, schrumpft nicht); der Rand an der Öffnung bleibt auf seiner Höhe
+        for k in range(10):
+            f = 0.5 if k % 2 == 0 else -0.53
+            m = netz.copy()
+            m[1:-1] = (netz[:-2] + netz[2:] + np.roll(netz[1:-1], 1, axis=1) + np.roll(netz[1:-1], -1, axis=1)) / 4
+            neu = netz + f * (m - netz)
+            neu[0] = netz[0]; neu[-1] = netz[-1]
+            neu[oben] = netz[oben]
+            netz = neu
+        netz[:, :, 1] = np.clip(netz[:, :, 1], 0.0, SCHUH_RAND)
+        basis = sum(len(x) for x in alle_pos)
+        pos = netz.reshape(-1, 3)
+        idx = lambda zi, ri: basis + zi * RING + ri % RING
+        fl = []
+        for zi in range(len(zeilen) - 1):
+            for ri in range(RING):
+                q = [idx(zi, ri), idx(zi + 1, ri), idx(zi + 1, ri + 1), idx(zi, ri + 1)]
+                ecken = [(zi, ri), (zi + 1, ri), (zi + 1, (ri + 1) % RING), (zi, (ri + 1) % RING)]
+                if all(oben[a_, b_] for a_, b_ in ecken):
+                    continue                       # Öffnung für das Bein
+                fl.append(q)
+        # Gewichte von der nächsten Fußecke, dann über das Gitter glätten
+        baum = cKDTree(V[s_ids])
+        _, naechste = baum.query(pos)
+        dicht = [{j: w_ for j, w_ in zip(*ecken_jw[s_ids[n_]]) if w_ > 0} for n_ in naechste]
+        for _ in range(8):
+            neu_d = []
+            for zi in range(len(zeilen)):
+                for ri in range(RING):
+                    nb = [(zi, (ri + 1) % RING), (zi, (ri - 1) % RING)] + \
+                         ([(zi - 1, ri)] if zi > 0 else []) + ([(zi + 1, ri)] if zi < len(zeilen) - 1 else [])
+                    d_ = {j: 0.5 * w_ for j, w_ in dicht[zi * RING + ri].items()}
+                    for a_, b_ in nb:
+                        for j, w_ in dicht[a_ * RING + b_].items():
+                            d_[j] = d_.get(j, 0.0) + 0.5 * w_ / len(nb)
+                    neu_d.append(d_)
+            dicht = neu_d
+        for d_ in dicht:
+            p_ = sorted(d_.items(), key=lambda kv: -kv[1])[:4]
+            sm = sum(x for _, x in p_)
+            alle_jw.append(([j for j, _ in p_] + [0] * (4 - len(p_)), [x / sm for _, x in p_] + [0.0] * (4 - len(p_))))
+        # Umlaufsinn: die Normalen sollen nach außen zeigen (vom Schwerpunkt dieses Schuhs weg)
+        lokal = np.array(dreiecke([[i - basis for i in f_] for f_ in fl]))
+        n_l = normalen(pos, lokal)
+        if np.mean(np.sum(n_l * (pos - pos.mean(0)), axis=1)) < 0:
+            fl = [f_[::-1] for f_ in fl]
+        alle_pos.append(pos)
+        alle_fl += fl
+    pos = np.vstack(alle_pos)
+    tri = np.array(dreiecke(alle_fl))
+    n = normalen(pos, tri)
+    t = np.clip((pos[:, 1] - (SCHUH_RAND - 0.03)) / 0.03, 0.0, 1.0)
+    pos = pos + n * (dicke + 0.005 * t * t * (3 - 2 * t))[:, None]
+    return pos, alle_fl, alle_jw
+
+
 def zerlege_kasten(pos_alle, nor_alle, flaechen, gewichte_je_ecke, kachel):
     """Flächen mit Kastenprojektion (je Fläche die Achse ihrer Normale; kachel: Wiederholungen je Meter);
     die Normalen bleiben glatt (nor_alle)."""
@@ -996,11 +1110,11 @@ def main():
             if kleidung == "kleid" and V[i][1] > rock_lang + 0.2:   # unter dem langen Kleid unsichtbar
                 return False
             # bis in den Schuh hinein (sonst bliebe am Knöchel ein Streifen Haut)
-            return h.startswith(("thigh", "calf")) or (h == "pelvis" and V[i][1] <= taille + 0.02) or \
-                (ist_schuh(i) and V[i][1] > 0.055)
+            return (h.startswith(("thigh", "calf")) and V[i][1] > SCHUH_RAND - 0.035) or \
+                (h == "pelvis" and V[i][1] <= taille + 0.02) or (ist_schuh(i) and V[i][1] > SCHUH_RAND - 0.035)
         def ist_schuh(i):
-            h = haupt(i)
-            return h.startswith(("foot", "ball")) or (h.startswith("calf") and V[i][1] < 0.12)
+            # nach Höhe statt nach Knochen: so wird der Rand eine gerade Linie (wendeschuhe schneidet bei SCHUH_RAND)
+            return haupt(i).startswith(("foot", "ball", "calf")) and V[i][1] < SCHUH_RAND + 0.025
         hose_fl = [(e, t) for g_, e, t in flaechen if g_ == "helper-tights"]
         # Übergang bis zum Stoffmodul (docs/technik-weg.md): unter dem Kittel die Oberschenkel 1,5 cm schmaler, damit
         # sie beim Gehen nicht durch den Rock stechen; unter dem Saum unverändert
@@ -1013,6 +1127,14 @@ def main():
                 for i in bein_ids:
                     t_ = min((V[i][1] - (rock_lang + 0.06)) / 0.08, 1.0)
                     V[i] -= n_bein[i] * 0.015 * t_
+        # im Schuh liegt der Beinling enger am Bein (sonst sticht er am Knöchel durch das Leder)
+        hose_ids = sorted({i for e, _ in hose_fl for i in e if V[i][1] < SCHUH_RAND + 0.01})
+        if hose_ids:
+            tri_h = np.array(dreiecke([e for e, _ in hose_fl]))
+            n_h = normalen(V, tri_h)
+            for i in hose_ids:
+                t_ = min(max((SCHUH_RAND + 0.01 - V[i][1]) / 0.025, 0.0), 1.0)
+                V[i] -= n_h[i] * 0.012 * t_
         rock_fl = [(e, t) for g_, e, t in flaechen if g_ == "helper-skirt"]
         def stueck(fl, wahl, abstand, mat, teilname, uv_mal, deckel=None, band=None, fern=True):
             sel = [(e, t) for e, t in fl if all(wahl(i) for i in e)]
@@ -1051,9 +1173,9 @@ def main():
             m_kette = gl.material("Kettenhemd", rel("kette_farbe.png"), (0.85, 0.86, 0.9, 1.0), rau=0.45,
                                   normal_uri=rel("kette_normal.png"), alpha="MASK", doppelt=True)
             gl.g["materials"][m_kette]["pbrMetallicRoughness"]["metallicFactor"] = 0.85
-            KETTE_UNTEN = 0.58           # das Kettenhemd reicht bis zur Mitte des Oberschenkels
-            stueck(rock_fl, lambda i: rock_lang <= V[i][1] <= KETTE_UNTEN + 0.03 and not hinter_bahn(i), 0.006,
-                   m_kittel, "Kittelrock", 3.0)
+            # Das Kettenhemd reicht wie ein Haubert des 13./14. Jahrhunderts bis zum Knie. Früher endete es mitten am
+            # Oberschenkel, darunter hing ein schmaler Kittelstreifen, der sich wie ein Schlauch um das Bein legte.
+            KETTE_UNTEN = rock_lang
             stueck(rock_fl, lambda i: KETTE_UNTEN <= V[i][1] <= taille - 0.035 and not hinter_bahn(i), 0.011,
                    m_kette, "Kettenhemd_rock", 9.0)
             stueck(hose_fl, lambda i: ist_oben_roh(i) and V[i][1] < hals - 0.01, 0.02, m_kette, "Kettenhemd", 9.0)
@@ -1092,14 +1214,16 @@ def main():
         stueck(hose_fl, lambda i: not arm(i) and abs(V[i][1] - taille) < 0.15, 0.03, m_leder, "Guertel", 4.0,
                band=(taille - 0.025, taille + 0.025))
         schuh_ids = [i for i in koerper_ids if ist_schuh(i)]
-        schuh_fl = [(e, t) for g_, e, t in flaechen if g_ == "body" and all(ist_schuh(i) for i in e)]
+        schuh_fl = [(e, t) for g_, e, t in flaechen if g_ == "body" and all(ist_schuh(i) for i in e)
+                    and min(V[i][1] for i in e) < SCHUH_RAND]
         if schuh_fl:
-            ids_s = sorted({i for e, _ in schuh_fl for i in e})
-            tri_s = np.array(dreiecke([e for e, _ in schuh_fl]))
-            n_s = normalen(V, tri_s)
-            vs = V.copy(); vs[ids_s] += n_s[ids_s] * 0.012
-            pos, nor, tex, jw, tri = zerlege_kasten(vs, n_s, [e for e, _ in schuh_fl], ecken_jw, 4.0)
-            teil("Schuhe", pos, tex, jw, tri, m_leder, nor, "leder")
+            pos_s, fl_s, jw_s = wendeschuhe(V, sorted({i for e, _ in schuh_fl for i in e}), ecken_jw,
+                                            MHP["pelvis"][0])
+            n_s = normalen(pos_s, np.array(dreiecke(fl_s)))
+            m_schuh = gl.material("Schuhleder", rel("leder_farbe.jpg"), (0.36, 0.26, 0.19, 1.0), rau=0.62,
+                                  normal_uri=rel("leder_normal.jpg"))
+            pos, nor, tex, jw, tri = zerlege_kasten(pos_s, n_s, fl_s, jw_s, 4.0)
+            teil("Schuhe", pos, tex, jw, tri, m_schuh, nor, "leder")
         # Überkleidung (schwingende Bahnen)
         if bahnen:
             m_schuerze = gl.material("Schuerze", rel("kittel_farbe.jpg"), (0.8, 0.77, 0.68, 1.0), rau=0.95,

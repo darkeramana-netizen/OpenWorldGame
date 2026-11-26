@@ -16,7 +16,9 @@ extends Node3D
 ## auf Böcken), 48 Rüstungsständer mit Kettenhemd, Helm und Schild, 28 Wäscheleine mit Wäsche, 29 Stroh am Boden, 30 Pfütze, 31 Taube (27 bis 31 ohne Kollision), 32 Zaunfeld
 ## (3 m), 33 Anbindebalken, 34 Bretterwand eines Schweinekobens (2 m), 35 Gatter (1,5 m, am Pfosten bei x = 0
 ## angeschlagen), 36 Schlamm, 37 Netzgestell mit Fischernetz (3,2 m), 38 Fischkorb, 21 Schmiede (gemauerte
-## Werkstatt mit Pultdach, Rücken an der Hofmauer bei lokal -z, offen nach +z; innen Esse, Amboss, Werkbank)
+## Werkstatt mit Pultdach, Rücken an der Hofmauer bei lokal -z, offen nach +z; innen Esse, Amboss, Werkbank),
+## 53 Mauerschuppen (8 m; 54: 5,2 m; Pultdach aus Schindeln auf einer Mauerlatte in der Hofmauer, die etwa bei lokal z = -2,4
+## steht; offen nach +z; darin Brennholz, Fässer, Wagenrad, Werkzeug), 55 Baugerüst vor der Hofmauer (6 m, ebenso)
 @export var stuecke := PackedFloat32Array():
 	set(w):
 		stuecke = w
@@ -47,7 +49,7 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(1.0, 0.95, 0.4), Vector3(1.6, 0.95, 0.45), Vector3(0.65, 1.6, 0.35), Vector3(0.75, 0.3, 1.85),
 	Vector3(0.9, 0.5, 0.2), Vector3(1.0, 0.85, 1.0), Vector3(0.35, 0.6, 0.35), Vector3(1.1, 0.9, 0.7),
 	Vector3(0.55, 1.75, 0.35), Vector3(1.05, 1.9, 2.4),
-	Vector3.ZERO, Vector3(0.31, 0.35, 0.31), Vector3.ZERO]
+	Vector3.ZERO, Vector3(0.31, 0.35, 0.31), Vector3.ZERO, Vector3(4.1, 3.6, 1.6), Vector3(2.6, 3.6, 1.6), Vector3(3.0, 6.3, 1.5)]
 ## Fotoscans (Poly Haven, CC0; werkzeuge/modell_laden.py, modelle/ausstattung): Art → Teile [Modell, Ort, Drehung in Grad
 ## (x, y, z), Maßstab]. Ein Teil mit einer Zahl statt eines Namens ist eine selbst gebaute Form: 100 + Art ist die Art ohne
 ## die Dinge, die ein Scan ersetzt (Werkzeug, Axt, Schild, Laterne, Korb). Bis SCAN_NAH Meter zeigt jede Art die volle
@@ -92,7 +94,17 @@ const KAESTEN := {21: [
 	[Vector3(-1.85, -0.5, -0.35), Vector3(-0.95, 0.9, 0.35)],  # Amboss
 	[Vector3(-0.3, -0.5, -2.2), Vector3(0.6, 0.6, -1.55)],    # Löschtrog
 	[Vector3(0.9, -0.5, -2.2), Vector3(2.0, 0.6, -1.4)],      # Kohlenkiste
-	[Vector3(2.4, -0.5, -1.2), Vector3(3.3, 0.9, 1.4)]]}      # Werkbank
+	[Vector3(2.4, -0.5, -1.2), Vector3(3.3, 0.9, 1.4)]],      # Werkbank
+	# Mauerschuppen: Seitenwände, Holzstapel, Fässer und zwei Pfosten; vorn offen, man kann hineingehen
+	53: [[Vector3(-4.15, -0.5, -2.4), Vector3(-3.95, 3.4, 1.25)], [Vector3(3.95, -0.5, -2.4), Vector3(4.15, 3.4, 1.25)],
+		[Vector3(-3.8, -0.5, -2.4), Vector3(0.4, 1.65, -1.55)], [Vector3(0.9, -0.5, -2.2), Vector3(2.4, 1.0, -1.4)],
+		[Vector3(-1.4, -0.5, 1.1), Vector3(-1.2, 2.5, 1.3)], [Vector3(1.2, -0.5, 1.1), Vector3(1.4, 2.5, 1.3)]],
+	# Gerüst: Standbäume, Steinquader und Trog; unter dem Gerüst kann man hindurchgehen
+	55: [[Vector3(-2.8, -0.5, -0.7), Vector3(-2.6, 6.3, -0.5)], [Vector3(-0.1, -0.5, -0.7), Vector3(0.1, 6.3, -0.5)],
+		[Vector3(2.6, -0.5, -0.7), Vector3(2.8, 6.3, -0.5)], [Vector3(1.5, -0.5, 0.1), Vector3(2.9, 0.65, 1.1)],
+		[Vector3(-2.2, -0.5, 0.3), Vector3(-1.0, 0.35, 0.9)]],
+	54: [[Vector3(-2.6, -0.5, -2.4), Vector3(-2.4, 3.4, 1.25)], [Vector3(2.4, -0.5, -2.4), Vector3(2.6, 3.4, 1.25)],
+		[Vector3(-2.2, -0.5, -2.4), Vector3(-0.2, 1.65, -1.55)], [Vector3(0.0, -0.5, -2.2), Vector3(1.45, 1.0, -1.4)]]}
 ## Wasserfahrzeuge: die Kollisionsbox reicht unter die Wasserlinie
 const TIEFGANG := {5: 1.7, 6: 1.7, 7: 0.5, 9: 0.8, 39: 1.7}
 ## Farben der Markisen
@@ -458,6 +470,12 @@ func _mesh(art: int) -> ArrayMesh:
 			_klotz("holz", Vector3(-2.1, 0.2, -1.6), Vector3(2.1, 2.6, -1.5))
 			_klotz("heu", Vector3(-1.9, 0, -1.4), Vector3(-0.4, 0.8, -0.3))
 			_klotz("holz", Vector3(0.2, 0, -1.3), Vector3(1.8, 0.3, 0.6))
+		53:  # Mauerschuppen: Pultdach aus Schindeln, hinten auf einer Mauerlatte über Kragsteinen in der Hofmauer
+			_schuppen(4.15)
+		54:  # kurzer Mauerschuppen (5,2 m)
+			_schuppen(2.6)
+		55:  # Baugerüst an der Hofmauer (Ausbesserung)
+			_geruest()
 		18:  # Heuhaufen
 			_zylinder("heu", Vector3.ZERO, 0.95, 0.95, 0.45, 12)
 			_zylinder("heu", Vector3(0, 0.4, 0), 0.75, 0.8, 0.35, 12)
@@ -1045,6 +1063,210 @@ func _schmiede() -> void:
 
 
 ## Flacher, unregelmäßiger Fleck (Pfütze, feuchter Rand): Scheibe mit welligem Umriss, nach oben gewandt.
+## Balken von a nach b mit Querschnitt breite × hoehe (die Höhe möglichst senkrecht)
+func _stab(mat: String, a: Vector3, b: Vector3, breite: float, hoehe: float) -> void:
+	var l := (b - a).normalized()
+	var quer := l.cross(Vector3.UP)
+	if quer.length() < 0.01:
+		quer = l.cross(Vector3.RIGHT)
+	quer = quer.normalized() * breite * 0.5
+	var auf := quer.cross(l).normalized() * hoehe * 0.5
+	if auf.y < 0.0:
+		auf = -auf
+	var e := [a - quer - auf, a + quer - auf, a + quer + auf, a - quer + auf]
+	var f := [b - quer - auf, b + quer - auf, b + quer + auf, b - quer + auf]
+	for k in 4:
+		var k2 := (k + 1) % 4
+		var mitte := (e[k] + e[k2]) / 2.0 - (a)
+		_viereck(mat, e[k], e[k2], f[k2], f[k], mitte)
+	_viereck(mat, e[0], e[1], e[2], e[3], a - b)
+	_viereck(mat, f[0], f[1], f[2], f[3], b - a)
+
+
+## Mauerschuppen (Art 53), lokal: x entlang der Hofmauer (-4 .. 4), -z zur Mauer (deren Fläche liegt etwa bei
+## z = -2,4), +z in den Hof. Hinten liegt die Mauerlatte auf Kragsteinen in der Mauer, vorn ein Rähm auf vier Pfosten
+## über Steinsockeln mit Kopfbändern; darüber Sparren und ein Dach aus Holzschindeln in versetzten Reihen. Seitlich
+## Bretterwände mit Fugen. Darin: Brennholz (die Stirnseiten der Scheite zeigen nach vorn), zwei Fässer, ein Wagenrad
+## an der Wand, Rechen und Sense an der Mauerlatte, Stroh am Boden.
+func _schuppen(hb: float) -> void:
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = 5353
+	const HINTEN := -2.3
+	const VORN := 1.2
+	const Y_HINTEN := 3.55       # Oberkante Mauerlatte
+	const Y_VORN := 2.45         # Oberkante Rähm
+	# Kragsteine und Mauerlatte
+	var stuetzen: Array = [-hb + 0.2, hb - 0.2] if hb < 3.0 else [-hb + 0.2, -1.3, 1.3, hb - 0.2]
+	for x: float in stuetzen:
+		_klotz("bruchstein", Vector3(x - 0.14, Y_HINTEN - 0.42, -2.65), Vector3(x + 0.14, Y_HINTEN - 0.2, HINTEN + 0.12))
+	_klotz("holz_dunkel", Vector3(-hb, Y_HINTEN - 0.2, HINTEN - 0.1), Vector3(hb, Y_HINTEN, HINTEN + 0.12))
+	# Pfosten auf Steinsockeln, Rähm, Kopfbänder
+	for x: float in stuetzen:
+		_klotz("bruchstein", Vector3(x - 0.17, -0.3, VORN - 0.17), Vector3(x + 0.17, 0.12, VORN + 0.17))
+		_klotz("holz_dunkel", Vector3(x - 0.1, 0.12, VORN - 0.1), Vector3(x + 0.1, Y_VORN - 0.2, VORN + 0.1))
+		for sx: float in [-1.0, 1.0]:
+			if absf(x + sx * 0.6) > hb - 0.1:
+				continue
+			_stab("holz_dunkel", Vector3(x, Y_VORN - 0.85, VORN), Vector3(x + sx * 0.6, Y_VORN - 0.22, VORN), 0.09, 0.09)
+	_klotz("holz_dunkel", Vector3(-hb, Y_VORN - 0.22, VORN - 0.11), Vector3(hb, Y_VORN, VORN + 0.11))
+	# Sparren mit Überstand vorn
+	var neigung := (Y_HINTEN - Y_VORN) / (VORN - HINTEN)
+	var dach_y := func(z: float) -> float:
+		return Y_HINTEN + 0.02 - (z - HINTEN) * neigung
+	var x_s := -hb + 0.1
+	while x_s <= hb - 0.09:
+		_stab("holz", Vector3(x_s, dach_y.call(HINTEN - 0.05) + 0.06, HINTEN - 0.05),
+			Vector3(x_s, dach_y.call(VORN + 0.55) + 0.06, VORN + 0.55), 0.09, 0.12)
+		x_s += 0.9
+	# Schindeln: Reihen von hinten (oben) nach vorn (unten), jede Reihe deckt die vorige; je Schindel eine leicht
+	# andere Breite, Länge und Neigung, abwechselnd helleres und dunkleres Holz
+	var z := HINTEN - 0.12
+	var reihe := 0
+	while z < VORN + 0.6:
+		var x := -hb - 0.1 + (0.11 if reihe % 2 == 1 else 0.0)
+		while x < hb + 0.1:
+			var b := zufall.randf_range(0.16, 0.26)
+			var lang := zufall.randf_range(0.38, 0.46)
+			var z1 := minf(z + lang, VORN + 0.72)
+			var y0 := dach_y.call(z) + 0.15 + 0.012
+			var y1 := dach_y.call(z1) + 0.15 + zufall.randf_range(0.0, 0.025)
+			var x1 := minf(x + b - 0.012, hb + 0.1)
+			var mat := "schindel" if zufall.randf() < 0.6 else "schindel_hell"
+			var a_ := Vector3(x, y0, z)
+			var b_ := Vector3(x1, y0, z)
+			var c_ := Vector3(x1, y1, z1)
+			var d_ := Vector3(x, y1, z1)
+			_viereck(mat, a_, b_, c_, d_, Vector3(0, 1, neigung))
+			_viereck(mat, a_, b_, c_, d_, Vector3(0, -1, -neigung))
+			# Stirnseite (Dicke) unten
+			_viereck(mat, d_, c_, c_ - Vector3(0, 0.025, 0), d_ - Vector3(0, 0.025, 0), Vector3(0, 0, 1))
+			x = x1 + 0.012
+		z += 0.3
+		reihe += 1
+	# Seitenwände aus senkrechten Brettern mit Fugen
+	for sx: float in [-1.0, 1.0]:
+		var zb := HINTEN
+		while zb < VORN - 0.05:
+			var bb := zufall.randf_range(0.18, 0.26)
+			var z2 := minf(zb + bb, VORN - 0.1)
+			var hoch := dach_y.call(z2) + 0.1
+			_klotz("holz" if zufall.randf() < 0.5 else "holz_dunkel", Vector3(sx * (hb - 0.1) - 0.02, 0.05, zb),
+				Vector3(sx * (hb - 0.1) + 0.02, hoch, z2 - 0.018))
+			zb = z2
+		for y_r: float in [0.5, 1.9]:   # Riegel innen
+			_klotz("holz_dunkel", Vector3(sx * (hb - 0.17) - 0.05, y_r, HINTEN), Vector3(sx * (hb - 0.17) + 0.05, y_r + 0.12, VORN - 0.1))
+	# Brennholz: Scheite mit der Stirnseite nach vorn, in Lagen, leicht unregelmäßig
+	var yl := 0.08
+	var lage := 0
+	while yl < 1.55:
+		var xl := -hb + 0.4 + (0.09 if lage % 2 == 1 else 0.0)
+		while xl < (0.3 if hb > 3.0 else -0.2):
+			var r := zufall.randf_range(0.065, 0.095)
+			var vor := zufall.randf_range(-0.05, 0.05)
+			_zylinder("holz" if zufall.randf() < 0.7 else "holz_dunkel", Vector3(xl + r, yl + r, -2.3), r, r, 0.68 + vor, 5,
+				Basis(Vector3.RIGHT, PI / 2.0))
+			xl += r * 2.0 + 0.01
+		yl += 0.16
+		lage += 1
+	# zwei Fässer mit Reifen
+	for fx: float in ([1.3, 2.05] if hb > 3.0 else [0.35, 1.05]):
+		_zylinder("holz_dunkel", Vector3(fx, 0, -1.8), 0.3, 0.36, 0.95, 12)
+		for hy: float in [0.15, 0.78]:
+			_zylinder("metall", Vector3(fx, hy, -1.8), 0.345, 0.345, 0.04, 12)
+	# Wagenrad an der rechten Wand
+	var rad := Basis(Vector3.FORWARD, 0.1) * Basis(Vector3.FORWARD, PI / 2.0)
+	var rm := Vector3(hb - 0.27, 0.62, -0.2)
+	_zylinder("holz_dunkel", rm - rad * Vector3(0, 0.05, 0), 0.08, 0.1, 0.12, 8, rad)
+	for k in 12:
+		var w0 := TAU * k / 12.0
+		var w1 := TAU * (k + 1) / 12.0
+		var p0 := rm + Vector3(0, sin(w0), cos(w0)) * 0.58
+		var p1 := rm + Vector3(0, sin(w1), cos(w1)) * 0.58
+		_stab("holz_dunkel", p0, p1, 0.06, 0.07)
+		if k % 2 == 0:
+			_stab("holz", rm, p0, 0.035, 0.035)
+	# Rechen und Sense an der Mauerlatte
+	_stab("holz", Vector3(-0.2, Y_HINTEN - 0.25, HINTEN + 0.18), Vector3(0.05, 0.2, HINTEN + 0.28), 0.035, 0.035)
+	_stab("holz", Vector3(-0.42, 0.42, HINTEN + 0.3), Vector3(0.2, 0.32, HINTEN + 0.3), 0.04, 0.05)
+	_stab("holz", Vector3(0.6, Y_HINTEN - 0.25, HINTEN + 0.18), Vector3(0.75, 0.3, HINTEN + 0.3), 0.035, 0.035)
+	_stab("metall", Vector3(0.75, 0.32, HINTEN + 0.3), Vector3(1.25, 0.55, HINTEN + 0.33), 0.012, 0.08)
+	# Stroh am Boden
+	for k in 9:
+		var px := zufall.randf_range(-hb + 0.5, hb - 0.5)
+		var pz := zufall.randf_range(-1.2, 0.9)
+		var w := zufall.randf_range(0, PI)
+		var ax := Vector3(cos(w), 0, sin(w)) * zufall.randf_range(0.3, 0.6)
+		var az := Vector3(-sin(w), 0, cos(w)) * zufall.randf_range(0.2, 0.4)
+		var m := Vector3(px, 0.02, pz)
+		_viereck("heu", m - ax - az, m + ax - az, m + ax + az, m - ax + az, Vector3.UP)
+
+
+## Baugerüst (Art 55) vor der Hofmauer, die etwa bei lokal z = -2,4 steht: drei Standbäume (Rundhölzer) 1,8 m vor der
+## Mauer, Streichstangen in jeder Gerüstlage (1,32 m, wie die Rüstlöcher im Steinshader), Netzriegel von der
+## Streichstange bis in die Mauer, darauf Flechtwerk als Laufboden, Streben über Kreuz, eine angelehnte Leiter; am
+## Fuß Steinquader, ein Mörteltrog und ein Eimer. Oben eine Lage mit frischem, hellem Mauerwerk.
+func _geruest() -> void:
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = 5555
+	const WAND := -2.4
+	const VOR := -0.6
+	const LAGE := 1.32
+	const LAGEN := 4
+	var oben := LAGE * LAGEN + 1.0
+	for x: float in [-2.7, 0.0, 2.7]:
+		_zylinder("holz", Vector3(x, 0, VOR), 0.075, 0.07, oben, 7)
+		_klotz("bruchstein", Vector3(x - 0.2, -0.2, VOR - 0.2), Vector3(x + 0.2, 0.08, VOR + 0.2))   # Fußstein
+	for k in range(1, LAGEN + 1):
+		var y := LAGE * k
+		# Streichstange (leicht ungleich gesetzt)
+		var dy := zufall.randf_range(-0.03, 0.03)
+		_stab("holz", Vector3(-3.0, y + dy, VOR + 0.1), Vector3(3.0, y - dy, VOR + 0.1), 0.08, 0.08)
+		# Netzriegel bis in die Mauer
+		var xr := -2.5
+		while xr <= 2.51:
+			_stab("holz_dunkel", Vector3(xr, y + 0.06, VOR + 0.25), Vector3(xr, y + 0.06, WAND - 0.15), 0.07, 0.07)
+			xr += 1.25
+		# Laufboden aus Flechtwerk (nicht auf jeder Lage ganz belegt)
+		var x0 := -2.9
+		while x0 < 2.8:
+			var x1 := minf(x0 + zufall.randf_range(1.1, 1.6), 2.9)
+			if zufall.randf() < 0.85:
+				_klotz("korb", Vector3(x0, y + 0.1, WAND + 0.05), Vector3(x1 - 0.03, y + 0.15, VOR + 0.05))
+			x0 = x1
+		# Bordbrett außen
+		if k >= 2:
+			_klotz("holz", Vector3(-2.9, y + 0.15, VOR + 0.0), Vector3(2.9, y + 0.33, VOR + 0.04))
+	# Streben über Kreuz (Andreaskreuze zwischen den Standbäumen)
+	for x: float in [-2.7, 0.0]:
+		_stab("holz_dunkel", Vector3(x, 0.2, VOR + 0.12), Vector3(x + 2.7, LAGE * 2.0, VOR + 0.12), 0.06, 0.06)
+		_stab("holz_dunkel", Vector3(x + 2.7, LAGE * 2.0, VOR + 0.16), Vector3(x, LAGE * 4.0, VOR + 0.16), 0.06, 0.06)
+	# Leiter an der ersten Lage
+	var l0 := Vector3(1.35, 0.0, VOR + 1.25)
+	var l1 := Vector3(1.35, LAGE + 0.9, VOR + 0.15)
+	for s_: float in [-0.22, 0.22]:
+		_stab("holz", l0 + Vector3(s_, 0, 0), l1 + Vector3(s_, 0, 0), 0.06, 0.07)
+	for k in 8:
+		var t := (k + 0.6) / 8.6
+		var q := l0.lerp(l1, t)
+		_stab("holz", q - Vector3(0.22, 0, 0), q + Vector3(0.22, 0, 0), 0.035, 0.035)
+	# frisches Mauerwerk in der obersten Lage: hellere Quader, noch nicht verwittert
+	var xq := -2.6
+	while xq < 2.4:
+		var bq := zufall.randf_range(0.45, 0.75)
+		var hq := zufall.randf_range(0.24, 0.32)
+		_klotz("quader", Vector3(xq, LAGE * LAGEN + 0.2, WAND - 0.05), Vector3(xq + bq - 0.015, LAGE * LAGEN + 0.2 + hq, WAND + 0.02))
+		xq += bq
+	# Material am Fuß: Quader, Mörteltrog, Eimer
+	for k in 5:
+		var qx := 2.0 + zufall.randf_range(-0.3, 0.6)
+		var qz := 0.4 + zufall.randf_range(-0.2, 0.6)
+		var qy := 0.0 if k < 3 else 0.32
+		_klotz("quader", Vector3(qx - 0.3, qy, qz - 0.2), Vector3(qx + 0.3, qy + 0.32, qz + 0.2), zufall.randf_range(-0.3, 0.3))
+	_klotz("holz_dunkel", Vector3(-2.2, 0.0, 0.3), Vector3(-1.0, 0.35, 0.9))           # Mörteltrog
+	_klotz("lehm", Vector3(-2.12, 0.28, 0.38), Vector3(-1.08, 0.34, 0.82))
+	_zylinder("holz_dunkel", Vector3(-0.6, 0, 0.7), 0.16, 0.17, 0.32, 9)                # Eimer
+
+
 func _fleck(mat: String, mitte: Vector3, r: float, phase: float) -> void:
 	var st := _st(mat)
 	var teile := 20
@@ -1368,7 +1590,7 @@ func _material(name_: String) -> Material:
 				pass
 			elif name_ in ["fell", "haar", "taube", "taube_hals", "taube_dunkel"]:
 				pass
-			elif not name_ in ["holz_dunkel", "korb", "rumpf_teer", "deck", "rumpf", "rumpf_innen"]:
+			elif not name_ in ["holz_dunkel", "korb", "rumpf_teer", "deck", "rumpf", "rumpf_innen", "schindel", "schindel_hell"]:
 				s.albedo_texture = load("res://texturen/stoff_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(3, 3, 3)
@@ -1395,7 +1617,8 @@ func _material(name_: String) -> Material:
 				"lehm": Color(0.32, 0.27, 0.22), "stoff_leder": Color(0.35, 0.22, 0.12),
 				"schlamm": Color(0.2, 0.15, 0.1), "taube": Color(0.55, 0.57, 0.62), "taube_hals": Color(0.35, 0.45, 0.42), "taube_dunkel": Color(0.32, 0.33, 0.37),
 				"ruß": Color(0.07, 0.06, 0.055), "netz": Color(0.3, 0.26, 0.2), "kork": Color(0.62, 0.45, 0.26),
-				"fisch": Color(0.68, 0.72, 0.74), "fisch_dunkel": Color(0.3, 0.34, 0.38)}.get(name_, Color(0.6, 0.6, 0.6))
+				"fisch": Color(0.68, 0.72, 0.74), "fisch_dunkel": Color(0.3, 0.34, 0.38),
+				"schindel": Color(0.4, 0.36, 0.33), "schindel_hell": Color(0.55, 0.49, 0.42)}.get(name_, Color(0.6, 0.6, 0.6))
 			if name_ in ["spaene", "splitter"]:
 				s.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 				s.albedo_color = Color(0.78, 0.64, 0.44, 0.7) if name_ == "spaene" else Color(0.55, 0.53, 0.49, 0.55)

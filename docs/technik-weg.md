@@ -179,8 +179,8 @@ andere Projekte, so wie Studios eine fremde Engine nehmen und Teil für Teil dur
       - Helfer, die später drankommen, finden nichts mehr vor. Ihre Gruppen werden im nächsten Bild aufgeräumt.
     - Zum Gegenprüfen misst `werkzeuge\messung_figuren.bat` jetzt zusätzlich `hoch_figuren_neu_ohne_stoff`
       (`STOFF_AUS=1`). `STOFF_STATISTIK=1` gibt alle 60 Bilder Anzahl und Zeit des Stoffs aus.
-  - Offen bleibt der Kittelstreifen unter dem Kettenhemd: Er legt sich wie ein Schlauch um den Oberschenkel. Das
-    lässt sich im Bauskript beheben (breiter oder weglassen) und war mit Federknochen genauso.
+  - Der Kittelstreifen unter dem Kettenhemd, der sich wie ein Schlauch um den Oberschenkel legte, ist behoben
+    (26.11.2026): Das Kettenhemd reicht jetzt bis zum Knie, der Streifen entfällt (`docs/grafik-richtung.md`).
 
 ## Verdeckungsprüfung (Occlusion Culling), 23.11.2026
 

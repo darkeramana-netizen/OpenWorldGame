@@ -775,7 +775,7 @@ _A_GROESSE = {0: (0.8, 0.8), 1: (0.8, 0.8), 2: (1.3, 1.0), 4: (1.7, 3.2), 10: (2
               27: (0.6, 1.1), 28: (4.2, 0.6), 29: (1.2, 1.2), 30: (1.6, 1.2), 31: (0.2, 0.3),
               40: (2.0, 0.8), 41: (3.4, 0.9), 42: (1.3, 0.9), 43: (1.5, 3.7), 44: (1.8, 0.4), 45: (2.2, 2.0), 46: (1.4, 1.3),
               47: (2.2, 1.5), 48: (0.9, 0.9), 3: (3.2, 2.2), 49: (2.1, 4.8), 33: (3.2, 0.5),
-              50: (0.4, 0.4), 51: (0.65, 0.65), 52: (0.45, 0.45)}
+              50: (0.4, 0.4), 51: (0.65, 0.65), 52: (0.45, 0.45), 53: (8.4, 3.0), 54: (5.3, 3.0), 55: (6.2, 3.0)}
 _treppen_w = []
 for k_ in range(0, len(TREPPEN), 7):
     fx_, fz_, _, tx_, tz_, _, br_ = TREPPEN[k_:k_ + 7]
@@ -1426,6 +1426,22 @@ def _innen(bau, hoehe, boden, art=0):
 
 
 # Die Pferde in den Boxen des Stalls setzt burgbau.gd selbst (_einrichtung, Zweck 4), passend zu seinen Boxen
+# Mauerschuppen (Pultdach an der Hofmauer, darin Brennholz und Gerät): bis zu drei je Hof, wo die Mauer noch frei ist.
+# Die Mitte steht 3,9 m vor der Mauerlinie, die Rückseite reicht bis an die Mauer (ausstattung.gd, Art 53). Mit eigenem
+# Zufall und zuletzt gestellt, damit alles andere an seinem Platz bleibt.
+_zustand_ = random.getstate()
+random.seed(5353)
+# Baugerüst: an einer Hofmauer wird ausgebessert (im ersten Hof, wo Platz ist; vor den Schuppen gestellt)
+for name_, hof_, boden_ in sorted(_hoefe, key=lambda h_: ("Mittelburg", "Oberburg", "Palas", "Vorburg").index(h_[0])):
+    if werkplatz(f"Gerüst {name_}", [(55, 0.0, 0.0, 0)], WL(hof_), boden_, tiefe=0.7):
+        break
+for name_, hof_, boden_ in _hoefe:
+    for k_ in range(3):
+        # erst die lange Fassung, wo die Mauer frei genug ist, sonst die kurze
+        if not werkplatz(f"Schuppen {name_} {k_ + 1}", [(53, 0.0, 0.0, 0)], WL(hof_), boden_, tiefe=0.7):
+            werkplatz(f"Schuppen {name_} {k_ + 1}", [(54, 0.0, 0.0, 0)], WL(hof_), boden_, tiefe=0.7)
+print("Mauerschuppen:", sorted(k_ for k_ in WERKPLAETZE if k_.startswith(("Schuppen", "Gerüst"))))
+random.setstate(_zustand_)
 print("Ausstattung der Höfe:", len(BURG_AUSSTATTUNG), "Stücke, davon", sum(1 for a_ in BURG_AUSSTATTUNG if a_[0] == 14), "Feuerkörbe;",
       "Brunnen in", sorted(BURG_BRUNNEN), "abgelehnt:", _GRUND)
 N("Hofhaeuser", "Node3D", BG, "script = ExtResource(\"27_stadthaeuser\")\nnur_ziegel = true\nnur_fachwerk = true\nbegehbar = true\n"
