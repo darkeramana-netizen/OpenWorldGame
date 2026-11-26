@@ -1038,9 +1038,36 @@ func _setze_handding() -> void:
 		_in_hand(skelett, haltung)
 		_faerben()
 		_sichtweiten()
+	elif haltung == "arbeiten" and werkzeug() != "":
+		_in_hand(skelett, werkzeug())
+		_faerben()
+		_sichtweiten()
 
 
-## Fackel oder Schwert in der rechten Hand
+## Werkzeug bei der Arbeit (Haltung "arbeiten"): nach Beruf und Name
+func werkzeug() -> String:
+	var n := _name_text.to_lower()
+	for e: Array in [["holzhacker", "axt"], ["hinnerk scheit", "axt"], ["zimmermann", "hammer"], ["lehrling", "hammer"],
+			["steinmetz", "hammer"], ["schmied", "hammer"], ["gärtner", "hacke"], ["kaplan", "buch"], ["schreiber", "buch"],
+			["küster", "buch"], ["koch", "loeffel"], ["bäcker", "loeffel"], ["magd", "besen"], ["knecht", "forke"],
+			["fischer", "netz"], ["stallknecht", "forke"]]:
+		if e[0] in n:
+			return e[1]
+	match beruf:
+		"schmied", "zeugwart":
+			return "hammer"
+		"magd":
+			return "besen"
+		"koch":
+			return "loeffel"
+		"knecht":
+			return "forke"
+		"geistlich":
+			return "buch"
+	return ""
+
+
+## Fackel, Schwert oder Werkzeug in der rechten Hand
 func _in_hand(skelett: Skeleton3D, was: String) -> void:
 	var halter := BoneAttachment3D.new()
 	halter.name = "Handding"
@@ -1055,9 +1082,30 @@ func _in_hand(skelett: Skeleton3D, was: String) -> void:
 		licht.omni_range = 6.0
 		licht.position = Vector3(0, 0.55, 0)
 		halter.add_child(licht)
-	else:
+	elif was == "schwert":
 		teile = [[Vector3(0.035, 0.18, 0.035), Vector3(0, 0.02, 0), "griff"], [Vector3(0.2, 0.03, 0.04), Vector3(0, 0.12, 0), "eisen"],
 			[Vector3(0.05, 0.8, 0.012), Vector3(0, 0.53, 0), "eisen"]]
+	else:
+		# Werkzeug: Stiel entlang der Hand (lokal y), gehalten etwas unter der Mitte
+		match was:
+			"hammer":
+				teile = [[Vector3(0.03, 0.34, 0.03), Vector3(0, 0.1, 0), "holz"], [Vector3(0.05, 0.05, 0.13), Vector3(0, 0.27, 0.0), "eisen"]]
+			"axt":
+				teile = [[Vector3(0.035, 0.7, 0.035), Vector3(0, 0.2, 0), "holz"], [Vector3(0.025, 0.1, 0.16), Vector3(0, 0.5, 0.07), "eisen"]]
+			"hacke":
+				teile = [[Vector3(0.03, 1.1, 0.03), Vector3(0, 0.3, 0), "holz"], [Vector3(0.12, 0.03, 0.16), Vector3(0, 0.84, 0.07), "eisen"]]
+			"forke":
+				teile = [[Vector3(0.03, 1.2, 0.03), Vector3(0, 0.35, 0), "holz"], [Vector3(0.18, 0.03, 0.03), Vector3(0, 0.95, 0), "eisen"]]
+				for z: float in [-0.07, 0.0, 0.07]:
+					teile.append([Vector3(0.012, 0.22, 0.012), Vector3(z, 1.07, 0), "eisen"])
+			"besen":
+				teile = [[Vector3(0.03, 1.2, 0.03), Vector3(0, 0.25, 0), "holz"], [Vector3(0.12, 0.3, 0.12), Vector3(0, 0.95, 0), "stroh"]]   # lokal +y zeigt zu den Fingern (hinab)
+			"loeffel":
+				teile = [[Vector3(0.02, 0.45, 0.02), Vector3(0, 0.12, 0), "holz"], [Vector3(0.07, 0.09, 0.025), Vector3(0, 0.37, 0), "holz"]]
+			"buch":
+				teile = [[Vector3(0.17, 0.23, 0.045), Vector3(0, 0.08, 0.06), "leder"], [Vector3(0.155, 0.215, 0.05), Vector3(0.008, 0.08, 0.06), "leinen"]]
+			"netz":
+				teile = [[Vector3(0.25, 0.4, 0.05), Vector3(0, -0.12, 0.05), "netz"]]
 	for t: Array in teile:
 		var m := MeshInstance3D.new()
 		m.mesh = _quader(t[0])
@@ -1309,7 +1357,7 @@ func _faerbe_modell() -> void:
 				"eisen": Color(0.62, 0.63, 0.66), "glut": Color(1.0, 0.6, 0.25), "leder": Color(0.3, 0.19, 0.11),
 				"leinen": Color(0.86, 0.83, 0.75), "stroh": Color(0.8, 0.68, 0.38), "kopftuch": _kopftuch_farbe(),
 				"wappen": Color(0.55, 0.08, 0.06), "zeichen": Color(0.85, 0.65, 0.2),
-				"talar": tracht.darkened(0.2)}.get(st, tracht) as Color
+				"talar": tracht.darkened(0.2), "netz": Color(0.45, 0.4, 0.3)}.get(st, tracht) as Color
 			m.material_override = _material(farbe, st)
 			continue
 		var name_ := String(m.name)

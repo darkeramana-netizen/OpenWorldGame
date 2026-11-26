@@ -186,7 +186,7 @@ func _physics_process(delta: float) -> void:
 		return
 	var ziel := _route[0]
 	var weg := Vector3(ziel.x - global_position.x, 0.0, ziel.z - global_position.z)
-	var schritt := tempo * delta
+	var schritt := tempo * _tempo_eile * delta
 	# anderen ausweichen (nicht kurz vor dem Ziel, dort soll man genau ankommen)
 	_ausweich_takt -= delta
 	if _ausweich_takt <= 0.0:
@@ -215,6 +215,7 @@ func _physics_process(delta: float) -> void:
 			_rast = float(halt[1])
 			$Figur.haltung = String(halt[0])
 		if _route.is_empty():
+			_tempo_eile = 1.0
 			if not _runde.is_empty():
 				_route.assign(_runde)
 			else:
@@ -277,9 +278,16 @@ func _process(delta: float) -> void:
 			figur.schaue_auf(_partner.global_position + Vector3.UP * 1.55, 0.8, delta)
 	# Gespräche zwischen Wartenden ohne feste Arbeit
 	var jetzt := Time.get_ticks_msec() / 1000.0
+	# nach einem Schreck (Lärm, gezogene Waffe) wieder an die Arbeit bzw. den Platz aus dem Tagesablauf
+	if _zurueck and jetzt > _laerm_bis and _route.is_empty():
+		_zurueck = false
+		_ziel_eintrag = {}
+		_folge_ablauf(false)
+	_gespraech_weiter(delta, sp)
 	if _gespraech_bis > 0.0 and jetzt > _gespraech_bis:
 		_gespraech_bis = 0.0
 		_partner = null
+		_thema = []
 		if figur.haltung == "reden" and haltung == "" and not _ziel_eintrag.has("haltung"):
 			figur.haltung = ""
 	_gespraech_takt -= delta
@@ -295,6 +303,7 @@ func _process(delta: float) -> void:
 			var dauer := randf_range(8.0, 20.0)
 			_beginne_gespraech(o, jetzt + dauer)
 			o._beginne_gespraech(self, jetzt + dauer)
+			_fuehre_gespraech(o)
 			break
 
 
@@ -361,6 +370,8 @@ func _wahrnehmung(delta: float, sp: Node3D) -> void:
 				var fort := -d.normalized() * 2.5
 				_route.assign([global_position + fort])
 				_runde.clear()
+				_zurueck = true
+				_laerm_bis = maxf(_laerm_bis, jetzt + 6.0)
 	_waffe_vorher = waffe
 	if not waffe and jetzt > _erschrocken_bis and wache and $Figur.haltung == "schwert" and haltung != "schwert" \
 			and _ziel_eintrag.get("haltung", "") != "schwert":
@@ -392,6 +403,48 @@ func _wahrnehmung(delta: float, sp: Node3D) -> void:
 		$Figur.schaue_auf(_umschau_ziel, 0.7, delta)
 
 
+## Lärm (kampf.gd ruft das für alle Leute): art "schuss" (bis 60 m) oder "kampf" (Hiebe, bis 18 m). Bürger schreien
+## auf und laufen vom Lärm fort, Wachen ziehen und eilen hin (bis 4 m an den Ort heran).
+func hoere_laerm(ort: Vector3, art: String) -> void:
+	if not visible or _spricht or _im_haus:
+		return
+	var weite := 60.0 if art == "schuss" else 18.0
+	var d := global_position - ort
+	d.y = 0.0
+	if d.length() > weite:
+		return
+	var jetzt := Time.get_ticks_msec() / 1000.0
+	if jetzt < _laerm_bis:
+		return
+	_laerm_bis = jetzt + 8.0
+	_zurueck = true
+	_gespraech_bis = 0.0
+	_thema = []
+	_partner = null
+	_rast = 0.0
+	var wache: bool = $Figur.beruf in ["wache", "ritter"]
+	if wache:
+		$Figur.haltung = "schwert"
+		_erschrocken_bis = jetzt + 8.0
+		_zurufen(["Was war das?!", "Da drüben!", "Zu den Waffen!"][randi() % 3], 2.5)
+		if d.length() > 4.0:
+			_route.assign([ort + d.normalized() * 4.0])
+			_runde.clear()
+			_tempo_eile = 2.6
+	else:
+		_zurufen(["Heilige Mutter!", "Hilfe!", "Was war das?!", "Lauft!"][randi() % 4], 2.5)
+		var fort := d.normalized() if d.length() > 0.1 else Vector3(randf() - 0.5, 0, randf() - 0.5).normalized()
+		_route.assign([global_position + fort * randf_range(7.0, 11.0)])
+		_runde.clear()
+		_tempo_eile = 2.4
+	_schaue_zu(ort)
+
+
+var _laerm_bis := 0.0
+var _zurueck := false           # nach dem Schreck zurück an den Platz aus dem Tagesablauf
+var _tempo_eile := 1.0          # Faktor auf das Tempo, solange sie flieht oder hineilt
+
+
 func _bereit_zum_reden() -> bool:
 	return visible and _route.is_empty() and _rast <= 0.0 and _gespraech_bis == 0.0 and not _spricht \
 		and $Figur.haltung == "" and not _ziel_eintrag.get("weg", false)
@@ -402,6 +455,48 @@ func _beginne_gespraech(mit: Node3D, bis: float) -> void:
 	_gespraech_bis = bis
 	_schaue_zu(mit.global_position)
 	$Figur.haltung = "reden"
+
+
+## Wer ein Gespräch beginnt, führt es: ein Thema aus gespraechsthemen.gd, Zeile für Zeile über dem Kopf des Sprechers,
+## solange der Spieler in Hörweite (12 m) ist; leise in der Stille-Stunde
+const Themen := preload("res://szenen/figuren/gespraechsthemen.gd")
+var _thema: Array = []
+var _thema_zeile := 0
+var _thema_takt := 0.0
+func _fuehre_gespraech(mit: Node3D) -> void:
+	var am_markt := false
+	for m in get_tree().get_nodes_in_group("klang_markt"):
+		if (m as Node3D).global_position.distance_squared_to(global_position) < 400.0:
+			am_markt = true
+			break
+	_thema = Themen.passendes(String(Spielzeit.abschnitt), int(Spielstand.alarmstufe), $Figur.beruf, mit.get_node("Figur").beruf, am_markt)
+	_thema_zeile = 0
+	_thema_takt = 0.6
+	# so lange, wie das Thema braucht (gut drei Sekunden je Zeile)
+	var dauer := maxf(_thema.size() * 3.4 + 1.0, 6.0)
+	var jetzt := Time.get_ticks_msec() / 1000.0
+	_gespraech_bis = jetzt + dauer
+	mit._gespraech_bis = jetzt + dauer
+
+
+func _gespraech_weiter(delta: float, sp: Node3D) -> void:
+	if _thema.is_empty() or _partner == null or not is_instance_valid(_partner):
+		return
+	_thema_takt -= delta
+	if _thema_takt > 0.0:
+		return
+	_thema_takt = 3.4
+	if _thema_zeile >= _thema.size():
+		_thema = []
+		return
+	var zeile: Array = _thema[_thema_zeile]
+	_thema_zeile += 1
+	var sprecher: Node = self if int(zeile[0]) == 0 else _partner
+	if sp != null and sp.global_position.distance_to(global_position) < 12.0 and sprecher.has_method("_zurufen"):
+		sprecher._zurufen(String(zeile[1]), 3.2)
+		# wer leise nahe dabei steht, bekommt die Zeile auch unten im Bild (wie beim Belauschen)
+		if sp.global_position.distance_to(global_position) < 5.0 and sp.get("schleicht") == true:
+			Spielstand.belauscht.emit("%s: %s" % [sprecher.anzeige_name, String(zeile[1])])
 
 
 ## Höhe des Bodens unter der Person (Gelände, Böden, Brücken), sonst die des Ziels. Andere Personen sind kein

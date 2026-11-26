@@ -142,6 +142,7 @@ func _nahkampf(schaden: float, reichweite: float) -> void:
 			bestes = ziel
 	if bestes:
 		_klang("metall", -4.0, bestes.global_position + Vector3.UP)
+		get_tree().call_group("personen", "hoere_laerm", bestes.global_position, "kampf")
 		bestes.treffer(schaden, _spieler, _angriff)
 
 
@@ -156,6 +157,7 @@ func _schiessen() -> void:
 	var treffer_info := _spieler.get_world_3d().direct_space_state.intersect_ray(abfrage)
 	Spielstand.meldung.emit("Der Schuss kracht. Pulverdampf hängt in der Luft.")
 	_klang("schuss", 6.0, Vector3.INF, 300.0)
+	get_tree().call_group("personen", "hoere_laerm", _spieler.global_position, "schuss")
 	if treffer_info and treffer_info.collider.has_method("treffer"):
 		treffer_info.collider.treffer(SCHUSS_SCHADEN, _spieler, "schuss")
 	zustand_geaendert.emit()

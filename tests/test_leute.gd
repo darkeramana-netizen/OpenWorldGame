@@ -68,5 +68,56 @@ func _initialize() -> void:
 	while wache.get_node("Figur").haltung == "schwert" and Time.get_ticks_msec() < bis:
 		await process_frame
 	pruefe(wache.get_node("Figur").haltung != "schwert", "Waffe weg: die Wache steckt wieder ein")
+	# Werkzeug bei der Arbeit
+	var holz: Node3D = szene.instantiate()
+	holz.anzeige_name = "Knecht Hinnerk Scheit"
+	holz.haltung = "arbeiten"
+	welt.add_child(holz)
+	holz.global_position = Vector3(10, 0, 0)
+	var bis2 := Time.get_ticks_msec() + 20000
+	while not holz.get_node("Figur").hat_modell() and Time.get_ticks_msec() < bis2:
+		await process_frame
+	for i in 5:
+		await process_frame
+	pruefe(holz.get_node("Figur").werkzeug() == "axt" and holz.find_child("Handding", true, false) != null,
+		"Der Holzhacker hält bei der Arbeit seine Axt")
+	# Gespräch mit Inhalt: zwei, die nebeneinander stehen, reden; über ihnen erscheinen Zeilen
+	var a: Node3D = szene.instantiate()
+	a.anzeige_name = "Magd Probe Eins"
+	var b: Node3D = szene.instantiate()
+	b.anzeige_name = "Knecht Probe Zwei"
+	welt.add_child(a)
+	welt.add_child(b)
+	a.global_position = Vector3(-10, 0, 0)
+	b.global_position = Vector3(-10, 0, 1.6)
+	spieler.global_position = Vector3(-10, 0, 6)
+	var zeilen := {}
+	bis2 = Time.get_ticks_msec() + 25000
+	while zeilen.size() < 2 and Time.get_ticks_msec() < bis2:
+		await process_frame
+		for p in [a, b]:
+			if p._zuruf != null and p._zuruf.visible and not p._zuruf.text.begins_with("„Gott") and not p._zuruf.text.begins_with("„Gute") \
+					and not p._zuruf.text.begins_with("„Grüß"):
+				zeilen[p._zuruf.text] = true
+	pruefe(zeilen.size() >= 2, "Zwei unterhalten sich hörbar: %s" % " / ".join(zeilen.keys()))
+	# Lärm: ein Schuss in 20 m; die Bürgerin läuft fort, die Wache eilt hin
+	var buerger2: Node3D = szene.instantiate()
+	buerger2.anzeige_name = "Bürgerin Grete Probe"
+	welt.add_child(buerger2)
+	buerger2.global_position = Vector3(30, 0, 30)
+	var wache2: Node3D = szene.instantiate()
+	wache2.anzeige_name = "Wache Probe Drei"
+	welt.add_child(wache2)
+	wache2.global_position = Vector3(30, 0, 34)
+	for i in 10:
+		await physics_frame
+	var schuss := Vector3(30, 0, 10)
+	var b_vor := buerger2.global_position.distance_to(schuss)
+	var w_vor := wache2.global_position.distance_to(schuss)
+	call_group("personen", "hoere_laerm", schuss, "schuss")
+	await create_timer(3.0).timeout
+	pruefe(buerger2.global_position.distance_to(schuss) > b_vor + 3.0, "Nach dem Schuss läuft die Bürgerin fort (%.1f → %.1f m)" % [b_vor, buerger2.global_position.distance_to(schuss)])
+	pruefe(wache2.global_position.distance_to(schuss) < w_vor - 3.0 and wache2.get_node("Figur").haltung == "schwert",
+		"Die Wache zieht und eilt hin (%.1f → %.1f m)" % [w_vor, wache2.global_position.distance_to(schuss)])
 	print("Fehler: %d" % fehler)
 	quit(1 if fehler > 0 else 0)

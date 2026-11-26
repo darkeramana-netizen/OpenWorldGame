@@ -124,7 +124,7 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | M64 | Mauerstücke am Tor der Mittelburg | Brüstung der Rampe als waagrechte Stufenblöcke | behoben: Brüstung mit schräger Krone und Abdeckplatte |
 | M65 | Platten statt Stoff an manchen Menschen | starre Schürzen, Wappenröcke und Talare für Berufe ohne eigenes Modell | behoben: nur noch Kleidung aus Stoff; neues Modell `wache_frau` |
 | M66 | letzter Burghof: alles auf einem Haufen in der Mitte | Gruppen frei im Hof suchten alle die Mitte | behoben: Abstand zu den anderen Gruppen |
-| M67 | KI der Leute zu einfach | – | erste Runde: Gruß je Tageszeit, Umschauen, Reaktion auf gezogene Waffen. Offen: Tätigkeiten mit Gegenständen, Gespräche mit Inhalt, Reaktion auf Wetter und Lärm |
+| M67 | KI der Leute zu einfach | – | erste Runde: Gruß je Tageszeit, Umschauen, Reaktion auf gezogene Waffen. Zweite Runde: Werkzeug in der Hand bei der Arbeit (Axt, Hammer, Hacke, Forke, Besen, Kochlöffel, Buch, Netz; nach Name und Beruf), Gespräche mit Inhalt (`szenen/figuren/gespraechsthemen.gd`: Wortwechsel nach Tageszeit, Alarmstufe, Beruf und Markt, als Zuruf über dem Sprecher bis 12 m, schleichend nah auch unten im Bild), Lärm (Schuss bis 60 m, Kampf bis 18 m): Bürger schreien und laufen fort, Wachen ziehen und eilen hin, danach geht jeder an seinen Platz zurück. Offen: Wetter, Tätigkeiten mit Ablauf (Wasser holen, Holz tragen), Schlafen und Essen |
 | M68 | Grafik und Detail insgesamt | – | laufend |
 
 ## Nächste Schritte
