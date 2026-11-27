@@ -7,6 +7,12 @@
 # kommen in BURG_SPERREN, damit die Wege der Leute um sie herum führen.
 random.seed(2712)
 HOF_DETAILS = []
+# Vor dem Portal der Drachenkapelle bleibt der Platz frei (dort knien mittags die Ordensleute, teil_burgleben.py)
+_kp_c = W(PD.DRACHENKAPELLE[0])
+_kp_g = -PD.DRACHENKAPELLE[3]
+_kp_a = math.radians(_kp_g)
+_kp_vor = PD.DRACHENKAPELLE[1] * M / 2 + 4.5
+_vorplaetze_w.append(_rechteck_w(_kp_c[0] + math.sin(_kp_a) * _kp_vor, _kp_c[1] + math.cos(_kp_a) * _kp_vor, 7.0, 9.0, _kp_g))
 _HD_GROESSE = {67: (0.85, 0.85), 68: (1.05, 0.5), 44: (1.7, 0.6), 72: (1.1, 0.6), 69: (2.1, 0.7), 70: (1.0, 1.3),
                71: (1.0, 1.0), 73: (1.7, 1.2)}
 

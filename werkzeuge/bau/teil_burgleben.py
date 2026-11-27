@@ -664,7 +664,9 @@ _portal = (_kap_c[0] + _kap_u[0] * (PD.DRACHENKAPELLE[1] * M / 2 + 3.5), _kap_c[
 _palas_w = WL(PD.PALAS_HOF)
 _palas_tueren = hof_tueren(_palas_w)
 _andacht = []
-for k_ in range(5):
+for k_ in range(9):
+    if len(_andacht) >= 4:
+        break
     reihe_, platz_ = divmod(k_, 3)
     reihe_ = -reihe_
     q_ = (_portal[0] + _kap_u[0] * reihe_ * 1.4 + _kap_n[0] * (platz_ - 1) * 1.3,
