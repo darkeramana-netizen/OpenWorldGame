@@ -1702,3 +1702,7 @@ revier = PackedVector2Array({rev_txt_})""")
 for k_, (x_, y_, z_) in enumerate(BURG_LICHTER):
     licht(f"BurgFeuer{k_}", BG, x_, y_, z_, 11.0)
 zinnen_schreiben(DS)
+
+# Efeu an den Burgmauern (szenen/welt/efeu.gd): wächst beim Laden an festen Stellen, sucht die Wand per Strahl
+E("Script", "res://szenen/welt/efeu.gd", "61_efeu")
+N("Efeu", "Node3D", BG, """script = ExtResource("61_efeu")""")

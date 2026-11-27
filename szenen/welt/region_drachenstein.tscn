@@ -1,4 +1,4 @@
-[gd_scene load_steps=112 format=3]
+[gd_scene load_steps=113 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -61,6 +61,7 @@
 [ext_resource type="Script" path="res://szenen/figuren/tauben.gd" id="42_tauben"]
 [ext_resource type="Script" path="res://szenen/figuren/moewen.gd" id="43_moewen"]
 [ext_resource type="Script" path="res://szenen/figuren/tier.gd" id="41_tier"]
+[ext_resource type="Script" path="res://szenen/welt/efeu.gd" id="61_efeu"]
 [ext_resource type="Script" path="res://szenen/welt/felsen.gd" id="30_felsen"]
 [ext_resource type="Script" path="res://szenen/welt/felssockel.gd" id="31_felssockel"]
 [ext_resource type="Material" path="res://material/felssockel.tres" id="32_felssockel_mat"]
@@ -1589,6 +1590,9 @@ omni_range = 11.0
 
 [node name="Zinnen" type="MultiMeshInstance3D" parent="Drachenstein"]
 multimesh = SubResource("Zinnen")
+
+[node name="Efeu" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("61_efeu")
 
 [node name="Felssockel" type="Node3D" parent="Drachenstein"]
 script = ExtResource("31_felssockel")
