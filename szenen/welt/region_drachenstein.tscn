@@ -6871,6 +6871,517 @@ kordel = 0
 tracht = Color(0.15, 0.13, 0.14, 1)
 haltung = "knien"
 
+[node name="Hofleben0" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 28.94, -8, 140.32)
+anzeige_name = "Magd Anna Asch"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.42, 0.34, 0.24, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 47.01,-8,149.48 | weg", "vormittag: 28.94,-8,140.32 | blick=-90.0 | haltung=reden", "stille_stunde: 47.01,-8,149.48 | weg")
+
+[node name="Hofleben1" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.86603, 0, 0.5, 0, 1, 0, -0.5, 0, -0.86603, 27.67, -8, 141.05)
+anzeige_name = "Knecht Heino Grund"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 15.21,-8,155.66 | weg", "vormittag: 27.67,-8,141.05 | blick=150.0 | haltung=reden", "stille_stunde: 15.21,-8,155.66 | weg")
+
+[node name="Hofleben2" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.86603, 0, 0.5, 0, 1, 0, -0.5, 0, 0.86603, 27.67, -8, 139.58)
+anzeige_name = "Magd Ute Reif"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 15.21,-8,155.66 | weg", "vormittag: 27.67,-8,139.58 | blick=30.0 | haltung=reden", "stille_stunde: 15.21,-8,155.66 | weg")
+
+[node name="Hofleben3" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.84151, 0, -0.54024, 0, 1, 0, 0.54024, 0, -0.84151, 28.06, -8, 157.61)
+anzeige_name = "Knecht Folker Bader"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 15.21,-8,155.66 | weg", "vormittag: 28.06,-8,157.61 | blick=-147.3 | haltung=reden", "stille_stunde: 15.21,-8,155.66 | weg")
+
+[node name="Hofleben4" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.84151, 0, 0.54024, 0, 1, 0, -0.54024, 0, 0.84151, 27.15, -8, 156.18)
+anzeige_name = "Magd Sanne Hagen"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 15.21,-8,155.66 | weg", "vormittag: 27.15,-8,156.18 | blick=32.7 | haltung=reden", "stille_stunde: 15.21,-8,155.66 | weg")
+
+[node name="Hofleben5" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.1132, 0, 0.99357, 0, 1, 0, -0.99357, 0, 0.1132, 20.8, -8, 153.8)
+anzeige_name = "Wäscherin Hille Sand"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 20.8,-8,153.8 | blick=83.5 | haltung=knien", "mittag: 15.21,-8,155.66; 20.8,-8,153.8 | runde", "nachmittag: 20.8,-8,153.8 | blick=83.5 | haltung=knien", "stille_stunde: 15.21,-8,155.66 | weg")
+
+[node name="Hofleben6" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.98657, 0, -0.16333, 0, 1, 0, 0.16333, 0, -0.98657, 24.6, -8, 157.01)
+anzeige_name = "Wäscherin Odile Dorn"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.33, 0.36, 0.3, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 24.6,-8,157.01 | blick=-170.6 | haltung=knien", "mittag: 15.21,-8,155.66; 24.6,-8,157.01 | runde", "nachmittag: 24.6,-8,157.01 | blick=-170.6 | haltung=knien", "stille_stunde: 15.21,-8,155.66 | weg")
+
+[node name="Hofleben7" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 31.88, -8, 148.36)
+anzeige_name = "Magd Mechthild Kalk"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.42, 0.34, 0.24, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 31.88,-8,148.36,arbeiten,8; 37.26,-8,154.63,arbeiten,8; 44.8,-8,150.42,arbeiten,8; 39.33,-8,149.01,arbeiten,8; 31.88,-8,148.36,arbeiten,8 | runde", "stille_stunde: 47.01,-8,149.48 | weg")
+
+[node name="Hofleben8" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 47.01, -8, 149.48)
+anzeige_name = "Bote Ingo Torf"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.45, 0.2, 0.16, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 47.01,-8,149.48,reden,4; 8.29,-8,146.8,reden,4; 47.01,-8,149.48,reden,4 | runde", "stille_stunde: 47.01,-8,149.48 | weg")
+tempo = 2.3
+
+[node name="Hofleben9" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 37.13, -8, 135.9)
+anzeige_name = "Ordensritter Rainer Eich"
+dialog_id = "ritter_burg"
+kordel = 2
+tracht = Color(0.38, 0.1, 0.08, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("vormittag: 37.13,-8,135.9; 29.84,-8,147.43; 42.16,-8,151.93; 39.93,-8,159.52; 37.13,-8,135.9 | runde", "stille_stunde: 15.21,-8,155.66 | weg")
+tempo = 0.9
+
+[node name="Hofleben10" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 29.84, -8, 147.43)
+anzeige_name = "Ordensritterin Kunigunde Linde"
+dialog_id = "ritter_burg"
+kordel = 2
+tracht = Color(0.38, 0.1, 0.08, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("vormittag: 29.84,-8,147.43; 42.16,-8,151.93; 39.93,-8,159.52; 37.13,-8,135.9; 29.84,-8,147.43 | runde", "stille_stunde: 15.21,-8,155.66 | weg")
+tempo = 0.9
+
+[node name="Hofleben11" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 20.32, 6, 90.69)
+anzeige_name = "Magd Tilda Wall"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.42, 0.34, 0.24, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 0.97,6,99.41 | weg", "vormittag: 20.32,6,90.69 | blick=-90.0 | haltung=reden", "stille_stunde: 0.97,6,99.41 | weg")
+
+[node name="Hofleben12" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.86603, 0, 0.5, 0, 1, 0, -0.5, 0, -0.86603, 19.04, 6, 91.43)
+anzeige_name = "Knecht Eckart Falk"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 0.97,6,99.41 | weg", "vormittag: 19.04,6,91.43 | blick=150.0 | haltung=reden", "stille_stunde: 0.97,6,99.41 | weg")
+
+[node name="Hofleben13" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.86603, 0, 0.5, 0, 1, 0, -0.5, 0, 0.86603, 19.04, 6, 89.95)
+anzeige_name = "Magd Rike Moor"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 0.97,6,99.41 | weg", "vormittag: 19.04,6,89.95 | blick=30.0 | haltung=reden", "stille_stunde: 0.97,6,99.41 | weg")
+
+[node name="Hofleben14" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.84151, 0, -0.54024, 0, 1, 0, 0.54024, 0, -0.84151, 12.86, 6, 90.74)
+anzeige_name = "Knecht Claus Asch"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 0.97,6,99.41 | weg", "vormittag: 12.86,6,90.74 | blick=-147.3 | haltung=reden", "stille_stunde: 0.97,6,99.41 | weg")
+
+[node name="Hofleben15" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.84151, 0, 0.54024, 0, 1, 0, -0.54024, 0, 0.84151, 11.95, 6, 89.31)
+anzeige_name = "Magd Nele Grund"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 0.97,6,99.41 | weg", "vormittag: 11.95,6,89.31 | blick=32.7 | haltung=reden", "stille_stunde: 0.97,6,99.41 | weg")
+
+[node name="Hofleben16" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.42262, 0, 0.90631, 0, 1, 0, -0.90631, 0, -0.42262, 5.5, 6, 84.94)
+anzeige_name = "Wäscherin Anna Reif"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.33, 0.36, 0.3, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 5.5,6,84.94 | blick=115.0 | haltung=knien", "mittag: 0.97,6,99.41; 5.5,6,84.94 | runde", "nachmittag: 5.5,6,84.94 | blick=115.0 | haltung=knien", "stille_stunde: 0.97,6,99.41 | weg")
+
+[node name="Hofleben17" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 34.9, 6, 58.16)
+anzeige_name = "Magd Liesel Bader"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.42, 0.34, 0.24, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 34.9,6,58.16,arbeiten,8; 34.09,6,52.75,arbeiten,8; 32.57,6,56.74,arbeiten,8; 37.43,6,54.92,arbeiten,8; 34.9,6,58.16,arbeiten,8 | runde", "stille_stunde: 1.2,6,106.34 | weg")
+
+[node name="Hofleben18" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0.97, 6, 99.41)
+anzeige_name = "Bote Otto Hagen"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.45, 0.2, 0.16, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 0.97,6,99.41,reden,4; 19.02,6,106,reden,4; 0.97,6,99.41,reden,4 | runde", "stille_stunde: 0.97,6,99.41 | weg")
+tempo = 2.3
+
+[node name="Hofleben19" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 32.95, 6, 55.37)
+anzeige_name = "Ordensritter Folker Sand"
+dialog_id = "ritter_burg"
+kordel = 2
+tracht = Color(0.38, 0.1, 0.08, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("vormittag: 32.95,6,55.37; 34.27,6,65.67; 31.78,6,53.78; 37.67,6,59.6; 32.95,6,55.37 | runde", "stille_stunde: 32.95,6,55.37 | weg")
+tempo = 0.9
+
+[node name="Hofleben20" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 34.27, 6, 65.67)
+anzeige_name = "Ordensritterin Sanne Dorn"
+dialog_id = "ritter_burg"
+kordel = 2
+tracht = Color(0.38, 0.1, 0.08, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("vormittag: 34.27,6,65.67; 31.78,6,53.78; 37.67,6,59.6; 32.95,6,55.37; 34.27,6,65.67 | runde", "stille_stunde: 34.27,6,65.67 | weg")
+tempo = 0.9
+
+[node name="Hofleben21" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 26.15, 6, 89.29)
+anzeige_name = "Hille Kalk"
+dialog_id = "kind_burg"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 0.97,6,99.41 | weg", "vormittag: 26.15,6,89.29; 23.47,6,91.89; 20.95,6,89.14; 23.51,6,86.69; 26.15,6,89.29 | runde", "mittag: 0.97,6,99.41 | weg", "nachmittag: 26.15,6,89.29; 23.47,6,91.89; 20.95,6,89.14; 23.51,6,86.69; 26.15,6,89.29 | runde", "stille_stunde: 0.97,6,99.41 | weg")
+tempo = 2.6
+groesse = 0.72
+
+[node name="Hofleben22" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 20.95, 6, 89.14)
+anzeige_name = "Kuno Torf"
+dialog_id = "kind_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 0.97,6,99.41 | weg", "vormittag: 20.95,6,89.14; 23.51,6,86.69; 26.15,6,89.29; 23.47,6,91.89; 20.95,6,89.14 | runde", "mittag: 0.97,6,99.41 | weg", "nachmittag: 20.95,6,89.14; 23.51,6,86.69; 26.15,6,89.29; 23.47,6,91.89; 20.95,6,89.14 | runde", "stille_stunde: 0.97,6,99.41 | weg")
+tempo = 2.6
+groesse = 0.72
+
+[node name="Hofleben23" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 16.57, 14, 13.7)
+anzeige_name = "Magd Mechthild Eich"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.42, 0.34, 0.24, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 18.24,14,2.85 | weg", "vormittag: 16.57,14,13.7 | blick=-90.0 | haltung=reden", "stille_stunde: 18.24,14,2.85 | weg")
+
+[node name="Hofleben24" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.86603, 0, 0.5, 0, 1, 0, -0.5, 0, -0.86603, 15.3, 14, 14.44)
+anzeige_name = "Knecht Ingo Linde"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 18.24,14,2.85 | weg", "vormittag: 15.3,14,14.44 | blick=150.0 | haltung=reden", "stille_stunde: 18.24,14,2.85 | weg")
+
+[node name="Hofleben25" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.86603, 0, 0.5, 0, 1, 0, -0.5, 0, 0.86603, 15.3, 14, 12.97)
+anzeige_name = "Magd Wanda Wall"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 18.24,14,2.85 | weg", "vormittag: 15.3,14,12.97 | blick=30.0 | haltung=reden", "stille_stunde: 18.24,14,2.85 | weg")
+
+[node name="Hofleben26" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.84151, 0, -0.54024, 0, 1, 0, 0.54024, 0, -0.84151, 14.02, 14, -16)
+anzeige_name = "Knecht Gerd Falk"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 20.22,14,-15.43 | weg", "vormittag: 14.02,14,-16 | blick=-147.3 | haltung=reden", "stille_stunde: 20.22,14,-15.43 | weg")
+
+[node name="Hofleben27" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.84151, 0, 0.54024, 0, 1, 0, -0.54024, 0, 0.84151, 13.1, 14, -17.43)
+anzeige_name = "Magd Tilda Moor"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 20.22,14,-15.43 | weg", "vormittag: 13.1,14,-17.43 | blick=32.7 | haltung=reden", "stille_stunde: 20.22,14,-15.43 | weg")
+
+[node name="Hofleben28" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.79547, 0, -0.60599, 0, 1, 0, 0.60599, 0, 0.79547, 2, 14, 0.25)
+anzeige_name = "Wäscherin Ilse Asch"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 2,14,0.25 | blick=-37.3 | haltung=knien", "mittag: 18.24,14,2.85; 2,14,0.25 | runde", "nachmittag: 2,14,0.25 | blick=-37.3 | haltung=knien", "stille_stunde: 18.24,14,2.85 | weg")
+
+[node name="Hofleben29" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.7638, 0, 0.64546, 0, 1, 0, -0.64546, 0, -0.7638, -2.27, 14, 5.57)
+anzeige_name = "Wäscherin Rike Grund"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.33, 0.36, 0.3, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: -2.27,14,5.57 | blick=139.8 | haltung=knien", "mittag: -19.96,14,8.12; -2.27,14,5.57 | runde", "nachmittag: -2.27,14,5.57 | blick=139.8 | haltung=knien", "stille_stunde: -19.96,14,8.12 | weg")
+
+[node name="Hofleben30" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 16.85, 14, -45.24)
+anzeige_name = "Magd Gesa Reif"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.42, 0.34, 0.24, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 16.85,14,-45.24,arbeiten,8; 21.82,14,-39.02,arbeiten,8; 20.38,14,-33.63,arbeiten,8; 12.26,14,-32.07,arbeiten,8; 16.85,14,-45.24,arbeiten,8 | runde", "stille_stunde: 19.89,14,-24.63 | weg")
+
+[node name="Hofleben31" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 20.22, 14, -15.43)
+anzeige_name = "Bote Jost Bader"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.45, 0.2, 0.16, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 20.22,14,-15.43,reden,4; 18.24,14,2.85,reden,4; 20.22,14,-15.43,reden,4 | runde", "stille_stunde: 20.22,14,-15.43 | weg")
+tempo = 2.3
+
+[node name="Hofleben32" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 20.46, 14, -4.48)
+anzeige_name = "Ordensritter Arnold Hagen"
+dialog_id = "ritter_burg"
+kordel = 2
+tracht = Color(0.38, 0.1, 0.08, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("vormittag: 20.46,14,-4.48; 16.12,14,-14.63; 11.52,14,-21.62; 4.83,14,-24.71; 20.46,14,-4.48 | runde", "stille_stunde: 18.24,14,2.85 | weg")
+tempo = 0.9
+
+[node name="Hofleben33" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 16.12, 14, -14.63)
+anzeige_name = "Ordensritterin Liesel Sand"
+dialog_id = "ritter_burg"
+kordel = 2
+tracht = Color(0.38, 0.1, 0.08, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("vormittag: 16.12,14,-14.63; 11.52,14,-21.62; 4.83,14,-24.71; 20.46,14,-4.48; 16.12,14,-14.63 | runde", "stille_stunde: 20.22,14,-15.43 | weg")
+tempo = 0.9
+
+[node name="Hofleben34" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, -25.34, 16, -134.51)
+anzeige_name = "Magd Ute Dorn"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.42, 0.34, 0.24, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: -30.36,16,-108.09 | weg", "vormittag: -25.34,16,-134.51 | blick=-90.0 | haltung=reden", "stille_stunde: -30.36,16,-108.09 | weg")
+
+[node name="Hofleben35" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.86603, 0, 0.5, 0, 1, 0, -0.5, 0, -0.86603, -26.61, 16, -133.77)
+anzeige_name = "Knecht Folker Kalk"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: -30.36,16,-108.09 | weg", "vormittag: -26.61,16,-133.77 | blick=150.0 | haltung=reden", "stille_stunde: -30.36,16,-108.09 | weg")
+
+[node name="Hofleben36" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.86603, 0, 0.5, 0, 1, 0, -0.5, 0, 0.86603, -26.61, 16, -135.24)
+anzeige_name = "Magd Sanne Torf"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: -30.36,16,-108.09 | weg", "vormittag: -26.61,16,-135.24 | blick=30.0 | haltung=reden", "stille_stunde: -30.36,16,-108.09 | weg")
+
+[node name="Hofleben37" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.84151, 0, -0.54024, 0, 1, 0, 0.54024, 0, -0.84151, 5.39, 16, -132.41)
+anzeige_name = "Knecht Dietmar Eich"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 12.83,16,-132.63 | weg", "vormittag: 5.39,16,-132.41 | blick=-147.3 | haltung=reden", "stille_stunde: 12.83,16,-132.63 | weg")
+
+[node name="Hofleben38" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.84151, 0, 0.54024, 0, 1, 0, -0.54024, 0, 0.84151, 4.47, 16, -133.84)
+anzeige_name = "Magd Odile Linde"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 12.83,16,-132.63 | weg", "vormittag: 4.47,16,-133.84 | blick=32.7 | haltung=reden", "stille_stunde: 12.83,16,-132.63 | weg")
+
+[node name="Hofleben39" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.90924, 0, 0.41628, 0, 1, 0, -0.41628, 0, -0.90924, -14.17, 16, -96.77)
+anzeige_name = "Magd Mechthild Wall"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: -14.41,16,-83.15 | weg", "vormittag: -14.17,16,-96.77 | blick=155.4 | haltung=reden", "stille_stunde: -14.41,16,-83.15 | weg")
+
+[node name="Hofleben40" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.81513, 0, 0.57928, 0, 1, 0, -0.57928, 0, 0.81513, -14.31, 16, -98.24)
+anzeige_name = "Knecht Ingo Falk"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.33, 0.36, 0.3, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: -14.41,16,-83.15 | weg", "vormittag: -14.31,16,-98.24 | blick=35.4 | haltung=reden", "stille_stunde: -14.41,16,-83.15 | weg")
+
+[node name="Hofleben41" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(0.094108, 0, -0.99556, 0, 1, 0, 0.99556, 0, 0.094108, -12.97, 16, -97.63)
+anzeige_name = "Magd Wanda Moor"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.42, 0.34, 0.24, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: -14.41,16,-83.15 | weg", "vormittag: -12.97,16,-97.63 | blick=-84.6 | haltung=reden", "stille_stunde: -14.41,16,-83.15 | weg")
+
+[node name="Hofleben42" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.73016, 0, -0.68327, 0, 1, 0, 0.68327, 0, -0.73016, -13.58, 16, -118.13)
+anzeige_name = "Wäscherin Kunigunde Asch"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: -13.58,16,-118.13 | blick=-136.9 | haltung=knien", "mittag: 15.53,16,-127.78; -13.58,16,-118.13 | runde", "nachmittag: -13.58,16,-118.13 | blick=-136.9 | haltung=knien", "stille_stunde: 15.53,16,-127.78 | weg")
+
+[node name="Hofleben43" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(-0.32557, 0, 0.94552, 0, 1, 0, -0.94552, 0, -0.32557, -18.7, 16, -119.47)
+anzeige_name = "Wäscherin Tilda Grund"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.33, 0.36, 0.3, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: -18.7,16,-119.47 | blick=109.0 | haltung=knien", "mittag: -30.36,16,-108.09; -18.7,16,-119.47 | runde", "nachmittag: -18.7,16,-119.47 | blick=109.0 | haltung=knien", "stille_stunde: -30.36,16,-108.09 | weg")
+
+[node name="Hofleben44" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -17.87, 16, -113.06)
+anzeige_name = "Magd Ilse Reif"
+dialog_id = "magd_burg"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: -17.87,16,-113.06,arbeiten,8; -9.15,16,-113.28,arbeiten,8; -2.33,16,-108.61,arbeiten,8; 2.52,16,-112.67,arbeiten,8; -17.87,16,-113.06,arbeiten,8 | runde", "stille_stunde: -30.36,16,-108.09 | weg")
+
+[node name="Hofleben45" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 17.31, 16, -120.79)
+anzeige_name = "Bote Lutz Bader"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.45, 0.2, 0.16, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 17.31,16,-120.79,reden,4; -12.42,16,-82.16,reden,4; 17.31,16,-120.79,reden,4 | runde", "stille_stunde: 17.31,16,-120.79 | weg")
+tempo = 2.3
+
+[node name="Hofleben46" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 18.16, 16, -115.92)
+anzeige_name = "Bote Gesa Hagen"
+dialog_id = "burggesinde"
+kordel = 0
+tracht = Color(0.45, 0.2, 0.16, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("morgengrauen: 18.16,16,-115.92,reden,4; -14.41,16,-83.15,reden,4; 18.16,16,-115.92,reden,4 | runde", "stille_stunde: 18.16,16,-115.92 | weg")
+tempo = 2.3
+
+[node name="Hofleben47" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -25.81, 16, -131.12)
+anzeige_name = "Ordensritter Jost Sand"
+dialog_id = "ritter_burg"
+kordel = 2
+tracht = Color(0.38, 0.1, 0.08, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("vormittag: -25.81,16,-131.12; -17.28,16,-129.28; -24.58,16,-127.23; -31.32,16,-135.96; -25.81,16,-131.12 | runde", "stille_stunde: -30.36,16,-108.09 | weg")
+tempo = 0.9
+
+[node name="Hofleben48" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -17.28, 16, -129.28)
+anzeige_name = "Ordensritterin Anna Dorn"
+dialog_id = "ritter_burg"
+kordel = 2
+tracht = Color(0.38, 0.1, 0.08, 1)
+sichtbar_wenn = "alarm<3"
+tagesablauf = PackedStringArray("vormittag: -17.28,16,-129.28; -24.58,16,-127.23; -31.32,16,-135.96; -25.81,16,-131.12; -17.28,16,-129.28 | runde", "stille_stunde: -30.36,16,-108.09 | weg")
+tempo = 0.9
+
+[node name="Hofleben49" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -11.09, 16, -126.62)
+anzeige_name = "Liesel Kalk"
+dialog_id = "kind_burg"
+kordel = 0
+tracht = Color(0.36, 0.3, 0.26, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: -30.36,16,-108.09 | weg", "vormittag: -11.09,16,-126.62; -13.77,16,-124.02; -16.29,16,-126.77; -13.73,16,-129.22; -11.09,16,-126.62 | runde", "mittag: -30.36,16,-108.09 | weg", "nachmittag: -11.09,16,-126.62; -13.77,16,-124.02; -16.29,16,-126.77; -13.73,16,-129.22; -11.09,16,-126.62 | runde", "stille_stunde: -30.36,16,-108.09 | weg")
+tempo = 2.6
+groesse = 0.72
+
+[node name="Hofleben50" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -16.29, 16, -126.77)
+anzeige_name = "Otto Torf"
+dialog_id = "kind_burg"
+kordel = 0
+tracht = Color(0.5, 0.44, 0.32, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: -30.36,16,-108.09 | weg", "vormittag: -16.29,16,-126.77; -13.73,16,-129.22; -11.09,16,-126.62; -13.77,16,-124.02; -16.29,16,-126.77 | runde", "mittag: -30.36,16,-108.09 | weg", "nachmittag: -16.29,16,-126.77; -13.73,16,-129.22; -11.09,16,-126.62; -13.77,16,-124.02; -16.29,16,-126.77 | runde", "stille_stunde: -30.36,16,-108.09 | weg")
+tempo = 2.6
+groesse = 0.72
+
+[node name="Andacht0" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 28.92, 16, -105.06)
+anzeige_name = "Ordensschwester Jutta Eich"
+dialog_id = "ritter_burg"
+kordel = 1
+tracht = Color(0.14, 0.14, 0.16, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 28.92,16,-105.06 | haltung=reden", "mittag: 26.65,16,-102.95 | blick=-32.2 | haltung=knien", "nachmittag: 28.92,16,-105.06 | haltung=reden", "stille_stunde: 28.92,16,-105.06 | weg")
+
+[node name="Andacht3" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 28.18, 16, -103.87)
+anzeige_name = "Ordensbruder Merten Linde"
+dialog_id = "ritter_burg"
+kordel = 1
+tracht = Color(0.14, 0.14, 0.16, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 28.18,16,-103.87 | haltung=reden", "mittag: 25.9,16,-101.76 | blick=-32.2 | haltung=knien", "nachmittag: 28.18,16,-103.87 | haltung=reden", "stille_stunde: 28.18,16,-103.87 | weg")
+
+[node name="Andacht4" parent="Personen/Burgleben" instance=ExtResource("4_person")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 25.97, 16, -104.32)
+anzeige_name = "Ordensschwester Hille Wall"
+dialog_id = "ritter_burg"
+kordel = 1
+tracht = Color(0.14, 0.14, 0.16, 1)
+sichtbar_wenn = "alarm<2"
+tagesablauf = PackedStringArray("morgengrauen: 25.97,16,-104.32 | haltung=reden", "mittag: 24.8,16,-102.45 | blick=-32.2 | haltung=knien", "nachmittag: 25.97,16,-104.32 | haltung=reden", "stille_stunde: 25.97,16,-104.32 | weg")
+
+[node name="HofTiere" type="Node3D" parent="Drachenstein/Burgen"]
+script = ExtResource("29_ausstattung")
+stuecke = PackedFloat32Array(22, 51.47, -8, 154.44, 37.9268, 23, 4.2, -8, 138.51, 301.633, 22, 16.47, 6, 85.43, 39.3282, 23, 16.54, 6, 97.49, 132.795, 22, 4.77, 14, -1.9, 110.744, 23, -7.45, 14, -3.9, 131.315, 22, 9.33, 16, -123.19, 167.188, 23, 10.72, 16, -154.05, 159.386)
+
 [node name="Sprungpunkte" type="Node3D" parent="."]
 
 [node name="Ordensvorwerk_Hof" type="Marker3D" parent="Sprungpunkte"]

@@ -443,3 +443,241 @@ person("Kaplan", BL, *pk_(-iL_ + 2.6, 0.0), "Kaplan Benedikt Saar", "kaplan", 0,
        gier=bl_(0, 0, -1, 0), haltung="knien")
 print("Burgleben: in den Gebäuden", _drinnen, "Personen, Kaplan am Altar")
 print("Burgleben:", _tw, "Torwachen,", _gs, "Gesinde, Kaplan, Haushofmeister" + (", Stallknecht" if _traenke else ""))
+
+# ---------- Mehr Leben in den Höfen (27.11.2026) ----------
+# Eine Festung mit 7000 Leuten (docs/01-lore-bibel.md) ist voll: In jedem Hof stehen Leute zusammen und reden, am Brunnen
+# wird gewaschen, Mägde kehren, Boten laufen eilig von Tür zu Tür, Ordensritter gehen zu zweit ihre Runde, Kinder spielen,
+# Hunde und Katzen streunen. Mittags knien Ordensleute zur Andacht vor der Drachenkapelle. Abends (Stille-Stunde) gehen
+# alle heim. Alle Plätze frei von Häusern, Bauten, Ausstattung und Treppen, jede Strecke dazwischen frei.
+random.seed(2711)
+HL_BESETZT = []
+
+
+def hof_tueren(hof_w):
+    """Plätze vor den Haustüren eines Hofs (frei)"""
+    aus_ = []
+    for x_, _, z_, g_, f_ in HOFHAEUSER:
+        if not _drin((x_, z_), hof_w):
+            continue
+        a_ = math.radians(g_)
+        vor_ = (_FORMEN[f_][1] + 0.7) / 2 + 1.6
+        t_ = (x_ + math.sin(a_) * vor_, z_ + math.cos(a_) * vor_)
+        if not any(_drin(t_, r_) for r_ in _HINDERNISSE):
+            aus_.append(t_)
+    return aus_
+
+
+def freie_stelle(hof_w, rand=3.0, abstand=1.3, nahe=None, weite=None, versuche=400):
+    xs_ = [q[0] for q in hof_w]
+    zs_ = [q[1] for q in hof_w]
+    for _ in range(versuche):
+        if nahe is not None:
+            w_ = random.uniform(0, math.tau)
+            r_ = random.uniform(weite[0], weite[1])
+            q = (nahe[0] + math.cos(w_) * r_, nahe[1] + math.sin(w_) * r_)
+        else:
+            q = (random.uniform(min(xs_), max(xs_)), random.uniform(min(zs_), max(zs_)))
+        if not _drin(q, hof_w) or _abstand_rand(q, hof_w) < rand:
+            continue
+        if any(_drin((q[0] + dx_, q[1] + dz_), r_) for r_ in _HINDERNISSE
+               for dx_, dz_ in ((0, 0), (abstand, 0), (-abstand, 0), (0, abstand), (0, -abstand))):
+            continue
+        if any(math.dist(q, m_) < 2.4 for m_ in HL_BESETZT):
+            continue
+        if any(math.dist(q, b_) < 2.6 for b_ in BURG_BRUNNEN.values()):
+            continue
+        return q
+    return None
+
+
+def naechste_tuer(q, tueren):
+    frei_ = [t_ for t_ in tueren if strecke_frei(q, t_)]
+    return min(frei_, key=lambda t_: math.dist(q, t_)) if frei_ else None
+
+
+def blick_zu(a, b):
+    return round(math.degrees(math.atan2(b[0] - a[0], b[1] - a[1])), 1)
+
+
+VORNAMEN_F = ["Anna", "Mechthild", "Gesa", "Hille", "Ilse", "Jutta", "Kunigunde", "Liesel", "Marthe", "Nele", "Odile", "Rike",
+              "Sanne", "Tilda", "Ute", "Wanda"]
+VORNAMEN_M = ["Arnold", "Bernd", "Claus", "Dietmar", "Eckart", "Folker", "Gerd", "Heino", "Ingo", "Jost", "Kuno", "Lutz",
+              "Merten", "Nolte", "Otto", "Rainer"]
+NACHNAMEN = ["Asch", "Bader", "Dorn", "Eich", "Falk", "Grund", "Hagen", "Kalk", "Linde", "Moor", "Reif", "Sand", "Torf", "Wall"]
+_hl_nr = [0]
+
+
+def hl_name(rolle, weiblich):
+    i_ = _hl_nr[0]
+    _hl_nr[0] += 1
+    vn_ = (VORNAMEN_F if weiblich else VORNAMEN_M)[(i_ * 7) % 16]
+    return f"{rolle} {vn_} {NACHNAMEN[(i_ * 5) % len(NACHNAMEN)]}"
+
+
+_hl = 0
+HOF_TIERE = []
+for name_, hof_, boden_ in _hoefe:
+    hof_w_ = WL(hof_)
+    tueren_ = hof_tueren(hof_w_)
+    if not tueren_:
+        continue
+    gross_ = name_ == "Palas"
+    # Plaudergruppen: zwei bis drei Leute stehen beisammen und reden
+    for g_ in range(3 if gross_ else 2):
+        m_ = freie_stelle(hof_w_, rand=4.0, abstand=2.2)
+        if m_ is None:
+            continue
+        HL_BESETZT.append(m_)
+        anzahl_ = 3 if g_ % 2 == 0 else 2
+        for k_ in range(anzahl_):
+            w_ = math.tau * k_ / anzahl_ + g_
+            q_ = (m_[0] + math.cos(w_) * 0.85, m_[1] + math.sin(w_) * 0.85)
+            heim_ = naechste_tuer(q_, tueren_)
+            if heim_ is None or not strecke_frei(q_, m_):
+                continue
+            weiblich_ = (k_ + g_) % 2 == 0
+            ablauf_ = {"morgengrauen": (p3([heim_], boden_), ["weg"]),
+                       "vormittag": (p3([q_], boden_), [f"blick={blick_zu(q_, m_)}", "haltung=reden"]),
+                       "stille_stunde": (p3([heim_], boden_), ["weg"])}
+            person(f"Hofleben{_hl}", BL, round(q_[0], 2), boden_, round(q_[1], 2),
+                   hl_name("Magd" if weiblich_ else "Knecht", weiblich_), "magd_burg" if weiblich_ else "burggesinde", 0,
+                   GESINDE_TRACHTEN[(k_ + g_) % 4], gier=blick_zu(q_, m_), sichtbar_wenn="alarm<3", ablauf=ablauf_)
+            _hl += 1
+    # Wäscherinnen am Brunnen: knien am Zuber, mittags hängen sie die Wäsche auf (an der Tür), abends daheim
+    if name_ in BURG_BRUNNEN:
+        bw_ = BURG_BRUNNEN[name_]
+        for k_ in range(2):
+            q_ = freie_stelle(hof_w_, rand=2.5, abstand=0.9, nahe=bw_, weite=(2.7, 3.6))
+            if q_ is None:
+                continue
+            HL_BESETZT.append(q_)
+            heim_ = naechste_tuer(q_, tueren_)
+            if heim_ is None:
+                continue
+            person(f"Hofleben{_hl}", BL, round(q_[0], 2), boden_, round(q_[1], 2), hl_name("Wäscherin", True), "magd_burg", 0,
+                   GESINDE_TRACHTEN[(k_ + 2) % 4], gier=blick_zu(q_, bw_), sichtbar_wenn="alarm<3",
+                   ablauf={"morgengrauen": (p3([q_], boden_), [f"blick={blick_zu(q_, bw_)}", "haltung=knien"]),
+                           "mittag": (p3([heim_, q_], boden_), ["runde"]),
+                           "nachmittag": (p3([q_], boden_), [f"blick={blick_zu(q_, bw_)}", "haltung=knien"]),
+                           "stille_stunde": (p3([heim_], boden_), ["weg"])})
+            _hl += 1
+    # Mägde kehren: eine Runde über vier Plätze, an jedem eine Weile mit dem Besen
+    for k_ in range(2 if gross_ else 1):
+        a_ = freie_stelle(hof_w_)
+        if a_ is None:
+            continue
+        runde_ = [a_]
+        for _ in range(12):
+            if len(runde_) >= 4:
+                break
+            b_ = freie_stelle(hof_w_, nahe=runde_[-1], weite=(4.0, 9.0))
+            if b_ is not None and strecke_frei(runde_[-1], b_):
+                runde_.append(b_)
+        if len(runde_) < 3 or not strecke_frei(runde_[-1], runde_[0]):
+            continue
+        heim_ = naechste_tuer(a_, tueren_)
+        if heim_ is None:
+            continue
+        punkte_ = [p_ + ("arbeiten", 8) for p_ in p3(runde_, boden_)]
+        person(f"Hofleben{_hl}", BL, round(a_[0], 2), boden_, round(a_[1], 2), hl_name("Magd", True), "magd_burg", 0,
+               GESINDE_TRACHTEN[k_ % 4], sichtbar_wenn="alarm<3",
+               ablauf={"morgengrauen": (punkte_ + [punkte_[0]], ["runde"]), "stille_stunde": (p3([heim_], boden_), ["weg"])})
+        _hl += 1
+    # Boten: eilig von Tür zu Tür (weit auseinander), dazwischen kurz an der Tür
+    for k_ in range(2 if gross_ else 1):
+        paare_ = [(a_, b_) for a_ in tueren_ for b_ in tueren_ if math.dist(a_, b_) > 18.0 and strecke_frei(a_, b_)]
+        if not paare_:
+            continue
+        a_, b_ = random.choice(paare_)
+        punkte_ = p3([a_, b_], boden_)
+        punkte_ = [punkte_[0] + ("reden", 4), punkte_[1] + ("reden", 4)]
+        person(f"Hofleben{_hl}", BL, round(a_[0], 2), boden_, round(a_[1], 2), hl_name("Bote", k_ % 2 == 1), "burggesinde", 0,
+               "0.45, 0.2, 0.16, 1", sichtbar_wenn="alarm<3", tempo=2.3,
+               ablauf={"morgengrauen": (punkte_ + [punkte_[0]], ["runde"]), "stille_stunde": (p3([a_], boden_), ["weg"])})
+        _hl += 1
+    # Zwei Ordensritter gehen gemeinsam eine Runde (langsam; im Vorbeigehen reden sie)
+    runde_ = []
+    a_ = freie_stelle(hof_w_, rand=4.0, abstand=1.8)
+    if a_ is not None:
+        runde_ = [a_]
+        for _ in range(16):
+            if len(runde_) >= 4:
+                break
+            b_ = freie_stelle(hof_w_, rand=4.0, abstand=1.8, nahe=runde_[-1], weite=(7.0, 14.0))
+            if b_ is not None and strecke_frei(runde_[-1], b_):
+                runde_.append(b_)
+    if len(runde_) >= 3 and strecke_frei(runde_[-1], runde_[0]):
+        for k_ in range(2):
+            versatz_ = runde_[k_:] + runde_[:k_]
+            heim_ = naechste_tuer(versatz_[0], tueren_) or versatz_[0]
+            person(f"Hofleben{_hl}", BL, round(versatz_[0][0], 2), boden_, round(versatz_[0][1], 2),
+                   hl_name("Ordensritter" if k_ == 0 else "Ordensritterin", k_ == 1), "ritter_burg", 2, "0.38, 0.1, 0.08, 1",
+                   sichtbar_wenn="alarm<3", tempo=0.9,
+                   ablauf={"vormittag": (p3(versatz_ + [versatz_[0]], boden_), ["runde"]),
+                           "stille_stunde": (p3([heim_], boden_), ["weg"])})
+            _hl += 1
+    # Kinder spielen Fangen (schnell, eine kleine Runde), mittags und abends daheim
+    if name_ in ("Vorburg", "Mittelburg", "Palas"):
+        m_ = freie_stelle(hof_w_, rand=4.0, abstand=2.5)
+        if m_ is not None:
+            runde_ = [(m_[0] + math.cos(w_) * 2.6, m_[1] + math.sin(w_) * 2.6) for w_ in (0.0, 1.6, 3.2, 4.7)]
+            if all(strecke_frei(a_, b_) for a_, b_ in zip(runde_, runde_[1:] + runde_[:1])):
+                heim_ = naechste_tuer(m_, tueren_)
+                HL_BESETZT.append(m_)
+                for k_ in range(2):
+                    versatz_ = runde_[k_ * 2:] + runde_[:k_ * 2]
+                    if heim_ is None:
+                        break
+                    person(f"Hofleben{_hl}", BL, round(versatz_[0][0], 2), boden_, round(versatz_[0][1], 2),
+                           hl_name("Kind", k_ == 0).replace("Kind ", "") , "kind_burg", 0, GESINDE_TRACHTEN[k_ + 1],
+                           sichtbar_wenn="alarm<2", tempo=2.6, groesse=0.72,
+                           ablauf={"morgengrauen": (p3([heim_], boden_), ["weg"]),
+                                   "vormittag": (p3(versatz_ + [versatz_[0]], boden_), ["runde"]),
+                                   "mittag": (p3([heim_], boden_), ["weg"]),
+                                   "nachmittag": (p3(versatz_ + [versatz_[0]], boden_), ["runde"]),
+                                   "stille_stunde": (p3([heim_], boden_), ["weg"])})
+                    _hl += 1
+    # Hund und Katze streunen im Hof
+    for art_ in (22, 23):
+        q_ = freie_stelle(hof_w_, rand=3.0, abstand=1.2)
+        if q_ is not None:
+            HOF_TIERE.extend([art_, round(q_[0], 2), boden_, round(q_[1], 2), random.uniform(0, 360)])
+
+# Mittagsandacht: Ordensleute knien vor dem Portal der Drachenkapelle, sonst gehen sie im Palashof ihre Wege
+_kap_c = W(PD.DRACHENKAPELLE[0])
+_kap_g = math.radians(-PD.DRACHENKAPELLE[3])
+_kap_u = (math.sin(_kap_g), math.cos(_kap_g))
+_kap_n = (math.cos(_kap_g), -math.sin(_kap_g))
+_portal = (_kap_c[0] + _kap_u[0] * (PD.DRACHENKAPELLE[1] * M / 2 + 3.5), _kap_c[1] + _kap_u[1] * (PD.DRACHENKAPELLE[1] * M / 2 + 3.5))
+_palas_w = WL(PD.PALAS_HOF)
+_palas_tueren = hof_tueren(_palas_w)
+_andacht = []
+for k_ in range(5):
+    reihe_, platz_ = divmod(k_, 3)
+    reihe_ = -reihe_
+    q_ = (_portal[0] + _kap_u[0] * reihe_ * 1.4 + _kap_n[0] * (platz_ - 1) * 1.3,
+          _portal[1] + _kap_u[1] * reihe_ * 1.4 + _kap_n[1] * (platz_ - 1) * 1.3)
+    if any(_drin(q_, r_) for r_ in _HINDERNISSE):
+        continue
+    sonst_ = None
+    for abst_ in (3.0, 4.5, 2.2):
+        v_ = (q_[0] + _kap_u[0] * abst_ + _kap_n[0] * (platz_ - 1) * 0.8, q_[1] + _kap_u[1] * abst_ + _kap_n[1] * (platz_ - 1) * 0.8)
+        if not any(_drin(v_, r_) for r_ in _HINDERNISSE) and strecke_frei(v_, q_) and all(math.dist(v_, a_) > 1.2 for a_ in _andacht):
+            sonst_ = v_
+            break
+    if sonst_ is None:
+        continue
+    _andacht.append(sonst_)
+    blick_ = blick_zu(_portal, _kap_c)
+    heim_ = naechste_tuer(sonst_, _palas_tueren) or sonst_
+    person(f"Andacht{k_}", BL, round(sonst_[0], 2), PD.H_KERNBURG, round(sonst_[1], 2),
+           hl_name("Ordensbruder" if k_ % 2 else "Ordensschwester", k_ % 2 == 0), "ritter_burg", 1, "0.14, 0.14, 0.16, 1",
+           sichtbar_wenn="alarm<2",
+           ablauf={"morgengrauen": (p3([sonst_], PD.H_KERNBURG), ["haltung=reden"]),
+                   "mittag": (p3([q_], PD.H_KERNBURG), [f"blick={blick_}", "haltung=knien"]),
+                   "nachmittag": (p3([sonst_], PD.H_KERNBURG), ["haltung=reden"]),
+                   "stille_stunde": (p3([heim_], PD.H_KERNBURG), ["weg"])})
+
+N("HofTiere", "Node3D", "Drachenstein/Burgen", "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
+  + ", ".join(f"{v:.6g}" for v in HOF_TIERE) + ")")
+print("Hofleben:", _hl, "Leute,", len(HOF_TIERE) // 5, "Tiere")
