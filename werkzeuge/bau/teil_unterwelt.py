@@ -380,6 +380,22 @@ for (su_, sn_), art_, g_ in [((-2.0, -2.3), 1, 0.0), ((-1.2, -2.5), 1, 10.0), ((
     uw_stueck(art_, G3(su_, sn_), H_LAGER, g_)
 uw_durchsuchbar("SchmugglerMusketen", G3(-1.6, -2.0), H_LAGER + 0.9, "Lange Kisten mit Teerzeichen", "schmuggler_musketen", "Öffnen")
 
+# Ausgang der Schmuggler: ein Steinhäuschen in einer Felsnische am äußeren Weg (der Fels des Burgbezirks weicht um den
+# Geländeschnitt zurück), Tür zum Weg, von innen verriegelt; Treppe hinab in eine Rundkammer, von dort ein langer
+# Stollen hinab ins Lager
+_sa_tuer = (80.0, -70.0)
+_sa_boden = H(*_sa_tuer)
+H_SA = -6.0
+uw_abgang(_sa_tuer, 270.0, _sa_boden, 1.6, 6.2, "riegel:riegel_schmugglerausgang")
+_sa_lauf = (_sa_boden - H_SA) / 0.68 + 2.2
+R8 = (round(_sa_tuer[0] - _sa_lauf - 2.25, 3), _sa_tuer[1])
+uw_gang(_sa_tuer, _sa_boden, rund_punkt(R8, 2.5, 90.0), H_SA, fackeln=0)
+uw_raum(R8, 0.0, 5.0, 5.0, H_SA, 2.6, 1.4, 6, 0.0, 2)
+uw_gang(rund_punkt(R8, 2.5, gier_von(R8, G2_C)), H_SA, hoehle_rand(G2_C, MUND_GIER, 14.0, 11.0, R8), H_LAGER,
+        breite=1.5, hoehe=2.4, art=1, fackeln=1)
+uw_stueck(1, (round(R8[0] - 1.2, 3), round(R8[1] - 1.3, 3)), H_SA, 20.0)
+uw_stueck(2, (round(R8[0] - 1.5, 3), round(R8[1] + 0.9, 3)), H_SA, 70.0)
+
 # ---------- Stadtkeller (27.11.2026) ----------
 # Der Keller eines Händlers am Vorburgplatz in der oberen Stadt: gewölbt, ganz unter dem Haus, Zugang über ein
 # verschlossenes Kellerhäuschen auf dem Platz (den Schlüssel haben die Schmuggler in ihrer Warenkammer). Hier verschwindet

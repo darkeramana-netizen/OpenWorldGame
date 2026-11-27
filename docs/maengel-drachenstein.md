@@ -159,6 +159,9 @@ Erste Ausbaustufe des Untergrunds (`szenen/welt/unterwelt.gd`, Lage in `werkzeug
   Lieferliste und Schlüssel), dahinter die verschlossene Warenkammer (Pulver, Musketen aus Valdrenn). Ein Felsstieg
   (16 m hinauf, mit Fackeln) führt zu einer Einsturzhöhle am Ende des verschütteten Gangs der Ruinen von Sorrow: Die
   Schmuggler haben sich durchgegraben (frische Hackspuren). Höhlen als eigene Raumart (natürliche Felswände und Kuppel).
+- **Ausgang der Schmuggler**: ein Steinhäuschen in einer Felsnische am äußeren Weg um den Palas (der Fels des
+  Burgbezirks weicht um den Geländeschnitt zurück), Tür von innen verriegelt (Abkürzung); Treppe in eine Rundkammer, von
+  dort ein langer Stollen mit Fackeln hinab ins Lager.
 - **Stadtkeller am Vorburgplatz** (obere Stadt): gewölbter Keller eines Hehlers unter einem Bürgerhaus, Zugang über ein
   verschlossenes Kellerhäuschen auf dem Platz (den Schlüssel haben die Schmuggler in ihrer Warenkammer), darin Ware ohne
   Zollsiegel, das Rechnungsbuch („vom Wasser“) und eine Geldkiste. Hinter einem Regal (erst nach dem Buch zu finden) ein
@@ -166,7 +169,7 @@ Erste Ausbaustufe des Untergrunds (`szenen/welt/unterwelt.gd`, Lage in `werkzeug
 - Unter Tage: Fackeln (flackernd), dunkles Umgebungslicht (Reflexionssonden als Innenraum), Hall, Tropfen, Grollen; das
   Gelände wird an den Abgängen genau ausgeschnitten (`gelaende.gd`, `schnitte`).
 
-Offen: ein Ausgang der Schmuggler an die Oberfläche (Burgbezirk), Fotos mit der
+Offen: Fotos mit der
 vollen Grafik (die Software-Grafik dieser Umgebung braucht dafür zu viel Speicher).
 
 ## Nächste Schritte

@@ -165,6 +165,14 @@ func _initialize() -> void:
 			else:
 				print("  Klippe offen: von %s nach %s" % [aussen_p.snapped(Vector3.ONE * 0.1), ziel.snapped(Vector3.ONE * 0.1)])
 		pruefe(dicht == 3, "Neben und über der Öffnung ist die Klippe geschlossen (%d von 3)" % dicht)
+	pruefe((uw.abgang_regeln as PackedStringArray).has("riegel:riegel_schmugglerausgang"), "Ausgang der Schmuggler am äußeren Weg (von innen verriegelt)")
+	var ab2 := uw.abgaenge as PackedFloat32Array
+	for k in range(0, ab2.size() - 6, 7):
+		var gk := deg_to_rad(ab2[k + 2])
+		var vorn := Vector3(ab2[k], ab2[k + 3] + 1.0, ab2[k + 1]) - Vector3(sin(gk), 0, cos(gk)) * 4.0
+		var tuer_p := Vector3(ab2[k], ab2[k + 3] + 1.0, ab2[k + 1]) - Vector3(sin(gk), 0, cos(gk)) * 0.8
+		var weg := raum.intersect_ray(PhysicsRayQueryParameters3D.create(vorn, tuer_p, 0xFFFFFFFF, tueren))
+		pruefe(weg.is_empty(), "Vor Abgang %d frei bis an die Tür %s" % [k / 7, "" if weg.is_empty() else str((weg["collider"] as Node).get_path())])
 	pruefe(dinge.get_node_or_null("Schmuggler1") != null and dinge.get_node_or_null("Schmuggler2") != null, "Zwei Schmuggler im Lager")
 	var wk := dinge.get_node_or_null("TuerWarenkammer") as Fluegel
 	pruefe(wk != null and wk.regel == "schloss" and wk.bedingung == "schluessel_schmuggler", "Warenkammer verschlossen (Schlüssel aus dem Lager)")
