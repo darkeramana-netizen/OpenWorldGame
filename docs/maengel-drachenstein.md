@@ -188,6 +188,28 @@ Erste Ausbaustufe des Untergrunds (`szenen/welt/unterwelt.gd`, Lage in `werkzeug
 Offen: Fotos mit der
 vollen Grafik (die Software-Grafik dieser Umgebung braucht dafür zu viel Speicher).
 
+## Rückmeldung 27.11.2026: Fehlerliste und Gebäude
+
+- Zisternenabgang und Häuschen am Zwinger (Ausgang der Schmuggler) entfernt; die Gruft liegt jetzt an der Kapelle.
+- Felsmund der Schmugglerhöhle im Geländematerial, ohne Stufen, ohne Lücken; der Gang ist breiter.
+- Palashof: dunkle Flecken kamen vom SDFGI der Unterwelt (Geometrie ohne GI).
+- Mauern: An einem Abzweig öffnete die durchgehende Mauer Brustwehr und Zinnen auf beiden Seiten (Loch in der Feldseite,
+  ein Stück Hofmauer stand frei auf dem Wehrgang); jetzt nur noch auf der Seite des Abzweigs.
+- Regentonnen aus dem Fass-Scan, Säcke rund und zugebunden (statt Kisten).
+- Hüte, Hauben und Kopftücher sitzen auf dem Kopf; Stoffe stärker gedämpft (flattern weniger).
+- Schritte und Hund neu erzeugt, Schritte fremder Leute nur bis 14 m und leiser; Marktgeräusch ohne synthetische
+  Stimmen (tonloses Gemurmel), keine Marktschreier mehr.
+- Baumkronen mit Kugelnormalen und Farbvarianz; Gras aus schmalen, gebogenen, verschieden getönten Halmen, am Fuß
+  dunkler, gegen das Licht durchscheinend.
+- Gebäude innen: Kruzifixe, Tellerborde mit Geschirr (Zinn, Holz, Ton), eiserne Wandleuchter mit Kerzen.
+- Blumenkästen unter Fenstern der Stadthäuser.
+- Realistische Menschen: Die Arme standen seitlich ab und die Beine breit (Animationen für kräftigere Figuren); ein
+  Skelett-Modifikator (`szenen/figuren/haltung.gd`) zieht hängende Arme an den Körper und schließt die Beine etwas.
+- Blattkarten der Bäume ohne dunkle Säume (höher abgeschnitten, Saum auf Blattfarbe).
+
+Offen: Haare der realistischen Menschen (wirken wie Kappen; bessere Haarkarten nötig), Rinde der Baumstämme,
+Mauerstöße mit großem Höhenunterschied (Zwinger des Palas).
+
 ## Nächste Schritte
 
 1. Neuer Rundgang (Hoch und Episch) zur Bestätigung von M1–M3, M9, M11, M22, M25–M29.

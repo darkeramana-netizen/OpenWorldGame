@@ -69,6 +69,8 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 ## Fassung der Scans, dahinter die vereinfachte (je etwa ein Sechstel der Dreiecke).
 const SCANS := {
 	0: [["wine_barrel_01", Vector3.ZERO, Vector3.ZERO, Vector3(1.0, 1.09, 1.0)]],
+	# Regentonne: das Fass aus dem Scan (sonst wirkte sie kantig und spiegelnd), dazu Wasser, Deckel und Kelle
+	67: [["wine_barrel_01", Vector3.ZERO, Vector3.ZERO, Vector3(1.0, 1.09, 1.0)], [167, Vector3.ZERO, Vector3.ZERO, Vector3.ONE]],
 	1: [["wooden_crate_01", Vector3(0, 0, -0.19), Vector3.ZERO, Vector3(0.9, 0.9, 0.9)],
 		["wooden_crate_01", Vector3(0, 0, 0.19), Vector3(0, 180, 0), Vector3(0.9, 0.9, 0.9)],
 		["wooden_crate_01", Vector3(0.04, 0.315, 0.02), Vector3(0, 84, 0), Vector3(0.9, 0.9, 0.9)]],
@@ -396,11 +398,14 @@ func _mesh(art: int) -> ArrayMesh:
 			for s: float in [-1.0, 1.0]:
 				_klotz("holz_dunkel", Vector3(-0.38, 0.05, s * 0.38 - 0.03), Vector3(0.38, 0.13, s * 0.38 + 0.03))
 				_klotz("holz_dunkel", Vector3(-0.38, 0.57, s * 0.38 - 0.03), Vector3(0.38, 0.65, s * 0.38 + 0.03))
-		2:   # drei Säcke
+		2:   # drei Säcke: bauchig, oben zugebunden (vorher Quader, Rückmeldung 27.11.2026), einer liegt quer darauf
 			for k in 3:
-				var x := -0.32 + k * 0.32
-				_klotz("sack", Vector3(x - 0.2, 0, -0.3), Vector3(x + 0.2, 0.42 + 0.06 * (k % 2), 0.3), 0.2 * (k - 1))
-			_klotz("sack", Vector3(-0.18, 0.4, -0.25), Vector3(0.22, 0.75, 0.25), 0.4)
+				var x := -0.33 + k * 0.33
+				var h := 0.5 + 0.06 * (k % 2)
+				_zylinder("sack", Vector3(x, 0, 0.02 * (k - 1)), 0.15, 0.19, h, 10)
+				_zylinder("sack", Vector3(x, h, 0.02 * (k - 1)), 0.06, 0.09, 0.08, 8)
+				_zylinder("seil", Vector3(x, h - 0.01, 0.02 * (k - 1)), 0.065, 0.065, 0.03, 8)
+			_zylinder("sack", Vector3(-0.32, 0.62, 0.0), 0.13, 0.17, 0.62, 10, Basis(Vector3.FORWARD, PI / 2.0 - 0.1))
 		3:   # Marktstand: Tisch, Pfosten, schräge Markise in zwei Farben, Waren
 			_klotz("holz", Vector3(-1.5, 0.8, -0.8), Vector3(1.5, 0.9, 0.8))
 			for x: float in [-1.4, 1.4]:
@@ -535,6 +540,11 @@ func _mesh(art: int) -> ArrayMesh:
 			_schlaflager()
 		67:
 			_regentonne()
+		167:
+			# was zur Regentonne gehört, ohne das Fass (das kommt aus dem Scan)
+			_zylinder("wasser", Vector3(0, 0.86, 0), 0.31, 0.31, 0.01, 12)
+			_klotz("holz_dunkel", Vector3(-0.34, 0.95, -0.34), Vector3(0.04, 0.98, 0.34))
+			_stab("holz", Vector3(0.18, 0.98, 0.1), Vector3(0.4, 0.58, 0.14), 0.025, 0.025)
 		68:
 			_kraeuterkuebel()
 		69:

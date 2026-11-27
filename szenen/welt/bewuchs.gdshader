@@ -47,8 +47,11 @@ void fragment() {
 	ALBEDO = f;
 	if (boden_normale) {
 		NORMAL = normalize((VIEW_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+		// Gras: am Fuß im Schatten der Nachbarhalme, die Spitzen lassen Licht durch
+		AO = mix(0.35, 1.0, anteil_hoehe);
+		AO_LIGHT_AFFECT = 0.35;
 	}
 	ROUGHNESS = rauheit;
 	SPECULAR = 0.15;
-	BACKLIGHT = f * 0.15;
+	BACKLIGHT = f * (boden_normale ? 0.35 : 0.15);
 }

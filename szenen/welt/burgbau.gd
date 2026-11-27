@@ -132,7 +132,8 @@ const FARBEN_INNEN := {"kraut": Color(0.3, 0.37, 0.15), "kraut_trocken": Color(0
 	"wurst": Color(0.36, 0.12, 0.08), "schinken": Color(0.52, 0.27, 0.16), "zwiebel": Color(0.58, 0.4, 0.2),
 	"knoblauch": Color(0.88, 0.85, 0.76), "fell": Color(0.4, 0.31, 0.22), "fell_hell": Color(0.66, 0.6, 0.5),
 	"leinen": Color(0.8, 0.76, 0.66), "teppich_rot": Color(0.42, 0.09, 0.07), "teppich_blau": Color(0.12, 0.17, 0.33),
-	"teppich_gruen": Color(0.15, 0.25, 0.13), "fisch": Color(0.56, 0.54, 0.48), "apfel": Color(0.58, 0.14, 0.09)}
+	"teppich_gruen": Color(0.15, 0.25, 0.13), "fisch": Color(0.56, 0.54, 0.48), "apfel": Color(0.58, 0.14, 0.09),
+	"wachs": Color(0.88, 0.82, 0.62), "ton": Color(0.6, 0.36, 0.22), "zinn": Color(0.62, 0.62, 0.6)}
 
 static var _bauten_je_region := {}   # Großelternknoten → alle burgbau-Knoten darunter
 var _flach := {}   # Material → SurfaceTool, Normalen werden erzeugt (kantig)
@@ -944,14 +945,22 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 				aussen0 = clampf(s_aus, s_ende - 2.0, s_ende + 3.0)
 			if not is_inf(s_in):
 				innen0 = clampf(s_in, s_ende - 2.0, s_ende + 3.0)
+	# Am Stoß öffnet die Mauer nur die Seite, auf der eine andere ansetzt (sonst klaffte auf der anderen eine Lücke in
+	# Brustwehr und Zinnen, und dazwischen blieb ein Stück Hofmauer frei auf dem Wehrgang stehen)
 	if stoss_a >= 2:
 		var t_ := _stoss_abstand(a_plan, b_plan, d)
-		aussen0 = maxf(aussen0, sa + t_)
-		innen0 = maxf(innen0, sa + t_)
+		var seiten_ := _abzweig_seiten(a_plan, b_plan, n)
+		if seiten_ & 1:
+			aussen0 = maxf(aussen0, sa + t_)
+		if seiten_ & 2:
+			innen0 = maxf(innen0, sa + t_)
 	if stoss_b >= 2:
 		var t_ := _stoss_abstand(b_plan, a_plan, d)
-		aussen1 = minf(aussen1, sb - t_)
-		innen1 = minf(innen1, sb - t_)
+		var seiten_ := _abzweig_seiten(b_plan, a_plan, n)
+		if seiten_ & 1:
+			aussen1 = minf(aussen1, sb - t_)
+		if seiten_ & 2:
+			innen1 = minf(innen1, sb - t_)
 	# Brustwehr und Zinnen auf der Feldseite, eine niedrige Mauer auf der Hofseite. In einem Schalenturm, durch den die
 	# Mauer läuft, ist dessen Schale die Brustwehr: dort fehlt die der Mauer (sonst stünden Zinnen mitten im Turm)
 	var schalen_luecken: Array = []
@@ -1280,6 +1289,28 @@ func _stoss_abstand(p: Vector2, anderes: Vector2, d: float) -> float:
 	var sin_ := maxf(absf((nb[0] as Vector2).cross((anderes - p).normalized())), 0.35)
 	var cos_ := sqrt(1.0 - sin_ * sin_)
 	return maxf(2.0, _halbe_dicke_an(p, anderes) / sin_ + d * cos_ / sin_ + 0.1)
+
+
+## Am Stoß p: Auf welchen Seiten dieses Stücks (p→anderes) setzen andere Mauern an? Die gerade Fortsetzung und der
+## Nachbar, mit dem es auf Gehrung geschnitten wird (_nachbar_an), zählen nicht. Bit 1 Feldseite (n), Bit 2 Hofseite;
+## 3, wenn unklar (dann öffnen beide Seiten wie früher)
+func _abzweig_seiten(p: Vector2, anderes: Vector2, n: Vector2) -> int:
+	if _ist_abzweig(p, anderes):
+		return 3                          # der Abzweig selbst endet mit beiden Seiten an der Flanke
+	var eigen := (anderes - p).normalized()
+	var nb := _nachbar_an(p, anderes)
+	var ecke: Vector2 = nb[0] if not nb.is_empty() else Vector2.ZERO
+	var seiten := 0
+	for m: Array in _nachbarn_mauern:
+		for e in 2:
+			if (m[e] as Vector2).distance_to(p) < 0.05 and not _gleiche_flucht(p, m[1 - e], anderes):
+				var r: Vector2 = ((m[1 - e] as Vector2) - p).normalized()
+				if r.dot(eigen) < -0.95 or r.dot(ecke) > 0.9995:
+					continue
+				if absf(r.dot(n)) <= 0.2:
+					return 3
+				seiten |= 1 if r.dot(n) > 0.0 else 2
+	return seiten if seiten != 0 else 3
 
 
 ## Größte halbe Dicke der anderen Stücke am Stoß p
@@ -4038,14 +4069,16 @@ func _haenge(zweck: int, saal: bool, p: Vector2, u: Vector2, n: Vector2, decke: 
 func _wandstueck(zweck: int, saal: bool, m: Vector2, u: Vector2, n: Vector2, w0: float, w1: float,
 		zufall: RandomNumberGenerator) -> void:
 	var liste: Array
+	# Rückmeldung 27.11.2026 (mehr Details in den Gebäuden): Kruzifixe, Tellerborde und eiserne Wandleuchter
 	if saal or zweck == 3:
-		liste = ["schild", "geweih", "schild", "bogen", "fell"]
+		liste = ["schild", "geweih", "schild", "bogen", "fell", "leuchter", "kruzifix", "tellerbord"]
 	else:
 		match zweck:
-			1: liste = ["pfanne", "pfanne", "kranz", "werkzeug", "seil", "sieb"]
-			2: liste = ["schild", "bogen", "werkzeug", "seil", "schild"]
-			4: liste = ["zaumzeug", "seil", "werkzeug", "saege", "zaumzeug"]
-			_: liste = ["werkzeug", "kleid", "fell", "kranz", "saege", "seil", "pfanne", "kleid"]
+			1: liste = ["pfanne", "pfanne", "kranz", "werkzeug", "seil", "sieb", "tellerbord", "tellerbord"]
+			2: liste = ["schild", "bogen", "werkzeug", "seil", "schild", "leuchter"]
+			4: liste = ["zaumzeug", "seil", "werkzeug", "saege", "zaumzeug", "leuchter"]
+			_: liste = ["werkzeug", "kleid", "fell", "kranz", "saege", "seil", "pfanne", "kleid", "kruzifix", "tellerbord",
+				"leuchter"]
 	var art: String = liste[zufall.randi() % liste.size()]
 	var ym := (w0 + w1) / 2.0
 	var h := w1 - w0
@@ -4093,6 +4126,32 @@ func _wandstueck(zweck: int, saal: bool, m: Vector2, u: Vector2, n: Vector2, w0:
 				_klotz("zier_knoblauch", m + u * sx * 0.16, u, n, -0.02, 0.02, 0.03, 0.07, ym, ym + 0.3)
 				_klotz("zier_knoblauch", m + u * sx * 0.28, u, n, -0.13, 0.02, 0.03, 0.06, ym + 0.26, ym + 0.3)
 				_klotz("zier_knoblauch", m + u * sx * 0.24, u, n, -0.015, 0.015, 0.03, 0.06, ym + 0.1, ym + 0.22)
+		"kruzifix":
+			_klotz("zier_holz", m, u, n, -0.025, 0.025, 0.005, 0.04, ym - 0.22, ym + 0.2)
+			_klotz("zier_holz", m, u, n, -0.13, 0.13, 0.005, 0.04, ym + 0.05, ym + 0.1)
+			_klotz("zier_kraut_trocken", m, u, n, -0.1, 0.1, 0.0, 0.05, ym - 0.24, ym - 0.2)     # Buchsbaumzweig
+		"tellerbord":
+			# Brett auf zwei Knaggen, darauf hochkant gestellte Teller, Krug und Becher
+			var bm := m
+			_klotz("zier_holz", bm, u, n, -0.38, 0.38, 0.0, 0.2, w0 + 0.12, w0 + 0.16)
+			_klotz("zier_holz", bm, u, n, -0.38, 0.38, 0.0, 0.02, w0 + 0.16, w0 + 0.2)
+			for sx: float in [-0.3, 0.3]:
+				_klotz("zier_holz", bm + u * sx, u, n, -0.025, 0.025, 0.0, 0.16, w0 - 0.04, w0 + 0.12)
+			var y_ := w0 + 0.16
+			for i in 3:
+				var tm: String = ["zier_zinn", "zier_holz", "zier_ton"][zufall.randi() % 3]
+				var tc_ := bm + u * (-0.28 + i * 0.11) + n * 0.06
+				_klotz(tm, tc_, u, n, -0.09, 0.09, -0.012, 0.012, y_, y_ + 0.18)
+				_klotz(tm, tc_, u, n, -0.065, 0.065, -0.012, 0.012, y_ + 0.18, y_ + 0.2)
+			_mantel("zier_ton", bm + u * 0.12 + n * 0.1, 0.05, 0.07, y_, y_ + 0.14, 8)
+			_mantel("zier_ton", bm + u * 0.12 + n * 0.1, 0.07, 0.035, y_ + 0.14, y_ + 0.2, 8)
+			_mantel("zier_zinn", bm + u * 0.27 + n * 0.1, 0.04, 0.045, y_, y_ + 0.11, 8)
+		"leuchter":
+			# eiserner Wandarm mit Tropfschale und Kerze (das Licht bleibt aus: es brennt nur abends am Tisch)
+			_klotz("zier_metall", m, u, n, -0.04, 0.04, 0.0, 0.015, ym - 0.15, ym + 0.1)
+			_klotz("zier_metall", m, u, n, -0.012, 0.012, 0.0, 0.22, ym - 0.03, ym)
+			_mantel("zier_metall", m + n * 0.22, 0.07, 0.05, ym, ym + 0.025, 8)
+			_mantel("zier_wachs", m + n * 0.22, 0.022, 0.02, ym + 0.025, ym + 0.025 + zufall.randf_range(0.08, 0.2), 6)
 		"bogen":
 			_klotz("zier_holz", m, u, n, -0.03, 0.03, 0.02, 0.05, w0, w1 - 0.04)
 			_klotz("zier_holz", m + u * 0.06, u, n, -0.03, 0.03, 0.02, 0.05, w0 + 0.1, w1 - 0.14)

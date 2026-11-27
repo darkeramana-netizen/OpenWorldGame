@@ -718,22 +718,42 @@ func _grasbueschel() -> ArrayMesh:
 	zufall.seed = 15
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for i in 14:
+	# Rückmeldung 27.11.2026 (Gras wirkte wie flache grüne Zacken): schmale, gebogene Halme aus drei Stücken, die sich
+	# zur Spitze hin neigen; jeder Halm etwas anders gefärbt (frisch, satt, einige trocken und strohig)
+	var toene := [Color(0.26, 0.34, 0.13), Color(0.22, 0.3, 0.12), Color(0.3, 0.37, 0.15), Color(0.42, 0.42, 0.2)]
+	for i in 18:
 		var a := zufall.randf() * TAU
-		var r := zufall.randf() * 0.3
+		var r := sqrt(zufall.randf()) * 0.3
 		var fuss := Vector3(cos(a) * r, 0, sin(a) * r)
-		var richtung := Vector3(cos(a + 1.3), 0, sin(a + 1.3)) * 0.05
-		var hoehe := zufall.randf_range(0.25, 0.55)
-		var neigung := Vector3(cos(a), 0, sin(a)) * zufall.randf_range(0.08, 0.3)
-		var mitte := fuss + neigung * 0.4 + Vector3(0, hoehe * 0.55, 0)
-		# Halm aus zwei Stücken, unten breit, oben spitz und hell
-		st.set_color(Color(0.24, 0.31, 0.12)); st.add_vertex(fuss - richtung)
-		st.set_color(Color(0.24, 0.31, 0.12)); st.add_vertex(fuss + richtung)
-		st.set_color(Color(0.33, 0.41, 0.16)); st.add_vertex(mitte + richtung * 0.6)
-		st.set_color(Color(0.24, 0.31, 0.12)); st.add_vertex(fuss - richtung)
-		st.set_color(Color(0.33, 0.41, 0.16)); st.add_vertex(mitte + richtung * 0.6)
-		st.set_color(Color(0.33, 0.41, 0.16)); st.add_vertex(mitte - richtung * 0.6)
-		st.set_color(Color(0.33, 0.41, 0.16)); st.add_vertex(mitte - richtung * 0.6)
-		st.set_color(Color(0.33, 0.41, 0.16)); st.add_vertex(mitte + richtung * 0.6)
-		st.set_color(Color(0.44, 0.48, 0.22)); st.add_vertex(fuss + neigung + Vector3(0, hoehe, 0))
+		var quer := Vector3(cos(a + 1.3), 0, sin(a + 1.3)) * zufall.randf_range(0.022, 0.04)
+		var hoehe := zufall.randf_range(0.22, 0.58)
+		var neigung := Vector3(cos(a), 0, sin(a)) * zufall.randf_range(0.06, 0.32)
+		var ton: Color = toene[3] if zufall.randf() < 0.12 else toene[zufall.randi() % 3]
+		ton = ton * zufall.randf_range(0.9, 1.1)
+		# Punkte entlang des Halms: die Neigung wächst quadratisch (der Halm biegt sich unter seinem Gewicht)
+		var punkte: Array[Vector3] = []
+		var breiten := [1.0, 0.8, 0.5]
+		for k in 3:
+			var s := float(k) / 3.0
+			punkte.append(fuss + neigung * s * s + Vector3(0, hoehe * s, 0))
+		var spitze := fuss + neigung + Vector3(0, hoehe * 0.95, 0)
+		var farbe := func(s: float) -> Color:
+			return ton.darkened(0.35 * (1.0 - s)).lightened(0.12 * s)
+		for k in 2:
+			var s0 := float(k) / 3.0
+			var s1 := float(k + 1) / 3.0
+			var p0: Vector3 = punkte[k]
+			var p1: Vector3 = punkte[k + 1]
+			var b0: Vector3 = quer * float(breiten[k])
+			var b1: Vector3 = quer * float(breiten[k + 1])
+			st.set_color(farbe.call(s0)); st.add_vertex(p0 - b0)
+			st.set_color(farbe.call(s0)); st.add_vertex(p0 + b0)
+			st.set_color(farbe.call(s1)); st.add_vertex(p1 + b1)
+			st.set_color(farbe.call(s0)); st.add_vertex(p0 - b0)
+			st.set_color(farbe.call(s1)); st.add_vertex(p1 + b1)
+			st.set_color(farbe.call(s1)); st.add_vertex(p1 - b1)
+		var b2: Vector3 = quer * float(breiten[2])
+		st.set_color(farbe.call(0.67)); st.add_vertex(punkte[2] - b2)
+		st.set_color(farbe.call(0.67)); st.add_vertex(punkte[2] + b2)
+		st.set_color(farbe.call(1.0)); st.add_vertex(spitze)
 	return _fertig(st)

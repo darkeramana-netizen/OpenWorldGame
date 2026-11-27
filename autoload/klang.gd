@@ -25,7 +25,6 @@ var _pool: Array[AudioStreamPlayer3D] = []
 var _naechster := 0
 var _markt: AudioStreamPlayer3D
 var _markt_ort := Vector3.INF
-var _ausruf_in := 5.0
 var _wind_sanft: AudioStreamPlayer
 var _wind_stark: AudioStreamPlayer
 var _brandung: AudioStreamPlayer
@@ -335,7 +334,7 @@ func _voegel(delta: float, k: Vector3) -> void:
 
 
 ## Markt (Marken "klang_markt" an den Marktständen, ausstattung.gd): ein Stimmengewirr am nächsten Stand in Hörweite,
-## von 7 bis 17 Uhr, am Vormittag am lautesten; dazu ab und zu ein Marktschreier in der Nähe
+## von 7 bis 17 Uhr, am Vormittag am lautesten
 func _markttag(delta: float, k: Vector3) -> void:
 	if _markt.stream == null:
 		return
@@ -357,12 +356,8 @@ func _markttag(delta: float, k: Vector3) -> void:
 		_markt.global_position = _markt_ort
 		_markt.play(randf() * 20.0)
 	_markt.global_position = _markt.global_position.lerp(_markt_ort, clampf(delta * 0.5, 0.0, 1.0))
-	_markt.volume_db = linear_to_db(maxf(tag, 0.0001)) - 4.0
-	_ausruf_in -= delta
-	if _ausruf_in <= 0.0:
-		_ausruf_in = randf_range(6.0, 16.0)
-		var w := randf() * TAU
-		spiele("ausruf", _markt_ort + Vector3(cos(w) * 6.0, 0.0, sin(w) * 6.0), -4.0 + linear_to_db(maxf(tag, 0.0001)), 55.0)
+	_markt.volume_db = linear_to_db(maxf(tag, 0.0001)) - 8.0
+	# (Marktschreier entfallen: die synthetischen Rufe klangen nicht menschlich, Rückmeldung 27.11.2026)
 
 
 ## Amboss: tagsüber (7 bis 18 Uhr) in der nächsten Schmiede in Hörweite Folgen von drei bis sechs Schlägen

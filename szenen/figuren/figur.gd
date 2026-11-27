@@ -94,6 +94,7 @@ static func _realistisch_schalter() -> bool:
 		return e != "0"
 	return bool(ProjectSettings.get_setting("sorrowland/figuren_realistisch", true))
 const MENSCHEN := "res://modelle/figuren/menschen/"
+const HALTUNG := preload("res://szenen/figuren/haltung.gd")
 ## Vorrat (werkzeuge/menschen_vorrat.py): nach Geschlecht, Berufe mit eigener Kleidung aus Stoff
 const MENSCHEN_MAENNER := ["mann_1", "mann_2", "mann_3", "mann_4", "mann_5", "mann_6"]
 const MENSCHEN_FRAUEN := ["frau_1", "frau_2", "frau_3", "frau_4", "frau_5"]
@@ -622,6 +623,12 @@ func _baue_mensch(w: bool) -> bool:
 	for k in skelett.get_children():
 		if String(k.name).ends_with("_voll"):   # nur Quelle des echten Stoffs (stoff_echt_einrichten)
 			k.visible = false
+	# Arme an den Körper, Beine etwas zusammen (szenen/figuren/haltung.gd), vor allen anderen Modifikatoren
+	var haltung_mod := SkeletonModifier3D.new()
+	haltung_mod.set_script(HALTUNG)
+	haltung_mod.name = "Haltung"
+	skelett.add_child(haltung_mod)
+	skelett.move_child(haltung_mod, 0)
 	_stoff = stoff_einrichten(skelett)
 	# echter Stoff erst nah (_stoff_umschalten): spart Einrichtung und Speicher für alle Figuren in der Ferne
 	_stoff_skelett = skelett if ClassDB.class_exists("Stoff") and OS.get_environment("STOFF_AUS") == "" else null

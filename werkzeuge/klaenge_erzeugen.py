@@ -673,6 +673,39 @@ def hund_neu():
     return normiere(x * huelle(len(x), 0.004, len(x) / RATE - 0.02), 0.6)
 
 
+def markt_neu():
+    """Stimmengewirr ohne Tonhöhe (Rückmeldung 27.11.2026: die synthetischen Stimmen klangen roboterhaft): viele
+    Sprecher als Rauschen durch wechselnde Formantbänder, in Silben (4 bis 6 je Sekunde) und Sätzen mit Pausen; nah
+    wenige, fern viele und dumpf. Dazu leises Klappern. Nahtlose Schleife."""
+    n = 30 * RATE
+    x = np.zeros(n)
+    for k in range(34):
+        ferne = ZUFALL.uniform(0.25, 1.0)
+        frau = ZUFALL.random() < 0.45
+        # Formanten wandern von Silbe zu Silbe zwischen Vokalen
+        f1 = glatt_zufall(n, int(30 * 5), 300, 850) * (1.12 if frau else 1.0)
+        f2 = glatt_zufall(n, int(30 * 5), 900, 2200) * (1.12 if frau else 1.0)
+        roh = rosa(n)
+        # zwei Bänder als Näherung (mittlere Lage, die Wanderung über die Lautstärke der Bänder)
+        b1 = band(roh, 250, 900) * (0.6 + 0.4 * (f1 - 300) / 550)
+        b2 = band(roh, 900, 2600) * (0.5 + 0.5 * (f2 - 900) / 1300) * 0.6
+        s = b1 + b2
+        # Silben: Hüllkurve mit 4 bis 6 Hz, Sätze von 1 bis 4 s, dazwischen Pausen
+        silbe = np.clip(np.sin(2 * np.pi * np.cumsum(glatt_zufall(n, 60, 3.5, 6.0)) / RATE), 0, None) ** 1.5
+        satz = (glatt_zufall(n, 18, -1.0, 1.0) > 0.1).astype(float)
+        satz = tief(satz, 6.0)
+        s = s * silbe * satz
+        s = tief(s, 3200 - 2400 * ferne) * (1.0 - 0.8 * ferne) ** 1.5
+        x += s
+    klappern = np.zeros(n)
+    for _ in range(45):
+        i = ZUFALL.integers(0, n - 3000)
+        m = 2000
+        klappern[i:i + m] += band(rauschen(m), 1500, 6000) * np.exp(-np.arange(m) / 250) * ZUFALL.uniform(0.05, 0.2)
+    x = tief(x, 2800) + klappern * 0.5 * np.abs(x).max()
+    return normiere(schleife(x, 2.0), 0.6)
+
+
 def nur_schritte_hund():
     for art in ("stein", "erde", "gras", "holz"):
         for k in range(10):
@@ -684,6 +717,9 @@ def nur_schritte_hund():
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--schritte-hund":
         nur_schritte_hund()
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == "--markt":
+        schreibe("markt", markt_neu())
         return
     if len(sys.argv) > 1 and sys.argv[1] == "--untergrund":
         nur_untergrund()
@@ -720,7 +756,7 @@ def main():
         schreibe(f"katze_{k + 1}", katze())
     for k in range(4):
         schreibe(f"huf_{k + 1}", huf())
-    schreibe("markt", markt())
+    schreibe("markt", markt_neu())
     schreibe("brunnen", brunnen())
     for k in range(5):
         schreibe(f"ausruf_{k + 1}", ausruf())

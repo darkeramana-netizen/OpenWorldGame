@@ -60,7 +60,10 @@ void fragment() {
 	if (laub) {
 		ALBEDO *= mix(vec3(0.92, 1.0, 0.86), vec3(1.06, 1.02, 0.9), tonung) * mix(0.62, 1.0, innen);
 		ALPHA = c.a;
-		ALPHA_SCISSOR_THRESHOLD = alpha_schwelle;
+		// Die durchsichtigen Pixel der Blatttextur sind dunkel: Am Rand mischt die Filterung sie ein, die Karten bekamen
+		// schwarze Säume (Rückmeldung 27.11.2026). Höher abschneiden und den Saum auf die Blattfarbe heben.
+		ALPHA_SCISSOR_THRESHOLD = max(alpha_schwelle, 0.45);
+		ALBEDO = min(ALBEDO / max(c.a, 0.6), vec3(1.0));
 		ALPHA_ANTIALIASING_EDGE = 0.2;
 		ALPHA_TEXTURE_COORDINATE = uv * vec2(textureSize(farbe_tex, 0));
 		BACKLIGHT = ALBEDO * 0.6;
