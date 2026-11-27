@@ -4527,8 +4527,8 @@ func _hoehle(w: PackedFloat32Array, verschlossen := true) -> void:
 	# Steinpodest vor der Öffnung, knapp über dem Wasser
 	var c2 := Vector2(fuss.x, fuss.z) + Vector2(o.x, o.z) * 1.0
 	_klotz("bruchstein", c2, Vector2(r.x, r.z), Vector2(o.x, o.z), -b - 1.2, b + 3.5, -1.2, 1.8, -21.5, -19.45)
-	# Stufen seitlich am Fels hinauf
-	for k in 8:
+	# Stufen seitlich am Fels hinauf (nicht an der offenen Höhle: dort läge die nachgebaute Klippe darüber)
+	for k in (8 if verschlossen else 0):
 		var y := -19.45 + (k + 1) * 0.28
 		var s_ := b + 1.2 + k * 0.42
 		var m := Vector2(fuss.x, fuss.z) + Vector2(r.x, r.z) * s_

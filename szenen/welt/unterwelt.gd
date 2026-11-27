@@ -177,6 +177,12 @@ func _fertige(flach: Dictionary, rund: Dictionary, ziel: Node3D) -> void:
 
 
 func _material(name_: String) -> Material:
+	# die nachgebaute Klippe am Felsmund trägt das Material des Geländes (gleiche Felsen, gleiche Farben)
+	if name_ == "gelaende":
+		var gel := get_parent().get_node_or_null("Gelaende") if get_parent() != null else null
+		if gel != null and gel.get("material") is Material:
+			return gel.get("material")
+		return super._material("fels")
 	if EIGENE_FARBEN.has(name_) and not _materialien.has(name_):
 		var m := StandardMaterial3D.new()
 		m.albedo_color = EIGENE_FARBEN[name_]
@@ -1268,10 +1274,12 @@ func _felsmund(w: PackedFloat32Array) -> void:
 			var dc := -tief + (tief + 1.6) * (id + 0.5) / nd
 			var y0 := minf(minf(a.y, bb.y), minf(cc.y, dd.y))
 			var y1 := maxf(maxf(a.y, bb.y), maxf(cc.y, dd.y))
-			var scheitel := boden + maxf(h - b, 1.2) + sqrt(maxf(b * b - qc * qc, 0.0))
-			if absf(qc) < b + 0.05 and dc < 1.3 and y1 > boden - 0.3 and y0 < scheitel + 0.25:
+			# das Loch etwas kleiner als der Gang (der ist breiter): keine Spalten am Rand
+			var bl := b - 0.15
+			var scheitel := boden + maxf(h - b, 1.2) + sqrt(maxf(bl * bl - qc * qc, 0.0)) - 0.1
+			if absf(qc) < bl and dc < 1.3 and y1 > boden - 0.3 and y0 < scheitel:
 				continue
-			_viereck("fels", a, bb, cc, dd, Vector3.UP)
+			_viereck("gelaende", a, bb, cc, dd, Vector3.UP)
 	# Tageslicht im Mund
 	var innen := fuss - o * 1.5
 	_licht(Vector3(innen.x, boden + h * 0.7, innen.y), LICHT_KALT, 1.4, 16.0, false)
@@ -1375,6 +1383,22 @@ func _gang(w: PackedFloat32Array, index: int) -> void:
 		mat_boden = "erde"
 		mat_bogen = "basalt"
 	var profil := _profil(breite, hoehe, art == 3)
+	# beginnt der Gang an der Schwelle eines Abgangs oder an einem Felsmund (Oberfläche)?
+	var an_abgang := false
+	var ia := 0
+	while ia + 6 < abgaenge.size():
+		for e: Vector3 in [a, b]:
+			if Vector2(abgaenge[ia], abgaenge[ia + 1]).distance_to(Vector2(e.x, e.z)) < 0.5:
+				an_abgang = true
+		ia += 7
+	var im := 0
+	while im + 7 < felsmuender.size():
+		var gm := deg_to_rad(felsmuender[im + 2])
+		var mund := Vector2(felsmuender[im], felsmuender[im + 1]) + Vector2(sin(gm), cos(gm))
+		for e: Vector3 in [a, b]:
+			if mund.distance_to(Vector2(e.x, e.z)) < 1.5:
+				an_abgang = true
+		im += 8
 	for ab: Array in abschnitte:
 		var s0: float = ab[0]
 		var s1: float = ab[1]
@@ -1408,9 +1432,10 @@ func _gang(w: PackedFloat32Array, index: int) -> void:
 					innen = Vector3.DOWN
 				var mat := mat_bogen if mitte_q.y > wh + 0.01 else mat_wand
 				_viereck(mat, pa, pb, pc, pd, innen)
-		# Deckel (Schatten)
+		# Deckel (Schatten); nicht über der Treppe eines Abgangs, die beginnt an der Oberfläche
 		var dy := maxf(y0, y1)
-		_klotz("fels", ca, u, n, s0, s1, -breite / 2.0 - 0.4, breite / 2.0 + 0.4, dy + hoehe + 0.6, dy + hoehe + 1.0, true)
+		if not an_abgang:
+			_klotz("fels", ca, u, n, s0, s1, -breite / 2.0 - 0.4, breite / 2.0 + 0.4, dy + hoehe + 0.6, dy + hoehe + 1.0, true)
 	# Deckenbalken aus Stein im Gang mit flacher Decke
 	if art == 3:
 		var s := 0.6
@@ -1456,8 +1481,9 @@ func _gang(w: PackedFloat32Array, index: int) -> void:
 			_fackel(ca + u * s + n * seite * breite / 2.0, -n * seite, y + 1.9, false)
 			s += 9.0
 			seite = -seite
-	_sonde(Vector3((a.x + b.x) / 2.0, (a.y + b.y) / 2.0 + hoehe / 2.0, (a.z + b.z) / 2.0), u,
-		Vector3(breite + 0.6, absf(b.y - a.y) + hoehe + 1.0, lang + 0.4), false)
+	if not an_abgang:
+		_sonde(Vector3((a.x + b.x) / 2.0, (a.y + b.y) / 2.0 + hoehe / 2.0, (a.z + b.z) / 2.0), u,
+			Vector3(breite + 0.6, absf(b.y - a.y) + hoehe + 1.0, lang + 0.4), false)
 
 
 ## Boden eines Gangs bei s (über die Abschnitte)

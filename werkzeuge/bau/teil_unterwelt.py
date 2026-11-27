@@ -3,7 +3,7 @@
 #
 #   Palashof:  Gruftabgang neben der Drachenkapelle → Vorraum → Krypta der Großmeister (Sarkophage, Grabnischen, Altar)
 #              Krypta → Rundkammer → Beinhaus; Rundkammer → Stufengang hinab → Rundkammer unter der Oberburg
-#   Oberburg:  Zisternenabgang im Hof → Zisterne (Säulenhalle mit Becken, unter dem Ziehbrunnen, Schacht hinauf)
+#   Oberburg:  Zisterne (Säulenhalle mit Becken, unter dem Ziehbrunnen, Schacht hinauf)
 #              Zisterne → Wendeltreppe (20 m) → Rundkammer → Riegeltür → Untergrundhafen (Abkürzung, von oben zu öffnen)
 #   Tiefer:    hinter dem Sarkophag des Wulfric Dane eine Geheimtür → alter Stufengang → Ruinen von Burg Sorrow
 #              (Halle mit eingestürzten Jochen, alte Kapelle mit dem Wappen der Ordnung von Sorrow, verbranntes Archiv
@@ -112,13 +112,13 @@ uw_raum(KAP_C, KAP_G, KR_L, KR_B, H_KRYPTA, 2.4, 2.0, 0, 4.0, 1 | 2)
 
 # Gruftabgang: Häuschen an der Westseite der Kapelle, Tür zum Portal hin; die Treppe läuft an der Kapelle entlang hinab
 # in einen Vorraum, von dort durch die Längswand in die Krypta
-_ga_tuer = KP(9.5, 10.6)
+_ga_tuer = KP(9.5, 9.0)
 _ga_boden = H(*_ga_tuer)
 uw_abgang(_ga_tuer, KAP_G + 180.0, _ga_boden, 1.6, 6.2)
-uw_gang(_ga_tuer, _ga_boden, KP(-3.6, 10.6), H_KRYPTA)
-VR = uw_raum(KP(-5.3, 10.6), KAP_G, 3.4, 3.4, H_KRYPTA, 2.2, 1.4, 0, 3.4, 2)
-uw_gang(KP(-5.3, 10.6 - 1.7), H_KRYPTA, KP(-5.3, KR_B / 2.0), H_KRYPTA)
-schild("SchildGruft", "UnterweltDinge", *(lambda p: (p[0], _ga_boden + 4.3, p[1]))(KP(9.5 + 0.7, 10.6)), "Gruft der Großmeister", 32)
+uw_gang(_ga_tuer, _ga_boden, KP(-3.6, 9.0), H_KRYPTA)
+VR = uw_raum(KP(-5.3, 9.0), KAP_G, 3.4, 3.4, H_KRYPTA, 2.2, 1.4, 0, 3.4, 2)
+uw_gang(KP(-5.3, 9.0 - 1.7), H_KRYPTA, KP(-5.3, KR_B / 2.0), H_KRYPTA)
+schild("SchildGruft", "UnterweltDinge", *(lambda p: (p[0], _ga_boden + 4.3, p[1]))(KP(9.5 + 0.7, 9.0)), "Gruft der Großmeister", 32)
 
 # Sarkophage (Art 58, Kopf zum Portal) mit Inschriften; der des Wulfric Dane steht vor der Geheimtür
 _sarkophage = [((4.0, 3.45), "grab_wulfric_dane", "Sarkophag des Wulfric Dane"),
@@ -204,13 +204,7 @@ if "Oberburg" in BURG_BRUNNEN:
         _unten = min(_gewoelbe_y(_lu + 0.75 * math.cos(w_), _ln + 0.75 * math.sin(w_)) for w_ in [k_ * math.pi / 8 for k_ in range(16)])
         UW_SCH.extend([round(_bw[0], 3), round(_bw[1], 3), 0.7, round(_unten - 0.05, 3), round(H(*_bw) - 0.3, 3)])
 
-# Zisternenabgang im Hof der Oberburg: Treppe nach Süden hinab in die Stirnwand (neben dem Gang von der Krypta)
-_za_boden = H(0.0, -27.55)
-_za_lauf = (_za_boden - H_ZISTERNE) / 0.68 + 2.2
-_za_tuer = (0.0, round(ZI_C[1] - ZI_L / 2.0 - _za_lauf, 3))
-uw_abgang(_za_tuer, 0.0, _za_boden, 1.6, 6.2)
-uw_gang(_za_tuer, _za_boden, (0.0, round(ZI_C[1] - ZI_L / 2.0, 3)), H_ZISTERNE)
-schild("SchildZisterne", "UnterweltDinge", 0.0, _za_boden + 4.3, round(_za_tuer[1] - 0.7, 3), "Zisterne", 32)
+# (Der Zisternenabgang im Hof der Oberburg ist entfallen: die Zisterne erreicht man über die Krypta und vom Hafen.)
 
 # Wendeltreppe hinab zum Untergrundhafen: unten von Norden aus der Rundkammer vor dem Hafenstollen, oben nach Westen
 WT_C, WT_R = (19.5, 0.5), 2.3
@@ -323,7 +317,7 @@ _mund_innen = (round(MUND_FUSS[0] + _mo[0], 3), round(MUND_FUSS[1] + _mo[1], 3))
 G1_C = (round(MUND_FUSS[0] - _mo[0] * 15.75, 3), round(MUND_FUSS[1] - _mo[1] * 15.75, 3))
 G1 = uw_raum(G1_C, MUND_GIER, 16.0, 12.0, H_MUND, 3.2, 3.5, 4, 0.0, 2)
 uw_gang(_mund_innen, H_MUND, hoehle_rand(G1_C, MUND_GIER, 16.0, 12.0, _mund_innen), H_MUND,
-        breite=round(MUND_BREITE - 0.1, 2), hoehe=MUND_HOEHE, art=1, fackeln=0)
+        breite=round(MUND_BREITE + 0.4, 2), hoehe=MUND_HOEHE, art=1, fackeln=0)
 H_LAGER = -17.0
 G2_C = (round(G1_C[0] - _mo[0] * 23.0, 3), round(G1_C[1] - _mo[1] * 23.0, 3))
 G2 = uw_raum(G2_C, MUND_GIER, 14.0, 11.0, H_LAGER, 3.0, 3.0, 4, 0.0, 2)
@@ -380,21 +374,6 @@ for (su_, sn_), art_, g_ in [((-2.0, -2.3), 1, 0.0), ((-1.2, -2.5), 1, 10.0), ((
     uw_stueck(art_, G3(su_, sn_), H_LAGER, g_)
 uw_durchsuchbar("SchmugglerMusketen", G3(-1.6, -2.0), H_LAGER + 0.9, "Lange Kisten mit Teerzeichen", "schmuggler_musketen", "Öffnen")
 
-# Ausgang der Schmuggler: ein Steinhäuschen in einer Felsnische am äußeren Weg (der Fels des Burgbezirks weicht um den
-# Geländeschnitt zurück), Tür zum Weg, von innen verriegelt; Treppe hinab in eine Rundkammer, von dort ein langer
-# Stollen hinab ins Lager
-_sa_tuer = (80.0, -70.0)
-_sa_boden = H(*_sa_tuer)
-H_SA = -6.0
-uw_abgang(_sa_tuer, 270.0, _sa_boden, 1.6, 6.2, "riegel:riegel_schmugglerausgang")
-_sa_lauf = (_sa_boden - H_SA) / 0.68 + 2.2
-R8 = (round(_sa_tuer[0] - _sa_lauf - 2.25, 3), _sa_tuer[1])
-uw_gang(_sa_tuer, _sa_boden, rund_punkt(R8, 2.5, 90.0), H_SA, fackeln=0)
-uw_raum(R8, 0.0, 5.0, 5.0, H_SA, 2.6, 1.4, 6, 0.0, 2)
-uw_gang(rund_punkt(R8, 2.5, gier_von(R8, G2_C)), H_SA, hoehle_rand(G2_C, MUND_GIER, 14.0, 11.0, R8), H_LAGER,
-        breite=1.5, hoehe=2.4, art=1, fackeln=1)
-uw_stueck(1, (round(R8[0] - 1.2, 3), round(R8[1] - 1.3, 3)), H_SA, 20.0)
-uw_stueck(2, (round(R8[0] - 1.5, 3), round(R8[1] + 0.9, 3)), H_SA, 70.0)
 
 # ---------- Stadtkeller (27.11.2026) ----------
 # Der Keller eines Händlers am Vorburgplatz in der oberen Stadt: gewölbt, ganz unter dem Haus, Zugang über ein

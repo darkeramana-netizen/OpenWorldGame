@@ -136,7 +136,7 @@ func _initialize() -> void:
 			gelaende_im_weg += 1
 			print("  Abgang %d: %s" % [i / 7, "nichts" if r.is_empty() else "%s bei %.2f" % [(r["collider"] as Node).get_path(), (r["position"] as Vector3).y]])
 		i += 7
-	pruefe(gelaende_im_weg == 0 and ab.size() >= 14, "Die Treppen in den Abgängen sind frei (das Gelände ist ausgeschnitten)")
+	pruefe(gelaende_im_weg == 0 and ab.size() >= 14 / 7 * 7, "Die Treppen in den Abgängen sind frei (das Gelände ist ausgeschnitten)")
 	var gel := szene.get_node("Gelaende")
 	var neben := Vector3(ab[0], ab[3], ab[1]) + Vector3(sin(deg_to_rad(ab[2])), 0, cos(deg_to_rad(ab[2]))) * -3.0
 	var r_neben := raum.intersect_ray(PhysicsRayQueryParameters3D.create(neben + Vector3.UP * 3.0, neben + Vector3.DOWN * 3.0))
@@ -165,7 +165,6 @@ func _initialize() -> void:
 			else:
 				print("  Klippe offen: von %s nach %s" % [aussen_p.snapped(Vector3.ONE * 0.1), ziel.snapped(Vector3.ONE * 0.1)])
 		pruefe(dicht == 3, "Neben und über der Öffnung ist die Klippe geschlossen (%d von 3)" % dicht)
-	pruefe((uw.abgang_regeln as PackedStringArray).has("riegel:riegel_schmugglerausgang"), "Ausgang der Schmuggler am äußeren Weg (von innen verriegelt)")
 	var ab2 := uw.abgaenge as PackedFloat32Array
 	for k in range(0, ab2.size() - 6, 7):
 		var gk := deg_to_rad(ab2[k + 2])

@@ -611,7 +611,80 @@ def nur_untergrund():
     schreibe("stein_schleifen", stein_schleifen())
 
 
+def schritt_neu(art):
+    """Ein Schritt mit Ledersohle: Ferse (dumpfer Stoß), kurz danach der Ballen (leiser), dazu je nach Untergrund
+    Knirschen (Erde), Rascheln (Gras), Klang im Holz (Dielen) oder ein feines Kratzen (Stein). Weich ein- und
+    ausgeblendet, keine harten Klicks."""
+    n = int(0.42 * RATE)
+    x = np.zeros(n)
+    def stoss(beginn, staerke, tief_hz, dauer):
+        i = int(beginn * RATE)
+        m = int(dauer * RATE)
+        t = np.arange(m) / RATE
+        roh = tief(rauschen(m), tief_hz) * np.exp(-t / (dauer / 4.0))
+        roh[:int(0.002 * RATE)] *= np.linspace(0, 1, int(0.002 * RATE))
+        x[i:i + m] += roh[:max(0, min(m, n - i))] * staerke
+    ferse = ZUFALL.uniform(0.012, 0.02)
+    ballen = ferse + ZUFALL.uniform(0.07, 0.11)
+    if art == "stein":
+        stoss(ferse, 1.0, ZUFALL.uniform(700, 1000), 0.06)
+        stoss(ballen, 0.55, ZUFALL.uniform(900, 1300), 0.05)
+        i = int(ballen * RATE)
+        m = int(0.07 * RATE)
+        x[i:i + m] += band(rauschen(m), 2500, 6500) * np.exp(-np.arange(m) / (0.015 * RATE)) * 0.08
+    elif art == "erde":
+        stoss(ferse, 1.0, ZUFALL.uniform(350, 500), 0.08)
+        stoss(ballen, 0.6, ZUFALL.uniform(400, 600), 0.07)
+        for _ in range(ZUFALL.integers(6, 14)):
+            i = int(ZUFALL.uniform(ferse, ballen + 0.08) * RATE)
+            m = int(ZUFALL.uniform(0.003, 0.008) * RATE)
+            x[i:i + m] += band(rauschen(m), 1200, 4000) * ZUFALL.uniform(0.04, 0.12)
+    elif art == "gras":
+        stoss(ferse, 0.6, ZUFALL.uniform(300, 420), 0.07)
+        stoss(ballen, 0.35, 400, 0.06)
+        i = int(ferse * RATE)
+        m = int(0.22 * RATE)
+        huell = np.sin(np.linspace(0, np.pi, m)) ** 2
+        x[i:i + m] += band(rauschen(m), 2500, 8000) * huell * 0.09
+    else:   # holz
+        stoss(ferse, 0.9, 1400, 0.05)
+        stoss(ballen, 0.5, 1600, 0.04)
+        i = int(ferse * RATE)
+        m = int(0.18 * RATE)
+        t = np.arange(m) / RATE
+        f = ZUFALL.uniform(170, 230)
+        x[i:i + m] += np.sin(2 * np.pi * f * t) * np.exp(-t / 0.045) * 0.35 + np.sin(2 * np.pi * f * 2.7 * t) * np.exp(-t / 0.025) * 0.12
+    x *= huelle(n, 0.001, 0.38)
+    return normiere(x, ZUFALL.uniform(0.55, 0.7))
+
+
+def hund_neu():
+    """Bellen eines mittelgroßen Hofhunds: ein bis zwei kurze, kräftige „Wuff“ (Stimme mit fallender Tonhöhe, Formanten
+    eines offenen Mauls, etwas Hauch), weich auslaufend."""
+    teile = []
+    for k in range(ZUFALL.integers(1, 3)):
+        d = ZUFALL.uniform(0.14, 0.2)
+        f0 = ZUFALL.uniform(330, 420)
+        teile.append(ruf(d, [(0.0, f0 * 0.9), (0.2, f0 * 1.08), (1.0, f0 * 0.68)],
+                         [(550, 1150, 2400), (700, 1300, 2600), (500, 1000, 2300)], rau=0.12, an=0.008, ab=0.06, offen=0.7))
+        teile.append(stille(ZUFALL.uniform(0.12, 0.2)))
+    x = np.concatenate(teile)
+    x = tief(hoch(x, 120), 4000)
+    return normiere(x * huelle(len(x), 0.004, len(x) / RATE - 0.02), 0.6)
+
+
+def nur_schritte_hund():
+    for art in ("stein", "erde", "gras", "holz"):
+        for k in range(10):
+            schreibe(f"schritt_{art}_{k + 1}", schritt_neu(art))
+    for k in range(4):
+        schreibe(f"hund_{k + 1}", hund_neu())
+
+
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "--schritte-hund":
+        nur_schritte_hund()
+        return
     if len(sys.argv) > 1 and sys.argv[1] == "--untergrund":
         nur_untergrund()
         return

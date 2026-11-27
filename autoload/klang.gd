@@ -169,8 +169,8 @@ func spiele(name_: String, ort: Vector3, laut := 0.0, reichweite := 25.0, tonhoe
 
 
 ## Ein Schritt am Ort (Fuß), Untergrund "stein", "erde", "gras" oder "holz"
-func schritt(ort: Vector3, untergrund_: String, laut := 0.0) -> void:
-	spiele("schritt_" + untergrund_, ort, laut + 3.0, 22.0)
+func schritt(ort: Vector3, untergrund_: String, laut := 0.0, reichweite := 22.0) -> void:
+	spiele("schritt_" + untergrund_, ort, laut + 3.0, reichweite)
 
 
 ## Untergrund unter einem Punkt: Bauten und Pflaster Stein, Holzböden und Ausstattung Holz, im Gelände nach der Maske

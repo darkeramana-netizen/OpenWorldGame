@@ -1263,17 +1263,23 @@ func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
 	var oben := _kopf_oben(skelett)
 	match _kopfbedeckung(w):
 		"kopftuch":
+			# eine Halbkugel, die Scheitel und Hinterkopf umschließt (vorher eine Kugel um den Scheitel: Sie schwebte halb
+			# über dem Kopf, Rückmeldung 27.11.2026), dazu der Zipfel im Nacken
 			var tuch := SphereMesh.new()
-			tuch.radius = 0.125
-			tuch.height = 0.2
-			_anhaengen(skelett, "Head", tuch, "kopftuch", Vector3(0, oben, -0.015))
-			_anhaengen(skelett, "Head", kasten.call(Vector3(0.18, 0.22, 0.02)), "kopftuch", Vector3(0, oben - 0.12, -0.1))
+			tuch.radius = 0.104
+			tuch.height = 0.104
+			tuch.is_hemisphere = true
+			tuch.radial_segments = 24
+			tuch.rings = 8
+			_anhaengen(skelett, "Head", tuch, "kopftuch", Vector3(0, oben - 0.1, -0.02),
+				Basis(Vector3.RIGHT, deg_to_rad(-30)).scaled(Vector3(0.98, 1.2, 1.12)))
+			_anhaengen(skelett, "Head", kasten.call(Vector3(0.16, 0.2, 0.02)), "kopftuch", Vector3(0, oben - 0.17, -0.1))
 		"muetze":
 			var m := CylinderMesh.new()
 			m.top_radius = 0.12
 			m.bottom_radius = 0.105
 			m.height = 0.16
-			_anhaengen(skelett, "Head", m, "leinen", Vector3(0, oben + 0.04, -0.01))
+			_anhaengen(skelett, "Head", m, "leinen", Vector3(0, oben + 0.0, -0.01))
 		"eisenhut":
 			# etwas länger als breit (wie ein Kopf) und nach hinten gesetzt, sonst sticht der Hinterkopf durch
 			_anhaengen(skelett, "Head", _eisenhut(), "eisen", Vector3(0, oben - 0.072, -0.028),
@@ -1300,9 +1306,13 @@ func _zubehoer(skelett: Skeleton3D, w: bool) -> void:
 			_anhaengen(skelett, "Head", kegel, "stroh", Vector3(0, oben + 0.05, -0.01))
 		"haube":
 			var haube := SphereMesh.new()
-			haube.radius = 0.13
-			haube.height = 0.19
-			_anhaengen(skelett, "Head", haube, "leinen", Vector3(0, oben - 0.01, -0.02))
+			haube.radius = 0.106
+			haube.height = 0.106
+			haube.is_hemisphere = true
+			haube.radial_segments = 24
+			haube.rings = 8
+			_anhaengen(skelett, "Head", haube, "leinen", Vector3(0, oben - 0.1, -0.02),
+				Basis(Vector3.RIGHT, deg_to_rad(-25)).scaled(Vector3(1.0, 1.15, 1.12)))
 
 
 ## Oberkante des Kopfes im Raum des Skeletts: bei realistischen Menschen der Scheitel des Körpers (ohne Haare), sonst
@@ -1398,6 +1408,12 @@ func schaue_auf(punkt: Vector3, staerke: float, delta: float) -> void:
 
 ## Breitkrempiger Filzhut am Kopfknochen
 func _hut(skelett: Skeleton3D) -> void:
+	# realistische Menschen: auf den Scheitel des Körpers (wie die anderen Kopfbedeckungen)
+	if skelett.get_node_or_null("Koerper") != null:
+		var oben := _kopf_oben(skelett)
+		_anhaengen(skelett, "Head", _zylinder(0.2, 0.2, 0.02), "hut", Vector3(0, oben - 0.045, -0.01))
+		_anhaengen(skelett, "Head", _zylinder(0.1, 0.115, 0.11), "hut", Vector3(0, oben + 0.005, -0.01))
+		return
 	var halter := BoneAttachment3D.new()
 	halter.bone_name = "Head"
 	skelett.add_child(halter)
@@ -1578,8 +1594,14 @@ func _schritt_hoeren(fuss: int) -> void:
 	var ort := global_position
 	if _fuss_skelett != null:
 		ort = _fuss_skelett.global_transform * _fuss_skelett.get_bone_global_pose(_fuss_knochen[fuss]).origin
-	var untergrund: String = schritt_untergrund.call() if schritt_untergrund.is_valid() else klang.untergrund_gelaende(ort)
-	klang.schritt(ort, untergrund, schritt_laut)
+	var spieler := schritt_untergrund.is_valid()
+	# Leute nur in der Nähe hören (sonst klappert es bei zweihundert Figuren überall), leiser als der Spieler
+	if not spieler:
+		var kamera := get_viewport().get_camera_3d() if get_viewport() != null else null
+		if kamera == null or kamera.global_position.distance_squared_to(ort) > 196.0:
+			return
+	var untergrund: String = schritt_untergrund.call() if spieler else klang.untergrund_gelaende(ort)
+	klang.schritt(ort, untergrund, schritt_laut, 22.0 if spieler else 14.0)
 
 
 func _bewege_modell(delta: float, tempo: float) -> void:
