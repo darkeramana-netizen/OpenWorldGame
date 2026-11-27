@@ -113,7 +113,7 @@ func _wachse(fuss: Vector3, normale: Vector3, entlang: Vector3, hoehe_max: float
 	var ranken := SurfaceTool.new()
 	ranken.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var offen: Array = []          # [u, v, Richtung u, Dicke, Länge übrig]
-	var triebe := _zufall.randi_range(4, 9)
+	var triebe := _zufall.randi_range(9, 16)
 	for i in triebe:
 		offen.append([_zufall.randf_range(-breite * 0.5, breite * 0.5), 0.0, _zufall.randf_range(-0.3, 0.3), 0.02, hoehe_max * _zufall.randf_range(0.5, 1.0)])
 	var schritte := 0
@@ -134,21 +134,21 @@ func _wachse(fuss: Vector3, normale: Vector3, entlang: Vector3, hoehe_max: float
 			var e := fuss + entlang * u2 + Vector3.UP * v2 + normale * 0.025
 			_ranke(ranken, a, e, normale, dick)
 			# Blätter: unten dicht, oben lichter
-			var dichte_hier := lerpf(2.4, 0.9, v / maxf(hoehe_max, 0.1))
+			var dichte_hier := lerpf(5.0, 2.2, v / maxf(hoehe_max, 0.1))
 			var anzahl := int(dichte_hier) + (1 if _zufall.randf() < fmod(dichte_hier, 1.0) else 0)
 			for k in anzahl:
-				var g := _zufall.randf_range(0.07, 0.15) * lerpf(1.25, 0.85, v / maxf(hoehe_max, 0.1))
-				var ort := e + entlang * _zufall.randf_range(-0.09, 0.09) + Vector3.UP * _zufall.randf_range(-0.05, 0.05) \
-					+ normale * _zufall.randf_range(0.03, 0.09)
+				var g := _zufall.randf_range(0.1, 0.19) * lerpf(1.25, 0.85, v / maxf(hoehe_max, 0.1))
+				var ort := e + entlang * _zufall.randf_range(-0.16, 0.16) + Vector3.UP * _zufall.randf_range(-0.07, 0.07) \
+					+ normale * _zufall.randf_range(0.03, 0.12)
 				# Blatt steht von der Wand ab, die Spitze zeigt schräg nach unten-außen bis seitlich
 				var dreh := _zufall.randf_range(-1.2, 1.2)
 				var unten := Basis(normale, dreh) * Vector3.DOWN
-				var y_achse := (-unten * 0.6 + normale * 0.55).normalized()     # Blattlänge
+				var y_achse := (-unten * 0.85 + normale * 0.3).normalized()     # Blattlänge, fast flach an der Wand
 				var x_achse := y_achse.cross(normale).normalized()
 				var z_achse := x_achse.cross(y_achse).normalized()
 				var basis := Basis(x_achse * g, y_achse * g, z_achse * g)
 				lagen.append(Transform3D(basis, ort - global_position))
-				var ton := _zufall.randf_range(0.75, 1.2)
+				var ton := _zufall.randf_range(0.85, 1.3)
 				farben.append(Color(ton * _zufall.randf_range(0.9, 1.05), ton, ton * _zufall.randf_range(0.85, 1.0)))
 				felder.append(float(_zufall.randi() % 4) / 4.0)
 			# verzweigen

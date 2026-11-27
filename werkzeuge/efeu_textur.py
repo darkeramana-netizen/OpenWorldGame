@@ -75,7 +75,7 @@ def zeichne_blatt(lappen, breite, ton):
 
 def main():
     atlas = Image.new("RGBA", (GROESSE, GROESSE), (0, 0, 0, 0))
-    formen = [(5, 1.0, (0.07, 0.17, 0.05)), (3, 0.9, (0.09, 0.2, 0.06)), (5, 1.1, (0.06, 0.14, 0.05)), (3, 1.0, (0.11, 0.21, 0.07))]
+    formen = [(5, 1.0, (0.2, 0.36, 0.12)), (3, 0.9, (0.24, 0.4, 0.14)), (5, 1.1, (0.17, 0.31, 0.11)), (3, 1.0, (0.27, 0.42, 0.15))]
     for i, (lappen, breite, ton) in enumerate(formen):
         atlas.paste(zeichne_blatt(lappen, breite, ton), ((i % 2) * FELD, (i // 2) * FELD))
     # Farbe unter dem Alpha nach außen fortsetzen (sonst dunkle Säume in den Mipmaps)
