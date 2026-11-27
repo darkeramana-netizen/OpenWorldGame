@@ -893,23 +893,7 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 		_dreieck(stein, p.call(l, d, unten), p.call(l, d + vor, unten), p.call(l, d, unten + hoch), Vector3(u.x, 0, u.y))
 		# Sockelband am oberen Ende des Anlaufs
 		_klotz("hell", m, u, n, -l, l, d - 0.02, d + 0.1, unten + hoch - 0.12, unten + hoch + 0.12, true)
-	# Gerüstlöcher (Rüstlöcher) in Reihen auf beiden Seiten, versetzt und lückenhaft wie beim echten Bau
-	var y_r := unten + (clampf(h * 0.3, 2.0, 6.0) if h > 4.0 else 0.5) + 0.9
-	var reihe := 0
-	var N3 := Vector3(n.x, 0, n.y)
-	while y_r < oben - 1.3:
-		var s_ := -laenge / 2.0 + 1.0 + fmod(reihe * 1.3, 2.6)
-		while s_ < laenge / 2.0 - 0.6:
-			for seite: float in [1.0, -1.0]:
-				if _h01(m + u * s_ + Vector2(y_r, seite * 7.0)) < 0.55:
-					var q := m + u * s_ + n * (d + 0.012) * seite
-					var U3 := Vector3(u.x, 0, u.y) * 0.1
-					var mp := Vector3(q.x, y_r, q.y)
-					_viereck("dunkel", mp - U3 - Vector3(0, 0.1, 0), mp + U3 - Vector3(0, 0.1, 0), mp + U3 + Vector3(0, 0.1, 0),
-						mp - U3 + Vector3(0, 0.1, 0), N3 * seite)
-			s_ += 2.6
-		y_r += 1.35
-		reihe += 1
+	# (Rüstlöcher als schwarze Flächen entfallen: Sie wirkten wie schwarze Quadrate, Rückmeldung 26.11.2026)
 	# Wasserspeier auf der Hofseite: der Wehrgang entwässert durch steinerne Rinnen
 	var ws := -laenge / 2.0 + 4.5
 	while ws < laenge / 2.0 - 1.0:
