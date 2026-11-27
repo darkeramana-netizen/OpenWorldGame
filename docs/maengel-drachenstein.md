@@ -138,6 +138,14 @@ gemeinsamer Runde, spielende Kinder (Vorburg, Mittelburg, Palashof), je ein Hund
 mittags Ordensleute zur Andacht vor dem Portal der Drachenkapelle. Abends gehen alle heim. Sie halten 3 m vor den
 Haustüren, damit die Türen nicht ständig aufgehen.
 
+## Details in den Höfen (27.11.2026)
+
+45 Stücke mehr (`teil_hofdetails.py`, neue Ausstattung 67–76): vor den Hofhäusern Regentonnen an den Ecken, Kräuterkübel,
+Bänke und an die Wand gelehntes Werkzeug neben den Türen, über manchen Türen Hängeschilder (Schenke, Schuster, Bäcker);
+an den Hofmauern Ecken mit Hausrat (Werkzeug, Regentonne, Eimer), ein Bienenstand, Steinlager; ein Pranger in der Vorburg,
+Hundehütten, Pflastersteine bei den Steinmetzen. Der Platz vor dem Kapellenportal bleibt frei (Mittagsandacht). Die
+Leute des Hoflebens halten 8 m Abstand zu den Toren (die Wachen öffnen sonst jedem, der vorbeigeht).
+
 ## Untergrund (27.11.2026)
 
 Erste Ausbaustufe des Untergrunds (`szenen/welt/unterwelt.gd`, Lage in `werkzeuge/bau/teil_unterwelt.py`):
