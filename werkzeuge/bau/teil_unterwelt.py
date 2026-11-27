@@ -271,7 +271,7 @@ uw_stueck(62, RH(-2.4, -12.6), H_SORROW, 40.0)
 # Fels führt von der Kapelle neben dem Altar hinauf an seine Stirnwand.
 H_WEINKELLER = 6.0
 WK = uw_raum(AK(28.5, 1.0), RH_G, 20.0, 7.0, H_WEINKELLER, 2.0, 2.2, 1, 4.0, 2 | 4)
-uw_gang(AK(6.0, 2.5), H_SORROW, AK(18.5, 2.5), H_WEINKELLER, breite=1.3, hoehe=2.3, art=1, fackeln=0)
+uw_gang(AK(6.0, 2.5), H_SORROW, AK(18.5, 2.5), H_WEINKELLER, breite=1.5, hoehe=2.4, art=1, fackeln=0)
 # Lagerfässer vor den Nischen (je Feld eins, quer zur Wand), kleine Fässer, Kisten, ein Tisch mit dem Kellerbuch
 for i_ in range(5):
     su_ = -10.0 + (i_ + 0.5) * 4.0

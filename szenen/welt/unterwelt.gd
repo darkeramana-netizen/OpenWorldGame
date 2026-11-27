@@ -1293,7 +1293,8 @@ func _gangpunkt(ca: Vector2, u: Vector2, n: Vector2, s: float, y: float, q: Vect
 	var z2 := _h01(Vector2(p.z * 0.43 + 3.1, p.x * 0.37 - p.y)) - 0.5
 	var staerke := (0.22 if art == 1 else 0.07) * rand_
 	var aussen := Vector3(n.x * signf(q.x), 0, n.y * signf(q.x)) * absf(q.x) + Vector3.UP * maxf(q.y - 1.0, 0.0)
-	return p + aussen.normalized() * (z + z2 * 0.6) * staerke * 2.0
+	# nur nach außen ausbuchten: der Gang bleibt so breit wie angegeben
+	return p + aussen.normalized() * maxf(z + z2 * 0.6 + 0.35, 0.0) * staerke * 1.6
 
 
 ## Treppe in einem Gang von s0 bis s1 (Boden y0 nach y1); gebaut immer von unten nach oben
