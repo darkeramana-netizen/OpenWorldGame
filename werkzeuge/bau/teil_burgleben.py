@@ -455,11 +455,23 @@ HL_BESETZT = []
 HL_SPERREN = _HINDERNISSE + _tueren_w
 
 
+# Alle Tore der Burgbauten (je 8 Werte, Mitte x, z vorn), aus den schon geschriebenen Knoten
+HL_TORE = []
+for _t in knoten:
+    for _m in re.finditer(r"\ntore = PackedFloat32Array\(([^)]*)\)", _t):
+        _v = [float(x) for x in _m.group(1).split(",") if x.strip()]
+        HL_TORE += [(_v[i], _v[i + 1]) for i in range(0, len(_v) - 7, 8)]
+
+
+def hl_am_tor(q, weite=8.0):
+    return any(math.dist(q, t_) < weite for t_ in HL_TORE)
+
+
 def hl_strecke_frei(a, b):
     n = max(1, int(math.dist(a, b) / 0.4))
     for i in range(n + 1):
         q = (a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n)
-        if any(_drin(q, r_) for r_ in HL_SPERREN):
+        if any(_drin(q, r_) for r_ in HL_SPERREN) or hl_am_tor(q):
             return False
     return True
 
@@ -474,7 +486,7 @@ def hof_tueren(hof_w):
         a_ = math.radians(g_)
         vor_ = (_FORMEN[f_][1] + 0.7) / 2 + 3.0
         t_ = (x_ + math.sin(a_) * vor_, z_ + math.cos(a_) * vor_)
-        if not any(_drin(t_, r_) for r_ in HL_SPERREN):
+        if not any(_drin(t_, r_) for r_ in HL_SPERREN) and not hl_am_tor(t_):
             aus_.append(t_)
     return aus_
 
@@ -495,6 +507,8 @@ def freie_stelle(hof_w, rand=3.0, abstand=1.3, nahe=None, weite=None, versuche=4
                for dx_, dz_ in ((0, 0), (abstand, 0), (-abstand, 0), (0, abstand), (0, -abstand))):
             continue
         if any(math.dist(q, m_) < 2.4 for m_ in HL_BESETZT):
+            continue
+        if hl_am_tor(q):
             continue
         if any(math.dist(q, b_) < 2.6 for b_ in BURG_BRUNNEN.values()):
             continue
