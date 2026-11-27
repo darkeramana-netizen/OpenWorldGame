@@ -167,7 +167,9 @@ func _bild(r: Node) -> PackedStringArray:
 			continue
 		for k: Node in n.find_children("*", "", true, false):
 			var z := "%s %s" % [_ohne_auto(str(r.get_path_to(k))), k.get_class()]
-			if k is Node3D:
+			# Türflügel drehen sich, wenn jemand vorbeigeht (fluegel.gd): ihre Drehpunkte nicht vergleichen
+			var im_fluegel := k.get_parent() is Fluegel or (k.get_parent() != null and k.get_parent().get_parent() is Fluegel)
+			if k is Node3D and not im_fluegel:
 				z += " %s" % (k as Node3D).transform
 			if k is GeometryInstance3D:
 				var gi := k as GeometryInstance3D

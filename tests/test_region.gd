@@ -86,6 +86,14 @@ func wechsle(aktion: Callable) -> void:
 	await scene_changed
 	for i in 5: await process_frame
 
+## Steht oder geht gerade jemand an dieser Tür (dann darf sie offen sein: sie geht für die Leute der Burg auf)?
+func _jemand_an(t: Node3D) -> bool:
+	for p: Node3D in current_scene.get_tree().get_nodes_in_group("personen"):
+		if p.visible and Vector2(p.global_position.x - t.global_position.x, p.global_position.z - t.global_position.z).length() < 4.0:
+			return true
+	return false
+
+
 func _initialize() -> void:
 	await process_frame
 	D = root.get_node("Dialog"); S = root.get_node("Spielstand"); SP = root.get_node("Speicher")
@@ -130,7 +138,7 @@ func _initialize() -> void:
 	var zu_tore := fluegel.filter(func(n): return n.regel == "zu")
 	var tueren := fluegel.filter(func(n): return n.regel == "tuer")
 	pruefe(tag_tore.size() >= 3 and zu_tore.size() >= 8 and tueren.size() >= 10 and tag_tore.all(func(n): return n.ist_offen())
-			and zu_tore.all(func(n): return not n.ist_offen()) and tueren.all(func(n): return not n.ist_offen()),
+			and zu_tore.all(func(n): return not n.ist_offen()) and tueren.all(func(n): return not n.ist_offen() or _jemand_an(n)),
 			"Torflügel und Türen: %d Tore tagsüber offen, %d Tore und %d Türen zu" % [tag_tore.size(), zu_tore.size(), tueren.size()])
 	var bei_osttor := func(a, b): return a if a.global_position.distance_to(Vector3(30.8, -8, 134)) < b.global_position.distance_to(Vector3(30.8, -8, 134)) else b
 	var osttor: Node3D = zu_tore.reduce(bei_osttor)
@@ -377,7 +385,7 @@ func _initialize() -> void:
 			print("       Streife von %s: %s" % [w_.name, wo])
 	# Ausstattung und Hafenkram stehen auf dem Boden: nicht darin, nicht darüber, nicht in einer Wand; sitzende Tauben
 	# sitzen auf einer Oberfläche
-	var nicht_boden := [5, 6, 7, 9, 19, 20, 21, 22, 23, 24, 25, 26, 31, 39]
+	var nicht_boden := [5, 6, 7, 9, 19, 20, 21, 22, 23, 24, 25, 26, 31, 39, 74, 75, 76]   # (74–76: Hängeschilder an der Wand)
 	var ohne_a: Array[RID] = []
 	var traeger: Array = []
 	for k in current_scene.find_children("*", "Node3D", true, false):
