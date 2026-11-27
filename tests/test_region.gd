@@ -137,6 +137,13 @@ func _initialize() -> void:
 	var tag_tore := fluegel.filter(func(n): return n.regel == "tag")
 	var zu_tore := fluegel.filter(func(n): return n.regel == "zu")
 	var tueren := fluegel.filter(func(n): return n.regel == "tuer")
+	for f_ in zu_tore + tueren:
+		if f_.ist_offen():
+			var nah_: Array = []
+			for p_: Node3D in current_scene.get_tree().get_nodes_in_group("personen"):
+				if p_.visible and p_.global_position.distance_to(f_.global_position) < 8.0:
+					nah_.append("%s %.1f m" % [p_.name, p_.global_position.distance_to(f_.global_position)])
+			print("       offen: %s (%s) bei %s, nah: %s" % [f_.get_path(), f_.regel, f_.global_position.snapped(Vector3.ONE * 0.1), nah_])
 	pruefe(tag_tore.size() >= 3 and zu_tore.size() >= 8 and tueren.size() >= 10 and tag_tore.all(func(n): return n.ist_offen())
 			and zu_tore.all(func(n): return not n.ist_offen()) and tueren.all(func(n): return not n.ist_offen() or _jemand_an(n)),
 			"Torflügel und Türen: %d Tore tagsüber offen, %d Tore und %d Türen zu" % [tag_tore.size(), zu_tore.size(), tueren.size()])
