@@ -144,6 +144,31 @@ func _initialize() -> void:
 	pruefe(not r_neben.is_empty() and absf((r_neben["position"] as Vector3).y - gel.hoehe_bei(neben.x, neben.z)) < 0.6,
 		"Vor dem Gruftabgang ist der Boden noch da")
 
+	# Höhlenmund an der Klippe: von innen frei aufs Meer, Boden im Gang, über der Öffnung und daneben Fels
+	var fm := uw.felsmuender as PackedFloat32Array
+	pruefe(fm.size() >= 8, "Ein Felsmund (Meereshöhle der Schmuggler)")
+	if fm.size() >= 8:
+		var mg := deg_to_rad(fm[2])
+		var mo := Vector3(sin(mg), 0, cos(mg))
+		var innen := Vector3(fm[0], fm[3] + 1.6, fm[1]) - mo * 4.0
+		var blick := raum.intersect_ray(PhysicsRayQueryParameters3D.create(innen, innen + mo * 12.0, 0xFFFFFFFF, tueren))
+		pruefe(blick.is_empty(), "Aus der Höhle frei hinaus aufs Meer %s" % ("" if blick.is_empty() else str((blick["collider"] as Node).get_path())))
+		var bo := raum.intersect_ray(PhysicsRayQueryParameters3D.create(innen, innen + Vector3.DOWN * 3.0, 0xFFFFFFFF, tueren))
+		pruefe(not bo.is_empty() and absf((bo["position"] as Vector3).y - fm[3]) < 0.4, "Boden im Gang hinter dem Mund")
+		var quer := Vector3(-mo.z, 0, mo.x)
+		var aussen_p := Vector3(fm[0], fm[3] + 2.0, fm[1]) + mo * 4.0
+		var dicht := 0
+		for ziel: Vector3 in [aussen_p - mo * 5.0 + quer * (fm[4] / 2.0 + 1.5), aussen_p - mo * 5.0 - quer * (fm[4] / 2.0 + 1.5),
+				aussen_p - mo * 6.75 + Vector3.UP * (fm[5] + 0.6)]:
+			if not raum.intersect_ray(PhysicsRayQueryParameters3D.create(aussen_p, ziel)).is_empty():
+				dicht += 1
+			else:
+				print("  Klippe offen: von %s nach %s" % [aussen_p.snapped(Vector3.ONE * 0.1), ziel.snapped(Vector3.ONE * 0.1)])
+		pruefe(dicht == 3, "Neben und über der Öffnung ist die Klippe geschlossen (%d von 3)" % dicht)
+	pruefe(dinge.get_node_or_null("Schmuggler1") != null and dinge.get_node_or_null("Schmuggler2") != null, "Zwei Schmuggler im Lager")
+	var wk := dinge.get_node_or_null("TuerWarenkammer") as Fluegel
+	pruefe(wk != null and wk.regel == "schloss" and wk.bedingung == "schluessel_schmuggler", "Warenkammer verschlossen (Schlüssel aus dem Lager)")
+
 	# unter Tage
 	var krypta := Vector3(w[0], w[5] + 1.5, w[1])
 	pruefe(uw.ist_unter_tage(krypta) and not uw.ist_unter_tage(Vector3(w[0], 20.0, w[1] + 30.0)), "Unter Tage wird erkannt (Krypta ja, Hof nein)")

@@ -22,7 +22,8 @@ extends Node3D
 ## 56 Misthaufen mit Forke, 57 Flechtzaun (2 m entlang x),
 ## Untergrund (szenen/welt/unterwelt.gd): 58 Sarkophag mit Liegefigur (Länge entlang z, Kopf bei +z), 59 Gebeinstapel
 ## im Beinhaus (2 m entlang x, Rücken bei z = -0,3 an der Wand), 60 Kerzen am Boden, 61 Altar (Vorderseite +z),
-## 62 Schutthaufen, 63 Gebeine am Boden (Skelett, ohne Kollision), 64 Weinfass auf dem Lager (liegend, entlang z)
+## 62 Schutthaufen, 63 Gebeine am Boden (Skelett, ohne Kollision), 64 Weinfass auf dem Lager (liegend, entlang z),
+## 65 Lagerfeuer im Steinkreis (knistert), 66 Schlaflager (Strohsack, Decke, Bündel; ohne Kollision)
 @export var stuecke := PackedFloat32Array():
 	set(w):
 		stuecke = w
@@ -55,7 +56,7 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(0.55, 1.75, 0.35), Vector3(1.05, 1.9, 2.4),
 	Vector3.ZERO, Vector3(0.31, 0.35, 0.31), Vector3.ZERO, Vector3(4.1, 3.6, 1.6), Vector3(2.6, 3.6, 1.6), Vector3(3.0, 6.3, 1.5), Vector3(1.4, 0.9, 1.2), Vector3(1.0, 1.0, 0.06),
 	Vector3(0.55, 1.1, 1.2), Vector3(1.0, 1.55, 0.3), Vector3.ZERO, Vector3(0.95, 1.05, 0.5), Vector3(0.75, 0.55, 0.75), Vector3.ZERO,
-	Vector3(0.65, 1.25, 0.8)]
+	Vector3(0.65, 1.25, 0.8), Vector3(0.6, 0.3, 0.6), Vector3.ZERO]
 ## Fotoscans (Poly Haven, CC0; werkzeuge/modell_laden.py, modelle/ausstattung): Art → Teile [Modell, Ort, Drehung in Grad
 ## (x, y, z), Maßstab]. Ein Teil mit einer Zahl statt eines Namens ist eine selbst gebaute Form: 100 + Art ist die Art ohne
 ## die Dinge, die ein Scan ersetzt (Werkzeug, Axt, Schild, Laterne, Korb). Bis SCAN_NAH Meter zeigt jede Art die volle
@@ -258,8 +259,8 @@ func _baue_arten(je_art: Dictionary, ziel: Node3D) -> void:
 		# tagsüber jemand (Marke in der Gruppe "klang_amboss")
 		var klang := (Engine.get_main_loop() as SceneTree).root.get_node_or_null("Klang") \
 			if not Engine.is_editor_hint() and Engine.get_main_loop() is SceneTree else null
-		if klang != null and art in [14, 16, 21]:
-			var feuer_ort: Vector3 = {14: Vector3(0, 2.2, 0), 16: Vector3(0, 0.9, 0), 21: Vector3(-2.2, 0.9, -1.6)}[art]
+		if klang != null and art in [14, 16, 21, 65]:
+			var feuer_ort: Vector3 = {14: Vector3(0, 2.2, 0), 16: Vector3(0, 0.9, 0), 21: Vector3(-2.2, 0.9, -1.6), 65: Vector3(0, 0.3, 0)}[art]
 			for lage: Transform3D in lagen:
 				klang.dauerklang(ziel, "feuer", -10.0 if art == 14 else -6.0, 12.0 if art == 14 else 16.0, lage * feuer_ort)
 		if art == 3:            # Marktstand: hier ist Markt (Stimmengewirr und Ausrufe, autoload/klang.gd)
@@ -522,6 +523,10 @@ func _mesh(art: int) -> ArrayMesh:
 			_skelett()
 		64:
 			_lagerfass()
+		65:
+			_lagerfeuer()
+		66:
+			_schlaflager()
 		18:  # Heuhaufen
 			_zylinder("heu", Vector3.ZERO, 0.95, 0.95, 0.45, 12)
 			_zylinder("heu", Vector3(0, 0.4, 0), 0.75, 0.8, 0.35, 12)
@@ -1485,6 +1490,38 @@ func _lagerfass() -> void:
 		_klotz("holz_dunkel", Vector3(-0.6, 0, z - 0.08), Vector3(0.6, 0.2, z + 0.08))
 		for sx: float in [-1.0, 1.0]:
 			_klotz("holz", Vector3(sx * 0.42 - 0.07, 0.2, z - 0.07), Vector3(sx * 0.42 + 0.07, 0.32, z + 0.07))
+
+
+## Lagerfeuer (Art 65): Steinkreis, Asche, kreuzweise gelegte Scheite mit Glut, ein Kessel an einem Dreibein
+func _lagerfeuer() -> void:
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = 6565
+	for k in 11:
+		var w := TAU * k / 11.0
+		var g := zufall.randf_range(0.09, 0.14)
+		var m := Vector3(cos(w) * 0.55, 0.0, sin(w) * 0.55)
+		_klotz("stein", m - Vector3(g, 0.0, g * 0.8), m + Vector3(g, g * 1.2, g * 0.8), w + zufall.randf_range(-0.3, 0.3))
+	_zylinder("kohle", Vector3.ZERO, 0.45, 0.45, 0.03, 12)
+	for k in 5:
+		var w := TAU * k / 5.0 + 0.3
+		var a := Vector3(cos(w) * 0.42, 0.03, sin(w) * 0.42)
+		var e := Vector3(cos(w) * 0.05, 0.3, sin(w) * 0.05)
+		_stab("holz_dunkel", a, e, 0.07, 0.07)
+	_klotz("glut", Vector3(-0.14, 0.03, -0.14), Vector3(0.14, 0.12, 0.14), 0.4)
+	_klotz("glut", Vector3(-0.07, 0.1, -0.07), Vector3(0.07, 0.34, 0.07), 0.8)
+	for k in 3:
+		var w := TAU * k / 3.0
+		_stab("holz", Vector3(cos(w) * 0.75, 0.0, sin(w) * 0.75), Vector3(0, 1.25, 0), 0.04, 0.04)
+	_stab("metall", Vector3(0, 1.25, 0), Vector3(0, 0.78, 0), 0.012, 0.012)
+	_zylinder("metall", Vector3(0, 0.5, 0), 0.17, 0.21, 0.28, 10)
+
+
+## Schlaflager (Art 66): Strohsack, darüber eine Decke halb zurückgeschlagen, am Kopfende ein Bündel
+func _schlaflager() -> void:
+	_klotz("heu", Vector3(-0.45, 0.0, -0.95), Vector3(0.45, 0.12, 0.95))
+	_klotz("sack", Vector3(-0.42, 0.1, -0.9), Vector3(0.42, 0.18, 0.85))
+	_klotz("fell", Vector3(-0.46, 0.17, -0.92), Vector3(0.46, 0.22, 0.2), 0.03)
+	_klotz("plane", Vector3(-0.2, 0.18, 0.55), Vector3(0.2, 0.36, 0.88), 0.2)
 
 
 ## Flechtzaun (Art 57), 2 m entlang x: fünf Rundpfähle, dazwischen waagrechte Weidenruten in neun Lagen, jede Rute

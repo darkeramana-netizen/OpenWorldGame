@@ -72,6 +72,26 @@ func hoehe_bei(x: float, z: float) -> float:
 	return lerpf(lerpf(h00, h10, fx), lerpf(h01, h11, fx), fz)
 
 
+## Höhe genau auf den Dreiecken des Netzes (wie gezeichnet und wie die Kollision), nicht bilinear: für Bauteile, die
+## nahtlos an das Gelände anschließen müssen (Felsmund in unterwelt.gd)
+func hoehe_dreieck(x: float, z: float) -> float:
+	if _hoehen.is_empty():
+		return 0.0
+	var gx := clampf((x - ursprung.x) / abstand, 0.0, breite - 1.001)
+	var gz := clampf((z - ursprung.y) / abstand, 0.0, tiefe - 1.001)
+	var ix := int(gx)
+	var iz := int(gz)
+	var fx := gx - ix
+	var fz := gz - iz
+	var ha := _h(ix, iz)
+	var hb := _h(ix + 1, iz)
+	var hc := _h(ix, iz + 1)
+	var hd := _h(ix + 1, iz + 1)
+	if fx + fz <= 1.0:
+		return ha + (hb - ha) * fx + (hc - ha) * fz
+	return hd + (hc - hd) * (1.0 - fx) + (hb - hd) * (1.0 - fz)
+
+
 ## Liegt (x, z) an einem Loch? Strahlen dorthin liefern bei Jolt keine gültige Normale.
 func am_loch(x: float, z: float, rand: float = 3.0) -> bool:
 	for r: Vector4 in loecher:

@@ -1,0 +1,12 @@
+{
+	"knoten": {
+		"start": {
+			"sprecher": "Frische Hackspuren im Schutt",
+			"text": "Der Schutt, der den alten Gang verschlossen hat, ist beiseitegeräumt und zu Haufen geschichtet. In den Brocken sitzen frische Hackspuren, hell im dunklen Stein. Im Staub Stiefelabdrücke, viele, in beide Richtungen. Ein Wachsstummel klebt an einem Stein. Hier ist kein Toter von Sorrow gegangen.",
+			"setze": [
+				"schmugglerweg_gefunden"
+			],
+			"akte": "Unter den Ruinen von Burg Sorrow hat sich jemand durch einen verschütteten Gang gegraben. Frische Spuren führen hinab nach Osten."
+		}
+	}
+}

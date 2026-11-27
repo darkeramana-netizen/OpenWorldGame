@@ -8,6 +8,9 @@
 #   Tiefer:    hinter dem Sarkophag des Wulfric Dane eine Geheimtür → alter Stufengang → Ruinen von Burg Sorrow
 #              (Halle mit eingestürzten Jochen, alte Kapelle mit dem Wappen der Ordnung von Sorrow, verbranntes Archiv
 #              hinter einer verschlossenen Tür, ein verschütteter Gang nach Osten)
+#   Schmuggler: der verschüttete Gang ist freigegraben (Einsturzhöhle) → Felsstieg hinab → Lager der Schmuggler →
+#              Bootsgrotte → Meereshöhle an der Klippe (Mund zum Meer); vom Lager eine verschlossene Kammer mit Pulver
+#              und Musketen (Kriegsgüter für Valdrenn, die Rufer)
 #
 # Alle Lagen in Weltkoordinaten; der Knoten Unterwelt steht im Ursprung. Die Treppenhäuschen schneiden das Gelände
 # genau aus (gelaende.gd, schnitte).
@@ -18,7 +21,7 @@ E("Script", "res://szenen/welt/fluegel.gd", "64_fluegel")
 E("Material", "res://material/holz.tres", "65_holz_mat")
 E("Material", "res://material/metall.tres", "66_metall_mat")
 
-UW_GW, UW_GA, UW_AB, UW_REG, UW_SCH, UW_SCHNITTE, UW_STUECKE = [], [], [], [], [], [], []
+UW_GW, UW_GA, UW_AB, UW_REG, UW_SCH, UW_SCHNITTE, UW_STUECKE, UW_FM = [], [], [], [], [], [], [], []
 
 
 def _rahmen(c, gier):
@@ -259,12 +262,10 @@ uw_durchsuchbar("SorrowToter", RH(-4.0, -3.2), H_SORROW + 0.3, "Ein Toter in ver
 for su_, sn_, g_ in [(-7.0, 3.5, 10.0), (3.0, 4.0, 70.0), (6.5, -3.8, 130.0)]:
     uw_stueck(62, RH(su_, sn_), H_SORROW, g_)
 uw_stueck(63, RH(5.0, 2.0), H_SORROW, RH_G - 40.0)
-# verschütteter Gang nach Osten (später: zu den Schmugglerhöhlen)
+# verschütteter Gang nach Osten: die Schmuggler haben sich hindurchgegraben (Schmugglerhöhlen, unten)
 _s4_a = RH(-2.0, -6.0)
 _s4_b = RH(-2.0, -15.0)
 uw_gang(_s4_a, H_SORROW, _s4_b, H_SORROW, breite=1.4, hoehe=2.4, art=2, fackeln=0)
-uw_stueck(62, RH(-2.0, -13.9), H_SORROW, 0.0)
-uw_stueck(62, RH(-2.4, -12.6), H_SORROW, 40.0)
 
 # ---------- Der alte Weinkeller unter dem Palas ----------
 # Längs zur alten Kapelle von Sorrow ausgerichtet, vom Palas her seit Langem zugemauert (Kellerbuch). Ein Durchbruch im
@@ -286,13 +287,107 @@ uw_stueck(60, WK(-1.5, 0.35), H_WEINKELLER + 0.78, 0.0)
 uw_lesbar("Kellerbuch", WK(-1.5, -0.3), H_WEINKELLER + 0.9, "Das Kellerbuch", "weinkeller_buch")
 uw_durchsuchbar("UralterWein", WK(6.0, -2.0), H_WEINKELLER + 0.7, "Ein Fass mit Kreidezeichen", "weinkeller_fass", "Anzapfen")
 
+# ---------- Schmugglerhöhlen (27.11.2026) ----------
+# Hinter der nördlichen Meereshöhle an der Ostklippe: ein Felsgang auf Meereshöhe in eine Bootsgrotte, darüber das Lager
+# der Schmuggler, daneben hinter einer verschlossenen Tür die Kammer mit der Ware (Pulver, Musketen: Kriegsgüter, die
+# nach Valdrenn gehen). Vom Lager ein langer Felsstieg hinauf in eine Einsturzhöhle am Ende des verschütteten Gangs der
+# Ruinen von Burg Sorrow, durch den sich die Schmuggler gegraben haben.
+
+
+def hoehle_rand(c, gier, laenge, breite, ziel):
+    """Punkt am Rand einer Höhle (Ellipse, 0,25 m innerhalb der Wand) in Richtung ziel"""
+    a = math.radians(gier)
+    u, n = (math.sin(a), math.cos(a)), (math.cos(a), -math.sin(a))
+    d = (ziel[0] - c[0], ziel[1] - c[1])
+    dl = math.hypot(*d)
+    d = (d[0] / dl, d[1] / dl)
+    cu, cn = (d[0] * u[0] + d[1] * u[1]) / (laenge / 2.0), (d[0] * n[0] + d[1] * n[1]) / (breite / 2.0)
+    r = 1.0 / math.sqrt(cu * cu + cn * cn)
+    return (round(c[0] + d[0] * (r - 0.25), 3), round(c[1] + d[1] * (r - 0.25), 3))
+
+
+# Mund an der Klippe (die nördliche Meereshöhle aus teil_stadt.py)
+_mh = MEERESHOEHLE_OFFEN
+MUND_FUSS = (_mh[0], _mh[1])
+MUND_GIER = math.degrees(math.atan2(_mh[2], _mh[3]))
+MUND_BREITE, MUND_HOEHE, MUND_STEIG = _mh[5], _mh[6], _mh[4]
+H_MUND = -19.4
+_mund_tief = 6.0
+UW_FM.extend([MUND_FUSS[0], MUND_FUSS[1], round(MUND_GIER, 3), H_MUND, MUND_BREITE, MUND_HOEHE, MUND_STEIG, _mund_tief])
+_mo = (math.sin(math.radians(MUND_GIER)), math.cos(math.radians(MUND_GIER)))
+_sm = (MUND_FUSS[0] + _mo[0] * (1.6 - _mund_tief) / 2.0, MUND_FUSS[1] + _mo[1] * (1.6 - _mund_tief) / 2.0)
+UW_SCHNITTE.extend([round(_sm[0], 3), round(_sm[1], 3), round(MUND_GIER, 3), round((1.6 + _mund_tief) / 2.0, 3), round(MUND_BREITE / 2.0 + 3.0, 3)])
+_mund_innen = (round(MUND_FUSS[0] + _mo[0], 3), round(MUND_FUSS[1] + _mo[1], 3))
+
+# Bootsgrotte, Lager, Warenkammer, Einsturzhöhle
+G1_C = (round(MUND_FUSS[0] - _mo[0] * 15.75, 3), round(MUND_FUSS[1] - _mo[1] * 15.75, 3))
+G1 = uw_raum(G1_C, MUND_GIER, 16.0, 12.0, H_MUND, 3.2, 3.5, 4, 0.0, 2)
+uw_gang(_mund_innen, H_MUND, hoehle_rand(G1_C, MUND_GIER, 16.0, 12.0, _mund_innen), H_MUND,
+        breite=round(MUND_BREITE - 0.1, 2), hoehe=MUND_HOEHE, art=1, fackeln=0)
+H_LAGER = -17.0
+G2_C = (round(G1_C[0] - _mo[0] * 23.0, 3), round(G1_C[1] - _mo[1] * 23.0, 3))
+G2 = uw_raum(G2_C, MUND_GIER, 14.0, 11.0, H_LAGER, 3.0, 3.0, 4, 0.0, 2)
+uw_gang(hoehle_rand(G1_C, MUND_GIER, 16.0, 12.0, G2_C), H_MUND, hoehle_rand(G2_C, MUND_GIER, 14.0, 11.0, G1_C), H_LAGER,
+        breite=2.2, hoehe=2.8, art=1, fackeln=0)
+G3_C = G2(0.0, 13.5)                      # quer zur Grotte, auf der Seite +n des Lagers
+G3_G = MUND_GIER - 90.0
+G3 = uw_raum(G3_C, G3_G, 8.0, 7.0, H_LAGER, 2.6, 2.2, 4, 0.0, 8)
+_t2_a = hoehle_rand(G2_C, MUND_GIER, 14.0, 11.0, G3_C)
+_t2_b = hoehle_rand(G3_C, G3_G, 8.0, 7.0, G2_C)
+uw_gang(_t2_a, H_LAGER, _t2_b, H_LAGER, breite=1.6, hoehe=2.4, art=1, fackeln=0)
+_t2_m = ((_t2_a[0] + _t2_b[0]) / 2.0, (_t2_a[1] + _t2_b[1]) / 2.0)
+uw_tuer("TuerWarenkammer", (round(_t2_m[0], 3), round(_t2_m[1], 3)), H_LAGER, round(gier_von(_t2_a, _t2_b), 2), 1.54, "schloss",
+        "schluessel_schmuggler", "Die beschlagene Bohlentür", kaempfer=1.6)
+J_C = RH(-2.0, -18.75)
+J = uw_raum(J_C, RH_G, 9.0, 8.0, H_SORROW, 2.8, 2.5, 4, 0.0, 8)
+uw_gang(hoehle_rand(J_C, RH_G, 9.0, 8.0, G2_C), H_SORROW, hoehle_rand(G2_C, MUND_GIER, 14.0, 11.0, J_C), H_LAGER,
+        breite=1.5, hoehe=2.4, art=1, fackeln=1)
+
+# Einsturzhöhle: Schutt beiseitegeräumt, Hackspuren
+for (su_, sn_), g_ in [((-2.3, 1.6), 20.0), ((2.6, -0.8), 75.0), ((-0.6, -2.6), 140.0)]:
+    uw_stueck(62, J(su_, sn_), H_SORROW, g_)
+uw_stueck(1, J(2.4, 1.8), H_SORROW, 30.0)
+uw_lesbar("SchmugglerDurchbruch", RH(-2.0, -15.9), H_SORROW + 1.0, "Frische Hackspuren im Schutt", "schmuggler_durchbruch", "Ansehen")
+
+# Bootsgrotte: ein hochgezogenes Boot, Ware am Rand, Netze
+uw_stueck(7, G1(2.0, 3.4), H_MUND + 0.35, MUND_GIER - 10.0)
+for (su_, sn_), art_ in [((-3.0, -4.0), 0), ((-2.2, -4.3), 0), ((-1.4, -4.4), 1), ((-5.0, 2.8), 1), ((-4.3, 3.5), 2),
+                         ((-5.6, 1.9), 1), ((0.6, -4.6), 2)]:
+    uw_stueck(art_, G1(su_, sn_), H_MUND, MUND_GIER + 15.0 * su_)
+uw_stueck(37, G1(4.0, -4.6), H_MUND, MUND_GIER + 180.0)
+uw_stueck(38, G1(5.4, -3.7), H_MUND, 0.0)
+
+# Lager: Feuer in der Mitte, Schlafplätze, Tisch mit der Kiste, Vorräte; zwei Schmuggler
+uw_stueck(65, G2(0.0, 0.5), H_LAGER, 0.0)
+licht("LagerfeuerSchein", "UnterweltDinge", *(lambda p: (p[0], H_LAGER + 1.0, p[1]))(G2(0.0, 0.5)), 12.0)
+for (su_, sn_), g_ in [((-3.8, 2.6), MUND_GIER), ((-4.4, -2.7), MUND_GIER - 15.0), ((2.6, 3.5), MUND_GIER + 95.0)]:
+    uw_stueck(66, G2(su_, sn_), H_LAGER, g_)
+uw_stueck(45, G2(3.0, -2.8), H_LAGER, MUND_GIER)
+uw_stueck(60, G2(3.0, -2.5), H_LAGER + 0.78, 0.0)
+for (su_, sn_), art_ in [((-5.0, 3.9), 1), ((-4.2, 4.3), 1), ((-5.2, 4.6), 0), ((4.8, 2.4), 0), ((5.1, 1.5), 0),
+                         ((4.6, -3.6), 2), ((-1.0, -4.6), 1)]:
+    uw_stueck(art_, G2(su_, sn_), H_LAGER, MUND_GIER + 20.0 * su_)
+uw_durchsuchbar("SchmugglerKiste", G2(3.0, -2.8), H_LAGER + 1.0, "Eine Kiste auf dem Tisch", "schmuggler_kiste")
+uw_lesbar("SchmugglerInschrift", G2(-5.6, -1.6), H_LAGER + 1.6, "Eingeritzte Worte in der Felswand", "schmuggler_inschrift", "Ansehen")
+for k_, (su_, sn_) in enumerate([(-1.8, -1.4), (1.4, 2.0)]):
+    p_ = G2(su_, sn_)
+    gegner(f"Schmuggler{k_ + 1}", "UnterweltDinge", p_[0], H_LAGER + 0.1, p_[1], "Schmuggler", waffe="saebel",
+           flag="schmuggler_lager", gier=MUND_GIER + 90.0 + 140.0 * k_, tracht="0.22, 0.2, 0.18, 1")
+
+# Warenkammer: Pulverfässer, Kisten mit Musketen, Spieße
+for (su_, sn_), art_, g_ in [((-2.0, -2.3), 1, 0.0), ((-1.2, -2.5), 1, 10.0), ((-2.2, -1.5), 1, 80.0), ((-2.6, 2.2), 0, 0.0),
+                             ((-1.9, 2.5), 0, 0.0), ((-2.9, 1.4), 0, 0.0), ((0.8, -2.7), 13, G3_G + 90.0), ((1.4, 2.6), 48, G3_G - 90.0)]:
+    uw_stueck(art_, G3(su_, sn_), H_LAGER, g_)
+uw_durchsuchbar("SchmugglerMusketen", G3(-1.6, -2.0), H_LAGER + 0.9, "Lange Kisten mit Teerzeichen", "schmuggler_musketen", "Öffnen")
+
 # ---------- Knoten ----------
 N("Unterwelt", "Node3D", ".", f"""script = ExtResource("62_unterwelt")
 gewoelbe = PackedFloat32Array({_zahlen(UW_GW)})
 gaenge = PackedFloat32Array({_zahlen(UW_GA)})
 abgaenge = PackedFloat32Array({_zahlen(UW_AB)})
 abgang_regeln = PackedStringArray({", ".join(f'"{r_}"' for r_ in UW_REG)})
-schaechte = PackedFloat32Array({_zahlen(UW_SCH)})""")
+schaechte = PackedFloat32Array({_zahlen(UW_SCH)})
+felsmuender = PackedFloat32Array({_zahlen(UW_FM)})""")
 # Inschriften, Türen, Schilder und Ausstattung hängen an einem eigenen Knoten (burgbau.gd räumt beim Bauen alle Kinder
 # des Bauknotens weg); er wurde oben schon mit ihnen angelegt und kommt vor das erste von ihnen
 _uw_erstes = next(i_ for i_, t_ in enumerate(knoten) if 'parent="UnterweltDinge"' in t_)

@@ -4494,7 +4494,8 @@ func _fenster_innen(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: flo
 	_klotz("metall", m, u, nn, 0.05, 0.16, 0.07, 0.09, ym - 0.03, ym + 0.03)
 
 
-func _hoehle(w: PackedFloat32Array) -> void:
+## verschlossen = false: ohne die dunkle Fläche in der Öffnung (dahinter ein begehbarer Gang, unterwelt.gd)
+func _hoehle(w: PackedFloat32Array, verschlossen := true) -> void:
 	var o := Vector3(w[2], 0, w[3]).normalized()
 	var steig := w[4]
 	var b := w[5] / 2.0
@@ -4516,7 +4517,8 @@ func _hoehle(w: PackedFloat32Array) -> void:
 	for k in umriss.size() - 1:
 		var a: Vector2 = umriss[k]
 		var e: Vector2 = umriss[k + 1]
-		_dreieck("dunkel", mitte, pt.call(a.x, a.y, 1.0), pt.call(e.x, e.y, 1.0), nrm)
+		if verschlossen:
+			_dreieck("dunkel", mitte, pt.call(a.x, a.y, 1.0), pt.call(e.x, e.y, 1.0), nrm)
 		# Felsrand: innen weit vorstehend, außen flach in den Fels
 		var aa := Vector2(a.x * 1.35, a.y * 1.2)
 		var ee := Vector2(e.x * 1.35, e.y * 1.2)

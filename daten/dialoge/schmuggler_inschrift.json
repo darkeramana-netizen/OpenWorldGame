@@ -1,0 +1,12 @@
+{
+	"knoten": {
+		"start": {
+			"sprecher": "Eingeritzte Worte in der Felswand",
+			"text": "Mit einer Messerspitze tief in den Fels geritzt, mehrmals nachgezogen: „Schweigen ist Schuld.“ Die Losung der Rufer, derer, die wollen, dass der Orden herrscht statt wacht.",
+			"setze": [
+				"rufer_zeichen_gesehen"
+			],
+			"akte": "Im Lager der Schmuggler unter der Burg das Zeichen der Rufer gefunden: „Schweigen ist Schuld.“"
+		}
+	}
+}

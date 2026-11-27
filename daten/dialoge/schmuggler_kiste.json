@@ -1,0 +1,29 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "schluessel_schmuggler",
+			"knoten": "leer"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Eine Kiste auf dem Tisch",
+			"text": "Würfel, ein halber Laib Brot, ein Beutel mit Hellern. Unter einem Wachstuch eine Liste in grober Hand: „Neumond: 6 Fass Pulver, 2 Kisten lange Rohre, Lunte. An den Wagner am Nordpass. Nicht über den Hafen, der Zoll schaut.“",
+			"weiter": "schluessel"
+		},
+		"schluessel": {
+			"sprecher": "Eine Kiste auf dem Tisch",
+			"text": "Ganz unten, in einen Lappen gewickelt, ein schwerer Schlüssel. Er passt zu keiner Tür, die du kennst. Noch nicht.",
+			"setze": [
+				"schluessel_schmuggler",
+				"lieferliste_gefunden"
+			],
+			"geld": 60,
+			"akte": "Im Lager der Schmuggler eine Lieferliste gefunden: Pulver und Musketen, Kriegsgüter, für einen „Wagner am Nordpass“. Dazu einen Schlüssel und 60 Heller."
+		},
+		"leer": {
+			"sprecher": "Eine Kiste auf dem Tisch",
+			"text": "Würfel und hartes Brot. Die Liste und den Schlüssel hast du."
+		}
+	}
+}

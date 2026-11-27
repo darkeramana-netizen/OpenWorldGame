@@ -153,10 +153,16 @@ Erste Ausbaustufe des Untergrunds (`szenen/welt/unterwelt.gd`, Lage in `werkzeug
 - **Alter Weinkeller** unter dem Palas (Tonnengewölbe, Lagernischen, Lagerfässer, Kellerbuch: seit 1612 vom Palas her
   zugemauert): nur über einen Felsdurchbruch neben dem Altar der alten Kapelle von Sorrow zu erreichen; darin ein Fass
   „für den Großmeister“.
+- **Schmugglerhöhlen** hinter der nördlichen Meereshöhle der Ostklippe: Die Klippe ist um die Öffnung genau auf dem
+  Gelände nachgebaut (`felsmuender`), ein Felsgang auf Meereshöhe führt in eine Bootsgrotte (Boot, Ware, Netze), darüber
+  das Lager (Lagerfeuer, Schlafplätze, Tisch, zwei bewaffnete Schmuggler, die Losung der Rufer an der Wand, eine Kiste mit
+  Lieferliste und Schlüssel), dahinter die verschlossene Warenkammer (Pulver, Musketen aus Valdrenn). Ein Felsstieg
+  (16 m hinauf, mit Fackeln) führt zu einer Einsturzhöhle am Ende des verschütteten Gangs der Ruinen von Sorrow: Die
+  Schmuggler haben sich durchgegraben (frische Hackspuren). Höhlen als eigene Raumart (natürliche Felswände und Kuppel).
 - Unter Tage: Fackeln (flackernd), dunkles Umgebungslicht (Reflexionssonden als Innenraum), Hall, Tropfen, Grollen; das
   Gelände wird an den Abgängen genau ausgeschnitten (`gelaende.gd`, `schnitte`).
 
-Offen: Schmugglerhöhlen von den Meereshöhlen aus, Stadtkeller, Fotos mit der
+Offen: Stadtkeller, ein Ausgang der Schmuggler an die Oberfläche, Fotos mit der
 vollen Grafik (die Software-Grafik dieser Umgebung braucht dafür zu viel Speicher).
 
 ## Nächste Schritte

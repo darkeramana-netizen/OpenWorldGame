@@ -143,8 +143,10 @@ for px_ in (990, 1090):
     hx_, hz_ = W((px_, py_))
     steig_ = (H(hx_ - 4, hz_) - H(hx_, hz_)) / 4.0
     _hl += [round(hx_, 2), round(hz_, 2), 1, 0, round(max(steig_, 0.8), 2), random.choice((4.5, 5.5)), random.choice((4.0, 5.0))]
+# Die nördliche ist der Eingang der Schmugglerhöhlen: ihren Mund mit der Öffnung baut unterwelt.gd (teil_unterwelt.py)
+MEERESHOEHLE_OFFEN = _hl[:7]
 N("Meereshoehlen", "Node3D", HF, f"""script = ExtResource("28_burgbau")
-hoehlen = PackedFloat32Array({_zahlen(_hl)})""")
+hoehlen = PackedFloat32Array({_zahlen(_hl[7:])})""")
 # --- Kaihäuser am Ostkai: eine Zeile schmaler Speicher- und Wohnhäuser unten auf dem Kai, mit dem Rücken an der
 # Hafenmauer und der Tür zum Becken (wie im Referenzbild); davor bleibt die Gasse zum Kran frei ---
 _hmitte = W((720, 520))

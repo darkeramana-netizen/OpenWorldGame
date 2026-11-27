@@ -1,0 +1,22 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "musketen_gefunden",
+			"knoten": "wieder"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Lange Kisten mit Teerzeichen",
+			"text": "Der Deckel ist nur aufgelegt. In Stroh gebettet liegen Musketen, neu, geölt, mit dem Stempel einer Werkstatt aus Valdrenn. Daneben Fässer, deren Fugen mit Pech verstrichen sind: Pulver. Kriegsgüter, die nach dem Vertrag nicht über die Grenze dürfen. Und die hier liegen, unter dem Sitz des Großmeisters.",
+			"setze": [
+				"musketen_gefunden"
+			],
+			"akte": "Unter Drachenstein ein Lager mit Musketen aus Valdrenn und Pulver gefunden. Wer schmuggelt Kriegsgüter unter der Burg hindurch, und für wen?"
+		},
+		"wieder": {
+			"sprecher": "Lange Kisten mit Teerzeichen",
+			"text": "Musketen aus Valdrenn, geölt und bereit. Und Pulver genug für eine Mauer."
+		}
+	}
+}
