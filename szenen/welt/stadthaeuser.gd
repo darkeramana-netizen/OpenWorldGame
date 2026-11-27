@@ -772,6 +772,21 @@ func _fenster(flaechen: Dictionary, mitte: Vector3, seite: int, hoehe: float, la
 	for x_: float in [a.x - 0.02, b.x - 0.06]:
 		_quader(flaechen, "rahmen", Vector3(x_, a.y - 0.3, minf(z, z + 0.2 * seite)), Vector3(x_ + 0.08, a.y - 0.07, maxf(z, z + 0.2 * seite)))
 		_quader(flaechen, "rahmen", Vector3(x_, a.y - 0.42, minf(z, z + 0.08 * seite)), Vector3(x_ + 0.08, a.y - 0.3, maxf(z, z + 0.08 * seite)))
+	# Blumenkasten auf der Fensterbank (Obergeschosse, etwa jedes dritte Fenster): Kasten, Erde, Kräuter, ein paar Blüten
+	var hfenster := absi(int(mitte.x * 17.0 + mitte.y * 31.0 + mitte.z * 11.0))
+	if mitte.y > 2.5 and hfenster % 3 == 0:
+		var kz0 := minf(z + 0.06 * seite, z + 0.27 * seite)
+		var kz1 := maxf(z + 0.06 * seite, z + 0.27 * seite)
+		_quader(flaechen, "balken", Vector3(a.x - 0.02, a.y, kz0), Vector3(b.x + 0.02, a.y + 0.18, kz1))
+		_quader(flaechen, "erde", Vector3(a.x + 0.02, a.y + 0.18, kz0 + 0.03), Vector3(b.x - 0.02, a.y + 0.19, kz1 - 0.03))
+		for i in 9:
+			var px := a.x + 0.06 + (w - 0.12) * (i + 0.5) / 9.0
+			var ph := 0.12 + 0.12 * float((hfenster >> i) % 3) / 2.0
+			var pz := (kz0 + kz1) / 2.0 + (0.04 if i % 2 == 0 else -0.04)
+			_quader(flaechen, "kraut", Vector3(px - 0.05, a.y + 0.18, pz - 0.05), Vector3(px + 0.05, a.y + 0.18 + ph, pz + 0.05))
+			if (hfenster >> i) % 4 == 0:
+				_quader(flaechen, "bluete" if i % 3 else "bluete_gelb", Vector3(px - 0.03, a.y + 0.18 + ph, pz - 0.03),
+					Vector3(px + 0.03, a.y + 0.22 + ph, pz + 0.03))
 	if laeden:
 		for s_: int in [-1, 1]:
 			var x0 := mitte.x + s_ * (w / 2 + r + 0.02)
@@ -1033,6 +1048,16 @@ func _material(name_: String) -> Material:
 			m.albedo_texture = load("res://texturen/holz_farbe.jpg")
 			m.albedo_color = Color(0.7, 0.55, 0.42)
 			m.uv1_scale = Vector3(0.5, 0.5, 0.5)
+		"erde":
+			m.albedo_color = Color(0.2, 0.14, 0.09)
+			m.roughness = 1.0
+		"kraut":
+			m.albedo_color = Color(0.2, 0.36, 0.12)
+			m.roughness = 0.85
+		"bluete":
+			m.albedo_color = Color(0.65, 0.16, 0.24)
+		"bluete_gelb":
+			m.albedo_color = Color(0.88, 0.7, 0.18)
 		"glas":
 			m.albedo_color = Color(0.08, 0.1, 0.12)
 			m.metallic = 0.4

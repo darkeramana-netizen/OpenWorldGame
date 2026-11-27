@@ -24,6 +24,15 @@ uniform float wind = 1.0;
 uniform float wiegen = 0.012;
 // Flattern der Blätter (Meter im Modell)
 uniform float flattern = 0.03;
+// Laub: Anteil der „Kugelnormale“ (vom Kronenmittelpunkt nach außen). Die Blattkarten liegen kreuz und quer; mit ihrer
+// eigenen Normale war die Krone fleckig hell und fast schwarz (Rückmeldung 27.11.2026). So wird sie als Ganzes
+// beleuchtet: oben und zur Sonne hell, innen und unten dunkler.
+uniform float kugelnormale = 0.75;
+// Höhe des Kronenmittelpunkts als Anteil der Modellhöhe
+uniform float krone_mitte = 0.62;
+
+varying float tonung;
+varying float innen;
 
 void vertex() {
 	vec3 ort = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
@@ -33,6 +42,12 @@ void vertex() {
 	vec2 biegen = vec2(sin(t) + 0.4 * sin(t * 2.3), 0.7 * cos(t * 0.83)) * wiegen * modell_hoehe * anteil * anteil * wind * boe;
 	VERTEX.xz += biegen;
 	if (laub) {
+		vec3 zur_mitte = VERTEX - vec3(0.0, modell_hoehe * krone_mitte, 0.0);
+		vec3 kugel = normalize(zur_mitte + vec3(0.0001));
+		NORMAL = normalize(mix(NORMAL, kugel, kugelnormale));
+		// innen in der Krone dunkler (Eigenschatten), je Baum ein anderer Grünton
+		innen = clamp(length(zur_mitte) / (modell_hoehe * 0.38), 0.0, 1.0);
+		tonung = fract(sin(dot(ort.xz, vec2(12.9898, 78.233))) * 43758.5453);
 		float f = sin(TIME * 4.3 + VERTEX.x * 3.1 + VERTEX.y * 2.3 + VERTEX.z * 1.7 + ort.z) * flattern * wind * (0.4 + boe);
 		VERTEX += NORMAL * f * clamp(anteil * 3.0, 0.0, 1.0);
 	}
@@ -43,9 +58,12 @@ void fragment() {
 	vec4 c = texture(farbe_tex, uv) * farbe;
 	ALBEDO = c.rgb;
 	if (laub) {
+		ALBEDO *= mix(vec3(0.92, 1.0, 0.86), vec3(1.06, 1.02, 0.9), tonung) * mix(0.62, 1.0, innen);
 		ALPHA = c.a;
 		ALPHA_SCISSOR_THRESHOLD = alpha_schwelle;
-		BACKLIGHT = c.rgb * 0.35;
+		ALPHA_ANTIALIASING_EDGE = 0.2;
+		ALPHA_TEXTURE_COORDINATE = uv * vec2(textureSize(farbe_tex, 0));
+		BACKLIGHT = ALBEDO * 0.6;
 	}
 	if (mit_normal) {
 		NORMAL_MAP = texture(normal_tex, uv).rgb;

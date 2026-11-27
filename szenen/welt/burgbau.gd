@@ -4495,7 +4495,7 @@ func _fenster_innen(c: Vector2, u: Vector2, n: Vector2, pos: float, abstand: flo
 
 
 ## verschlossen = false: ohne die dunkle Fläche in der Öffnung (dahinter ein begehbarer Gang, unterwelt.gd)
-func _hoehle(w: PackedFloat32Array, verschlossen := true) -> void:
+func _hoehle(w: PackedFloat32Array, verschlossen := true, mat_rand := "fels") -> void:
 	var o := Vector3(w[2], 0, w[3]).normalized()
 	var steig := w[4]
 	var b := w[5] / 2.0
@@ -4522,8 +4522,8 @@ func _hoehle(w: PackedFloat32Array, verschlossen := true) -> void:
 		# Felsrand: innen weit vorstehend, außen flach in den Fels
 		var aa := Vector2(a.x * 1.35, a.y * 1.2)
 		var ee := Vector2(e.x * 1.35, e.y * 1.2)
-		_viereck("fels", pt.call(a.x, a.y, 1.6), pt.call(e.x, e.y, 1.6), pt.call(ee.x, ee.y, -0.4), pt.call(aa.x, aa.y, -0.4), nrm + t * 0.3)
-		_viereck("fels", pt.call(a.x, a.y, 1.6), pt.call(e.x, e.y, 1.6), pt.call(e.x, e.y, 0.95), pt.call(a.x, a.y, 0.95), -nrm)
+		_viereck(mat_rand, pt.call(a.x, a.y, 1.6), pt.call(e.x, e.y, 1.6), pt.call(ee.x, ee.y, -0.4), pt.call(aa.x, aa.y, -0.4), nrm + t * 0.3)
+		_viereck(mat_rand, pt.call(a.x, a.y, 1.6), pt.call(e.x, e.y, 1.6), pt.call(e.x, e.y, 0.95), pt.call(a.x, a.y, 0.95), -nrm)
 	# Steinpodest vor der Öffnung, knapp über dem Wasser
 	var c2 := Vector2(fuss.x, fuss.z) + Vector2(o.x, o.z) * 1.0
 	_klotz("bruchstein", c2, Vector2(r.x, r.z), Vector2(o.x, o.z), -b - 1.2, b + 3.5, -1.2, 1.8, -21.5, -19.45)

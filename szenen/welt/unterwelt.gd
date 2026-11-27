@@ -174,6 +174,10 @@ func _fertige(flach: Dictionary, rund: Dictionary, ziel: Node3D) -> void:
 	for k in ziel.get_children():
 		if String(k.name).ends_with("_Schatten"):
 			(k as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED
+		# nicht in die globale Beleuchtung (SDFGI): Die Räume liegen knapp unter dem dünnen Geländeboden und dunkelten
+		# darüber den Hof in Rechtecken ab (Rückmeldung 27.11.2026); unten leuchten die Fackeln
+		if k is GeometryInstance3D:
+			(k as GeometryInstance3D).gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 
 
 func _material(name_: String) -> Material:
@@ -1252,7 +1256,7 @@ func _felsmund(w: PackedFloat32Array) -> void:
 	var h := w[5]
 	var steig := w[6]
 	var tief := w[7]
-	_hoehle(PackedFloat32Array([fuss.x, fuss.y, o.x, o.y, steig, w[4], h]), false)
+	_hoehle(PackedFloat32Array([fuss.x, fuss.y, o.x, o.y, steig, w[4], h]), false, "gelaende")
 	var gel := get_parent().get_node_or_null("Gelaende") if get_parent() != null else null
 	if gel == null or not gel.has_method("hoehe_dreieck"):
 		return
