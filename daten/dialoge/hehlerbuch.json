@@ -1,0 +1,27 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "hehlerbuch_gelesen",
+			"knoten": "wieder"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Ein Rechnungsbuch",
+			"text": "Saubere Spalten, eine Kaufmannshand. Tuch, Salz, Wein, alles ohne Zollsiegel. Als Lieferer immer nur: „vom Wasser“. Bezahlt wird in Nächten ohne Mond.",
+			"weiter": "seite"
+		},
+		"seite": {
+			"sprecher": "Ein Rechnungsbuch",
+			"text": "Auf der letzten Seite, mit anderer Tinte: „Die langen Kisten gehen nicht durch mein Haus. Sollen sie den alten Gang nehmen, hinter dem Regal, bis unter die Vorburg. Ich will davon nichts wissen.“",
+			"setze": [
+				"hehlerbuch_gelesen"
+			],
+			"akte": "Im Keller am Vorburgplatz das Rechnungsbuch eines Hehlers gefunden: Ware ohne Zollsiegel „vom Wasser“. Die Waffen sollen durch einen alten Gang hinter dem Regal unter die Vorburg gehen."
+		},
+		"wieder": {
+			"sprecher": "Ein Rechnungsbuch",
+			"text": "„… den alten Gang nehmen, hinter dem Regal, bis unter die Vorburg.“"
+		}
+	}
+}

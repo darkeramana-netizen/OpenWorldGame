@@ -169,6 +169,22 @@ func _initialize() -> void:
 	var wk := dinge.get_node_or_null("TuerWarenkammer") as Fluegel
 	pruefe(wk != null and wk.regel == "schloss" and wk.bedingung == "schluessel_schmuggler", "Warenkammer verschlossen (Schlüssel aus dem Lager)")
 
+	# Stadtkeller: das Kellerhäuschen ist verschlossen (Schlüssel aus der Warenkammer), die Geheimtür erst nach dem Hehlerbuch
+	pruefe((uw.abgang_regeln as PackedStringArray).has("schloss:schluessel_hehlerkeller"), "Kellerhäuschen am Vorburgplatz verschlossen")
+	var hg := dinge.get_node_or_null("GeheimtuerHehlerkeller")
+	pruefe(hg != null and not hg.is_in_group("interagierbar"), "Gang hinter dem Regal: erst nach dem Hehlerbuch zu finden")
+	if hg != null:
+		stand.setze_flag("hehlerbuch_gelesen")
+		await process_frame
+		pruefe(hg.is_in_group("interagierbar"), "Nach dem Hehlerbuch fällt das Regal auf")
+	var brunnenschacht := 0
+	var sch := uw.schaechte as PackedFloat32Array
+	for k in range(0, sch.size() - 4, 5):
+		var oben_s := Vector3(sch[k], sch[k + 3] - 1.0, sch[k + 1])
+		if raum.intersect_ray(PhysicsRayQueryParameters3D.create(oben_s, oben_s + Vector3.UP * (sch[k + 4] - sch[k + 3] + 0.5))).is_empty() == false:
+			brunnenschacht += 1
+	pruefe(sch.size() >= 10, "Zwei Brunnenschächte (Zisterne, Vorburg)")
+
 	# unter Tage
 	var krypta := Vector3(w[0], w[5] + 1.5, w[1])
 	pruefe(uw.ist_unter_tage(krypta) and not uw.ist_unter_tage(Vector3(w[0], 20.0, w[1] + 30.0)), "Unter Tage wird erkannt (Krypta ja, Hof nein)")

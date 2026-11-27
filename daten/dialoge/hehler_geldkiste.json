@@ -1,0 +1,22 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "hehler_geldkiste_leer",
+			"knoten": "leer"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Eine kleine eisenbeschlagene Kiste",
+			"text": "Der Deckel klemmt, dann gibt er nach. Darin Heller in Rollen, sorgfältig gezählt, und ein Zettel: „Für die Leute vom Wasser. Neumond.“",
+			"setze": [
+				"hehler_geldkiste_leer"
+			],
+			"geld": 35
+		},
+		"leer": {
+			"sprecher": "Eine kleine eisenbeschlagene Kiste",
+			"text": "Leer bis auf den Zettel: „Für die Leute vom Wasser.“"
+		}
+	}
+}

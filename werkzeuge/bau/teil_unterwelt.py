@@ -380,6 +380,56 @@ for (su_, sn_), art_, g_ in [((-2.0, -2.3), 1, 0.0), ((-1.2, -2.5), 1, 10.0), ((
     uw_stueck(art_, G3(su_, sn_), H_LAGER, g_)
 uw_durchsuchbar("SchmugglerMusketen", G3(-1.6, -2.0), H_LAGER + 0.9, "Lange Kisten mit Teerzeichen", "schmuggler_musketen", "Öffnen")
 
+# ---------- Stadtkeller (27.11.2026) ----------
+# Der Keller eines Händlers am Vorburgplatz in der oberen Stadt: gewölbt, ganz unter dem Haus, Zugang über ein
+# verschlossenes Kellerhäuschen auf dem Platz (den Schlüssel haben die Schmuggler in ihrer Warenkammer). Hier verschwindet
+# die Ware aus den Höhlen in die Stadt (Hehlerbuch). Hinter einer Geheimtür ein alter Fluchtgang unter die Vorburg zu
+# einer Rundkammer unter ihrem Ziehbrunnen.
+SK_C = (74.2, 142.9)                      # unter dem Haus (Stadthaeuser, Form 10 x 11 m)
+H_SK = -15.0
+SK = uw_raum(SK_C, 0.0, 8.0, 7.0, H_SK, 1.8, 1.3, 1, 4.0, 2 | 4)
+_sk_tuer = (74.0, 156.5)
+_sk_boden = H(*_sk_tuer)
+uw_abgang(_sk_tuer, 180.0, _sk_boden, 1.6, 6.2, "schloss:schluessel_hehlerkeller")
+uw_gang(_sk_tuer, _sk_boden, (74.0, round(SK_C[1] + 4.0, 3)), H_SK)
+schild("SchildHehlerkeller", "UnterweltDinge", 74.0, _sk_boden + 4.3, 157.2, "Keller", 32)
+# Ware, Fässer, ein Tisch mit dem Hehlerbuch, eine Geldkiste
+for (su_, sn_), art_, g_ in [((-2.2, 2.7), 64, 90.0), ((1.8, 2.7), 64, 90.0), ((-3.0, -2.6), 1, 10.0), ((-2.2, -2.8), 1, -5.0),
+                             ((-3.1, -1.8), 2, 90.0), ((2.6, -2.7), 0, 0.0), ((3.2, -2.3), 0, 0.0), ((0.4, -2.9), 1, 30.0)]:
+    uw_stueck(art_, SK(su_, sn_), H_SK, g_)
+uw_stueck(45, SK(0.5, 0.2), H_SK, 90.0)
+uw_stueck(60, SK(0.2, 0.4), H_SK + 0.78, 0.0)
+uw_lesbar("Hehlerbuch", SK(0.6, 0.0), H_SK + 0.9, "Ein Rechnungsbuch", "hehlerbuch")
+uw_durchsuchbar("HehlerGeldkiste", SK(0.4, -2.9), H_SK + 0.6, "Eine kleine eisenbeschlagene Kiste", "hehler_geldkiste")
+# Geheimtür in der Westwand (zur Vorburg), erst nach dem Hehlerbuch zu finden
+_sk_gt = SK(1.0, -3.5)
+N("GeheimtuerHehlerkeller", "StaticBody3D", "UnterweltDinge", f"""{T(_sk_gt[0], H_SK, _sk_gt[1], 90.0)}
+script = ExtResource("63_geheimtuer")
+breite = 1.44
+hoehe = 2.42
+dicke = 0.5
+stein = "bruchstein"
+flag = "fluchtgang_vorburg"
+bedingung = "hehlerbuch_gelesen"
+anzeige_name = "Ein Regal, das nicht an der Wand steht"
+meldung_auf = "Hinter dem Regal gibt die Wand nach. Ein schmaler, alter Gang führt nach Westen."
+akte = "Im Keller des Hehlers am Vorburgplatz einen alten Gang nach Westen gefunden."
+richtung = 1""")
+# Alter Fluchtgang zur Rundkammer unter dem Brunnen der Vorburg
+if "Vorburg" in BURG_BRUNNEN:
+    _vb = BURG_BRUNNEN["Vorburg"]
+    R6 = (round(_vb[0], 3), round(_vb[1], 3))
+    uw_raum(R6, 0.0, 5.0, 5.0, H_SK, 2.6, 1.4, 6, 0.0, 8)
+    # erst gerade nach Westen aus der Kellerwand, in einer kleinen Kammer knickt der Gang zum Brunnen ab
+    R7 = (62.0, _sk_gt[1])
+    uw_raum(R7, 0.0, 4.0, 4.0, H_SK, 2.4, 1.2, 6, 0.0, 8)
+    uw_gang(_sk_gt, H_SK, rund_punkt(R7, 2.0, 90.0), H_SK, breite=1.4, hoehe=2.4, art=2, fackeln=0)
+    uw_gang(rund_punkt(R7, 2.0, gier_von(R7, R6)), H_SK, rund_punkt(R6, 2.5, gier_von(R6, R7)), H_SK, breite=1.4, hoehe=2.4, art=2,
+            fackeln=0)
+    UW_SCH.extend([R6[0], R6[1], 0.7, round(H_SK + 2.6 + 1.4 - 0.3, 3), round(H(*_vb) - 0.3, 3)])
+    uw_stueck(63, (round(R6[0] + 1.2, 3), round(R6[1] - 0.8, 3)), H_SK, 40.0)
+    uw_lesbar("FluchtgangInschrift", (round(R6[0] - 1.9, 3), R6[1]), H_SK + 1.6, "Eine Inschrift neben dem Gang", "fluchtgang_inschrift")
+
 # ---------- Knoten ----------
 N("Unterwelt", "Node3D", ".", f"""script = ExtResource("62_unterwelt")
 gewoelbe = PackedFloat32Array({_zahlen(UW_GW)})

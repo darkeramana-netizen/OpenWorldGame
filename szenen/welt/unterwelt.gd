@@ -1086,6 +1086,9 @@ func _rundkammer(w: PackedFloat32Array, oeff: Array) -> void:
 				return Vector3(c.x + sin(a) * R * cos(f), kaempfer + stich * sin(f), c.y + cos(a) * R * cos(f))
 			var nrm := func(f: float, a: float) -> Vector3:
 				return -Vector3(sin(a) * cos(f) / R, sin(f) / maxf(stich, 0.1), cos(a) * cos(f) / R).normalized()
+			var mitte_q := c + Vector2(sin((a0 + a1) / 2.0), cos((a0 + a1) / 2.0)) * R * cos((f0 + f1) / 2.0)
+			if _im_schacht(mitte_q):
+				continue
 			_viereck_n("mauer", pkt.call(f0, a0), nrm.call(f0, a0), pkt.call(f0, a1), nrm.call(f0, a1), pkt.call(f1, a1), nrm.call(f1, a1),
 				pkt.call(f1, a0), nrm.call(f1, a0))
 	# Rippen und Kämpferring
@@ -1100,9 +1103,10 @@ func _rundkammer(w: PackedFloat32Array, oeff: Array) -> void:
 		_band("hell", pkt, inn, 0.2, 0.12)
 	_mantel("hell", c, R - 0.12, R - 0.12, kaempfer - 0.2, kaempfer, 40, true)
 	_ring("hell", c, R - 0.12, R + 0.01, kaempfer - 0.2, 40, false)
-	_mantel("hell", c, 0.32, 0.26, kaempfer + stich - 0.28, kaempfer + stich + 0.05, 10)
-	_ring("hell", c, 0.0, 0.26, kaempfer + stich - 0.28, 10, false)
-	_klotz("bruchstein", c, Vector2(1, 0), Vector2(0, 1), -R - 0.8, R + 0.8, -R - 0.8, R + 0.8, kaempfer + stich + 0.3, kaempfer + stich + 0.7, true)
+	if not _im_schacht(c):
+		_mantel("hell", c, 0.32, 0.26, kaempfer + stich - 0.28, kaempfer + stich + 0.05, 10)
+		_ring("hell", c, 0.0, 0.26, kaempfer + stich - 0.28, 10, false)
+		_klotz("bruchstein", c, Vector2(1, 0), Vector2(0, 1), -R - 0.8, R + 0.8, -R - 0.8, R + 0.8, kaempfer + stich + 0.3, kaempfer + stich + 0.7, true)
 	# Fackeln: zwei gegenüber, abseits der Öffnungen
 	if zier & 2:
 		var gesetzt := 0
