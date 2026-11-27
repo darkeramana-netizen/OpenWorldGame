@@ -97,7 +97,7 @@ func _stock(bau: Node3D, p: Vector2, n: Vector2, unten: float, oben: float, dick
 	var entlang := normale.cross(Vector3.UP).normalized()
 	for h in [1.0, 3.0]:
 		for s in [-1.2, 1.2]:
-			var q := flaeche + Vector3.UP * (h - 1.0) + normale * 0.1 + entlang * s
+			var q: Vector3 = flaeche + Vector3.UP * (h - 1.0) + normale * 0.1 + entlang * s
 			if not raum.intersect_ray(PhysicsRayQueryParameters3D.create(q, q + normale * 1.8)).is_empty():
 				return
 	var hoehe_max := minf(oben - boden - 0.6, _zufall.randf_range(2.5, 8.5))
