@@ -7073,24 +7073,24 @@ tagesablauf = PackedStringArray("vormittag: 34.27,6,65.67; 31.78,6,53.78; 37.67,
 tempo = 0.9
 
 [node name="Hofleben21" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 26.15, 6, 89.29)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 19.07, 6, 85.43)
 anzeige_name = "Hille Kalk"
 dialog_id = "kind_burg"
 kordel = 0
 tracht = Color(0.36, 0.3, 0.26, 1)
 sichtbar_wenn = "alarm<2"
-tagesablauf = PackedStringArray("morgengrauen: 2.3,6,98.96 | weg", "vormittag: 26.15,6,89.29; 23.47,6,91.89; 20.95,6,89.14; 23.51,6,86.69; 26.15,6,89.29 | runde", "mittag: 2.3,6,98.96 | weg", "nachmittag: 26.15,6,89.29; 23.47,6,91.89; 20.95,6,89.14; 23.51,6,86.69; 26.15,6,89.29 | runde", "stille_stunde: 2.3,6,98.96 | weg")
+tagesablauf = PackedStringArray("morgengrauen: 18.71,6,104.63 | weg", "vormittag: 19.07,6,85.43; 16.4,6,88.03; 13.88,6,85.28; 16.44,6,82.83; 19.07,6,85.43 | runde", "mittag: 18.71,6,104.63 | weg", "nachmittag: 19.07,6,85.43; 16.4,6,88.03; 13.88,6,85.28; 16.44,6,82.83; 19.07,6,85.43 | runde", "stille_stunde: 18.71,6,104.63 | weg")
 tempo = 2.6
 groesse = 0.72
 
 [node name="Hofleben22" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 20.95, 6, 89.14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 13.88, 6, 85.28)
 anzeige_name = "Kuno Torf"
 dialog_id = "kind_burg"
 kordel = 0
 tracht = Color(0.5, 0.44, 0.32, 1)
 sichtbar_wenn = "alarm<2"
-tagesablauf = PackedStringArray("morgengrauen: 2.3,6,98.96 | weg", "vormittag: 20.95,6,89.14; 23.51,6,86.69; 26.15,6,89.29; 23.47,6,91.89; 20.95,6,89.14 | runde", "mittag: 2.3,6,98.96 | weg", "nachmittag: 20.95,6,89.14; 23.51,6,86.69; 26.15,6,89.29; 23.47,6,91.89; 20.95,6,89.14 | runde", "stille_stunde: 2.3,6,98.96 | weg")
+tagesablauf = PackedStringArray("morgengrauen: 18.71,6,104.63 | weg", "vormittag: 13.88,6,85.28; 16.44,6,82.83; 19.07,6,85.43; 16.4,6,88.03; 13.88,6,85.28 | runde", "mittag: 18.71,6,104.63 | weg", "nachmittag: 13.88,6,85.28; 16.44,6,82.83; 19.07,6,85.43; 16.4,6,88.03; 13.88,6,85.28 | runde", "stille_stunde: 18.71,6,104.63 | weg")
 tempo = 2.6
 groesse = 0.72
 
@@ -7355,7 +7355,7 @@ tagesablauf = PackedStringArray("morgengrauen: 25.97,16,-104.32 | haltung=reden"
 
 [node name="HofTiere" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("29_ausstattung")
-stuecke = PackedFloat32Array(22, 51.47, -8, 154.44, 37.9268, 23, 4.2, -8, 138.51, 301.633, 22, 16.47, 6, 85.43, 39.3282, 23, 16.54, 6, 97.49, 132.795, 22, 1.11, 14, -37.66, 307.037, 23, -12.34, 14, 2.99, 354.064, 22, 7.4, 16, -98.54, 185.133, 23, -41.61, 16, -113.38, 208.61)
+stuecke = PackedFloat32Array(22, 51.47, -8, 154.44, 37.9268, 23, 4.2, -8, 138.51, 301.633, 22, 19.17, 6, 75.55, 7.75483, 23, 12.5, 6, 95.69, 332.498, 22, 1.11, 14, -37.66, 307.037, 23, -12.34, 14, 2.99, 354.064, 22, -5.62, 16, -114.96, 104.279, 23, -36.19, 16, -87.36, 154.935)
 
 [node name="Sprungpunkte" type="Node3D" parent="."]
 

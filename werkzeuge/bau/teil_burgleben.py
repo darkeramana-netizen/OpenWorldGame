@@ -451,6 +451,17 @@ print("Burgleben:", _tw, "Torwachen,", _gs, "Gesinde, Kaplan, Haushofmeister" + 
 # alle heim. Alle Plätze frei von Häusern, Bauten, Ausstattung und Treppen, jede Strecke dazwischen frei.
 random.seed(2711)
 HL_BESETZT = []
+# Die Torbereiche bleiben frei: an den Toren öffnet die Wache sonst jedem, der vorbeigeht
+HL_SPERREN = _HINDERNISSE + _tueren_w
+
+
+def hl_strecke_frei(a, b):
+    n = max(1, int(math.dist(a, b) / 0.4))
+    for i in range(n + 1):
+        q = (a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n)
+        if any(_drin(q, r_) for r_ in HL_SPERREN):
+            return False
+    return True
 
 
 def hof_tueren(hof_w):
@@ -463,7 +474,7 @@ def hof_tueren(hof_w):
         a_ = math.radians(g_)
         vor_ = (_FORMEN[f_][1] + 0.7) / 2 + 3.0
         t_ = (x_ + math.sin(a_) * vor_, z_ + math.cos(a_) * vor_)
-        if not any(_drin(t_, r_) for r_ in _HINDERNISSE):
+        if not any(_drin(t_, r_) for r_ in HL_SPERREN):
             aus_.append(t_)
     return aus_
 
@@ -480,7 +491,7 @@ def freie_stelle(hof_w, rand=3.0, abstand=1.3, nahe=None, weite=None, versuche=4
             q = (random.uniform(min(xs_), max(xs_)), random.uniform(min(zs_), max(zs_)))
         if not _drin(q, hof_w) or _abstand_rand(q, hof_w) < rand:
             continue
-        if any(_drin((q[0] + dx_, q[1] + dz_), r_) for r_ in _HINDERNISSE
+        if any(_drin((q[0] + dx_, q[1] + dz_), r_) for r_ in HL_SPERREN
                for dx_, dz_ in ((0, 0), (abstand, 0), (-abstand, 0), (0, abstand), (0, -abstand))):
             continue
         if any(math.dist(q, m_) < 2.4 for m_ in HL_BESETZT):
@@ -492,7 +503,7 @@ def freie_stelle(hof_w, rand=3.0, abstand=1.3, nahe=None, weite=None, versuche=4
 
 
 def naechste_tuer(q, tueren):
-    frei_ = [t_ for t_ in tueren if strecke_frei(q, t_)]
+    frei_ = [t_ for t_ in tueren if hl_strecke_frei(q, t_)]
     return min(frei_, key=lambda t_: math.dist(q, t_)) if frei_ else None
 
 
@@ -534,7 +545,7 @@ for name_, hof_, boden_ in _hoefe:
             w_ = math.tau * k_ / anzahl_ + g_
             q_ = (m_[0] + math.cos(w_) * 0.85, m_[1] + math.sin(w_) * 0.85)
             heim_ = naechste_tuer(q_, tueren_)
-            if heim_ is None or not strecke_frei(q_, m_):
+            if heim_ is None or not hl_strecke_frei(q_, m_):
                 continue
             weiblich_ = (k_ + g_) % 2 == 0
             ablauf_ = {"morgengrauen": (p3([heim_], boden_), ["weg"]),
@@ -572,9 +583,9 @@ for name_, hof_, boden_ in _hoefe:
             if len(runde_) >= 4:
                 break
             b_ = freie_stelle(hof_w_, nahe=runde_[-1], weite=(4.0, 9.0))
-            if b_ is not None and strecke_frei(runde_[-1], b_):
+            if b_ is not None and hl_strecke_frei(runde_[-1], b_):
                 runde_.append(b_)
-        if len(runde_) < 3 or not strecke_frei(runde_[-1], runde_[0]):
+        if len(runde_) < 3 or not hl_strecke_frei(runde_[-1], runde_[0]):
             continue
         heim_ = naechste_tuer(a_, tueren_)
         if heim_ is None:
@@ -586,7 +597,7 @@ for name_, hof_, boden_ in _hoefe:
         _hl += 1
     # Boten: eilig von Tür zu Tür (weit auseinander), dazwischen kurz an der Tür
     for k_ in range(2 if gross_ else 1):
-        paare_ = [(a_, b_) for a_ in tueren_ for b_ in tueren_ if math.dist(a_, b_) > 18.0 and strecke_frei(a_, b_)]
+        paare_ = [(a_, b_) for a_ in tueren_ for b_ in tueren_ if math.dist(a_, b_) > 18.0 and hl_strecke_frei(a_, b_)]
         if not paare_:
             continue
         a_, b_ = random.choice(paare_)
@@ -605,9 +616,9 @@ for name_, hof_, boden_ in _hoefe:
             if len(runde_) >= 4:
                 break
             b_ = freie_stelle(hof_w_, rand=4.0, abstand=1.8, nahe=runde_[-1], weite=(7.0, 14.0))
-            if b_ is not None and strecke_frei(runde_[-1], b_):
+            if b_ is not None and hl_strecke_frei(runde_[-1], b_):
                 runde_.append(b_)
-    if len(runde_) >= 3 and strecke_frei(runde_[-1], runde_[0]):
+    if len(runde_) >= 3 and hl_strecke_frei(runde_[-1], runde_[0]):
         for k_ in range(2):
             versatz_ = runde_[k_:] + runde_[:k_]
             heim_ = naechste_tuer(versatz_[0], tueren_) or versatz_[0]
@@ -622,7 +633,7 @@ for name_, hof_, boden_ in _hoefe:
         m_ = freie_stelle(hof_w_, rand=4.0, abstand=2.5)
         if m_ is not None:
             runde_ = [(m_[0] + math.cos(w_) * 2.6, m_[1] + math.sin(w_) * 2.6) for w_ in (0.0, 1.6, 3.2, 4.7)]
-            if all(strecke_frei(a_, b_) for a_, b_ in zip(runde_, runde_[1:] + runde_[:1])):
+            if all(hl_strecke_frei(a_, b_) for a_, b_ in zip(runde_, runde_[1:] + runde_[:1])):
                 heim_ = naechste_tuer(m_, tueren_)
                 HL_BESETZT.append(m_)
                 for k_ in range(2):
