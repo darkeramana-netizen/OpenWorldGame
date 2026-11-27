@@ -454,13 +454,14 @@ HL_BESETZT = []
 
 
 def hof_tueren(hof_w):
-    """Plätze vor den Haustüren eines Hofs (frei)"""
+    """Plätze vor den Haustüren eines Hofs (frei), 3 m vor der Tür: außerhalb ihrer Reichweite (fluegel.gd, 2,2 m), sonst
+    stünden die Türen ständig offen"""
     aus_ = []
     for x_, _, z_, g_, f_ in HOFHAEUSER:
         if not _drin((x_, z_), hof_w):
             continue
         a_ = math.radians(g_)
-        vor_ = (_FORMEN[f_][1] + 0.7) / 2 + 1.6
+        vor_ = (_FORMEN[f_][1] + 0.7) / 2 + 3.0
         t_ = (x_ + math.sin(a_) * vor_, z_ + math.cos(a_) * vor_)
         if not any(_drin(t_, r_) for r_ in _HINDERNISSE):
             aus_.append(t_)
