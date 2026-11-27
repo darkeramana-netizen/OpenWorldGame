@@ -1,0 +1,35 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "geheimgang_krypta",
+			"knoten": "offen"
+		},
+		{
+			"bedingung": "hinweis_sorrow",
+			"knoten": "wieder"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Sarkophag des Wulfric Dane",
+			"text": "Auf dem Deckel liegt ein Ritter aus Stein, die Hände auf dem Schwert. Die Inschrift am Rand: „Wulfric Dane, Großmeister. Er trug die Schuld, damit wir nicht vergessen.“ Darunter, kleiner: „Er schrieb das Räumungsrecht.“",
+			"weiter": "fuss"
+		},
+		"fuss": {
+			"sprecher": "Sarkophag des Wulfric Dane",
+			"text": "Am Fußende ist der Stein anders behauen, älter und gröber: „Unter der Asche liegt, was wir waren.“ Der Sarkophag steht seltsam nah an der Wand. Dahinter zieht es kalt aus einer Fuge.",
+			"setze": [
+				"hinweis_sorrow"
+			],
+			"akte": "Am Sarkophag des Großmeisters Wulfric Dane (Fall von Burg Sorrow, um 940) gelesen: „Unter der Asche liegt, was wir waren.“ Hinter dem Sarkophag zieht es aus einer Fuge in der Wand."
+		},
+		"wieder": {
+			"sprecher": "Sarkophag des Wulfric Dane",
+			"text": "„Unter der Asche liegt, was wir waren.“ Hinter dem Sarkophag zieht es noch immer kalt aus der Fuge in der Wand."
+		},
+		"offen": {
+			"sprecher": "Sarkophag des Wulfric Dane",
+			"text": "Der steinerne Ritter schläft weiter. Hinter ihm steht die Wand offen, und aus der Tiefe riecht es nach altem Rauch."
+		}
+	}
+}

@@ -1,0 +1,27 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "sorrow_wappen_gesehen",
+			"knoten": "wieder"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Wappenstein",
+			"text": "Über dem Altar, unter einer Schicht aus Ruß: ein Turm mit Flügeln, darüber ein Halbmond. Am Rand, kaum noch zu lesen: „Ordo Sorrow“. Das alte Wappen des Ordens, aus der Zeit, bevor er seinen Namen ablegte.",
+			"weiter": "russ"
+		},
+		"russ": {
+			"sprecher": "Wappenstein",
+			"text": "Die Hitze hat den Stein gesprengt. Wer hier unten war, als die Burg über ihm brannte, hat das Feuer kommen hören.",
+			"setze": [
+				"sorrow_wappen_gesehen"
+			],
+			"akte": "Unter der Krypta von Drachenstein die Ruinen von Burg Sorrow gefunden: eine Halle, eine Kapelle mit dem alten Wappen (Turm mit Flügeln und Halbmond, „Ordo Sorrow“), alles vom Feuer geschwärzt."
+		},
+		"wieder": {
+			"sprecher": "Wappenstein",
+			"text": "Turm, Flügel, Halbmond. „Ordo Sorrow“. Der Ruß hat sich in jede Kerbe gesetzt."
+		}
+	}
+}

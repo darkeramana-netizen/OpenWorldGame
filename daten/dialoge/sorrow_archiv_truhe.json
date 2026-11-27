@@ -1,0 +1,24 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "sorrow_truhe_leer",
+			"knoten": "leer"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Eine verkohlte Truhe",
+			"text": "Das Holz ist außen verkohlt, innen trocken geblieben. Pergamente, die beim Anfassen zerfallen. Darunter ein Lederbeutel mit dünnen, alten Silbermünzen und ein Siegelring mit Turm und Halbmond.",
+			"setze": [
+				"sorrow_truhe_leer",
+				"siegelring_sorrow"
+			],
+			"geld": 40,
+			"akte": "Im verbrannten Archiv von Burg Sorrow einen Siegelring mit dem alten Wappen und 40 Heller in alten Münzen gefunden."
+		},
+		"leer": {
+			"sprecher": "Eine verkohlte Truhe",
+			"text": "Asche und zerfallenes Pergament. Mehr ist hier nicht."
+		}
+	}
+}

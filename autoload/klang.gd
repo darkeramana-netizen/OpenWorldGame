@@ -9,13 +9,15 @@ extends Node
 ##   Hörer herum, Brandung nahe der Meereshöhe; drinnen (Decke über dem Kopf) alles leiser.
 ## - Glocken zur vollen Stunde (Spielzeit): St. Marien (groß), die Glockenstube des Bergfrieds und der Glockenturm von
 ##   Gravemarch (klein).
+## - Unter Tage (Räume und Gänge eines Knotens in der Gruppe "unterwelt", szenen/welt/unterwelt.gd): kein Wind und
+##   keine Brandung, dafür ein tiefes Grollen, fallende Tropfen um den Hörer und Hall auf allem (Effekt am Master-Bus).
 ## - Amboss: wo ein Knoten in der Gruppe "klang_amboss" steht (die Schmiede, ausstattung.gd), hämmert tagsüber jemand.
 ##
 ## Lautstärke: Busse "Umgebung" und "Geraeusche" unter Master (Schalter im Menü folgen später).
 
 const ORDNER := "res://klaenge/"
 const POOL := 24
-const SCHLEIFEN := ["wind_sanft", "wind_stark", "feuer", "brandung", "markt", "brunnen"]
+const SCHLEIFEN := ["wind_sanft", "wind_stark", "feuer", "brandung", "markt", "brunnen", "hoehle"]
 
 var _streams := {}                  # Name → AudioStream (oder null, wenn es die Datei nicht gibt)
 var _varianten := {}                # Grundname → Anzahl Varianten
@@ -27,6 +29,10 @@ var _ausruf_in := 5.0
 var _wind_sanft: AudioStreamPlayer
 var _wind_stark: AudioStreamPlayer
 var _brandung: AudioStreamPlayer
+var _hoehle: AudioStreamPlayer
+var _unter_tage := 0.0              # 0 oben .. 1 im Untergrund (weich)
+var _tropfen_in := 2.0
+var _hall: AudioEffectReverb
 var _pruef := 0.0
 var _drinnen := 0.0                 # 0 draußen .. 1 drinnen (weich)
 var _hoehe := 0.0                   # über dem Boden
@@ -98,6 +104,14 @@ func _ready() -> void:
 	_wind_sanft = _umgebung("wind_sanft")
 	_wind_stark = _umgebung("wind_stark")
 	_brandung = _umgebung("brandung")
+	_hoehle = _umgebung("hoehle")
+	_hall = AudioEffectReverb.new()
+	_hall.room_size = 0.75
+	_hall.damping = 0.35
+	_hall.spread = 0.8
+	_hall.wet = 0.0
+	_hall.dry = 1.0
+	AudioServer.add_bus_effect(0, _hall)
 	var zeit := get_node_or_null("/root/Spielzeit")
 	if zeit != null and zeit.has_signal("minute_vergangen"):
 		zeit.minute_vergangen.connect(_minute)
@@ -213,6 +227,7 @@ func _process(delta: float) -> void:
 		_wind_sanft.volume_db = -80.0
 		_wind_stark.volume_db = -80.0
 		_brandung.volume_db = -80.0
+		_hoehle.volume_db = -80.0
 		return
 	var k := kamera.global_position
 	_pruef -= delta
@@ -220,15 +235,20 @@ func _process(delta: float) -> void:
 		_pruef = 0.5
 		_umgebung_pruefen(kamera)
 	# Wind: sanft überall draußen, stark ab etwa 6 m über dem Boden (Wehrgang, Turm), drinnen gedämpft
-	var draussen := 1.0 - _drinnen
+	var draussen := (1.0 - _drinnen) * (1.0 - _unter_tage)
 	var hoch := smoothstep(5.0, 22.0, _hoehe)
 	_wind_sanft.volume_db = linear_to_db(maxf(0.22 * draussen + 0.04, 0.0001))
 	_wind_stark.volume_db = linear_to_db(maxf(0.45 * hoch * draussen, 0.0001))
 	# Brandung: nahe der Meereshöhe
 	if not is_nan(_meer_y):
-		_brandung.volume_db = linear_to_db(maxf((1.0 - smoothstep(4.0, 70.0, k.y - _meer_y)) * 0.35 * (0.4 + 0.6 * draussen), 0.0001))
+		_brandung.volume_db = linear_to_db(maxf((1.0 - smoothstep(4.0, 70.0, k.y - _meer_y)) * 0.35 * (0.4 + 0.6 * draussen)
+			* (1.0 - 0.9 * _unter_tage), 0.0001))
 	else:
 		_brandung.volume_db = -80.0
+	_hoehle.volume_db = linear_to_db(maxf(0.5 * _unter_tage, 0.0001))
+	_hall.wet = 0.32 * _unter_tage
+	_hall.dry = 1.0 - 0.25 * _unter_tage
+	_tropfen(delta, k)
 	_voegel(delta, k)
 	_hammer(delta, k)
 	_markttag(delta, k)
@@ -252,6 +272,25 @@ func _umgebung_pruefen(kamera: Camera3D) -> void:
 	_hoehe = k.y - nach_unten["position"].y if not nach_unten.is_empty() else 30.0
 	var nach_oben := raum.intersect_ray(PhysicsRayQueryParameters3D.create(k + Vector3.UP * 0.3, k + Vector3.UP * 25.0))
 	_drinnen = move_toward(_drinnen, 1.0 if not nach_oben.is_empty() else 0.0, 0.5)
+	var unten := false
+	for u in get_tree().get_nodes_in_group("unterwelt"):
+		if u.has_method("ist_unter_tage") and u.ist_unter_tage(k, 0.5):
+			unten = true
+			break
+	_unter_tage = move_toward(_unter_tage, 1.0 if unten else 0.0, 0.34)
+
+
+## Unter Tage: alle paar Sekunden ein Tropfen irgendwo um den Hörer
+func _tropfen(delta: float, k: Vector3) -> void:
+	if _unter_tage < 0.5:
+		return
+	_tropfen_in -= delta
+	if _tropfen_in > 0.0:
+		return
+	_tropfen_in = randf_range(1.2, 5.0)
+	var w := randf() * TAU
+	var r := randf_range(2.0, 12.0)
+	spiele("tropfen", k + Vector3(cos(w) * r, randf_range(0.5, 2.5), sin(w) * r), -6.0, 30.0)
 
 
 func _maske_laden() -> void:

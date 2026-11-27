@@ -6,7 +6,8 @@ Alle Dateien hier erzeugt `werkzeuge/klaenge_erzeugen.py`. Alles ist frei verwen
 
 `wind_sanft`, `wind_stark`, `feuer`, `brandung`, `markt`, `brunnen` (Schleifen), `vogel_*` (Amsel, Spatz, Meise, Fink,
 Schwalbe, Krähe), Tiere (`pferd_*`, `huf_*`, `schwein_*`, `kuh_*`, `schaf_*`, `katze_*`), `ausruf_*`,
-`amboss_*`, `glocke_gross`, `glocke_klein`, `schuss`. Die Schritte auf Gras, Erde und Holz (`schritt_gras_*`,
+`amboss_*`, `glocke_gross`, `glocke_klein`, `schuss`; unter Tage `tropfen_*`, `hoehle` (Schleife) und
+`stein_schleifen` (Geheimtür), erzeugt mit `python3 werkzeuge/klaenge_erzeugen.py --untergrund`. Die Schritte auf Gras, Erde und Holz (`schritt_gras_*`,
 `schritt_erde_*`, `schritt_holz_*`) sind aus den Schritten von Kenney abgeleitet (gefiltert, Tonhöhe, Rascheln dazu).
 
 ## Kenney, „50 RPG sound effects“ (CC0)

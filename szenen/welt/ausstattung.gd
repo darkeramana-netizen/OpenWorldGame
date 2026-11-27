@@ -19,7 +19,10 @@ extends Node3D
 ## Werkstatt mit Pultdach, Rücken an der Hofmauer bei lokal -z, offen nach +z; innen Esse, Amboss, Werkbank),
 ## 53 Mauerschuppen (8 m; 54: 5,2 m; Pultdach aus Schindeln auf einer Mauerlatte in der Hofmauer, die etwa bei lokal z = -2,4
 ## steht; offen nach +z; darin Brennholz, Fässer, Wagenrad, Werkzeug), 55 Baugerüst vor der Hofmauer (6 m, ebenso),
-## 56 Misthaufen mit Forke, 57 Flechtzaun (2 m entlang x)
+## 56 Misthaufen mit Forke, 57 Flechtzaun (2 m entlang x),
+## Untergrund (szenen/welt/unterwelt.gd): 58 Sarkophag mit Liegefigur (Länge entlang z, Kopf bei +z), 59 Gebeinstapel
+## im Beinhaus (2 m entlang x, Rücken bei z = -0,3 an der Wand), 60 Kerzen am Boden, 61 Altar (Vorderseite +z),
+## 62 Schutthaufen, 63 Gebeine am Boden (Skelett, ohne Kollision), 64 Weinfass auf dem Lager (liegend, entlang z)
 @export var stuecke := PackedFloat32Array():
 	set(w):
 		stuecke = w
@@ -50,7 +53,9 @@ const KASTEN := [Vector3(0.36, 0.95, 0.36), Vector3(0.38, 0.75, 0.38), Vector3(0
 	Vector3(1.0, 0.95, 0.4), Vector3(1.6, 0.95, 0.45), Vector3(0.65, 1.6, 0.35), Vector3(0.75, 0.3, 1.85),
 	Vector3(0.9, 0.5, 0.2), Vector3(1.0, 0.85, 1.0), Vector3(0.35, 0.6, 0.35), Vector3(1.1, 0.9, 0.7),
 	Vector3(0.55, 1.75, 0.35), Vector3(1.05, 1.9, 2.4),
-	Vector3.ZERO, Vector3(0.31, 0.35, 0.31), Vector3.ZERO, Vector3(4.1, 3.6, 1.6), Vector3(2.6, 3.6, 1.6), Vector3(3.0, 6.3, 1.5), Vector3(1.4, 0.9, 1.2), Vector3(1.0, 1.0, 0.06)]
+	Vector3.ZERO, Vector3(0.31, 0.35, 0.31), Vector3.ZERO, Vector3(4.1, 3.6, 1.6), Vector3(2.6, 3.6, 1.6), Vector3(3.0, 6.3, 1.5), Vector3(1.4, 0.9, 1.2), Vector3(1.0, 1.0, 0.06),
+	Vector3(0.55, 1.1, 1.2), Vector3(1.0, 1.55, 0.3), Vector3.ZERO, Vector3(0.95, 1.05, 0.5), Vector3(0.75, 0.55, 0.75), Vector3.ZERO,
+	Vector3(0.65, 1.25, 0.8)]
 ## Fotoscans (Poly Haven, CC0; werkzeuge/modell_laden.py, modelle/ausstattung): Art → Teile [Modell, Ort, Drehung in Grad
 ## (x, y, z), Maßstab]. Ein Teil mit einer Zahl statt eines Namens ist eine selbst gebaute Form: 100 + Art ist die Art ohne
 ## die Dinge, die ein Scan ersetzt (Werkzeug, Axt, Schild, Laterne, Korb). Bis SCAN_NAH Meter zeigt jede Art die volle
@@ -503,6 +508,20 @@ func _mesh(art: int) -> ArrayMesh:
 			_misthaufen()
 		57:  # Flechtzaun (2 m): Pfähle, dazwischen Weidenruten im Wechsel vor und hinter den Pfählen geflochten
 			_flechtzaun()
+		58:
+			_sarkophag()
+		59:
+			_gebeinstapel()
+		60:
+			_kerzen(Vector3.ZERO, 5, 7)
+		61:
+			_altar()
+		62:
+			_schutt()
+		63:
+			_skelett()
+		64:
+			_lagerfass()
 		18:  # Heuhaufen
 			_zylinder("heu", Vector3.ZERO, 0.95, 0.95, 0.45, 12)
 			_zylinder("heu", Vector3(0, 0.4, 0), 0.75, 0.8, 0.35, 12)
@@ -1337,6 +1356,137 @@ func _misthaufen() -> void:
 	_zylinder("wasser", Vector3(1.6, 0.018, 0.65), 0.32, 0.32, 0.004, 10)
 
 
+## Sarkophag (Art 58): Sockel, Kasten mit Blendarkaden, Deckplatte mit Profil, darauf die Liegefigur eines Ritters
+## (Kissen unter dem Kopf, Hände auf dem Schwert, Füße auf einem kleinen Hund)
+func _sarkophag() -> void:
+	_klotz("quader", Vector3(-0.56, 0, -1.2), Vector3(0.56, 0.16, 1.2))
+	_klotz("quader", Vector3(-0.48, 0.16, -1.12), Vector3(0.48, 0.78, 1.12))
+	_klotz("quader", Vector3(-0.51, 0.7, -1.15), Vector3(0.51, 0.8, 1.15))
+	_klotz("quader", Vector3(-0.53, 0.8, -1.17), Vector3(0.53, 0.9, 1.17))
+	# Blendarkaden an den Längsseiten: Pfeilerchen vor dem Kasten
+	for sx: float in [-1.0, 1.0]:
+		for k in 6:
+			var z := -1.0 + k * 0.4
+			_klotz("quader", Vector3(sx * 0.48 - 0.025, 0.16, z - 0.035), Vector3(sx * 0.48 + 0.025, 0.7, z + 0.035))
+		for k in 5:
+			var z := -0.8 + k * 0.4
+			_klotz("stein", Vector3(sx * 0.475 - 0.01, 0.3, z - 0.14), Vector3(sx * 0.475 + 0.01, 0.6, z + 0.14))
+	# Liegefigur
+	_klotz("quader", Vector3(-0.2, 0.9, 0.72), Vector3(0.2, 0.98, 1.05))             # Kissen
+	_klotz("quader", Vector3(-0.11, 0.95, 0.74), Vector3(0.11, 1.12, 0.98))           # Kopf
+	_klotz("quader", Vector3(-0.24, 0.9, -0.05), Vector3(0.24, 1.08, 0.72))           # Rumpf
+	_klotz("quader", Vector3(-0.2, 0.9, -0.8), Vector3(0.2, 1.02, -0.05))             # Beine
+	_klotz("quader", Vector3(-0.17, 0.9, -1.0), Vector3(0.17, 1.12, -0.82))           # Füße
+	_klotz("quader", Vector3(-0.15, 0.9, -1.15), Vector3(0.15, 1.05, -0.98))          # Hund
+	_klotz("quader", Vector3(-0.03, 1.08, -0.62), Vector3(0.03, 1.12, 0.42))          # Schwert
+	_klotz("quader", Vector3(-0.13, 1.08, 0.34), Vector3(0.13, 1.12, 0.39))           # Parierstange
+	_klotz("quader", Vector3(-0.09, 1.08, 0.4), Vector3(0.09, 1.14, 0.52))            # Hände
+
+
+## Gebeinstapel (Art 59): Reihen von Röhrenknochen (die Enden nach vorn), dazwischen Reihen von Schädeln
+func _gebeinstapel() -> void:
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = 5959
+	var y := 0.0
+	var reihe := 0
+	while y < 1.45:
+		var schaedel := reihe % 3 == 2
+		var h := 0.17 if schaedel else 0.11
+		_klotz("knochen", Vector3(-1.0, y, -0.3), Vector3(1.0, y + h, 0.12 if schaedel else 0.18))
+		if schaedel:
+			var x := -0.92
+			while x < 0.92:
+				var b := zufall.randf_range(0.13, 0.16)
+				_klotz("knochen", Vector3(x, y + 0.01, 0.12), Vector3(x + b, y + h - 0.01, 0.2), zufall.randf_range(-0.15, 0.15))
+				for auge: float in [0.035, 0.1]:
+					_klotz("ruß", Vector3(x + auge - 0.02, y + 0.08, 0.195), Vector3(x + auge + 0.02, y + 0.12, 0.205))
+				x += b + zufall.randf_range(0.02, 0.05)
+		else:
+			var x := -0.97
+			while x < 0.95:
+				var d := zufall.randf_range(0.04, 0.06)
+				var vor := zufall.randf_range(0.0, 0.07)
+				_klotz("knochen", Vector3(x, y + 0.02, 0.18 + vor - 0.04), Vector3(x + d, y + 0.02 + d, 0.2 + vor))
+				x += d + zufall.randf_range(0.01, 0.04)
+		y += h
+		reihe += 1
+
+
+## Kerzen (Art 60): anzahl Kerzen verschiedener Höhe um mitte, mit Wachslachen und Flammen
+func _kerzen(mitte: Vector3, anzahl: int, saat: int) -> void:
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = saat
+	for k in anzahl:
+		var w := zufall.randf_range(0, TAU)
+		var r := zufall.randf_range(0.0, 0.22)
+		var p := mitte + Vector3(cos(w) * r, 0, sin(w) * r)
+		var h := zufall.randf_range(0.08, 0.34)
+		var dicke := zufall.randf_range(0.022, 0.04)
+		_zylinder("wachs", p, dicke * 1.8, dicke * 2.0, 0.008, 8)
+		_zylinder("wachs", p, dicke, dicke, h, 6)
+		_klotz("glut", p + Vector3(-0.008, h, -0.008), p + Vector3(0.008, h + 0.045, 0.008))
+
+
+## Altar (Art 61): Block mit Deckplatte, weißes Tuch, zwei Leuchter mit Kerzen
+func _altar() -> void:
+	_klotz("quader", Vector3(-0.9, 0, -0.45), Vector3(0.9, 0.95, 0.45))
+	_klotz("quader", Vector3(-0.98, 0.95, -0.52), Vector3(0.98, 1.05, 0.52))
+	_klotz("tuch_weiss", Vector3(-0.92, 1.05, -0.47), Vector3(0.92, 1.07, 0.47))
+	_klotz("tuch_weiss", Vector3(-0.92, 0.62, 0.47), Vector3(0.92, 1.07, 0.49))
+	_klotz("tuch_rot", Vector3(-0.3, 0.55, 0.49), Vector3(0.3, 1.07, 0.5))
+	for x: float in [-0.6, 0.6]:
+		_zylinder("metall", Vector3(x, 1.07, -0.2), 0.08, 0.04, 0.05, 8)
+		_zylinder("metall", Vector3(x, 1.1, -0.2), 0.02, 0.018, 0.3, 6)
+		_zylinder("metall", Vector3(x, 1.4, -0.2), 0.05, 0.05, 0.02, 8)
+		_zylinder("wachs", Vector3(x, 1.42, -0.2), 0.025, 0.025, 0.2, 6)
+		_klotz("glut", Vector3(x - 0.008, 1.62, -0.208), Vector3(x + 0.008, 1.665, -0.192))
+	_klotz("stoff_leder", Vector3(-0.18, 1.07, -0.05), Vector3(0.18, 1.13, 0.2))       # Buch
+
+
+## Schutthaufen (Art 62): Bruchsteine und Brocken auf einem flachen Hügel
+func _schutt() -> void:
+	var zufall := RandomNumberGenerator.new()
+	zufall.seed = 6262
+	_zylinder("stein", Vector3.ZERO, 0.75, 0.55, 0.35, 10)
+	for k in 14:
+		var w := zufall.randf_range(0, TAU)
+		var r := zufall.randf_range(0.0, 0.7)
+		var g := zufall.randf_range(0.1, 0.24)
+		var m := Vector3(cos(w) * r, 0.3 * (1.0 - r) + zufall.randf_range(0.0, 0.12), sin(w) * r)
+		_klotz("bruchstein" if k % 3 else "quader", m - Vector3(g, g * 0.7, g * 0.8), m + Vector3(g, g * 0.7, g * 0.8), zufall.randf_range(0, PI))
+
+
+## Gebeine am Boden (Art 63): ein zerfallenes Skelett, Kopf bei +z
+func _skelett() -> void:
+	_klotz("knochen", Vector3(-0.09, 0.0, 0.7), Vector3(0.09, 0.16, 0.9), 0.3)
+	_klotz("ruß", Vector3(-0.06, 0.08, 0.89), Vector3(-0.02, 0.12, 0.905), 0.3)
+	_klotz("ruß", Vector3(0.02, 0.08, 0.89), Vector3(0.06, 0.12, 0.905), 0.3)
+	_klotz("knochen", Vector3(-0.025, 0.0, 0.05), Vector3(0.025, 0.04, 0.62))            # Wirbelsäule
+	for k in 6:
+		var z := 0.5 - k * 0.07
+		for sx: float in [-1.0, 1.0]:
+			_klotz("knochen", Vector3(sx * 0.03 - (0.17 if sx < 0 else 0.0), 0.0, z), Vector3(sx * 0.03 + (0.17 if sx > 0 else 0.0), 0.025, z + 0.02), sx * 0.15)
+	_klotz("knochen", Vector3(-0.16, 0.0, -0.05), Vector3(0.16, 0.06, 0.08))              # Becken
+	for sx: float in [-1.0, 1.0]:
+		_klotz("knochen", Vector3(sx * 0.1 - 0.025, 0.0, -0.5), Vector3(sx * 0.1 + 0.025, 0.04, -0.06), sx * 0.08)
+		_klotz("knochen", Vector3(sx * 0.13 - 0.02, 0.0, -0.95), Vector3(sx * 0.13 + 0.02, 0.035, -0.52), sx * 0.12)
+		_klotz("knochen", Vector3(sx * 0.3 - 0.02, 0.0, 0.15), Vector3(sx * 0.3 + 0.02, 0.035, 0.55), sx * 0.4)
+
+
+## Weinfass auf dem Lager (Art 64): großes Fass liegend entlang z auf zwei Kanthölzern mit Keilen
+func _lagerfass() -> void:
+	var liegend := Basis(Vector3.RIGHT, PI / 2.0)
+	_zylinder("holz", Vector3(0, 0.68, -0.68), 0.5, 0.56, 1.36, 16, liegend)
+	for z: float in [-0.55, -0.2, 0.2, 0.55]:
+		_zylinder("metall", Vector3(0, 0.68, z - 0.03), 0.535 if absf(z) > 0.4 else 0.555, 0.56 if absf(z) < 0.4 else 0.545, 0.06, 16, liegend)
+	_zylinder("holz_dunkel", Vector3(0, 0.68, 0.66), 0.44, 0.44, 0.03, 16, liegend)
+	_klotz("holz", Vector3(-0.06, 0.4, 0.67), Vector3(0.06, 0.52, 0.76))               # Zapfhahn
+	for z: float in [-0.45, 0.45]:
+		_klotz("holz_dunkel", Vector3(-0.6, 0, z - 0.08), Vector3(0.6, 0.2, z + 0.08))
+		for sx: float in [-1.0, 1.0]:
+			_klotz("holz", Vector3(sx * 0.42 - 0.07, 0.2, z - 0.07), Vector3(sx * 0.42 + 0.07, 0.32, z + 0.07))
+
+
 ## Flechtzaun (Art 57), 2 m entlang x: fünf Rundpfähle, dazwischen waagrechte Weidenruten in neun Lagen, jede Rute
 ## abwechselnd vor und hinter den Pfählen (die nächste Lage umgekehrt).
 func _flechtzaun() -> void:
@@ -1675,6 +1825,8 @@ func _material(name_: String) -> Material:
 				s.albedo_texture = load("res://texturen/klippe_farbe.jpg")
 				s.uv1_triplanar = true
 				s.uv1_scale = Vector3(0.5, 0.5, 0.5)
+			elif name_ in ["knochen", "wachs"]:
+				pass
 			elif name_ in ["glut", "wasser", "glas", "kohle", "lehm", "stoff_leder", "ruß", "schlamm", "netz", "fisch", "fisch_dunkel", "kork", "pfuetze", "pfuetze_rand", "spaene", "splitter"]:
 				pass
 			elif name_ in ["fell", "haar", "taube", "taube_hals", "taube_dunkel"]:
@@ -1694,7 +1846,8 @@ func _material(name_: String) -> Material:
 			if name_ in ["wasser", "glas"]:
 				s.roughness = 0.04
 				s.metallic = 0.55
-			s.albedo_color = {"holz_dunkel": Color(0.45, 0.36, 0.3), "glut": Color(1.0, 0.5, 0.15), "wasser": Color(0.1, 0.12, 0.12),
+			s.albedo_color = {"knochen": Color(0.74, 0.7, 0.58), "wachs": Color(0.88, 0.84, 0.7), "tuch_weiss": Color(0.82, 0.79, 0.7),
+				"tuch_rot": Color(0.42, 0.08, 0.06), "holz_dunkel": Color(0.45, 0.36, 0.3), "glut": Color(1.0, 0.5, 0.15), "wasser": Color(0.1, 0.12, 0.12),
 				"stein": Color(0.62, 0.58, 0.52), "dach": Color(0.45, 0.25, 0.18), "heu": Color(0.82, 0.7, 0.36),
 				"fell": Color(0.36, 0.22, 0.13), "haar": Color(0.12, 0.09, 0.07), "korb": Color(0.85, 0.68, 0.42),
 				"rumpf_teer": Color(0.2, 0.16, 0.13), "deck": Color(0.8, 0.68, 0.52), "segel": Color(0.86, 0.8, 0.66),

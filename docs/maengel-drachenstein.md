@@ -130,6 +130,32 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | M70 | Mauern kahl | kein Bewuchs an den Wänden | behoben (`efeu.gd`): 82 Efeustöcke mit rund 55 000 Blättern (selbst gezeichneter Blattatlas, `werkzeuge/efeu_textur.py`), wachsen verzweigt vom Mauerfuß hinauf, meist auf der Hofseite; nicht an Toren und nicht hinter Häusern, Schuppen oder Treppen (Strahlen) |
 | M71 | schwarze Quadrate auf den Mauern (trotz M50) | Rüstlöcher waren zusätzlich als schwarze Flächen in die Mauergeometrie gebaut (`burgbau.gd`) | behoben: entfernt |
 
+## Untergrund (27.11.2026)
+
+Erste Ausbaustufe des Untergrunds (`szenen/welt/unterwelt.gd`, Lage in `werkzeuge/bau/teil_unterwelt.py`):
+
+- **Krypta der Großmeister** unter der Drachenkapelle: Halle mit Kreuzgewölben auf sechs achteckigen Pfeilern, Rippen
+  und Gurtbögen, Grabnischen in drei Reihen (Gebeine, Leichentücher, Verschlussplatten), fünf Sarkophage mit
+  Liegefiguren und Inschriften (Wulfric Dane, Osmund Rhee, Hartwin Brand, Mechthild Arn und der schon bereitstehende
+  des lebenden Großmeisters Ansgar Vale), Altar mit dem Totenbuch, Kerzen. Zugang über den Gruftabgang (Steinhäuschen
+  mit Satteldach an der Westseite der Kapelle) und einen Vorraum.
+- **Rundkammer und Beinhaus**: Kuppel mit Rippen; Gebeinstapel aus Schädeln und Röhrenknochen, Totenspruch.
+- **Stufengang** hinab unter die Oberburg, **Rundkammer**, **Zisterne**: Säulenhalle mit Laufsteg, Becken mit Wasser
+  und Stufen hinein, Bauinschrift; genau unter dem Ziehbrunnen der Oberburg, dessen Schacht durch das Gewölbe herabkommt
+  (Seil, Eimer, Tageslicht). Eigener Zugang aus dem Hof der Oberburg (Zisternenabgang).
+- **Wendeltreppe** (110 Stufen, 22 m) hinab zu einer Rundkammer und dem Stollen zum **Untergrundhafen**: Die Tür dort
+  ist von der Burgseite verriegelt (Abkürzung: einmal von oben geöffnet, kommt man vom Hafen herauf).
+- **Ruinen von Burg Sorrow** (um 940 verbrannt): Hinter dem Sarkophag des Wulfric Dane eine Geheimtür (erst nach seiner
+  Inschrift auffindbar), ein alter Stufengang 10 m hinab, eine Halle mit eingestürzten Jochen, Schutt und geborstenen
+  Pfeilern, Ruß an den Wänden, eine Kapelle mit dem alten Wappen („Ordo Sorrow“), ein Toter mit dem Schlüssel zum
+  verbrannten Archiv (Truhe, der Befehl des Komturs Gerolt Marn). Ein verschütteter Gang nach Osten wartet auf die
+  Schmugglerhöhlen.
+- Unter Tage: Fackeln (flackernd), dunkles Umgebungslicht (Reflexionssonden als Innenraum), Hall, Tropfen, Grollen; das
+  Gelände wird an den Abgängen genau ausgeschnitten (`gelaende.gd`, `schnitte`).
+
+Offen: Schmugglerhöhlen von den Meereshöhlen aus, Stadtkeller, Wein- und Lagerkeller unter dem Palas, Fotos mit der
+vollen Grafik (die Software-Grafik dieser Umgebung braucht dafür zu viel Speicher).
+
 ## Nächste Schritte
 
 1. Neuer Rundgang (Hoch und Episch) zur Bestätigung von M1–M3, M9, M11, M22, M25–M29.

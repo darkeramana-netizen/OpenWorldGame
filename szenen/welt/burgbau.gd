@@ -331,6 +331,7 @@ func _baue_neu() -> void:
 		_setze_zelle(Vector2(hoehlen[i], hoehlen[i + 1]))
 		_hoehle(hoehlen.slice(i, i + 7))
 		i += 7
+	_baue_zusatz()
 	_waehle_zelle(REST)
 	_fahnen_bauen()
 	if zellgroesse <= 0.0:
@@ -339,6 +340,11 @@ func _baue_neu() -> void:
 	for k: Vector2i in _zellen_flach:
 		if not (_zellen_flach[k] as Dictionary).is_empty() or not (_zellen_rund[k] as Dictionary).is_empty():
 			_fertige(_zellen_flach[k], _zellen_rund[k], self if k == REST else _zellknoten(k))
+
+
+## Für abgeleitete Bauten (szenen/welt/unterwelt.gd): weitere Bauteile, bevor die Flächen zu Meshes werden
+func _baue_zusatz() -> void:
+	pass
 
 
 ## Mesh, Schattenhülle und Kollision aus den gesammelten Flächen (je Material) unter ziel.
@@ -2548,7 +2554,9 @@ func _halle(w: PackedFloat32Array) -> void:
 		_klotz("bruchstein", c, u, n, -mauer, 0.0, seitlich.call(sq, tw, hb).x, seitlich.call(sq, tw, hb).y, boden, scheitel + 1.2)
 		# Gangwände unter dem Bogen
 		_klotz("bruchstein", c, u, n, -gang, 0.0, seitlich.call(sq, tw, tw + 1.0).x, seitlich.call(sq, tw, tw + 1.0).y, boden, tor_k)
-	_klotz("bruchstein", c, u, n, L, L + mauer, -hb - mauer, hb + mauer, grund, scheitel + 1.2)
+	# Rückwand mit der Tür hinauf in die Burg (dahinter der Gang aus szenen/welt/unterwelt.gd, 2,6 m breit, 3,2 m hoch)
+	_klotz_mit_loechern("bruchstein", c, n, u, -hb - mauer, hb + mauer, L, L + mauer, grund, scheitel + 1.2,
+		[Rect2(-1.3, boden, 2.6, 3.2)])
 	# Gangbogen (wie der Torbogen davor) und die Stirnwand darüber
 	var teile := 12
 	for k in teile:
@@ -2619,11 +2627,7 @@ func _halle(w: PackedFloat32Array) -> void:
 	for sq: float in [-1.0, 1.0]:
 		var kg: Vector2 = seitlich.call(sq, hb - 0.25, hb)
 		_klotz("hell", c, u, n, 0.0, L, kg.x, kg.y, kaempfer - 0.25, kaempfer, true)
-	# Tür in der Rückwand: der Weg hinauf in die Burg (noch verschlossen)
-	_klotz("dunkel", c, u, n, L - 0.05, L, -1.3, 1.3, boden, boden + 3.2)
-	_klotz("holz", c, u, n, L - 0.16, L - 0.05, -1.1, 1.1, boden, boden + 3.0)
-	for y_: float in [boden + 0.6, boden + 2.3]:
-		_klotz("metall", c, u, n, L - 0.2, L - 0.16, -1.05, 1.05, y_, y_ + 0.1)
+	# Gewände der Tür in der Rückwand: der Weg hinauf in die Burg (Riegeltür im Gang dahinter)
 	_klotz("hell", c, u, n, L - 0.25, L, -1.6, -1.3, boden, boden + 3.5)
 	_klotz("hell", c, u, n, L - 0.25, L, 1.3, 1.6, boden, boden + 3.5)
 	_klotz("hell", c, u, n, L - 0.25, L, -1.6, 1.6, boden + 3.2, boden + 3.6)

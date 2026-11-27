@@ -1,4 +1,4 @@
-[gd_scene load_steps=113 format=3]
+[gd_scene load_steps=118 format=3]
 
 [ext_resource type="Script" path="res://szenen/welt/tageslicht.gd" id="1_tageslicht"]
 [ext_resource type="Script" path="res://szenen/welt/gelaende.gd" id="2_gelaende"]
@@ -62,6 +62,11 @@
 [ext_resource type="Script" path="res://szenen/figuren/moewen.gd" id="43_moewen"]
 [ext_resource type="Script" path="res://szenen/figuren/tier.gd" id="41_tier"]
 [ext_resource type="Script" path="res://szenen/welt/efeu.gd" id="61_efeu"]
+[ext_resource type="Script" path="res://szenen/welt/unterwelt.gd" id="62_unterwelt"]
+[ext_resource type="Script" path="res://szenen/welt/geheimtuer.gd" id="63_geheimtuer"]
+[ext_resource type="Script" path="res://szenen/welt/fluegel.gd" id="64_fluegel"]
+[ext_resource type="Material" path="res://material/holz.tres" id="65_holz_mat"]
+[ext_resource type="Material" path="res://material/metall.tres" id="66_metall_mat"]
 [ext_resource type="Script" path="res://szenen/welt/felsen.gd" id="30_felsen"]
 [ext_resource type="Script" path="res://szenen/welt/felssockel.gd" id="31_felssockel"]
 [ext_resource type="Material" path="res://material/felssockel.tres" id="32_felssockel_mat"]
@@ -322,6 +327,7 @@ script = ExtResource("2_gelaende")
 material = SubResource("Material_gelaende")
 daten = "res://daten/gelaende/"
 loecher = PackedVector4Array(91.5, -13.5, 93.5, -4.0)
+schnitte = PackedFloat32Array(13.661, -104.65, 327.8, 3.35, 1.1, 0, -24.453, 0, 3.35, 1.1)
 
 [node name="Meer" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -20, 0)
@@ -961,7 +967,7 @@ visibility_range_end = 70.0
 visibility_range_end_margin = 10.0
 visibility_range_fade_mode = 1
 pixel_size = 0.02
-text = "Zur Burg (verschlossen)"
+text = "Zur Burg"
 font_size = 32
 outline_size = 14
 
@@ -1593,6 +1599,172 @@ multimesh = SubResource("Zinnen")
 
 [node name="Efeu" type="Node3D" parent="Drachenstein/Burgen"]
 script = ExtResource("61_efeu")
+
+[node name="UnterweltDinge" type="Node3D" parent="."]
+
+[node name="SchildGruft" type="Label3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 15.686, 20.3, -107.87)
+billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
+pixel_size = 0.02
+text = "Gruft der Großmeister"
+font_size = 32
+outline_size = 14
+
+[node name="Grabinschrift0" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 19.152, 9.2, -99.956)
+script = ExtResource("16_lesbar")
+anzeige_name = "Sarkophag des Wulfric Dane"
+aktion_text = "Lesen"
+dialog_id = "grab_wulfric_dane"
+
+[node name="Grabinschrift1" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 15.768, 9.2, -94.996)
+script = ExtResource("16_lesbar")
+anzeige_name = "Sarkophag des Osmund Rhee"
+aktion_text = "Lesen"
+dialog_id = "grab_osmund_rhee"
+
+[node name="Grabinschrift2" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 21.979, 9.2, -91.084)
+script = ExtResource("16_lesbar")
+anzeige_name = "Sarkophag des Hartwin Brand"
+aktion_text = "Lesen"
+dialog_id = "grab_hartwin_brand"
+
+[node name="Grabinschrift3" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 24.111, 9.2, -94.469)
+script = ExtResource("16_lesbar")
+anzeige_name = "Sarkophag der Mechthild Arn"
+aktion_text = "Lesen"
+dialog_id = "grab_mechthild_arn"
+
+[node name="Grabinschrift4" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 26.242, 9.2, -97.854)
+script = ExtResource("16_lesbar")
+anzeige_name = "Ein unbeschriebener Sarkophag"
+aktion_text = "Lesen"
+dialog_id = "grab_ansgar_vale"
+
+[node name="KryptaAltar" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 22.684, 9.6, -99.09)
+script = ExtResource("16_lesbar")
+anzeige_name = "Altar der Krypta"
+aktion_text = "Ansehen"
+dialog_id = "krypta_altar"
+
+[node name="GeheimtuerKrypta" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(0.53288, 0, 0.84619, 0, 1, 0, -0.84619, 0, 0.53288, 16.697, 8.6, -99.906)
+script = ExtResource("63_geheimtuer")
+breite = 1.44
+hoehe = 2.42
+dicke = 0.5
+stein = "bruchstein"
+flag = "geheimgang_krypta"
+bedingung = "hinweis_sorrow"
+anzeige_name = "Eine Fuge hinter dem Sarkophag"
+meldung_auf = "Du stemmst dich gegen den Stein. Er gibt nach und gleitet knirschend in die Mauer. Kalte Luft steigt aus der Tiefe."
+akte = "Hinter dem Sarkophag des Wulfric Dane einen geheimen Gang in die Tiefe gefunden."
+richtung = 1
+
+[node name="BeinhausTafel" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -5.672, 9.8, -79.628)
+script = ExtResource("16_lesbar")
+anzeige_name = "Tafel über den Gebeinen"
+aktion_text = "Lesen"
+dialog_id = "beinhaus_tafel"
+
+[node name="ZisterneBauinschrift" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 1.6, 5.94, -10.6)
+script = ExtResource("16_lesbar")
+anzeige_name = "Bauinschrift"
+aktion_text = "Lesen"
+dialog_id = "zisterne_inschrift"
+
+[node name="SchildZisterne" type="Label3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 0, 18.3, -28.253)
+billboard = 1
+visibility_range_end = 70.0
+visibility_range_end_margin = 10.0
+visibility_range_fade_mode = 1
+pixel_size = 0.02
+text = "Zisterne"
+font_size = 32
+outline_size = 14
+
+[node name="RiegeltuerHafen" type="Node3D" parent="UnterweltDinge"]
+transform = Transform3D(6.1232e-17, 0, -1, 0, 1, 0, 1, 0, 6.1232e-17, 24.5, -17.76, -9.5)
+script = ExtResource("64_fluegel")
+breite = 2.5
+hoehe = 3.1
+kaempfer = 0.0
+anzahl = 2
+staerke = 0.09
+winkel_offen = 95.0
+regel = "riegel"
+bedingung = "riegel_hafenstollen"
+anzeige_name = "Die Tür zum Hafen"
+reichweite = 2.2
+mat_holz = ExtResource("65_holz_mat")
+mat_metall = ExtResource("66_metall_mat")
+
+[node name="SorrowWappen" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -36.359, 0.8, -133.32)
+script = ExtResource("16_lesbar")
+anzeige_name = "Ein Wappenstein über dem Altar"
+aktion_text = "Ansehen"
+dialog_id = "sorrow_wappen"
+
+[node name="ArchivTuer" type="Node3D" parent="UnterweltDinge"]
+transform = Transform3D(0.84619, 0, -0.53288, 0, 1, 0, 0.53288, 0, 0.84619, -17.603, -1, -113)
+script = ExtResource("64_fluegel")
+breite = 1.36
+hoehe = 2.7
+kaempfer = 1.7
+anzahl = 1
+staerke = 0.09
+winkel_offen = 95.0
+regel = "schloss"
+bedingung = "schluessel_sorrow_archiv"
+anzeige_name = "Die eisenbeschlagene Tür"
+reichweite = 2.2
+mat_holz = ExtResource("65_holz_mat")
+mat_metall = ExtResource("66_metall_mat")
+
+[node name="ArchivTruhe" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -20.778, -0.5, -104.95)
+script = ExtResource("24_durchsuchbar")
+anzeige_name = "Eine verkohlte Truhe"
+aktion_text = "Durchsuchen"
+dialog_id = "sorrow_archiv_truhe"
+
+[node name="ArchivUrkunde" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -21.609, -0.1, -110.2)
+script = ExtResource("16_lesbar")
+anzeige_name = "Ein halb verbranntes Blatt"
+aktion_text = "Lesen"
+dialog_id = "sorrow_archiv_blatt"
+
+[node name="SorrowToter" type="StaticBody3D" parent="UnterweltDinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, -8.676, -0.7, -119.67)
+script = ExtResource("24_durchsuchbar")
+anzeige_name = "Ein Toter in verrostetem Kettenhemd"
+aktion_text = "Durchsuchen"
+dialog_id = "sorrow_toter"
+
+[node name="Unterwelt" type="Node3D" parent="."]
+script = ExtResource("62_unterwelt")
+gewoelbe = PackedFloat32Array(19.22, -93.59, 147.8, 16, 11, 8.6, 2.4, 2, 0, 4, 3, 7.426, -94.754, 147.8, 3.4, 3.4, 8.6, 2.2, 1.4, 0, 3.4, 2, 10.428, -79.628, 0, 5, 5, 8.6, 3, 1.6, 6, 0, 2, -1.972, -79.628, 90, 9, 6, 8.6, 2.2, 1.6, 0, 3, 8, 6, -40, 0, 5, 5, 4.24, 3, 1.6, 6, 0, 2, 3, -2, 0, 18, 14, 4.24, 3.2, 2.6, 2, 4.6, 34, 19.5, 0.5, 180, 4.6, 4.6, -17.76, 22, 0, 5, 0, 2, 19.5, -9.5, 0, 5, 5, -17.76, 3, 1.6, 6, 0, 2, -13.766, -119.09, 237.8, 20, 12, -1, 3, 2.4, 3, 4, 24, -31.536, -130.28, 237.8, 12, 8, -1, 3.4, 2, 3, 4, 24, -20.96, -107.67, 327.8, 7, 6, -1, 2.4, 1.6, 3, 3.5, 28)
+gaenge = PackedFloat32Array(15.313, 16, -107.28, 8.332, 8.6, -96.192, 1.6, 2.8, 0, 1, 8.865, 8.6, -93.848, 11.742, 8.6, -92.036, 1.6, 2.8, 0, 1, 14.957, 8.6, -86.82, 11.627, 8.6, -81.532, 1.6, 2.8, 0, 0, 2.528, 8.6, -79.628, 8.178, 8.6, -79.628, 1.6, 2.8, 0, 0, 10.178, 8.6, -77.392, 8.623, 8.6, -63.479, 1.6, 2.8, 0, 1, 8.623, 8.6, -63.479, 6.25, 4.24, -42.236, 1.6, 2.8, 0, 1, 6, 4.24, -37.75, 6, 4.24, -11, 1.6, 2.8, 0, 1, 0, 14, -27.553, 0, 4.24, -11, 1.6, 2.8, 0, 1, 17.45, 4.24, 0.5, 10, 4.24, 0.5, 1.6, 2.8, 0, 1, 19.5, -17.76, -1.55, 19.5, -17.76, -7.25, 1.6, 2.8, 0, 1, 26.1, -17.76, -9.5, 21.75, -17.76, -9.5, 2.6, 3.2, 3, 0, 16.697, 8.6, -99.906, -5.304, -1, -113.76, 1.4, 2.4, 2, 0, -22.228, -1, -124.42, -26.459, -1, -127.08, 1.4, 2.4, 2, 0, -16.963, -1, -114.01, -19.095, -1, -110.63, 1.4, 2.4, 2, 0, -8.876, -1, -123.1, -4.08, -1, -130.72, 1.4, 2.4, 2, 0)
+abgaenge = PackedFloat32Array(15.313, -107.28, 327.8, 16, 1.6, 6.2, 0, 0, -27.553, 0, 14, 1.6, 6.2, 0)
+abgang_regeln = PackedStringArray("tuer", "tuer")
+schaechte = PackedFloat32Array(-0.086, 2.982, 0.7, 8.45, 13.7)
+
+[node name="UnterweltAusstattung" type="Node3D" parent="UnterweltDinge"]
+script = ExtResource("29_ausstattung")
+stuecke = PackedFloat32Array(58, 18.432, 8.6, -98.813, 147.8, 58, 15.049, 8.6, -93.853, 147.8, 58, 21.26, 8.6, -89.942, 147.8, 58, 23.391, 8.6, -93.327, 147.8, 58, 25.523, 8.6, -96.712, 147.8, 61, 23.083, 8.6, -99.725, 327.8, 60, 21.637, 8.6, -99.868, 147.8, 60, 23.837, 8.6, -98.482, 147.8, 60, 19.285, 8.6, -100.17, 147.8, 60, 14.196, 8.6, -92.499, 147.8, 60, 22.645, 8.6, -92.142, 147.8, 59, -5.272, 8.6, -82.308, 0, 59, -5.272, 8.6, -76.948, 180, 59, -3.072, 8.6, -82.308, 0, 59, -3.072, 8.6, -76.948, 180, 59, -0.872, 8.6, -82.308, 0, 59, -0.872, 8.6, -76.948, 180, 59, 1.328, 8.6, -82.308, 0, 59, 1.328, 8.6, -76.948, 180, 59, -6.152, 8.6, -79.628, 90, 60, -4.172, 8.6, -79.628, 0, 60, -1.972, 8.6, -80.828, 0, 60, 0.428, 8.6, -78.628, 0, 61, -35.767, -1, -132.94, 417.8, 63, -33.555, -1, -128.95, 307.8, 62, -27.612, -1, -130.88, 20, 1, -20.778, -1, -104.95, 327.8, 62, -18.371, -1, -108.4, 50, 63, -8.676, -1, -119.67, 337.8, 62, -9.708, -1, -112.4, 10, 62, -18.436, -1, -117.3, 70, 62, -17.241, -1, -125.77, 130, 63, -19.063, -1, -120.06, 197.8, 62, -4.667, -1, -129.78, 0, 62, -5.021, -1, -128.47, 40)
 
 [node name="Felssockel" type="Node3D" parent="Drachenstein"]
 script = ExtResource("31_felssockel")
@@ -6051,16 +6223,7 @@ dialog_id = "burggesinde"
 kordel = 0
 tracht = Color(0.36, 0.3, 0.26, 1)
 sichtbar_wenn = "alarm<3"
-tagesablauf = PackedStringArray("morgengrauen: 18.16,16,-115.92,arbeiten,5; -13.41,16,-120.16,arbeiten,7,eimer; -13.56,16,-119.58; 19.87,16,-106.12,arbeiten,4,-; -13.56,16,-119.58; -13.41,16,-120.16; 18.16,16,-115.92 | runde", "stille_stunde: 18.16,16,-115.92 | weg")
-
-[node name="Gesinde2" parent="Personen/Burgleben" instance=ExtResource("4_person")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 17.31, 16, -120.79)
-anzeige_name = "Magd Trine Lauch"
-dialog_id = "burggesinde"
-kordel = 0
-tracht = Color(0.5, 0.44, 0.32, 1)
-sichtbar_wenn = "alarm<3"
-tagesablauf = PackedStringArray("morgengrauen: 17.31,16,-120.79,arbeiten,5; -13.39,16,-120.5,arbeiten,7,eimer; -13.45,16,-121.02; 15.53,16,-127.78,arbeiten,4,-; -13.45,16,-121.02; -13.39,16,-120.5; 17.31,16,-120.79 | runde", "stille_stunde: 17.31,16,-120.79 | weg")
+tagesablauf = PackedStringArray("morgengrauen: 18.16,16,-115.92,arbeiten,5; -13.41,16,-120.16,arbeiten,7,eimer; -13.45,16,-121.02; 15.53,16,-127.78,arbeiten,4,-; -13.45,16,-121.02; -13.41,16,-120.16; 18.16,16,-115.92 | runde", "stille_stunde: 18.16,16,-115.92 | weg")
 
 [node name="Hofwache0" parent="Personen/Burgleben" instance=ExtResource("4_person")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, -0, 0, 1, 33.79, -8, 156.76)

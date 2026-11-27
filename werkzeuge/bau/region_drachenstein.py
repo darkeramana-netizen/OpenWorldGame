@@ -39,6 +39,7 @@ def VW(lx, lz):
 N("BurgHof", None, ".", T(PD.VORWERK[0], H_VW, PD.VORWERK[1], PD.VORWERK_DREH), instanz="3_hof")
 BF_X_NEU, BF_Z_NEU = 500, 100   # Schwarzer Bergfried (werkzeuge/gelaende_erzeuger.gd, BERGFRIED)
 teil("teil_drachenstein.py")
+teil("teil_unterwelt.py")   # Krypta, Zisterne, Gänge, Ruinen von Burg Sorrow (szenen/welt/unterwelt.gd)
 teil("teil_felsen.py")   # 3D-Felsen an den Klippen
 teil("teil_natur.py")    # Stämme, Pilze, Moos, Sträucher, Farne um Drachenstein
 teil("teil_flur.py")     # Äcker, Getreide, Weiden und Wiesen an den Landstraßen (Mängelliste M6)

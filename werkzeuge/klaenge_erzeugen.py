@@ -555,7 +555,66 @@ def weiche_schritte(quellen, art):
 
 # ---------- Hauptteil ----------
 
+def tropfen():
+    """Wassertropfen in einem Gewölbe: ein kurzer, schnell ansteigender Ton (Blase), ein feiner Anschlag und langer
+    Nachhall im Stein (Kammfilter aus Echos)."""
+    n = int(1.8 * RATE)
+    x = np.zeros(n)
+    m = int(ZUFALL.uniform(0.02, 0.045) * RATE)
+    tt = np.arange(m) / RATE
+    f0 = ZUFALL.uniform(900, 1900)
+    ph = 2 * np.pi * np.cumsum(f0 * (1 + ZUFALL.uniform(1.5, 3.5) * tt / tt[-1])) / RATE
+    x[:m] += np.sin(ph) * np.exp(-tt / (m / RATE / 2.5))
+    x[:200] += band(rauschen(200), 2000, 8000) * np.exp(-np.arange(200) / 40.0) * 0.4
+    # Hall: viele abklingende Echos (Wände 3 bis 12 m entfernt)
+    hall = np.zeros(n)
+    for _ in range(60):
+        v = int(ZUFALL.uniform(0.008, 0.9) * RATE)
+        hall[v] += ZUFALL.uniform(-1, 1) * np.exp(-v / RATE / 0.35)
+    hall[0] = 1.0
+    y = signal.fftconvolve(x, hall)[:n]
+    return normiere(tief(y, 6000) * huelle(n, 0.001, 1.6), 0.6)
+
+
+def hoehle():
+    """Grundgeräusch unter Tage: tiefes Wummern (Luft in den Gängen), fernes Rauschen von Wasser, ganz selten ein
+    hohles Heulen, als nahtlose Schleife."""
+    n = 20 * RATE
+    wummern = tief(braun(n), 90) * (0.6 + 0.4 * glatt_zufall(n, 12)) * 3.0
+    wasser = band(rosa(n), 200, 1200) * 0.08 * (0.5 + 0.5 * glatt_zufall(n, 20))
+    t = np.arange(n) / RATE
+    heulen = np.sin(2 * np.pi * np.cumsum(140 + 25 * glatt_zufall(n, 8, -1, 1)) / RATE) * 0.05 * glatt_zufall(n, 6, 0.0, 1.0) ** 3
+    return normiere(schleife(wummern + wasser + band(heulen, 80, 600), 2.0), 0.6)
+
+
+def stein_schleifen():
+    """Schwere Steinplatte, die über Stein gleitet: rauhes, tiefes Schaben mit Rucken, am Ende ein dumpfer Anschlag."""
+    n = int(2.8 * RATE)
+    ruck = glatt_zufall(n, 30, 0.2, 1.0) ** 2
+    schaben = band(braun(n) * 0.4 + rauschen(n) * 0.06, 60, 1800) * ruck
+    knirschen = np.zeros(n)
+    for _ in range(140):
+        i = int(ZUFALL.uniform(0, 2.4) * RATE)
+        m = int(ZUFALL.uniform(0.002, 0.01) * RATE)
+        knirschen[i:i + m] += band(rauschen(m), 1500, 6000) * ZUFALL.uniform(0.05, 0.3)
+    y = schaben * huelle(n, 0.15, 2.4) + knirschen
+    schlag = int(2.45 * RATE)
+    k = n - schlag
+    y[schlag:] += tief(rauschen(k), 160) * np.exp(-np.arange(k) / (0.08 * RATE)) * 4.0
+    return normiere(y, 0.85)
+
+
+def nur_untergrund():
+    for k in range(5):
+        schreibe(f"tropfen_{k + 1}", tropfen())
+    schreibe("hoehle", hoehle())
+    schreibe("stein_schleifen", stein_schleifen())
+
+
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "--untergrund":
+        nur_untergrund()
+        return
     kenney = Path(sys.argv[1]) if len(sys.argv) > 1 else None
     artistic = Path(sys.argv[2]) if len(sys.argv) > 2 else None
     schreibe("wind_sanft", wind(False))

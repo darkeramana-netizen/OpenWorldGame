@@ -1,0 +1,284 @@
+# --- Der Untergrund von Drachenstein (szenen/welt/unterwelt.gd), erste Ausbaustufe (27.11.2026) ---
+# Lore (docs/01-lore-bibel.md): „Darunter Kapelle, Krypta, Zisternen. Gebaut auf den Ruinen von Burg Sorrow.“
+#
+#   Palashof:  Gruftabgang neben der Drachenkapelle → Vorraum → Krypta der Großmeister (Sarkophage, Grabnischen, Altar)
+#              Krypta → Rundkammer → Beinhaus; Rundkammer → Stufengang hinab → Rundkammer unter der Oberburg
+#   Oberburg:  Zisternenabgang im Hof → Zisterne (Säulenhalle mit Becken, unter dem Ziehbrunnen, Schacht hinauf)
+#              Zisterne → Wendeltreppe (20 m) → Rundkammer → Riegeltür → Untergrundhafen (Abkürzung, von oben zu öffnen)
+#   Tiefer:    hinter dem Sarkophag des Wulfric Dane eine Geheimtür → alter Stufengang → Ruinen von Burg Sorrow
+#              (Halle mit eingestürzten Jochen, alte Kapelle mit dem Wappen der Ordnung von Sorrow, verbranntes Archiv
+#              hinter einer verschlossenen Tür, ein verschütteter Gang nach Osten)
+#
+# Alle Lagen in Weltkoordinaten; der Knoten Unterwelt steht im Ursprung. Die Treppenhäuschen schneiden das Gelände
+# genau aus (gelaende.gd, schnitte).
+
+E("Script", "res://szenen/welt/unterwelt.gd", "62_unterwelt")
+E("Script", "res://szenen/welt/geheimtuer.gd", "63_geheimtuer")
+E("Script", "res://szenen/welt/fluegel.gd", "64_fluegel")
+E("Material", "res://material/holz.tres", "65_holz_mat")
+E("Material", "res://material/metall.tres", "66_metall_mat")
+
+UW_GW, UW_GA, UW_AB, UW_REG, UW_SCH, UW_SCHNITTE, UW_STUECKE = [], [], [], [], [], [], []
+
+
+def _rahmen(c, gier):
+    a = math.radians(gier)
+    u, n = (math.sin(a), math.cos(a)), (math.cos(a), -math.sin(a))
+    return lambda su, sn: (round(c[0] + u[0] * su + n[0] * sn, 3), round(c[1] + u[1] * su + n[1] * sn, 3))
+
+
+def uw_raum(c, gier, laenge, breite, boden, wand, stich, art, joch, zier):
+    UW_GW.extend([round(c[0], 3), round(c[1], 3), round(gier, 3), laenge, breite, round(boden, 3), wand, stich, art, joch, zier])
+    return _rahmen(c, gier)
+
+
+def uw_gang(a, ya, b, yb, breite=1.6, hoehe=2.8, art=0, fackeln=1):
+    UW_GA.extend([a[0], round(ya, 3), a[1], b[0], round(yb, 3), b[1], breite, hoehe, art, fackeln])
+
+
+def uw_abgang(tuer, gier, boden, breite, laenge, regel="tuer"):
+    """Steinhäuschen über einer Treppe; Gier zeigt hinein. Schneidet das Gelände unter dem Häuschen aus."""
+    UW_AB.extend([tuer[0], tuer[1], round(gier, 3), round(boden, 3), breite, laenge, 0])
+    UW_REG.append(regel)
+    a = math.radians(gier)
+    halb_l = laenge / 2.0 + 0.25
+    m = (tuer[0] + math.sin(a) * halb_l - math.sin(a) * 0.25, tuer[1] + math.cos(a) * halb_l - math.cos(a) * 0.25)
+    UW_SCHNITTE.extend([round(m[0], 3), round(m[1], 3), round(gier, 3), round(halb_l, 3), round(breite / 2.0 + 0.3, 3)])
+    _feste_w.append(_rechteck_w(m[0], m[1], breite + 1.6, laenge + 1.6, gier))
+
+
+def rund_punkt(c, r, gier):
+    """Punkt am Rand einer Rundkammer (0,25 m innerhalb der Wand) in Richtung gier"""
+    a = math.radians(gier)
+    return (round(c[0] + math.sin(a) * (r - 0.25), 3), round(c[1] + math.cos(a) * (r - 0.25), 3))
+
+
+def gier_von(a, b):
+    return math.degrees(math.atan2(b[0] - a[0], b[1] - a[1]))
+
+
+def wendel_oben(gier, hoehe):
+    stufen = max(1, round(hoehe / 0.2))
+    return gier + 30.0 + (stufen - 1) * 360.0 / 18 + 40.0
+
+
+def uw_stueck(art, p, y, gier):
+    UW_STUECKE.extend([art, p[0], round(y, 3), p[1], round(gier, 2)])
+
+
+def uw_lesbar(name, p, y, anzeige, dialog, aktion="Lesen"):
+    N(name, "StaticBody3D", "UnterweltDinge", f"""{T(p[0], y, p[1])}
+script = ExtResource("16_lesbar")
+anzeige_name = "{anzeige}"
+aktion_text = "{aktion}"
+dialog_id = "{dialog}\"""")
+
+
+def uw_durchsuchbar(name, p, y, anzeige, dialog, aktion="Durchsuchen"):
+    N(name, "StaticBody3D", "UnterweltDinge", f"""{T(p[0], y, p[1])}
+script = ExtResource("24_durchsuchbar")
+anzeige_name = "{anzeige}"
+aktion_text = "{aktion}"
+dialog_id = "{dialog}\"""")
+
+
+def uw_tuer(name, p, y, gier, breite, regel, bedingung, anzeige, hoehe=2.7, kaempfer=0.0, anzahl=1):
+    N(name, "Node3D", "UnterweltDinge", f"""{T(p[0], y, p[1], gier)}
+script = ExtResource("64_fluegel")
+breite = {breite}
+hoehe = {hoehe}
+kaempfer = {kaempfer}
+anzahl = {anzahl}
+staerke = 0.09
+winkel_offen = 95.0
+regel = "{regel}"
+bedingung = "{bedingung}"
+anzeige_name = "{anzeige}"
+reichweite = 2.2
+mat_holz = ExtResource("65_holz_mat")
+mat_metall = ExtResource("66_metall_mat")""")
+
+
+# ---------- Krypta unter der Drachenkapelle ----------
+KAP_C = W(PD.DRACHENKAPELLE[0])
+KAP_G = -PD.DRACHENKAPELLE[3] % 360.0
+KP = _rahmen(KAP_C, KAP_G)                      # u entlang der Kapelle (+u zum Portal), n quer
+H_KRYPTA = 8.6
+KR_L, KR_B = 16.0, 11.0
+uw_raum(KAP_C, KAP_G, KR_L, KR_B, H_KRYPTA, 2.4, 2.0, 0, 4.0, 1 | 2)
+
+# Gruftabgang: Häuschen an der Westseite der Kapelle, Tür zum Portal hin; die Treppe läuft an der Kapelle entlang hinab
+# in einen Vorraum, von dort durch die Längswand in die Krypta
+_ga_tuer = KP(9.5, 10.6)
+_ga_boden = H(*_ga_tuer)
+uw_abgang(_ga_tuer, KAP_G + 180.0, _ga_boden, 1.6, 6.2)
+uw_gang(_ga_tuer, _ga_boden, KP(-3.6, 10.6), H_KRYPTA)
+VR = uw_raum(KP(-5.3, 10.6), KAP_G, 3.4, 3.4, H_KRYPTA, 2.2, 1.4, 0, 3.4, 2)
+uw_gang(KP(-5.3, 10.6 - 1.7), H_KRYPTA, KP(-5.3, KR_B / 2.0), H_KRYPTA)
+schild("SchildGruft", "UnterweltDinge", *(lambda p: (p[0], _ga_boden + 4.3, p[1]))(KP(9.5 + 0.7, 10.6)), "Gruft der Großmeister", 32)
+
+# Sarkophage (Art 58, Kopf zum Portal) mit Inschriften; der des Wulfric Dane steht vor der Geheimtür
+_sarkophage = [((4.0, 3.45), "grab_wulfric_dane", "Sarkophag des Wulfric Dane"),
+               ((-2.0, 3.67), "grab_osmund_rhee", "Sarkophag des Osmund Rhee"),
+               ((-2.0, -3.67), "grab_hartwin_brand", "Sarkophag des Hartwin Brand"),
+               ((2.0, -3.67), "grab_mechthild_arn", "Sarkophag der Mechthild Arn"),
+               ((6.0, -3.67), "grab_ansgar_vale", "Ein unbeschriebener Sarkophag")]
+for k_, ((su_, sn_), dlg_, anz_) in enumerate(_sarkophage):
+    uw_stueck(58, KP(su_, sn_), H_KRYPTA, KAP_G)
+    uw_lesbar(f"Grabinschrift{k_}", KP(su_ + 1.35, sn_), H_KRYPTA + 0.6, anz_, dlg_)
+uw_stueck(61, KP(7.25, 0.0), H_KRYPTA, KAP_G + 180.0)           # Altar an der Stirnwand, Vorderseite zum Raum
+uw_lesbar("KryptaAltar", KP(6.5, 0.0), H_KRYPTA + 1.0, "Altar der Krypta", "krypta_altar", "Ansehen")
+for su_, sn_ in [(6.6, 1.3), (6.6, -1.3), (5.6, 3.45), (-3.6, 3.67), (0.6, -3.67)]:
+    uw_stueck(60, KP(su_, sn_), H_KRYPTA, KAP_G)
+
+# Geheimtür in der Längswand hinter Wulfric Dane: erst wenn man seine Inschrift gelesen hat, fällt die Fuge auf
+_gt = KP(4.0, KR_B / 2.0)
+N("GeheimtuerKrypta", "StaticBody3D", "UnterweltDinge", f"""{T(_gt[0], H_KRYPTA, _gt[1], KAP_G - 90.0)}
+script = ExtResource("63_geheimtuer")
+breite = 1.44
+hoehe = 2.42
+dicke = 0.5
+stein = "bruchstein"
+flag = "geheimgang_krypta"
+bedingung = "hinweis_sorrow"
+anzeige_name = "Eine Fuge hinter dem Sarkophag"
+meldung_auf = "Du stemmst dich gegen den Stein. Er gibt nach und gleitet knirschend in die Mauer. Kalte Luft steigt aus der Tiefe."
+akte = "Hinter dem Sarkophag des Wulfric Dane einen geheimen Gang in die Tiefe gefunden."
+richtung = 1""")
+
+# ---------- Rundkammer, Beinhaus, Stufengang zur Oberburg ----------
+R2 = KP(-16.5, 0.0)
+uw_raum(R2, 0.0, 5.0, 5.0, H_KRYPTA, 3.0, 1.6, 6, 0.0, 2)
+uw_gang(KP(-KR_L / 2.0, 0.0), H_KRYPTA, KP(-14.25, 0.0), H_KRYPTA, fackeln=0)
+# Beinhaus westlich der Rundkammer (Länge entlang Welt-x): Gebeinstapel an den Längswänden, Kerzen, ein Totenspruch
+BH_C = (round(R2[0] - 12.4, 3), R2[1])
+BH = uw_raum(BH_C, 90.0, 9.0, 6.0, H_KRYPTA, 2.2, 1.6, 0, 3.0, 8)
+uw_gang((round(BH_C[0] + 4.5, 3), BH_C[1]), H_KRYPTA, rund_punkt(R2, 2.5, -90.0), H_KRYPTA, fackeln=0)
+for su_ in (-3.3, -1.1, 1.1, 3.3):
+    for sn_, g_ in ((2.68, 0.0), (-2.68, 180.0)):
+        uw_stueck(59, BH(su_, sn_), H_KRYPTA, g_)
+uw_stueck(59, BH(-4.18, 0.0), H_KRYPTA, 90.0)                       # Stirnwand: Rücken nach -x
+for su_, sn_ in [(-2.2, 0.0), (0.0, 1.2), (2.4, -1.0)]:
+    uw_stueck(60, BH(su_, sn_), H_KRYPTA, 0.0)
+uw_lesbar("BeinhausTafel", BH(-3.7, 0.0), H_KRYPTA + 1.2, "Tafel über den Gebeinen", "beinhaus_tafel")
+
+# Stufengang: von der Rundkammer erst eben, dann in Stufen hinab zu einer Rundkammer unter der Oberburg
+WT_HOEHE = 22.0                                       # Wendeltreppe: 110 Stufen, der obere Ausgang zeigt nach Westen
+H_ZISTERNE = round(PD.H_HAFEN + 0.04 + WT_HOEHE, 3)   # = Boden des Untergrundhafens + Höhe der Wendeltreppe
+R1 = (6.0, -40.0)
+_d = (R1[0] - R2[0], R1[1] - R2[1])
+_dl = math.hypot(*_d)
+_d = (_d[0] / _dl, _d[1] / _dl)
+_a = (round(R2[0] + _d[0] * 2.25, 3), round(R2[1] + _d[1] * 2.25, 3))
+_m = (round(_a[0] + _d[0] * 14.0, 3), round(_a[1] + _d[1] * 14.0, 3))
+_b = (round(R1[0] - _d[0] * 2.25, 3), round(R1[1] - _d[1] * 2.25, 3))
+uw_gang(_a, H_KRYPTA, _m, H_KRYPTA)
+uw_gang(_m, H_KRYPTA, _b, H_ZISTERNE)
+uw_raum(R1, 0.0, 5.0, 5.0, H_ZISTERNE, 3.0, 1.6, 6, 0.0, 2)
+
+# ---------- Zisterne unter der Oberburg ----------
+# genau unter dem Ziehbrunnen der Oberburg (der schöpft aus ihr)
+ZI_C, ZI_L, ZI_B = (3.0, -2.0), 18.0, 14.0
+ZI = uw_raum(ZI_C, 0.0, ZI_L, ZI_B, H_ZISTERNE, 3.2, 2.6, 2, 4.6, 2 | 32)
+uw_gang((6.0, -37.75), H_ZISTERNE, (6.0, round(ZI_C[1] - ZI_L / 2.0, 3)), H_ZISTERNE)
+uw_lesbar("ZisterneBauinschrift", ZI(-ZI_L / 2.0 + 0.4, -1.4), H_ZISTERNE + 1.7, "Bauinschrift", "zisterne_inschrift")
+# Schacht des Ziehbrunnens der Oberburg, falls er über der Zisterne steht
+if "Oberburg" in BURG_BRUNNEN:
+    _bw = BURG_BRUNNEN["Oberburg"]
+    _lu, _ln = _bw[1] - ZI_C[1], _bw[0] - ZI_C[0]
+    if abs(_lu) < ZI_L / 2.0 - 2.4 and abs(_ln) < ZI_B / 2.0 - 2.4:
+        # Höhe des Gewölbes am Schacht (dieselbe Rechnung wie unterwelt.gd, _kreuzjoch): tiefste Stelle am Rand
+        _nu, _nb = max(1, round(ZI_L / 4.6)), max(1, round(ZI_B / 4.6))
+        _su, _sb = ZI_L / _nu, ZI_B / _nb
+        def _gewoelbe_y(lu_, ln_):
+            i_ = min(_nu - 1, max(0, int((lu_ + ZI_L / 2.0) / _su)))
+            j_ = min(_nb - 1, max(0, int((ln_ + ZI_B / 2.0) / _sb)))
+            x_ = lu_ - (-ZI_L / 2.0 + (i_ + 0.5) * _su)
+            z_ = ln_ - (-ZI_B / 2.0 + (j_ + 0.5) * _sb)
+            fx_ = math.sqrt(max(0.0, 1.0 - (x_ / (_su / 2.0)) ** 2))
+            fz_ = math.sqrt(max(0.0, 1.0 - (z_ / (_sb / 2.0)) ** 2))
+            return H_ZISTERNE + 3.2 + 2.6 * max(fx_, fz_)
+        _unten = min(_gewoelbe_y(_lu + 0.75 * math.cos(w_), _ln + 0.75 * math.sin(w_)) for w_ in [k_ * math.pi / 8 for k_ in range(16)])
+        UW_SCH.extend([round(_bw[0], 3), round(_bw[1], 3), 0.7, round(_unten - 0.05, 3), round(H(*_bw) - 0.3, 3)])
+
+# Zisternenabgang im Hof der Oberburg: Treppe nach Süden hinab in die Stirnwand (neben dem Gang von der Krypta)
+_za_boden = H(0.0, -27.55)
+_za_lauf = (_za_boden - H_ZISTERNE) / 0.68 + 2.2
+_za_tuer = (0.0, round(ZI_C[1] - ZI_L / 2.0 - _za_lauf, 3))
+uw_abgang(_za_tuer, 0.0, _za_boden, 1.6, 6.2)
+uw_gang(_za_tuer, _za_boden, (0.0, round(ZI_C[1] - ZI_L / 2.0, 3)), H_ZISTERNE)
+schild("SchildZisterne", "UnterweltDinge", 0.0, _za_boden + 4.3, round(_za_tuer[1] - 0.7, 3), "Zisterne", 32)
+
+# Wendeltreppe hinab zum Untergrundhafen: unten von Norden aus der Rundkammer vor dem Hafenstollen, oben nach Westen
+WT_C, WT_R = (19.5, 0.5), 2.3
+H_UH = round(PD.H_HAFEN + 0.04, 3)
+uw_raum(WT_C, 180.0, WT_R * 2.0, WT_R * 2.0, H_UH, WT_HOEHE, 0.0, 5, 0.0, 2)
+_wt_oben = wendel_oben(180.0, WT_HOEHE)
+assert abs(((_wt_oben - 270.0) + 180.0) % 360.0 - 180.0) < 0.01, _wt_oben
+uw_gang(rund_punkt(WT_C, WT_R, _wt_oben), H_ZISTERNE, (round(ZI_C[0] + ZI_B / 2.0, 3), WT_C[1]), H_ZISTERNE)
+R0 = (19.5, -9.5)
+uw_raum(R0, 0.0, 5.0, 5.0, H_UH, 3.0, 1.6, 6, 0.0, 2)
+uw_gang(rund_punkt(WT_C, WT_R, 180.0), H_UH, rund_punkt(R0, 2.5, 0.0), H_UH)
+# Stollen zur Tür in der Rückwand der Hafenhalle (flache Decke, so breit und hoch wie die Tür)
+_uh_wand = (round(UH_MUND[0] - UH_LAENGE - 1.5, 3), UH_MUND[1])
+uw_gang(_uh_wand, H_UH, rund_punkt(R0, 2.5, 90.0), H_UH, breite=2.6, hoehe=3.2, art=3, fackeln=0)
+uw_tuer("RiegeltuerHafen", (round(_uh_wand[0] - 1.6, 3), _uh_wand[1]), H_UH, -90.0, 2.5, "riegel", "riegel_hafenstollen",
+        "Die Tür zum Hafen", hoehe=3.1, anzahl=2)
+
+# ---------- Ruinen von Burg Sorrow (hinter der Geheimtür) ----------
+H_SORROW = -1.0
+_s1_a = KP(4.0, KR_B / 2.0)
+_s1_b = KP(4.0, KR_B / 2.0 + 26.0)
+uw_gang(_s1_a, H_KRYPTA, _s1_b, H_SORROW, breite=1.4, hoehe=2.4, art=2, fackeln=0)
+RH_G = KAP_G + 90.0                                   # Halle: Länge in Richtung des Gangs
+RH_C = KP(4.0, KR_B / 2.0 + 26.0 + 10.0)
+RH = uw_raum(RH_C, RH_G, 20.0, 12.0, H_SORROW, 3.0, 2.4, 3, 4.0, 16 | 8)
+# alte Kapelle von Sorrow hinter der Halle
+_s2_a = RH(10.0, 0.0)
+_s2_b = RH(15.0, 0.0)
+uw_gang(_s2_a, H_SORROW, _s2_b, H_SORROW, breite=1.4, hoehe=2.4, art=2, fackeln=0)
+AK = uw_raum(RH(21.0, 0.0), RH_G, 12.0, 8.0, H_SORROW, 3.4, 2.0, 3, 4.0, 16 | 8)
+uw_stueck(61, AK(5.0, 0.0), H_SORROW, RH_G + 180.0)
+uw_lesbar("SorrowWappen", AK(5.7, 0.0), H_SORROW + 1.8, "Ein Wappenstein über dem Altar", "sorrow_wappen", "Ansehen")
+uw_stueck(63, AK(1.0, 2.2), H_SORROW, RH_G + 70.0)
+uw_stueck(62, AK(-3.0, -2.6), H_SORROW, 20.0)
+# verbranntes Archiv seitlich der Halle, hinter einer verschlossenen Tür
+_s3_a = RH(0.0, 6.0)
+_s3_b = RH(0.0, 10.0)
+uw_gang(_s3_a, H_SORROW, _s3_b, H_SORROW, breite=1.4, hoehe=2.4, art=2, fackeln=0)
+AR = uw_raum(RH(0.0, 13.5), RH_G + 90.0, 7.0, 6.0, H_SORROW, 2.4, 1.6, 3, 3.5, 16 | 8 | 4)
+uw_tuer("ArchivTuer", RH(0.0, 7.2), H_SORROW, RH_G + 90.0, 1.36, "schloss", "schluessel_sorrow_archiv",
+        "Die eisenbeschlagene Tür", kaempfer=1.7)
+uw_durchsuchbar("ArchivTruhe", AR(2.2, 1.6), H_SORROW + 0.5, "Eine verkohlte Truhe", "sorrow_archiv_truhe")
+uw_lesbar("ArchivUrkunde", AR(-1.8, -1.9), H_SORROW + 0.9, "Ein halb verbranntes Blatt", "sorrow_archiv_blatt")
+uw_stueck(1, AR(2.2, 1.6), H_SORROW, RH_G + 90.0)
+uw_stueck(62, AR(-2.0, 1.8), H_SORROW, 50.0)
+# in der Halle: ein Toter mit dem Schlüssel, Schutt, verstreute Gebeine
+uw_stueck(63, RH(-4.0, -3.2), H_SORROW, RH_G + 100.0)
+uw_durchsuchbar("SorrowToter", RH(-4.0, -3.2), H_SORROW + 0.3, "Ein Toter in verrostetem Kettenhemd", "sorrow_toter")
+for su_, sn_, g_ in [(-7.0, 3.5, 10.0), (3.0, 4.0, 70.0), (6.5, -3.8, 130.0)]:
+    uw_stueck(62, RH(su_, sn_), H_SORROW, g_)
+uw_stueck(63, RH(5.0, 2.0), H_SORROW, RH_G - 40.0)
+# verschütteter Gang nach Osten (später: zu den Schmugglerhöhlen)
+_s4_a = RH(-2.0, -6.0)
+_s4_b = RH(-2.0, -15.0)
+uw_gang(_s4_a, H_SORROW, _s4_b, H_SORROW, breite=1.4, hoehe=2.4, art=2, fackeln=0)
+uw_stueck(62, RH(-2.0, -13.9), H_SORROW, 0.0)
+uw_stueck(62, RH(-2.4, -12.6), H_SORROW, 40.0)
+
+# ---------- Knoten ----------
+N("Unterwelt", "Node3D", ".", f"""script = ExtResource("62_unterwelt")
+gewoelbe = PackedFloat32Array({_zahlen(UW_GW)})
+gaenge = PackedFloat32Array({_zahlen(UW_GA)})
+abgaenge = PackedFloat32Array({_zahlen(UW_AB)})
+abgang_regeln = PackedStringArray({", ".join(f'"{r_}"' for r_ in UW_REG)})
+schaechte = PackedFloat32Array({_zahlen(UW_SCH)})""")
+# Inschriften, Türen, Schilder und Ausstattung hängen an einem eigenen Knoten (burgbau.gd räumt beim Bauen alle Kinder
+# des Bauknotens weg); er wurde oben schon mit ihnen angelegt und kommt vor das erste von ihnen
+_uw_erstes = next(i_ for i_, t_ in enumerate(knoten) if 'parent="UnterweltDinge"' in t_)
+knoten.insert(_uw_erstes, '[node name="UnterweltDinge" type="Node3D" parent="."]')
+N("UnterweltAusstattung", "Node3D", "UnterweltDinge", "script = ExtResource(\"29_ausstattung\")\nstuecke = PackedFloat32Array("
+  + _zahlen(UW_STUECKE) + ")")
+# Gelände: genaue Schnitte unter den Treppenhäuschen
+_gi = next(i_ for i_, t_ in enumerate(knoten) if t_.startswith('[node name="Gelaende"'))
+knoten[_gi] += f"\nschnitte = PackedFloat32Array({_zahlen(UW_SCHNITTE)})"

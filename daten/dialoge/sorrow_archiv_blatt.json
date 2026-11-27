@@ -1,0 +1,27 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "befehl_marn_gelesen",
+			"knoten": "wieder"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Ein halb verbranntes Blatt",
+			"text": "Ein Blatt, an drei Seiten verbrannt. Eine strenge Hand: „… befehle ich, Gerolt Marn, Komtur dieser Burg, den Sieg durch Asche. Die Dörfer im Tal werden nicht gewarnt. Wer warnt, verrät die Burg. Das Heer des Königs soll in die Flammen ziehen, ehe es …“",
+			"weiter": "rand"
+		},
+		"rand": {
+			"sprecher": "Ein halb verbranntes Blatt",
+			"text": "Am Rand, mit anderer Tinte und zitternd: „Ich hätte es verbieten können. Ich habe geschwiegen. W.“",
+			"setze": [
+				"befehl_marn_gelesen"
+			],
+			"akte": "In den Ruinen von Burg Sorrow den Befehl des Komturs Gerolt Marn gefunden: Sieg durch Asche, die Dörfer nicht warnen. Am Rand eine Notiz, gezeichnet „W.“"
+		},
+		"wieder": {
+			"sprecher": "Ein halb verbranntes Blatt",
+			"text": "„… Die Dörfer im Tal werden nicht gewarnt. Wer warnt, verrät die Burg.“ Und am Rand: „Ich habe geschwiegen. W.“"
+		}
+	}
+}

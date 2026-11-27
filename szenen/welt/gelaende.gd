@@ -19,6 +19,10 @@ const Terrain3DBau := preload("res://szenen/welt/gelaende_terrain3d.gd")
 ## Löcher im Gelände, je Rechteck x0, z0, x1, z1 (Welt): Rasterpunkte darin bekommen weder Fläche noch Kollision,
 ## z. B. wo ein Tunnel durch einen Steilhang in den Berg führt (darüber und darunter bleibt das Gelände).
 @export var loecher := PackedVector4Array()
+## Genaue Schnitte (Abgänge in den Untergrund, szenen/welt/unterwelt.gd): je gedrehtes Rechteck 5 Werte x, z (Mitte),
+## Gier (Grad), halbe Länge (lokal z), halbe Breite (lokal x). Die Dreiecke werden genau an den Kanten beschnitten
+## (Fläche und Kollision); ein Loch über Rasterpunkte (2,5 m) wäre für ein Treppenhäuschen viel zu grob.
+@export var schnitte := PackedFloat32Array()
 ## Wer die Fläche zeichnet: "eigen" (Kacheln aus diesem Skript) oder "terrain3d" (addons/terrain_3d: feines Gitter
 ## um die Kamera, nach außen gröber). Kollision, hoehe_bei() und Löcher sind in beiden Fällen dieselben.
 ## Startargumente --terrain3d und --eigenes-gelaende gehen vor (für Vergleichsmessungen).
@@ -73,7 +77,74 @@ func am_loch(x: float, z: float, rand: float = 3.0) -> bool:
 	for r: Vector4 in loecher:
 		if x > r.x - rand and x < r.z + rand and z > r.y - rand and z < r.w + rand:
 			return true
+	for sch: Array in _schnitt_ecken():
+		var gr: Rect2 = sch[2]
+		if gr.grow(rand).has_point(Vector2(x, z)):
+			return true
 	return false
+
+
+var _schnitte_cache: Array = []
+## Je Schnitt [Ecken (Vector2, Welt x/z), Mitte, Rahmen (Rect2)]
+func _schnitt_ecken() -> Array:
+	if _schnitte_cache.size() * 5 == schnitte.size() and (not _schnitte_cache.is_empty() or schnitte.is_empty()):
+		return _schnitte_cache
+	_schnitte_cache = []
+	var i := 0
+	while i + 4 < schnitte.size():
+		var g := deg_to_rad(schnitte[i + 2])
+		var u := Vector2(sin(g), cos(g)) * schnitte[i + 3]
+		var n := Vector2(cos(g), -sin(g)) * schnitte[i + 4]
+		var m := Vector2(schnitte[i], schnitte[i + 1])
+		var ecken: Array[Vector2] = [m - u - n, m + u - n, m + u + n, m - u + n]
+		var rahmen := Rect2(ecken[0], Vector2.ZERO)
+		for e in ecken:
+			rahmen = rahmen.expand(e)
+		_schnitte_cache.append([ecken, m, rahmen])
+		i += 5
+	return _schnitte_cache
+
+
+## Teile eines Dreiecks (Punkte mit Normalen) außerhalb der Schnitte: Liste von Polygonen [[Punkt, Normale], ...]
+func _ausschneiden(dreieck: Array, schnitte_: Array) -> Array:
+	var stuecke: Array = [dreieck]
+	for sch: Array in schnitte_:
+		var ecken: Array[Vector2] = sch[0]
+		var mitte: Vector2 = sch[1]
+		var neu: Array = []
+		for poly: Array in stuecke:
+			var rest: Array = poly
+			for k in 4:
+				var a := ecken[k]
+				var b := ecken[(k + 1) % 4]
+				var innen_seite := signf((b - a).cross(mitte - a))
+				var aussen := _halbebene(rest, a, b, -innen_seite)
+				if aussen.size() >= 3:
+					neu.append(aussen)
+				rest = _halbebene(rest, a, b, innen_seite)
+				if rest.size() < 3:
+					break
+		stuecke = neu
+	return stuecke
+
+
+## Sutherland-Hodgman: der Teil eines Polygons auf der Seite vorzeichen der Geraden a→b (in x/z)
+static func _halbebene(poly: Array, a: Vector2, b: Vector2, vorzeichen: float) -> Array:
+	var aus: Array = []
+	var n := poly.size()
+	for i in n:
+		var p: Array = poly[i]
+		var q: Array = poly[(i + 1) % n]
+		var pp: Vector3 = p[0]
+		var qq: Vector3 = q[0]
+		var dp := (b - a).cross(Vector2(pp.x, pp.z) - a) * vorzeichen
+		var dq := (b - a).cross(Vector2(qq.x, qq.z) - a) * vorzeichen
+		if dp >= 0.0:
+			aus.append(p)
+		if (dp >= 0.0) != (dq >= 0.0):
+			var t := dp / (dp - dq)
+			aus.append([pp.lerp(qq, t), (p[1] as Vector3).lerp(q[1] as Vector3, t).normalized()])
+	return aus
 
 
 ## Ob die Fläche von Terrain3D gezeichnet wird (Einstellung oder Startargument)
@@ -152,6 +223,11 @@ func _kachel_mesh(x0: int, z0: int, nx: int, nz: int) -> ArrayMesh:
 			var hd := _h(x, mini(z + 1, tiefe - 1))
 			normalen[i] = Vector3(hl - hr, 2.0 * abstand, hu - hd).normalized()
 			i += 1
+	var schnitte_hier: Array = []
+	var kachel_rahmen := Rect2(ursprung.x + x0 * abstand, ursprung.y + z0 * abstand, nx * abstand, nz * abstand)
+	for sch: Array in _schnitt_ecken():
+		if (sch[2] as Rect2).intersects(kachel_rahmen):
+			schnitte_hier.append(sch)
 	for z in nz:
 		for x in nx:
 			var a := z * (nx + 1) + x
@@ -163,10 +239,18 @@ func _kachel_mesh(x0: int, z0: int, nx: int, nz: int) -> ArrayMesh:
 			var lb := _loch[(z0 + z) * breite + x0 + x + 1] == 1
 			var lc := _loch[(z0 + z + 1) * breite + x0 + x] == 1
 			var ld := _loch[(z0 + z + 1) * breite + x0 + x + 1] == 1
-			if not (la or lb or lc):
-				indizes.append_array([a, b, c])
-			if not (lb or ld or lc):
-				indizes.append_array([b, d, c])
+			for dr: Array in ([[a, b, c]] if not (la or lb or lc) else []) + ([[b, d, c]] if not (lb or ld or lc) else []):
+				var teile: Variant = _dreieck_mit_schnitt(punkte, normalen, dr, schnitte_hier)
+				if teile == null:
+					indizes.append_array(dr)
+					continue
+				for poly: Array in teile:
+					var start := punkte.size()
+					for pn: Array in poly:
+						punkte.append(pn[0])
+						normalen.append(pn[1])
+					for k in range(1, poly.size() - 1):
+						indizes.append_array([start, start + k, start + k + 1])
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = punkte
@@ -175,6 +259,25 @@ func _kachel_mesh(x0: int, z0: int, nx: int, nz: int) -> ArrayMesh:
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh
+
+
+## Teile eines Dreiecks (Indizes) außerhalb der Schnitte als Polygone [[Punkt, Normale], ...]; null: unberührt
+func _dreieck_mit_schnitt(punkte: PackedVector3Array, normalen: PackedVector3Array, ecken: Array, schnitte_hier: Array) -> Variant:
+	if schnitte_hier.is_empty():
+		return null
+	var rahmen := Rect2(Vector2(punkte[ecken[0]].x, punkte[ecken[0]].z), Vector2.ZERO)
+	for e: int in ecken:
+		rahmen = rahmen.expand(Vector2(punkte[e].x, punkte[e].z))
+	var betroffen: Array = []
+	for sch: Array in schnitte_hier:
+		if (sch[2] as Rect2).intersects(rahmen):
+			betroffen.append(sch)
+	if betroffen.is_empty():
+		return null
+	var dreieck: Array = []
+	for e: int in ecken:
+		dreieck.append([punkte[e], normalen[e]])
+	return _ausschneiden(dreieck, betroffen)
 
 
 ## Senkrechte Wände an den Rändern, damit das Gelände von außen nicht hohl wirkt.
@@ -216,7 +319,7 @@ func _baue_kollision() -> void:
 	var koerper := StaticBody3D.new()
 	koerper.name = "Kollision"
 	add_child(koerper)
-	if loecher.is_empty():
+	if loecher.is_empty() and schnitte.is_empty():
 		_hoehenform(koerper, 0, 0, breite - 1, tiefe - 1)
 		return
 	# Mit Löchern: je Kachel eine Höhenkarte, nur Kacheln mit Loch werden Dreiecksformen ohne die Lochdreiecke
@@ -236,6 +339,10 @@ func _baue_kollision() -> void:
 
 
 func _hat_loch(x0: int, z0: int, nx: int, nz: int) -> bool:
+	var kachel_rahmen := Rect2(ursprung.x + x0 * abstand, ursprung.y + z0 * abstand, nx * abstand, nz * abstand)
+	for sch: Array in _schnitt_ecken():
+		if (sch[2] as Rect2).intersects(kachel_rahmen):
+			return true
 	for z in range(z0, z0 + nz + 1):
 		for x in range(x0, x0 + nx + 1):
 			if _loch[z * breite + x] == 1:
@@ -284,6 +391,11 @@ func _baue_verdecker() -> void:
 				for x in range(cx * s, x1 + 1):
 					tief = minf(tief, _hoehen[zeile + x])
 					if _loch[zeile + x] == 1:
+						loch = true
+			if not loch and not schnitte.is_empty():
+				var zr := Rect2(ursprung.x + cx * s * abstand, ursprung.y + cz * s * abstand, s * abstand, s * abstand)
+				for sch: Array in _schnitt_ecken():
+					if (sch[2] as Rect2).intersects(zr):
 						loch = true
 			zelle[cz * zx + cx] = NAN if loch else tief
 	# Gitterpunkte: tiefste der bis zu vier angrenzenden Zellen

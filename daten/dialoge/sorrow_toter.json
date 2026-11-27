@@ -1,0 +1,27 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "schluessel_sorrow_archiv",
+			"knoten": "leer"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Ein Toter in verrostetem Kettenhemd",
+			"text": "Er liegt seit Jahrhunderten hier, das Kettenhemd zu einem Klumpen Rost verbacken. Die Hand umklammert noch einen Ring mit einem einzigen Schlüssel. Im Griff ist ein Halbmond eingefeilt.",
+			"weiter": "schluessel"
+		},
+		"schluessel": {
+			"sprecher": "Ein Toter in verrostetem Kettenhemd",
+			"text": "Die Finger zerfallen, als du den Schlüssel löst. Er ist schwer und kalt. Hier unten gibt es nur eine Tür, zu der er passen könnte.",
+			"setze": [
+				"schluessel_sorrow_archiv"
+			],
+			"akte": "In den Ruinen von Burg Sorrow einem Toten einen alten Schlüssel abgenommen (Halbmond im Griff)."
+		},
+		"leer": {
+			"sprecher": "Ein Toter in verrostetem Kettenhemd",
+			"text": "Er hält nichts mehr in der Hand. Er hat lange genug gewacht."
+		}
+	}
+}

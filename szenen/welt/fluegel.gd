@@ -13,6 +13,11 @@ class_name Fluegel
 ##   sie nur Leuten der Burg und dem Spieler, wenn für ihn die Bedingung gilt.
 ## - "zu": immer zu; die Wache öffnet Leuten der Burg und dem Spieler, wenn für ihn die Bedingung gilt.
 ## - "offen": steht offen.
+## - "schloss": abgeschlossen (Keller, Gruft, Gitter im Untergrund). Gilt für den Spieler die Bedingung (er hat den
+##   Schlüssel, z. B. "schluessel_gruft"), geht sie auf wie eine Tür; sonst rüttelt er nur daran.
+## - "riegel": von einer Seite verriegelt (Abkürzungen im Untergrund). Auf der Seite, nach der die Flügel aufgehen
+##   (lokal +z), schiebt der Spieler den Riegel zurück; das setzt die Bedingung als Flag, danach ist es eine Tür. Von
+##   der anderen Seite geht sie nicht auf.
 ## Geschlossen hält der Flügel auf (Kollision); während er sich bewegt und solange er offen ist, nicht.
 
 @export var breite := 1.6
@@ -50,6 +55,10 @@ var _hat_gemeldet := false
 
 
 func _ready() -> void:
+	if regel == "schloss":
+		aktion_text = "Öffnen"
+	elif regel == "riegel":
+		aktion_text = "Riegel zurückschieben"
 	_baue()
 	if regel == "offen" or Engine.is_editor_hint():
 		_auf = 1.0 if regel == "offen" else 0.0
@@ -197,11 +206,11 @@ func _process(delta: float) -> void:
 		_pruef = 0.25
 		_entscheide()
 	if not is_equal_approx(_auf, _ziel):
-		var dauer := 0.9 if regel == "tuer" else 3.5
+		var dauer := 0.9 if regel == "tuer" else (1.6 if _ist_tuerartig() else 3.5)
 		_auf = move_toward(_auf, _ziel, delta / dauer)
 		_stelle()
 		if _auf <= 0.0:            # zugefallen: Schlag und Riegel
-			_klang("tuer_zu" if regel == "tuer" else "tor_zu")
+			_klang("tuer_zu" if regel == "tuer" or _ist_tuerartig() else "tor_zu")
 			if regel != "tuer":
 				_klang("riegel", 0.8)
 
@@ -216,7 +225,7 @@ func _klang(name_: String, verzug := 0.0) -> void:
 		await get_tree().create_timer(verzug).timeout
 		if not is_inside_tree():
 			return
-	var tor := regel != "tuer"
+	var tor := regel != "tuer" and not _ist_tuerartig()
 	klang.spiele(name_, global_position + Vector3.UP * 1.5, 0.0 if tor else -4.0, 45.0 if tor else 20.0)
 
 
@@ -227,7 +236,7 @@ func _entscheide() -> void:
 	var spieler_nah := sp != null and _nah(sp, reichweite)
 	if _jemand_kommt(sp, spieler_nah):
 		_zuletzt = jetzt
-	var offen := grund or jetzt - _zuletzt < (2.0 if regel == "tuer" else 6.0)
+	var offen := grund or jetzt - _zuletzt < (2.0 if regel == "tuer" or _ist_tuerartig() else 6.0)
 	# Die Wachen schließen bei Einbruch der Nacht; wer in der Nähe ist, bekommt es mit
 	if _war_grund_offen and not grund and sp != null and _nah(sp, 30.0):
 		if _stand().alarmstufe >= 2:
@@ -236,14 +245,14 @@ func _entscheide() -> void:
 			_stand().meldung.emit("Die Torwachen schließen %s für die Nacht." % _mit_artikel())
 	_war_grund_offen = grund
 	# Die Wache öffnet dem, der hinein darf
-	if not grund and spieler_nah and _spieler_darf() and regel != "tuer" and not _hat_gemeldet:
+	if not grund and spieler_nah and _spieler_darf() and regel != "tuer" and not _ist_tuerartig() and not _hat_gemeldet:
 		_stand().meldung.emit("Die Torwache erkennt dich und öffnet %s." % _mit_artikel())
 		_hat_gemeldet = true
 	if not spieler_nah:
 		_hat_gemeldet = false
 	var ziel_neu := 1.0 if offen else 0.0
 	if ziel_neu != _ziel and _bereit_klang and ziel_neu > 0.5:
-		_klang("tuer_auf" if regel == "tuer" else "tor_auf")
+		_klang("tuer_auf" if regel == "tuer" or _ist_tuerartig() else "tor_auf")
 	_ziel = ziel_neu
 	_bereit_klang = true
 	var ansprechbar := regel != "tuer" and not offen and not _spieler_darf()
@@ -276,7 +285,14 @@ func _grund_offen() -> bool:
 	return false
 
 
+## Verschlossene und verriegelte Türen im Untergrund: klingen und bewegen sich wie Türen, Leute öffnen sie nicht
+func _ist_tuerartig() -> bool:
+	return regel == "schloss" or regel == "riegel"
+
+
 func _spieler_darf() -> bool:
+	if regel == "riegel":
+		return bedingung == "" or _stand().hat_flag(bedingung)
 	return regel == "tuer" or (bedingung != "" and _stand().pruefe_bedingung(bedingung))
 
 
@@ -290,6 +306,8 @@ func _nah(k: Node3D, weite: float) -> bool:
 func _jemand_kommt(sp: Node3D, spieler_nah: bool) -> bool:
 	if spieler_nah and _spieler_darf():
 		return true
+	if _ist_tuerartig():
+		return false
 	for p: Node3D in get_tree().get_nodes_in_group("personen"):
 		if p.visible and p.has_method("unterwegs") and p.unterwegs() and _nah(p, reichweite):
 			return true
@@ -308,7 +326,23 @@ func ist_offen() -> bool:
 	return _auf > 0.98
 
 
-func interagieren(_spieler: Node3D) -> void:
+func interagieren(spieler: Node3D) -> void:
+	if regel == "schloss":
+		_klang("riegel")
+		_stand().meldung.emit("%s ist abgeschlossen. Ohne Schlüssel kommst du hier nicht weiter." % anzeige_name)
+		return
+	if regel == "riegel":
+		var seite := global_basis.z.dot(spieler.global_position - global_position)
+		if seite < 0.0:
+			_klang("riegel")
+			_stand().meldung.emit("%s gibt nicht nach. Sie ist von der anderen Seite verriegelt." % anzeige_name)
+			return
+		_klang("riegel")
+		_stand().setze_flag(bedingung)
+		_stand().meldung.emit("Du schiebst den schweren Riegel zurück.")
+		_zuletzt = Time.get_ticks_msec() / 1000.0
+		_pruef = 0.0
+		return
 	if regel == "tag" and _stand().alarmstufe >= 2:
 		_stand().meldung.emit("Wegen des Alarms bleibt %s zu. Die Torwache lässt nur Ordensleute ein." % _mit_artikel())
 	elif regel == "tag":

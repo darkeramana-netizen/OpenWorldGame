@@ -108,7 +108,7 @@ for k_, s_ in enumerate(range(3, int(UH_LAENGE), 12)):
     licht(f"UHLichtBecken{k_}", HF, lx_, KAI_OBEN + 7.0, lz_, 18.0)
 licht("UHLichtTuer", HF, *(lambda p: (p[0], KAI_OBEN + 3.2, p[1]))(uh(UH_LAENGE - 2.0, 0)), 9.0)
 schild("SchildUntergrundhafen", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(4, -7.5)), "Untergrundhafen", 40)
-schild("SchildUHTuer", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(UH_LAENGE - 0.6, 0)), "Zur Burg (verschlossen)", 32)
+schild("SchildUHTuer", HF, *(lambda p: (p[0], KAI_OBEN + 4.2, p[1]))(uh(UH_LAENGE - 0.6, 0)), "Zur Burg", 32)
 # Torhaus über dem Wassertor (wie im Referenzbild): zwei eckige Türme mit Zeltdach zu beiden Seiten des Bogens, darüber
 # ein Fachwerkhaus auf der Mauerkrone, das über die Mauer vorkragt
 _wa, _wb = W(PD._MAUER_HAFEN[1]), W(PD._MAUER_HAFEN[0])
