@@ -150,10 +150,13 @@ Erste Ausbaustufe des Untergrunds (`szenen/welt/unterwelt.gd`, Lage in `werkzeug
   Pfeilern, Ruß an den Wänden, eine Kapelle mit dem alten Wappen („Ordo Sorrow“), ein Toter mit dem Schlüssel zum
   verbrannten Archiv (Truhe, der Befehl des Komturs Gerolt Marn). Ein verschütteter Gang nach Osten wartet auf die
   Schmugglerhöhlen.
+- **Alter Weinkeller** unter dem Palas (Tonnengewölbe, Lagernischen, Lagerfässer, Kellerbuch: seit 1612 vom Palas her
+  zugemauert): nur über einen Felsdurchbruch neben dem Altar der alten Kapelle von Sorrow zu erreichen; darin ein Fass
+  „für den Großmeister“.
 - Unter Tage: Fackeln (flackernd), dunkles Umgebungslicht (Reflexionssonden als Innenraum), Hall, Tropfen, Grollen; das
   Gelände wird an den Abgängen genau ausgeschnitten (`gelaende.gd`, `schnitte`).
 
-Offen: Schmugglerhöhlen von den Meereshöhlen aus, Stadtkeller, Wein- und Lagerkeller unter dem Palas, Fotos mit der
+Offen: Schmugglerhöhlen von den Meereshöhlen aus, Stadtkeller, Fotos mit der
 vollen Grafik (die Software-Grafik dieser Umgebung braucht dafür zu viel Speicher).
 
 ## Nächste Schritte

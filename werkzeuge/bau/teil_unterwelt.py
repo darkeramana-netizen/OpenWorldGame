@@ -266,6 +266,26 @@ uw_gang(_s4_a, H_SORROW, _s4_b, H_SORROW, breite=1.4, hoehe=2.4, art=2, fackeln=
 uw_stueck(62, RH(-2.0, -13.9), H_SORROW, 0.0)
 uw_stueck(62, RH(-2.4, -12.6), H_SORROW, 40.0)
 
+# ---------- Der alte Weinkeller unter dem Palas ----------
+# Längs zur alten Kapelle von Sorrow ausgerichtet, vom Palas her seit Langem zugemauert (Kellerbuch). Ein Durchbruch im
+# Fels führt von der Kapelle neben dem Altar hinauf an seine Stirnwand.
+H_WEINKELLER = 6.0
+WK = uw_raum(AK(28.5, 1.0), RH_G, 20.0, 7.0, H_WEINKELLER, 2.0, 2.2, 1, 4.0, 2 | 4)
+uw_gang(AK(6.0, 2.5), H_SORROW, AK(18.5, 2.5), H_WEINKELLER, breite=1.3, hoehe=2.3, art=1, fackeln=0)
+# Lagerfässer vor den Nischen (je Feld eins, quer zur Wand), kleine Fässer, Kisten, ein Tisch mit dem Kellerbuch
+for i_ in range(5):
+    su_ = -10.0 + (i_ + 0.5) * 4.0
+    for sn_ in (2.65, -2.65):
+        if i_ == 0 and sn_ < 0:
+            continue
+        uw_stueck(64, WK(su_, sn_), H_WEINKELLER, RH_G + 90.0)
+for su_, sn_, art_ in [(-7.6, -2.9, 0), (-7.0, -3.0, 0), (9.2, 1.0, 1), (9.2, 2.6, 1), (9.3, -2.8, 2), (3.8, -0.9, 0)]:
+    uw_stueck(art_, WK(su_, sn_), H_WEINKELLER, RH_G + 10.0 * su_)
+uw_stueck(45, WK(-1.5, 0.0), H_WEINKELLER, RH_G)
+uw_stueck(60, WK(-1.5, 0.35), H_WEINKELLER + 0.78, 0.0)
+uw_lesbar("Kellerbuch", WK(-1.5, -0.3), H_WEINKELLER + 0.9, "Das Kellerbuch", "weinkeller_buch")
+uw_durchsuchbar("UralterWein", WK(6.0, -2.0), H_WEINKELLER + 0.7, "Ein Fass mit Kreidezeichen", "weinkeller_fass", "Anzapfen")
+
 # ---------- Knoten ----------
 N("Unterwelt", "Node3D", ".", f"""script = ExtResource("62_unterwelt")
 gewoelbe = PackedFloat32Array({_zahlen(UW_GW)})

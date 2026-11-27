@@ -1,0 +1,27 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "weinkeller_gefunden",
+			"knoten": "wieder"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Das Kellerbuch",
+			"text": "Ein dickes Buch, die Seiten gewellt von der Feuchtigkeit. Spalten mit Fässern, Jahrgängen und Lieferungen aus dem Süden, über Jahrzehnte in derselben ordentlichen Hand.",
+			"weiter": "letzte"
+		},
+		"letzte": {
+			"sprecher": "Das Kellerbuch",
+			"text": "Der letzte Eintrag ist kurz: „Anno 1612. Der Keller wird unter dem neuen Palas zugemauert, die Fässer bleiben liegen, bis man sie holt. Wer diese Zeilen liest, hat sie nicht geholt.“",
+			"setze": [
+				"weinkeller_gefunden"
+			],
+			"akte": "Unter dem Palas einen vergessenen Weinkeller gefunden, seit 1612 zugemauert. Erreichbar nur über einen Durchbruch aus den Ruinen von Burg Sorrow."
+		},
+		"wieder": {
+			"sprecher": "Das Kellerbuch",
+			"text": "„Wer diese Zeilen liest, hat sie nicht geholt.“"
+		}
+	}
+}

@@ -1,0 +1,22 @@
+{
+	"einstieg": [
+		{
+			"bedingung": "weinkeller_fass_leer",
+			"knoten": "leer"
+		}
+	],
+	"knoten": {
+		"start": {
+			"sprecher": "Ein Fass mit Kreidezeichen",
+			"text": "Auf dem Boden des Fasses steht in Kreide: „Für den Großmeister. Nicht anrühren.“ Der Zapfhahn ist festgerostet, aber das Spundloch gibt nach. Der Wein ist dunkel und dick wie Sirup und riecht nach Holz und altem Leder. Ein Schluck, und dir wird warm bis in die Fingerspitzen.",
+			"setze": [
+				"weinkeller_fass_leer"
+			],
+			"akte": "Im alten Weinkeller vom Wein des Großmeisters gekostet, über hundert Jahre alt."
+		},
+		"leer": {
+			"sprecher": "Ein Fass mit Kreidezeichen",
+			"text": "„Für den Großmeister. Nicht anrühren.“ Du hast es schon angerührt."
+		}
+	}
+}
