@@ -726,13 +726,14 @@ static func stoff_einrichten(skelett: Skeleton3D) -> SpringBoneSimulator3D:
 ## und würden sonst hinter das Bein rutschen. Leder und Kettengeflecht sind schwer und steif.
 ## Dämpfung 26.11.2026 etwa verdoppelt und der Bewegungsraum des Rocks kleiner: Der Stoff schwang zu stark hin und her
 ## (dazu die Zeitkorrektur im Modul gegen das Zittern bei schwankender Bildzeit)
+## 27.11.2026 noch einmal: flatterte zu viel. Dämpfung etwa verdoppelt, Biegung steifer, Bewegungsraum um ein Drittel kleiner.
 const STOFF_TEILE := {
-	"Kittelrock": [0.0003, 0.13, 0.075, 0.055, 0.15],
-	"Kettenhemd_rock": [0.00008, 0.22, 0.085, 0.06, 0.08],
-	"Schuerze": [0.0003, 0.16, 0.1, 0.075, 0.06],
-	"Lederschuerze": [0.00005, 0.22, 0.105, 0.08, 0.05],
-	"Wappenrock": [0.0002, 0.16, 0.105, 0.08, 0.06],
-	"Wappenrock_hinten": [0.0002, 0.16, 0.105, 0.08, 0.06],
+	"Kittelrock": [0.0002, 0.27, 0.075, 0.055, 0.1],
+	"Kettenhemd_rock": [0.00005, 0.42, 0.085, 0.06, 0.055],
+	"Schuerze": [0.0002, 0.32, 0.1, 0.075, 0.04],
+	"Lederschuerze": [0.00003, 0.42, 0.105, 0.08, 0.035],
+	"Wappenrock": [0.00012, 0.32, 0.105, 0.08, 0.04],
+	"Wappenrock_hinten": [0.00012, 0.32, 0.105, 0.08, 0.04],
 }
 ## Teil → mögliche Unterlagen (die erste vorhandene zählt)
 const STOFF_LAGEN := {
