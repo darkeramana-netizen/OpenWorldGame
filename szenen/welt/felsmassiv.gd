@@ -333,9 +333,29 @@ func _baue_kachel(start: Vector2) -> void:
 						nah = true
 			# auch Punkte ohne Fels liegen auf ihrer echten Höhe (knapp unter dem Gelände), sonst entstehen Spitzen
 			punkte.append(_punkt(x, z) if nah else Vector3(x, _g.hoehe_bei(x, z) - 0.8, z))
+	# Verwittert statt zackig (Rückmeldung 26.11.2026: einzelne Rasterpunkte sprangen bis 2,6 m und bildeten spitze
+	# Zähne): Höhen zweimal geglättet (Mitte doppelt gewichtet), nur über dem Gelände, nie darunter
+	for durchgang in 2:
+		var neu: Array[Vector3] = punkte.duplicate()
+		for iz in range(1, n - 1):
+			for ix in range(1, n - 1):
+				var k := iz * n + ix
+				if gew[k] <= 0.001:
+					continue
+				var summe := punkte[k].y * 4.0
+				var gewicht := 4.0
+				for d in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
+					summe += punkte[(iz + d[1]) * n + ix + d[0]].y * 2.0
+					gewicht += 2.0
+				for d in [[-1, -1], [1, -1], [-1, 1], [1, 1]]:
+					summe += punkte[(iz + d[1]) * n + ix + d[0]].y
+					gewicht += 1.0
+				var h: float = _g.hoehe_bei(punkte[k].x, punkte[k].z)
+				neu[k].y = maxf(summe / gewicht, minf(punkte[k].y, h + 0.05))
+		punkte = neu
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	st.set_smooth_group(0xFFFFFFFF)   # kantige Bruchflächen statt weicher Hügel
+	st.set_smooth_group(0)   # weiche Normalen: gerundete, verwitterte Felsbänke; Kanten und Körnung kommen aus der Textur
 	var dreiecke := 0
 	for iz in kachel:
 		for ix in kachel:
