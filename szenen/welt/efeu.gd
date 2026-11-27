@@ -27,6 +27,7 @@ func _ready() -> void:
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	_zufall.seed = samen
+	var start_ms := Time.get_ticks_msec()
 	_blatt_mesh = QuadMesh.new()
 	_blatt_mesh.size = Vector2(1, 1)
 	_blatt_mesh.center_offset = Vector3(0, 0.5, 0)   # Stiel unten am Ursprung
@@ -66,6 +67,7 @@ func _ready() -> void:
 				# beide Seiten möglich, die Hofseite häufiger
 				var seite := -1.0 if _zufall.randf() < 0.7 else 1.0
 				_stock(b as Node3D, p, aussen * seite, m[i + 4], m[i + 5], m[i + 6])
+	print_verbose("Efeu: %d Stöcke, %d Blätter, %d ms" % [anzahl_stoecke, anzahl_blaetter, Time.get_ticks_msec() - start_ms])
 
 
 ## Ein Efeustock an der Mauer bei p (Raum des Bauknotens), Wand zeigt nach n
