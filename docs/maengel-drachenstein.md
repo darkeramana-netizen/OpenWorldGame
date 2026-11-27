@@ -130,6 +130,14 @@ erst Fehler, dann Welt und Fernsicht, dann Modelle und Materialien.
 | M70 | Mauern kahl | kein Bewuchs an den Wänden | behoben (`efeu.gd`): 82 Efeustöcke mit rund 55 000 Blättern (selbst gezeichneter Blattatlas, `werkzeuge/efeu_textur.py`), wachsen verzweigt vom Mauerfuß hinauf, meist auf der Hofseite; nicht an Toren und nicht hinter Häusern, Schuppen oder Treppen (Strahlen) |
 | M71 | schwarze Quadrate auf den Mauern (trotz M50) | Rüstlöcher waren zusätzlich als schwarze Flächen in die Mauergeometrie gebaut (`burgbau.gd`) | behoben: entfernt |
 
+## Leben in den Höfen, dritte Runde (27.11.2026)
+
+51 Leute und 8 Tiere mehr (`teil_burgleben.py`, Ende): je Hof Plaudergruppen zu zweit und zu dritt, zwei Wäscherinnen
+am Brunnen (knien, mittags zum Aufhängen), kehrende Mägde mit Besen, Boten (eilig von Tür zu Tür), zwei Ordensritter auf
+gemeinsamer Runde, spielende Kinder (Vorburg, Mittelburg, Palashof), je ein Hund und eine Katze; im Palashof knien
+mittags Ordensleute zur Andacht vor dem Portal der Drachenkapelle. Abends gehen alle heim. Sie halten 3 m vor den
+Haustüren, damit die Türen nicht ständig aufgehen.
+
 ## Untergrund (27.11.2026)
 
 Erste Ausbaustufe des Untergrunds (`szenen/welt/unterwelt.gd`, Lage in `werkzeuge/bau/teil_unterwelt.py`):
