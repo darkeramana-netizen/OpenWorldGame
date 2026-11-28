@@ -1,5 +1,9 @@
 # Ordo Custodum – Vision, Zielsetzung und technische Leitlinien
 
+**Titel:** *Ordo Custodum: Der zweite Eid* (seit 28.11.2026). **Zeit:** 1750 – bleibt so. „Mittelalterlich“ ist ein
+Stilmittel: Die Welt ist von alten Burgen geprägt, die 1750 noch stehen und genutzt werden; Technik, Waffen, Kleidung und
+Gesellschaft sind die des Jahres 1750 (Lore-Bibel). Wo unten „mittelalterlich“ steht, ist diese Burgenwelt gemeint.
+
 Langfristiger Maßstab für das Projekt (vom Entwickler vorgegeben, 28.11.2026). Bei jeder größeren Entscheidung zu
 berücksichtigen; siehe auch `CLAUDE.md`.
 

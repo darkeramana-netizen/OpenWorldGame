@@ -17,7 +17,7 @@ godot --path . --script res://werkzeuge/messen/messung.gd -- --name mein_rechner
 - Weitere Angaben nach `--`: `--region drachenstein`, `--strecke stadt_palas` (Standard) oder `kurz` oder `keine`,
   `--aufloesung 1920x1080`, `--ausgabe <Ordner>`.
 - Ergebnis: `messung_<region>_<name>_<zeit>.json` (alle Werte) und `.txt` (Zusammenfassung) in `user://messungen/`,
-  unter Windows `%APPDATA%\Godot\app_userdata\Sorrowland_ In Silentio\messungen\`. Der Pfad steht am Ende der Ausgabe.
+  unter Windows `%APPDATA%\Godot\app_userdata\Ordo Custodum_ Der zweite Eid\messungen\`. Der Pfad steht am Ende der Ausgabe.
 - Ablauf: Laden (mit Zeit je `_ready()`), 10 s Anlauf, Sprung an den Start der Strecke, Messfahrt (die Spielfigur
   rennt mit echter Physik die Strecke von `test_region` vom Markt durch Stadt, Vorburg, Mittelburg, Zwinger und
   Oberburg in den Palas, mit Eid, damit die Torwachen öffnen), am Ende 8 s Rundblick.

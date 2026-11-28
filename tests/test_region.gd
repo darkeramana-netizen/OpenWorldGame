@@ -45,9 +45,9 @@ func gehe_ueber(punkte: Array, zeit_pro_punkt: float = 20.0, genau: float = 0.8)
 	Input.action_press("vor")
 	var alle := true
 	for ziel: Vector2 in punkte:
-		var ende := Time.get_ticks_msec() + int(zeit_pro_punkt * 1000)
+		var ende := _sim_ms() + int(zeit_pro_punkt * 1000)
 		var erreicht := false
-		while Time.get_ticks_msec() < ende:
+		while _sim_ms() < ende:
 			var p: Vector3 = spieler().global_position
 			var weg := Vector2(ziel.x - p.x, ziel.y - p.z)
 			if weg.length() < genau:
@@ -75,8 +75,8 @@ func druecke(code: Key) -> void:
 
 func laufe(sekunden: float) -> void:
 	Input.action_press("vor")
-	var ende := Time.get_ticks_msec() + int(sekunden * 1000)
-	while Time.get_ticks_msec() < ende:
+	var ende := _sim_ms() + int(sekunden * 1000)
+	while _sim_ms() < ende:
 		await physics_frame
 	Input.action_release("vor")
 	for i in 5: await physics_frame
@@ -702,3 +702,9 @@ func _initialize() -> void:
 
 	print("\nFehler: ", fehler)
 	quit(fehler)
+
+
+## Simulierte Zeit in Millisekunden (gezählte Physikschritte). Wanduhrzeit lief unter Last schneller als das Spiel:
+## Die Figur kam in „3 Sekunden“ weniger weit, Wartezeiten liefen ab, bevor genug geschah (wackelnde Prüfungen).
+func _sim_ms() -> int:
+	return Engine.get_physics_frames() * 1000 / Engine.physics_ticks_per_second

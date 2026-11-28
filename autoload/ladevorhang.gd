@@ -139,9 +139,9 @@ func _baue() -> void:
 	mitte.alignment = BoxContainer.ALIGNMENT_CENTER
 	mitte.add_theme_constant_override("separation", 6)
 	_wurzel.add_child(mitte)
-	var titel := _label("SORROWLAND", 44, GOLD)
+	var titel := _label("ORDO CUSTODUM", 44, GOLD)
 	mitte.add_child(titel)
-	mitte.add_child(_label("In Silentio", 20, Color(0.7, 0.62, 0.5)))
+	mitte.add_child(_label("Der zweite Eid", 20, Color(0.7, 0.62, 0.5)))
 	var abstand := Control.new()
 	abstand.custom_minimum_size = Vector2(0, 40)
 	mitte.add_child(abstand)

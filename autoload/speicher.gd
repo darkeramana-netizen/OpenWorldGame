@@ -1,6 +1,6 @@
 extends Node
 ## Speichern und Laden. Spielstände liegen als JSON in user://speicher/
-## (unter Windows: %APPDATA%/Godot/app_userdata/Sorrowland_ In Silentio/speicher).
+## (unter Windows: %APPDATA%/Godot/app_userdata/Ordo Custodum_ Der zweite Eid/speicher).
 
 const STANDARD_ORDNER := "user://speicher/"
 ## Die Regionen der Welt. Neue Spiele beginnen in der ersten.
@@ -47,6 +47,7 @@ var _autospeichern_vorgemerkt := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_alte_spielstaende_uebernehmen()
 	DirAccess.make_dir_recursive_absolute(ordner)
 	# Nach Rangwechsel und Zeitsprung automatisch speichern,
 	# sobald Gespräch und Blende vorbei sind (siehe _process).
@@ -294,3 +295,21 @@ func _lies(platz: String) -> Dictionary:
 
 func _pfad(platz: String) -> String:
 	return ordner + "platz_%s.json" % platz
+
+
+## Das Spiel hieß bis 28.11.2026 „Sorrowland: In Silentio“; mit dem Namen wechselte Godots Benutzerordner. Gibt es im
+## neuen Ordner noch keine Spielstände, werden die alten einmal herüberkopiert (der alte Ordner bleibt unberührt).
+const ALTER_BENUTZERORDNER := "Sorrowland_ In Silentio"
+func _alte_spielstaende_uebernehmen() -> void:
+	if ordner != STANDARD_ORDNER:
+		return                                  # Tests und Proben schreiben in eigene Ordner
+	var ziel := ProjectSettings.globalize_path(STANDARD_ORDNER)
+	if DirAccess.dir_exists_absolute(ziel) and not DirAccess.get_files_at(ziel).is_empty():
+		return
+	var quelle := OS.get_user_data_dir().get_base_dir().path_join(ALTER_BENUTZERORDNER).path_join("speicher")
+	if not DirAccess.dir_exists_absolute(quelle):
+		return
+	DirAccess.make_dir_recursive_absolute(ziel)
+	for datei in DirAccess.get_files_at(quelle):
+		DirAccess.copy_absolute(quelle.path_join(datei), ziel.path_join(datei))
+	print("Spielstände aus dem alten Benutzerordner übernommen: ", quelle)

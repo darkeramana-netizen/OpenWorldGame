@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Sorrowland: In Silentio"
+config/name="Ordo Custodum: Der zweite Eid"
 config/description="Akt I: Die Schwelle, Region Drachenstein"
 run/main_scene="res://szenen/oberflaeche/hauptmenue.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")

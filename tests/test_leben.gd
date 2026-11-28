@@ -31,9 +31,9 @@ func gehe_ueber(punkte: Array, zeit_pro_punkt: float = 20.0) -> bool:
 	Input.action_press("vor")
 	var alle := true
 	for ziel: Vector2 in punkte:
-		var ende := Time.get_ticks_msec() + int(zeit_pro_punkt * 1000)
+		var ende := _sim_ms() + int(zeit_pro_punkt * 1000)
 		var erreicht := false
-		while Time.get_ticks_msec() < ende:
+		while _sim_ms() < ende:
 			var p: Vector3 = spieler().global_position
 			var weg := Vector2(ziel.x - p.x, ziel.y - p.z)
 			if weg.length() < 0.7:
@@ -90,8 +90,8 @@ func warte_auf_szene(alte_id: int) -> bool:
 	return false
 
 func warte_auf_blende() -> bool:
-	var ende := Time.get_ticks_msec() + 12000
-	while S.eingabe_gesperrt and Time.get_ticks_msec() < ende:
+	var ende := _sim_ms() + 12000
+	while S.eingabe_gesperrt and _sim_ms() < ende:
 		await process_frame
 	return not S.eingabe_gesperrt
 
@@ -119,8 +119,8 @@ func klick(knopf: MouseButton) -> void:
 		await process_frame
 
 func warte(sekunden: float) -> void:
-	var ende := Time.get_ticks_msec() + int(sekunden * 1000)
-	while Time.get_ticks_msec() < ende:
+	var ende := _sim_ms() + int(sekunden * 1000)
+	while _sim_ms() < ende:
 		await physics_frame
 
 ## Stellt die Figur vor ein Ziel (abstand Meter, von Süden) und dreht Kamera und Körper nach Norden.
@@ -179,8 +179,8 @@ func waehle(person: Node3D, teile: Array, abstand: Vector3 = Vector3(0, 0.3, 1.4
 
 ## Wartet (höchstens sekunden), bis ein Flag gesetzt ist.
 func warte_auf_flag(flag: String, sekunden: float) -> bool:
-	var ende := Time.get_ticks_msec() + int(sekunden * 1000)
-	while not S.hat_flag(flag) and Time.get_ticks_msec() < ende:
+	var ende := _sim_ms() + int(sekunden * 1000)
+	while not S.hat_flag(flag) and _sim_ms() < ende:
 		await physics_frame
 	return S.hat_flag(flag)
 
@@ -330,10 +330,10 @@ func _initialize() -> void:
 	await warte(1.2)   # Mittag beginnt
 	var start := hedda.global_position
 	pruefe(hedda.unterwegs(), "Mittag: Hedda geht vom Markt zum Brunnen, während der Spieler zusieht")
-	var ende := Time.get_ticks_msec() + 180000
+	var ende := _sim_ms() + 180000
 	var schwebt := false
 	var schwebt_bei := ""
-	while hedda.unterwegs() and Time.get_ticks_msec() < ende:
+	while hedda.unterwegs() and _sim_ms() < ende:
 		await physics_frame
 		var b := boden_unter(hedda.global_position, hedda)
 		if not is_nan(b) and absf(hedda.global_position.y - b) > 0.4:
@@ -418,3 +418,9 @@ func _initialize() -> void:
 
 	print("\nFehler: ", fehler)
 	quit(fehler)
+
+
+## Simulierte Zeit in Millisekunden (gezählte Physikschritte). Wanduhrzeit lief unter Last schneller als das Spiel:
+## Die Figur kam in „3 Sekunden“ weniger weit, Wartezeiten liefen ab, bevor genug geschah (wackelnde Prüfungen).
+func _sim_ms() -> int:
+	return Engine.get_physics_frames() * 1000 / Engine.physics_ticks_per_second

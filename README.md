@@ -1,4 +1,4 @@
-# Sorrowland: In Silentio
+# Ordo Custodum: Der zweite Eid
 
 > *In silentio vigilamus. Aber wenn die Stille endet, handeln wir.*
 
@@ -493,7 +493,7 @@ Wege durch die Region: Vom Ordensvorwerk (Hof aus Akt I) führt der Küstenweg n
 - **Automatisch** wird nach jedem Rangwechsel und jedem Zeitsprung gespeichert.
 - **Schnellspeichern** mit F5, schnell laden mit F9.
 - Gespeichert werden Name, Rang, Akte, Flags, Zähler, Ziel, Uhrzeit und Jahr, die Region, Position und Blickrichtung sowie aufgehobene Gegenstände.
-- Die Dateien liegen als lesbares JSON im Godot-Benutzerordner unter `speicher/`. Unter Windows ist das `%APPDATA%\Godot\app_userdata\Sorrowland_ In Silentio\speicher\`. In Godot öffnest du den Ordner über **Projekt → Benutzerdatenordner öffnen**.
+- Die Dateien liegen als lesbares JSON im Godot-Benutzerordner unter `speicher/`. Unter Windows ist das `%APPDATA%\Godot\app_userdata\Ordo Custodum_ Der zweite Eid\speicher\`. In Godot öffnest du den Ordner über **Projekt → Benutzerdatenordner öffnen**.
 
 ## Projektaufbau
 

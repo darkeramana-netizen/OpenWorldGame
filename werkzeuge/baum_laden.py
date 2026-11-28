@@ -41,7 +41,7 @@ if BUSCH:
 # Büschel, Holz, Karten je Büschel, Kartengröße: Die Fernfassung hat weniger, aber größere Büschel, damit die
 # Kronen aus der Ferne dicht bleiben
 FASSUNGEN = {"nah": (BUESCHE, HOLZ, KARTEN, GROSS),
-             "fern": (max(40, BUESCHE // 3), max(300, HOLZ // 6), max(1, KARTEN - 1), GROSS * (1.3 if KARTEN > 2 else 1.5))}
+             "fern": (max(40, BUESCHE // 3), max(600, HOLZ // 3), max(1, KARTEN - 1), GROSS * (1.3 if KARTEN > 2 else 1.5))}
 # (Laubbäume fern: eine Karte je Büschel, dafür größer; jede überlagerte Karte kostet die Grafikkarte einen Durchgang)
 KACHEL = 512
 KOPF = {"User-Agent": "sorrowland-werkzeuge/1.0"}
@@ -119,14 +119,16 @@ def lies_gltf(datei):
 
 # ---------- Holz vereinfachen ----------
 
-def vereinfache(pos, nor, uv, idx, ziel):
+def vereinfache(pos, nor, uv, idx, ziel, grob_erlaubt=True):
     if len(idx) <= ziel:
         return pos, nor, uv, idx
     flach = idx.astype(np.uint32).ravel()
     ecken = np.ascontiguousarray(pos.astype(np.float32))
     neu = np.zeros(len(flach), dtype=np.uint32)
     n = mo.simplify(neu, flach, ecken, len(flach), len(ecken), 12, ziel * 3, 0.05)
-    if n > ziel * 3 * 1.6:   # dünne Äste lassen sich mit Topologie kaum vereinfachen
+    # dünne Äste lassen sich mit Topologie kaum vereinfachen; der Stamm nie grob (das reißt Löcher hinein, er wirkte
+    # durchsichtig, Rückmeldung 28.11.2026)
+    if grob_erlaubt and n > ziel * 3 * 1.6:
         grob = np.zeros(len(flach), dtype=np.uint32)
         m = mo.simplify_sloppy(grob, flach, ecken, len(flach), len(ecken), 12, ziel * 3, 0.05)
         if 0 < m < n:
@@ -134,6 +136,20 @@ def vereinfache(pos, nor, uv, idx, ziel):
     neu = neu[:n]
     benutzt, neu_idx = np.unique(neu, return_inverse=True)
     return pos[benutzt], nor[benutzt], uv[benutzt], neu_idx.reshape(-1, 3)
+
+
+def ist_stamm(material):
+    """Stamm (nicht Äste oder Zweige): bekommt beim Vereinfachen mehr Dreiecke, er ist am meisten zu sehen"""
+    name = material.get("name", "").lower()
+    return not any(w in name for w in ("branch", "twig", "dead"))
+
+
+def holz_budget(teile, holz_mats, gq, ziel):
+    """Dreiecke je Holzmaterial: nach Anteil am Scan, der Stamm sechsfach gewichtet (sonst bekam der Hauptstamm nur
+    6 % und zerfiel in Splitter)"""
+    gewicht = {m: len(teile[m][3]) * (6.0 if ist_stamm(gq["materials"][m]) else 1.0) for m in holz_mats}
+    summe = sum(gewicht.values()) or 1.0
+    return {m: max(120, int(ziel * gewicht[m] / summe)) for m in holz_mats}
 
 
 # ---------- Laub zu Büscheln ----------
@@ -467,22 +483,21 @@ def verarbeite(name):
         kacheln = [(0.0, 0.0), (0.5, 0.0), (0.0, 0.5), (0.5, 0.5)]
         ergebnis = {"hoehe": round(hoehe, 3), "quelle": f"https://polyhaven.com/a/{name}"}
         for fassung, (buesche, holz_ziel, karten, gross) in FASSUNGEN.items():
-            holz_dreiecke = sum(len(teile[m][3]) for m in holz_mats)
+            budget = holz_budget(teile, holz_mats, gq, holz_ziel)
             holz = {}
             for m in holz_mats:
                 p_, n_, u_, i_ = teile[m]
-                anteil = len(i_) / max(1, holz_dreiecke)
-                holz[m] = vereinfache(p_, n_, u_, i_, max(60, int(holz_ziel * anteil)))
+                holz[m] = vereinfache(p_, n_, u_, i_, budget[m], not ist_stamm(gq["materials"][m]))
             laub = baue_laub(pos, nor, uv, idx, bild, buesche, karten, np.random.default_rng(31), kacheln, gross)
             datei = ziel / f"{ziel.name}_{fassung}.gltf"
             schreibe(datei, holz, laub, gq, quelle.parent, atlas_name, holz_im_atlas=fassung == "fern")
             ergebnis[fassung] = {"dreiecke": int(sum(len(h[3]) for h in holz.values()) + len(laub[3]))}
         if not BUSCH and BLAETTER > 0:
-            holz_dreiecke = sum(len(teile[m][3]) for m in holz_mats)
+            budget = holz_budget(teile, holz_mats, gq, HOLZ_DETAIL)
             holz = {}
             for m in holz_mats:
                 p_, n_, u_, i_ = teile[m]
-                holz[m] = vereinfache(p_, n_, u_, i_, max(200, int(HOLZ_DETAIL * len(i_) / max(1, holz_dreiecke))))
+                holz[m] = vereinfache(p_, n_, u_, i_, budget[m], not ist_stamm(gq["materials"][m]))
             laub, blatt_atlas = baue_blaetter(pos, nor, uv, idx, bild, BLAETTER, np.random.default_rng(57),
                                               pos[idx].reshape(-1, 3).mean(0))
             blatt_name = f"{ziel.name}_blatt_atlas.png"

@@ -6,7 +6,7 @@ extends SceneTree
 ##   godot --path . --script res://werkzeuge/rundgang/rundgang.gd -- --grafik episch
 ## Weitere Angaben nach --: --region drachenstein, --nur 08_markt (nur Blickpunkte, deren Name so beginnt;
 ## mehrere mit Komma: --nur 14,15), --aufloesung 1920x1080, --ausgabe <Ordner>. Die Fotos landen in user://rundgang/<region>_<Zeit>/ (unter Windows
-## %APPDATA%\Godot\app_userdata\Sorrowland_ In Silentio\rundgang\); der Ordner steht am Ende der Ausgabe.
+## %APPDATA%\Godot\app_userdata\Ordo Custodum_ Der zweite Eid\rundgang\); der Ordner steht am Ende der Ausgabe.
 
 const WARTEN_MIN := 90       # so viele Bilder je Blickpunkt mindestens (SDFGI, Schatten und Ausblenden setzen sich)
 const WARTEN_MAX_S := 40.0
