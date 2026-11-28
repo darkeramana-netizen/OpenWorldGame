@@ -108,10 +108,17 @@ func _initialize() -> void:
 	var start: Vector3 = spieler().global_position
 	pruefe(start.distance_to(hp(0, 0, 46)) < 0.5 and absf(start.y - g.hoehe_bei(start.x, start.z)) < 0.5, "Spieler steht am Start vor dem Tor des Ordensvorwerks auf dem Boden")
 
-	# Laufen: vom Vorplatz durch das Tor in den Hof
+	# Laufen: vom Vorplatz durch das Tor in den Hof. Erst wenn das Laden fertig und die Eingabe frei ist (unter Last
+	# dauerte das länger, die Figur stand dann still und die Prüfung schlug fehl)
+	var lv := root.get_node("Ladevorhang")
+	var bis := _sim_ms() + 60000
+	while (lv.sichtbar or S.eingabe_gesperrt or root.get_node("Zellwelt").wartend() > 0) and _sim_ms() < bis:
+		await physics_frame
+	for i in 10: await physics_frame
 	spieler().get_node("KameraDrehpunkt").rotation.y = deg_to_rad(hof_blick(0.0))
 	var vorher: Vector3 = im_hof()
 	await laufe(3.0)
+	print("       Tor: von %s nach %s (Vorhang %s, gesperrt %s)" % [vorher.snapped(Vector3.ONE * 0.1), im_hof().snapped(Vector3.ONE * 0.1), lv.sichtbar, S.eingabe_gesperrt])
 	pruefe(vorher.z - im_hof().z > 8.0 and absf(im_hof().y) < 0.6, "Mit W durch das Tor in den Hof gelaufen")
 
 	# Rampen im Hof: zum Wehrgang und weiter auf den Wachturm, mit echtem Gehen
