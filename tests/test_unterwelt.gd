@@ -118,7 +118,9 @@ func _initialize() -> void:
 			continue
 		# (neben die Mitte: dort steht in Gewölben ein Pfeiler oder der Steg; in Ruinen liegt Schutt, der sich nach dem Ort
 		# richtet: dort genügt freier Boden an einer von mehreren Stellen)
-		var stellen: Array[Vector3] = [Vector3(0.9, 0, 0.7)] if art in [0, 2] else [Vector3.ZERO]
+		var stellen: Array[Vector3] = [Vector3.ZERO]
+		if art in [0, 2]:
+			stellen = [Vector3(0.9, 0, 0.7)]
 		if art == 3:
 			stellen = [Vector3(0.9, 0, 0.7), Vector3(-0.9, 0, -0.7), Vector3(0.9, 0, -0.7), Vector3(-0.9, 0, 0.7)]
 		var boden_da := false
