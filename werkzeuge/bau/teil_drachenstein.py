@@ -626,6 +626,16 @@ def _im_poly(q, poly):
 
 _feste_w = [[W(q) for q in _ecken_plan(b_, 3.0)] for b_ in _BEGEHBAR + [PD.PALAS, PD.PALAS_ECKBAU,
             (PD.BERGFRIED_KERNBURG, PD.BERGFRIED_SEITE / M, PD.BERGFRIED_SEITE / M, PD.BERGFRIED_DREH)]]
+# Apsis der Drachenkapelle und Anbau des Gruftabgangs an ihrer Südseite (teil_unterwelt.py) freihalten
+_kg = math.radians(-PD.DRACHENKAPELLE[3])
+_ku, _kn = (math.sin(_kg), math.cos(_kg)), (math.cos(_kg), -math.sin(_kg))
+_kc = W(PD.DRACHENKAPELLE[0])
+def _kap_rechteck(su0, su1, sn0, sn1):
+    return [(round(_kc[0] + _ku[0] * su + _kn[0] * sn, 2), round(_kc[1] + _ku[1] * su + _kn[1] * sn, 2))
+            for su, sn in ((su0, sn0), (su1, sn0), (su1, sn1), (su0, sn1))]
+_kl = PD.KAPELLE_LAENGE / 2.0
+_feste_w.append(_kap_rechteck(-_kl - PD.KAPELLE_APSIS - 1.5, -_kl + 0.5, -PD.KAPELLE_APSIS - 1.0, PD.KAPELLE_APSIS + 1.0))
+_feste_w.append(_kap_rechteck(-1.2, 7.8, -PD.KAPELLE_BREITE / 2.0 - 3.6, -PD.KAPELLE_BREITE / 2.0))
 _tuerme_w = [W(q) for q in _HOF_TUERME]
 # Rundtürme mit ihrem Radius (die Bastionen der Ringmauer sind bis 10 m dick)
 _runde_w = [(l_[i_], l_[i_ + 1], l_[i_ + 4]) for l_ in (_tuerme, _vt, _mt, _ot, _zt) for i_ in range(0, len(l_), 7)]

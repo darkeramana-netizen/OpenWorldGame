@@ -199,6 +199,13 @@ BURGHOF3_BAUTEN = [nach_innen(g3_bau(b, MITTE_OBERBURG), OBERBURG) for b in G3.O
 PALAS_BAUTEN = [nach_innen(g3_bau(b, MITTE_PALAS), PALAS_HOF) for b in G3.PALAS_BAUTEN]
 PALAS = nach_innen(g3_bau(G3.PALAS_LANG, MITTE_PALAS), PALAS_HOF)
 BURGKUECHE = PALAS_BAUTEN[2]
+# Drachenkapelle (Rückmeldung 28.11.2026: zugebaut, Portal kaum erreichbar, wie ein Wohnhaus): schmal und lang wie eine
+# Kapelle, das Portal nach Westsüdwest zum offenen Palashof, Chor mit Apsis (szenen/welt/burgbau.gd) nach Osten
+KAPELLE_MITTE_W = (17.0, -96.0)
+KAPELLE_LAENGE, KAPELLE_BREITE, KAPELLE_DREH = 16.0, 9.0, 132.2   # Meter; Drehung im Plan
+KAPELLE_APSIS = 4.6                                                 # Radius der Apsis am Chor (östliches Ende)
+PALAS_BAUTEN[3] = (tuple(round(v, 2) for v in plan(KAPELLE_MITTE_W)), KAPELLE_LAENGE / MASSSTAB, KAPELLE_BREITE / MASSSTAB,
+                   KAPELLE_DREH)
 DRACHENKAPELLE = PALAS_BAUTEN[3]
 ZEUGHAUS = PALAS_BAUTEN[6]
 BERGFRIED_KERNBURG = g3(G3.BERGFRIED[0])

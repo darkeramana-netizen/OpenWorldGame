@@ -209,6 +209,8 @@ func _process(delta: float) -> void:
 const RUFE := ["pferd_schnauben", "kuh", "schaf", "schwein", "hund", "katze", "hund", ""]
 const RUF_ABSTAND := [[12.0, 40.0], [20.0, 60.0], [10.0, 35.0], [6.0, 20.0], [25.0, 70.0], [30.0, 90.0], [20.0, 60.0], [0.0, 0.0]]
 var _ruf_in := -1.0
+var _war_nah := false
+var _anschlag_sperre := 0.0
 var _huf_weg := 0.0
 func _laute(delta: float) -> void:
 	var kamera := get_viewport().get_camera_3d()
@@ -220,10 +222,17 @@ func _laute(delta: float) -> void:
 	if _ruf_in < 0.0:
 		_ruf_in = randf_range(2.0, RUF_ABSTAND[art][1])
 	_ruf_in -= delta
-	# ein Hund schlägt an, wenn jemand nahe kommt
+	# ein Hund schlägt an, wenn jemand nahe kommt: einmal beim Herankommen (dann erst wieder, wenn man sich entfernt
+	# hat), höchstens alle 8 s. Vorher wurde der Zähler in jedem Bild auf null gesetzt, solange man nahe stand: Der
+	# Hund bellte jedes Bild, ein schmerzhaftes Knattern (Rückmeldung 28.11.2026).
 	var sp := _spieler()
-	if art == 4 and sp != null and sp.global_position.distance_to(global_position) < 6.0 and _ruf_in > 3.0:
-		_ruf_in = 0.0
+	_anschlag_sperre = maxf(_anschlag_sperre - delta, 0.0)
+	if art == 4 and sp != null:
+		var nah := sp.global_position.distance_to(global_position) < 6.0
+		if nah and not _war_nah and _anschlag_sperre <= 0.0:
+			_ruf_in = randf_range(0.2, 0.8)
+			_anschlag_sperre = 8.0
+		_war_nah = nah
 	if _ruf_in <= 0.0:
 		_ruf_in = randf_range(RUF_ABSTAND[art][0], RUF_ABSTAND[art][1])
 		var ruf: String = RUFE[art]

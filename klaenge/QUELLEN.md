@@ -7,14 +7,13 @@ Alle Dateien hier erzeugt `werkzeuge/klaenge_erzeugen.py`. Alles ist frei verwen
 `wind_sanft`, `wind_stark`, `feuer`, `brandung`, `markt`, `brunnen` (Schleifen), `vogel_*` (Amsel, Spatz, Meise, Fink,
 Schwalbe, Krähe), Tiere (`pferd_*`, `huf_*`, `schwein_*`, `kuh_*`, `schaf_*`, `katze_*`), `ausruf_*`,
 `amboss_*`, `glocke_gross`, `glocke_klein`, `schuss`; unter Tage `tropfen_*`, `hoehle` (Schleife) und
-`stein_schleifen` (Geheimtür), erzeugt mit `python3 werkzeuge/klaenge_erzeugen.py --untergrund`. Die Schritte auf Gras, Erde und Holz (`schritt_gras_*`,
-`schritt_erde_*`, `schritt_holz_*`) sind aus den Schritten von Kenney abgeleitet (gefiltert, Tonhöhe, Rascheln dazu).
+`stein_schleifen` (Geheimtür), erzeugt mit `python3 werkzeuge/klaenge_erzeugen.py --untergrund`. Die Schritte stammen aus Aufnahmen (siehe Fantozzi unten).
 
 ## Kenney, „50 RPG sound effects“ (CC0)
 
 - https://opengameart.org/content/50-rpg-sound-effects (Datei `RPGsounds_Kenney.zip`), www.kenney.nl
 - Lizenz: CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)
-- Verwendet: `schritt_stein_*` (footstep00–09), `tuer_auf_*`, `tuer_zu_*`, `knarren_*`, `riegel`, `hacken`, `leder`,
+- Verwendet: `tuer_auf_*`, `tuer_zu_*`, `knarren_*`, `riegel`, `hacken`, `leder`,
   `stoff_*`, `muenzen`, `messer_ziehen`, `buch_auf`, `buch_zu`, `topf`; `tor_auf_*` und `tor_zu` sind daraus tiefer und
   dumpfer gemacht.
 
@@ -37,3 +36,11 @@ Schwalbe, Krähe), Tiere (`pferd_*`, `huf_*`, `schwein_*`, `kuh_*`, `schaf_*`, `
 - Lizenz: Creative Commons Namensnennung 3.0 (https://creativecommons.org/licenses/by/3.0/). Urheber: IMadeIt.
 - Geändert: in einzelne Laute zerlegt (`huhn_*`), Tiefen unter 120 Hz entfernt, Pegel angeglichen.
 - Die einzige Datei hier, die nicht CC0 ist: Im Spiel muss der Urheber genannt werden (Abspann).
+
+## Fantozzi, „Fantozzi's Footsteps (Grass/Sand & Stone)“ (CC0)
+
+- https://opengameart.org/content/fantozzis-footsteps-grasssand-stone (Datei `Fantozzi-footsteps.7z`)
+- Lizenz: CC0
+- Verwendet: alle Schritte. `schritt_stein_*` aus Stone (4 davon etwas tiefer), `schritt_gras_*` aus Sand (gefiltert),
+  `schritt_erde_*` aus Sand (tiefer und dumpfer), `schritt_holz_*` aus Stone (tiefer, dumpf, mit kurzem Nachhall der
+  Dielen). Bearbeitet mit ffmpeg (Filter, Tonhöhe, Lautheit -18 LUFS).

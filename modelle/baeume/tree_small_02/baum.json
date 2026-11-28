@@ -2,9 +2,12 @@
  "hoehe": 4.557,
  "quelle": "https://polyhaven.com/a/tree_small_02",
  "nah": {
-  "dreiecke": 3732
+  "dreiecke": 6595
  },
  "fern": {
-  "dreiecke": 657
+  "dreiecke": 992
+ },
+ "detail": {
+  "dreiecke": 71995
  }
 }

@@ -95,7 +95,8 @@ func _ready() -> void:
 	_gras_material.set_shader_parameter("ausblenden_bis", GRAS_ZELLE * (GRAS_RADIUS - 0.2))
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_detail_aktualisieren(delta)
 	if _gras_mesh == null or gras_dichte <= 0.0:
 		return
 	var spieler := get_tree().get_first_node_in_group("spieler") as Node3D
@@ -182,7 +183,9 @@ func _platz(x: float, z: float, steil_max: float, raum: float) -> float:
 	if _steilheit(x, z) > steil_max:
 		return NAN
 	var m := _maske_bei(x, z)
-	if m.r > 0.2 or (m.g > 0.5 and raum > 1.0):
+	# Rot Weg, Blau Pflaster (Burghöfe, gepflasterte Wege): dort wächst nichts, auch kein Gras (Rückmeldung 28.11.2026:
+	# Gras mitten auf dem Pflaster); am Rand eines Wegs schon ab schwachem Anteil frei
+	if m.r > 0.12 or m.b > 0.15 or (m.g > 0.5 and raum > 1.0):
 		return NAN
 	# Bäume und Büsche ragen mit Stamm und Krone über ihren Fußpunkt hinaus: auch der Umkreis bleibt vom Weg frei
 	if raum > 1.0:
@@ -373,9 +376,10 @@ func _zeige_modelle(name_: String, exemplare: Array, ordner: PackedStringArray, 
 		var info: Variant = JSON.parse_string(FileAccess.get_file_as_string(pfad + "baum.json"))
 		var nah := _modell_mesh(pfad + o + "_nah.gltf")
 		var fern := _modell_mesh(pfad + o + "_fern.gltf")
+		var detail := _modell_mesh(pfad + o + "_detail.gltf") if OS.get_environment("BAUM_DETAIL_AUS") == "" else null
 		if info is Dictionary and nah != null and fern != null:
 			var h := float(info["hoehe"])
-			modelle.append([_mit_wind(nah, h), _mit_wind(fern, h), hoehe / h])
+			modelle.append([_mit_wind(nah, h), _mit_wind(fern, h), hoehe / h, _mit_wind(detail, h) if detail != null else null])
 	if modelle.is_empty():
 		_zeige(name_, _nadelbaum() if name_ == "Nadelbaeume" else _laubbaum(), exemplare, _material(0.012, 0.6, 0.0, 0.85), true)
 		return
@@ -384,7 +388,9 @@ func _zeige_modelle(name_: String, exemplare: Array, ordner: PackedStringArray, 
 
 ## Exemplare nach Modell (aus dem Ort) und Kachel aufteilen. modelle: [Mesh nah, Mesh fern oder null, Maßstab];
 ## nah sichtbar bis nah_bis, fern ab dort (ohne Fernfassung endet das Modell bei nah_bis).
+var exemplare_je_art := {}        # Name → Exemplare ([Transform, Farbe]), für Prüfungen (tests/)
 func _zeige_gekachelt(name_: String, exemplare: Array, modelle: Array, nah_bis: float) -> void:
+	exemplare_je_art[name_] = exemplare
 	if exemplare.is_empty() or modelle.is_empty():
 		return
 	var gruppen := {}   # Vector3i(Modell, Kachel x, Kachel z) → Transformationen
@@ -410,6 +416,8 @@ func _zeige_gekachelt(name_: String, exemplare: Array, modelle: Array, nah_bis: 
 			for i in liste.size():
 				var t: Transform3D = liste[i]
 				mm.set_instance_transform(i, Transform3D(t.basis.scaled(Vector3.ONE * massstab), t.origin - mitte))
+			if stufe == 0 and modelle[k.x].size() > 3 and modelle[k.x][3] != null:
+				_detail_merken(name_, modelle, k.x, mm, liste, massstab, mitte)
 			var mmi := MultiMeshInstance3D.new()
 			mmi.name = "%s_%d_%d_%d" % ["nah" if stufe == 0 else "fern", k.x, k.y, k.z]
 			mmi.multimesh = mm
@@ -559,7 +567,7 @@ func _graszelle(zelle: Vector2i) -> Node3D:
 	var zufall := RandomNumberGenerator.new()
 	zufall.seed = hash(Vector3i(zelle.x, zelle.y, saat))
 	var exemplare := []
-	var anzahl_ := int(GRAS_ZELLE * GRAS_ZELLE * gras_dichte)
+	var anzahl_ := int(GRAS_ZELLE * GRAS_ZELLE * gras_dichte * 1.6)   # dichter (die Büschel sind kleiner)
 	var grund := Color(1.0, 1.0, 1.0) * laub_farbe
 	for i in anzahl_:
 		var x := (zelle.x + zufall.randf()) * GRAS_ZELLE
@@ -718,42 +726,120 @@ func _grasbueschel() -> ArrayMesh:
 	zufall.seed = 15
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	# Rückmeldung 27.11.2026 (Gras wirkte wie flache grüne Zacken): schmale, gebogene Halme aus drei Stücken, die sich
-	# zur Spitze hin neigen; jeder Halm etwas anders gefärbt (frisch, satt, einige trocken und strohig)
-	var toene := [Color(0.26, 0.34, 0.13), Color(0.22, 0.3, 0.12), Color(0.3, 0.37, 0.15), Color(0.42, 0.42, 0.2)]
-	for i in 18:
+	# Rückmeldung 28.11.2026 (Gras unrealistisch: breite, steife Blätter in einzelnen Büscheln): viele schmale, kurze
+	# Halme, die sich zur Spitze hin biegen, dicht wie ein Rasen; Farbe nahe dem Wiesenboden, einige Halme trocken
+	var toene := [Color(0.25, 0.33, 0.12), Color(0.21, 0.29, 0.11), Color(0.29, 0.36, 0.14), Color(0.45, 0.43, 0.22)]
+	for i in 22:
 		var a := zufall.randf() * TAU
-		var r := sqrt(zufall.randf()) * 0.3
+		var r := sqrt(zufall.randf()) * 0.32
 		var fuss := Vector3(cos(a) * r, 0, sin(a) * r)
-		var quer := Vector3(cos(a + 1.3), 0, sin(a + 1.3)) * zufall.randf_range(0.022, 0.04)
-		var hoehe := zufall.randf_range(0.22, 0.58)
-		var neigung := Vector3(cos(a), 0, sin(a)) * zufall.randf_range(0.06, 0.32)
-		var ton: Color = toene[3] if zufall.randf() < 0.12 else toene[zufall.randi() % 3]
+		var quer := Vector3(cos(a + 1.3), 0, sin(a + 1.3)) * zufall.randf_range(0.009, 0.018)
+		var hoehe := zufall.randf_range(0.12, 0.38) * (1.4 if zufall.randf() < 0.12 else 1.0)
+		var biegen := Vector3(cos(a + zufall.randf_range(-0.6, 0.6)), 0, sin(a + zufall.randf_range(-0.6, 0.6))) * hoehe * zufall.randf_range(0.2, 0.7)
+		var ton: Color = toene[3] if zufall.randf() < 0.1 else toene[zufall.randi() % 3]
 		ton = ton * zufall.randf_range(0.9, 1.1)
-		# Punkte entlang des Halms: die Neigung wächst quadratisch (der Halm biegt sich unter seinem Gewicht)
-		var punkte: Array[Vector3] = []
-		var breiten := [1.0, 0.8, 0.5]
-		for k in 3:
-			var s := float(k) / 3.0
-			punkte.append(fuss + neigung * s * s + Vector3(0, hoehe * s, 0))
-		var spitze := fuss + neigung + Vector3(0, hoehe * 0.95, 0)
-		var farbe := func(s: float) -> Color:
-			return ton.darkened(0.35 * (1.0 - s)).lightened(0.12 * s)
-		for k in 2:
-			var s0 := float(k) / 3.0
-			var s1 := float(k + 1) / 3.0
-			var p0: Vector3 = punkte[k]
-			var p1: Vector3 = punkte[k + 1]
-			var b0: Vector3 = quer * float(breiten[k])
-			var b1: Vector3 = quer * float(breiten[k + 1])
-			st.set_color(farbe.call(s0)); st.add_vertex(p0 - b0)
-			st.set_color(farbe.call(s0)); st.add_vertex(p0 + b0)
-			st.set_color(farbe.call(s1)); st.add_vertex(p1 + b1)
-			st.set_color(farbe.call(s0)); st.add_vertex(p0 - b0)
-			st.set_color(farbe.call(s1)); st.add_vertex(p1 + b1)
-			st.set_color(farbe.call(s1)); st.add_vertex(p1 - b1)
-		var b2: Vector3 = quer * float(breiten[2])
-		st.set_color(farbe.call(0.67)); st.add_vertex(punkte[2] - b2)
-		st.set_color(farbe.call(0.67)); st.add_vertex(punkte[2] + b2)
-		st.set_color(farbe.call(1.0)); st.add_vertex(spitze)
+		var mitte := fuss + biegen * 0.3 + Vector3(0, hoehe * 0.55, 0)
+		var spitze := fuss + biegen + Vector3(0, hoehe * (0.95 - 0.35 * biegen.length() / maxf(hoehe, 0.01)), 0)
+		var unten := ton.darkened(0.4)
+		var oben := ton.lightened(0.1)
+		st.set_color(unten); st.add_vertex(fuss - quer)
+		st.set_color(unten); st.add_vertex(fuss + quer)
+		st.set_color(ton); st.add_vertex(mitte + quer * 0.7)
+		st.set_color(unten); st.add_vertex(fuss - quer)
+		st.set_color(ton); st.add_vertex(mitte + quer * 0.7)
+		st.set_color(ton); st.add_vertex(mitte - quer * 0.7)
+		st.set_color(ton); st.add_vertex(mitte - quer * 0.7)
+		st.set_color(ton); st.add_vertex(mitte + quer * 0.7)
+		st.set_color(oben); st.add_vertex(spitze)
 	return _fertig(st)
+
+
+# ---------- Detailbäume ----------
+# Bäume nahe der Kamera (bis DETAIL_BIS) in der Detailfassung (werkzeuge/baum_laden.py: echte Blätter als einzelne
+# Karten, feines Holz). Ihr Exemplar in der Nahfassung wird so lange auf null geschrumpft. Rückmeldung 28.11.2026:
+# Äste zu dünn, Blätter wie flache Bilder.
+const DETAIL_BIS := 30.0
+const DETAIL_RAND := 5.0          # erst jenseits von DETAIL_BIS + DETAIL_RAND wieder zurück (kein Flackern)
+const DETAIL_HOECHSTENS := 40     # je Modell
+const DETAIL_RASTER := 16.0
+var _detail_baeume: Array = []     # [Ort, Schlüssel (Art|Modell), MultiMesh nah, Index, Transform nah, Transform Welt]
+var _detail_raster := {}          # Vector2i → Indizes in _detail_baeume
+var _detail_mm := {}              # Schlüssel → MultiMesh der Detailfassung
+var _detail_aktiv := {}           # Index in _detail_baeume → true
+var _detail_takt := 0.0
+
+
+func _detail_merken(name_: String, modelle: Array, m: int, mm: MultiMesh, liste: Array, massstab: float, mitte: Vector3) -> void:
+	var schluessel := "%s|%d" % [name_, m]
+	if not _detail_mm.has(schluessel):
+		var dm := MultiMesh.new()
+		dm.transform_format = MultiMesh.TRANSFORM_3D
+		dm.mesh = modelle[m][3]
+		dm.instance_count = DETAIL_HOECHSTENS
+		dm.visible_instance_count = 0
+		var mmi := MultiMeshInstance3D.new()
+		mmi.name = "Detail_" + schluessel.replace("|", "_")
+		mmi.multimesh = dm
+		mmi.custom_aabb = AABB(Vector3(-100000, -1000, -100000), Vector3(200000, 4000, 200000))
+		add_child(mmi)
+		_detail_mm[schluessel] = dm
+	for i in liste.size():
+		var t: Transform3D = liste[i]
+		var lokal := Transform3D(t.basis.scaled(Vector3.ONE * massstab), t.origin - mitte)
+		var nr := _detail_baeume.size()
+		_detail_baeume.append([t.origin, schluessel, mm, i, lokal, Transform3D(lokal.basis, t.origin)])
+		var r := Vector2i(floori(t.origin.x / DETAIL_RASTER), floori(t.origin.z / DETAIL_RASTER))
+		(_detail_raster.get_or_add(r, []) as Array).append(nr)
+
+
+func _detail_aktualisieren(delta: float) -> void:
+	if _detail_baeume.is_empty():
+		return
+	_detail_takt -= delta
+	if _detail_takt > 0.0:
+		return
+	_detail_takt = 0.2
+	var kamera := get_viewport().get_camera_3d()
+	if kamera == null:
+		return
+	var k := to_local(kamera.global_position)
+	# Kandidaten: nah genug (aktive dürfen bis zum Rand bleiben), je Modell die nächsten
+	var je_modell := {}
+	var r0 := Vector2i(floori((k.x - DETAIL_BIS - DETAIL_RAND) / DETAIL_RASTER), floori((k.z - DETAIL_BIS - DETAIL_RAND) / DETAIL_RASTER))
+	var r1 := Vector2i(floori((k.x + DETAIL_BIS + DETAIL_RAND) / DETAIL_RASTER), floori((k.z + DETAIL_BIS + DETAIL_RAND) / DETAIL_RASTER))
+	for rx in range(r0.x, r1.x + 1):
+		for rz in range(r0.y, r1.y + 1):
+			for nr: int in _detail_raster.get(Vector2i(rx, rz), []):
+				var b: Array = _detail_baeume[nr]
+				if not is_instance_valid(b[2]):
+					continue
+				var ab := (b[0] as Vector3).distance_to(k)
+				var grenze := DETAIL_BIS + (DETAIL_RAND if _detail_aktiv.has(nr) else 0.0)
+				if ab < grenze:
+					(je_modell.get_or_add(b[1], []) as Array).append([ab, nr])
+	var neu := {}
+	for s: String in je_modell:
+		var l: Array = je_modell[s]
+		l.sort_custom(func(x: Array, y: Array) -> bool: return x[0] < y[0])
+		for j in mini(l.size(), DETAIL_HOECHSTENS):
+			neu[l[j][1]] = true
+	# zurück in die Nahfassung
+	for nr: int in _detail_aktiv:
+		if not neu.has(nr):
+			var b: Array = _detail_baeume[nr]
+			if is_instance_valid(b[2]):
+				(b[2] as MultiMesh).set_instance_transform(b[3], b[4])
+	# in die Detailfassung
+	var zaehler := {}
+	for s: String in _detail_mm:
+		zaehler[s] = 0
+	for nr: int in neu:
+		var b: Array = _detail_baeume[nr]
+		if not _detail_aktiv.has(nr):
+			(b[2] as MultiMesh).set_instance_transform(b[3], Transform3D(Basis().scaled(Vector3.ZERO), (b[4] as Transform3D).origin))
+		var dm: MultiMesh = _detail_mm[b[1]]
+		dm.set_instance_transform(zaehler[b[1]], b[5])
+		zaehler[b[1]] += 1
+	for s: String in _detail_mm:
+		(_detail_mm[s] as MultiMesh).visible_instance_count = zaehler[s]
+	_detail_aktiv = neu

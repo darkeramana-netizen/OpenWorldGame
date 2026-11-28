@@ -2,9 +2,12 @@
  "hoehe": 5.027,
  "quelle": "https://polyhaven.com/a/island_tree_01",
  "nah": {
-  "dreiecke": 4212
+  "dreiecke": 7066
  },
  "fern": {
-  "dreiecke": 1678
+  "dreiecke": 1770
+ },
+ "detail": {
+  "dreiecke": 71573
  }
 }

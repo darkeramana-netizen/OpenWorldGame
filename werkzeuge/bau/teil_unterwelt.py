@@ -103,22 +103,32 @@ mat_metall = ExtResource("66_metall_mat")""")
 
 
 # ---------- Krypta unter der Drachenkapelle ----------
-KAP_C = W(PD.DRACHENKAPELLE[0])
-KAP_G = -PD.DRACHENKAPELLE[3] % 360.0
-KP = _rahmen(KAP_C, KAP_G)                      # u entlang der Kapelle (+u zum Portal), n quer
+# Die Krypta liegt fest (ihre Lage vor dem Umbau der Kapelle am 28.11.2026; die Gänge zu Rundkammer, Beinhaus und
+# den Ruinen von Sorrow hängen an ihr); die neue Kapelle steht schräg darüber
+KAP_C = (19.22, -93.59)
+KAP_G = 147.8
+KP = _rahmen(KAP_C, KAP_G)                      # u entlang der Krypta (+u zum Altar hin), n quer
+# Rahmen der Kapelle darüber (u zum Portal, n quer)
+KAPN_C = W(PD.DRACHENKAPELLE[0])
+KAPN_G = -PD.DRACHENKAPELLE[3] % 360.0
+KAPN = _rahmen(KAPN_C, KAPN_G)
 H_KRYPTA = 8.6
 KR_L, KR_B = 16.0, 11.0
 uw_raum(KAP_C, KAP_G, KR_L, KR_B, H_KRYPTA, 2.4, 2.0, 0, 4.0, 1 | 2)
 
-# Gruftabgang: Häuschen an der Westseite der Kapelle, Tür zum Portal hin; die Treppe läuft an der Kapelle entlang hinab
-# in einen Vorraum, von dort durch die Längswand in die Krypta
-_ga_tuer = KP(9.5, 9.0)
-_ga_boden = H(*_ga_tuer)
-uw_abgang(_ga_tuer, KAP_G + 180.0, _ga_boden, 1.6, 6.2)
-uw_gang(_ga_tuer, _ga_boden, KP(-3.6, 9.0), H_KRYPTA)
-VR = uw_raum(KP(-5.3, 9.0), KAP_G, 3.4, 3.4, H_KRYPTA, 2.2, 1.4, 0, 3.4, 2)
-uw_gang(KP(-5.3, 9.0 - 1.7), H_KRYPTA, KP(-5.3, KR_B / 2.0), H_KRYPTA)
-schild("SchildGruft", "UnterweltDinge", *(lambda p: (p[0], _ga_boden + 4.3, p[1]))(KP(9.5 + 0.7, 9.0)), "Gruft der Großmeister", 32)
+# Gruftabgang: ein Anbau an der Südseite der Kapelle, die Tür neben dem Portal zum Palashof (Rückmeldung 28.11.2026: das
+# Häuschen stand abseits in einer Gasse). Die Treppe läuft an der Kapelle entlang nach Osten hinab, unten ein kurzer
+# Gang, der von der Seite durch die Längswand in die Krypta tritt (zwischen zwei Sarkophagen)
+_ga_tuer = KAPN(6.5, -(PD.KAPELLE_BREITE / 2.0 + 1.45))
+_ga_boden = round(H(*_ga_tuer), 3)
+uw_abgang(_ga_tuer, KAPN_G + 180.0, _ga_boden, 1.6, 6.2)
+_ga_unten = KAPN(6.5 - 13.0, -(PD.KAPELLE_BREITE / 2.0 + 1.45))
+_ga_vor = KP(4.0, -KR_B / 2.0 - 1.6)
+uw_gang(_ga_tuer, _ga_boden, _ga_unten, H_KRYPTA)
+uw_gang(_ga_unten, H_KRYPTA, _ga_vor, H_KRYPTA)
+uw_gang(_ga_vor, H_KRYPTA, KP(4.0, -KR_B / 2.0), H_KRYPTA)
+schild("SchildGruft", "UnterweltDinge", *(lambda p: (p[0], _ga_boden + 4.3, p[1]))(KAPN(6.5 + 0.7, -(PD.KAPELLE_BREITE / 2.0 + 1.45))),
+       "Gruft der Großmeister", 32)
 
 # Sarkophage (Art 58, Kopf zum Portal) mit Inschriften; der des Wulfric Dane steht vor der Geheimtür
 _sarkophage = [((4.0, 3.45), "grab_wulfric_dane", "Sarkophag des Wulfric Dane"),

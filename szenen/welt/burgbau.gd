@@ -5175,6 +5175,8 @@ func _gebaeude(w: PackedFloat32Array) -> void:
 			Vector3(uz.x, 0, uz.y) * seite)
 	_klotz(dach, c, uz, nx, -L - gu, L + gu, -0.22, 0.22, first - 0.15, first + 0.12)
 	_dach_details(c, uz, nx, B, L, ue, gu, traufe, first, boden, dach)
+	if zweck == 6:
+		_kapelle_aussen(c, uz, nx, B, L, boden, unten, traufe, first, wand, dach)
 	# Schornstein: gemauert mit Gurtgesimsen, Abdeckplatte und zwei Tonaufsätzen
 	if art == 0 or art == 3:
 		var sx := L * 0.45
@@ -5751,3 +5753,121 @@ func _material(name_: String) -> Material:
 		m.resource_name = name_    # damit der Baucache es beim Laden wieder dem gemeinsamen Material zuordnet
 	_materialien[name_] = m
 	return m
+
+## Kapelle (Zweck 6): Chor mit halbrunder Apsis am Altarende (-L), Strebepfeiler an den Längsseiten (an der Südseite -nx
+## steht vorn der Anbau des Gruftabgangs, werkzeuge/bau/teil_unterwelt.py: dort keine), eine Fensterrose im
+## Portalgiebel, ein Dachreiter mit Glocke und Kreuz, ein Steinkreuz auf dem Chorgiebel. Rückmeldung 28.11.2026: Die
+## Kapelle sah aus wie ein gewöhnliches Haus.
+func _kapelle_aussen(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, boden: float, unten: float, traufe: float,
+		first: float, wand: String, dach: String) -> void:
+	var p3 := func(q: Vector2, y: float) -> Vector3:
+		return Vector3(q.x, y, q.y)
+	# --- Apsis ---
+	var ac := c - uz * L
+	var R := B + 0.1
+	var dicke := 0.9
+	var traufe_a := traufe - 1.2
+	var teile := 11
+	var richtung := func(w: float) -> Vector2:   # w = 0: +nx, PI/2: -uz (nach außen), PI: -nx
+		return nx * cos(w) - uz * sin(w)
+	for k in teile:
+		var w0 := PI * k / teile
+		var w1 := PI * (k + 1) / teile
+		var wm := (w0 + w1) / 2.0
+		var aus: Vector2 = richtung.call(wm)
+		var tang := Vector2(-aus.y, aus.x)
+		var halb := R * sin(PI / teile / 2.0) + 0.06
+		var m := ac + aus * (R * cos(PI / teile / 2.0))
+		_klotz(wand, m, tang, aus, -halb, halb, -dicke, 0.0, unten, traufe_a)
+		_klotz("bruchstein", m, tang, aus, -halb - 0.02, halb + 0.02, -0.2, 0.18, unten, boden + 0.7)
+		_klotz("hell", m, tang, aus, -halb - 0.03, halb + 0.03, -0.1, 0.3, traufe_a - 0.35, traufe_a, true)
+		# drei schmale, hohe Chorfenster (Spitzbogen angedeutet: oben schmaler)
+		if k in [2, 5, 8]:
+			_klotz("hell", m, tang, aus, -0.42, 0.42, -0.05, 0.08, boden + 2.2, boden + 2.4, true)
+			_klotz("dunkel", m, tang, aus, -0.28, 0.28, 0.0, 0.03, boden + 2.4, traufe_a - 2.2)
+			_klotz("dunkel", m, tang, aus, -0.16, 0.16, 0.0, 0.03, traufe_a - 2.2, traufe_a - 1.75)
+			for s: float in [-1.0, 1.0]:
+				_klotz("hell", m + tang * s * 0.36, tang, aus, -0.08, 0.08, -0.05, 0.08, boden + 2.4, traufe_a - 2.1, true)
+			_klotz("hell", m, tang, aus, -0.3, 0.3, -0.05, 0.08, traufe_a - 1.75, traufe_a - 1.55, true)
+		# Strebepfeiler zwischen den Fenstern
+		if k in [1, 4, 7, 10]:
+			var sp := ac + richtung.call(w0) * R
+			var sa: Vector2 = richtung.call(w0)
+			var st := Vector2(-sa.y, sa.x)
+			_klotz(wand, sp, st, sa, -0.4, 0.4, -0.2, 0.9, unten, boden + 4.0)
+			_klotz("hell", sp, st, sa, -0.45, 0.45, -0.2, 0.95, boden + 3.9, boden + 4.1, true)
+			_klotz(wand, sp, st, sa, -0.35, 0.35, -0.2, 0.55, boden + 4.1, traufe_a - 1.0)
+			_klotz("hell", sp, st, sa, -0.4, 0.4, -0.2, 0.6, traufe_a - 1.1, traufe_a - 0.9, true)
+	# Dach der Apsis: halber Kegel bis unter den Chorgiebel
+	var ue := 0.45
+	var spitze := p3.call(ac, traufe_a + (R + ue) * 0.75)
+	for k in teile:
+		var w0 := PI * k / teile
+		var w1 := PI * (k + 1) / teile
+		var a0: Vector3 = p3.call(ac + richtung.call(w0) * (R + ue), traufe_a - 0.1)
+		var a1: Vector3 = p3.call(ac + richtung.call(w1) * (R + ue), traufe_a - 0.1)
+		var aussen_: Vector2 = richtung.call((w0 + w1) / 2.0)
+		_dreieck(dach, a0, a1, spitze, Vector3(aussen_.x, 1.0, aussen_.y))
+		_dreieck(dach, a0, a1, spitze + Vector3.DOWN * 0.2, -Vector3(aussen_.x, 1.0, aussen_.y))
+	# --- Strebepfeiler an den Längsseiten, zwischen den Fenstern und an den Ecken ---
+	var anzahl := int((2.0 * L - 2.0) / 4.5)
+	var stellen: Array[float] = [-L + 0.45, L - 0.45]
+	for f in range(1, anzahl):
+		stellen.append(-L + 1.0 + f * (2.0 * L - 2.0) / anzahl)
+	for seite: float in [-1.0, 1.0]:
+		for s: float in stellen:
+			if seite < 0.0 and s > -1.4:
+				continue                   # Anbau des Gruftabgangs
+			var ns := nx * seite
+			var m := c + uz * s + ns * B
+			_klotz(wand, m, uz, ns, -0.45, 0.45, -0.1, 1.0, unten, boden + 4.5)
+			_klotz("hell", m, uz, ns, -0.5, 0.5, -0.1, 1.06, boden + 4.4, boden + 4.62, true)
+			_klotz(wand, m, uz, ns, -0.38, 0.38, -0.1, 0.62, boden + 4.62, traufe - 1.6)
+			_klotz("hell", m, uz, ns, -0.42, 0.42, -0.1, 0.68, traufe - 1.7, traufe - 1.45, true)
+	# --- Fensterrose im Portalgiebel ---
+	var rm := c + uz * (L + 0.02)
+	var ry := traufe + (first - traufe) * 0.38
+	var rr := minf(1.35, B * 0.32)
+	var zeilen := 9
+	for j in zeilen:
+		var yy := -rr + (j + 0.5) * 2.0 * rr / zeilen
+		var hb := sqrt(maxf(rr * rr - yy * yy, 0.0))
+		_klotz("dunkel", rm, nx, uz, -hb, hb, -0.01, 0.02, ry + yy - rr / zeilen, ry + yy + rr / zeilen)
+	for k in 20:
+		var w := TAU * k / 20.0
+		var x := cos(w) * (rr + 0.12)
+		var y := sin(w) * (rr + 0.12)
+		_klotz("zier_hell", rm, nx, uz, x - 0.17, x + 0.17, 0.0, 0.14, ry + y - 0.17, ry + y + 0.17, true)
+	for k in 8:
+		var w := TAU * k / 8.0
+		for i in 4:
+			var r_ := rr * (i + 0.5) / 4.0
+			_klotz("zier_hell", rm, nx, uz, cos(w) * r_ - 0.05, cos(w) * r_ + 0.05, 0.0, 0.06, ry + sin(w) * r_ - 0.05,
+				ry + sin(w) * r_ + 0.05)
+	_klotz("zier_hell", rm, nx, uz, -0.18, 0.18, 0.0, 0.08, ry - 0.18, ry + 0.18, true)
+	# --- Dachreiter mit Glocke über dem Portal ---
+	var dm := c + uz * (L * 0.55)
+	var db := 0.8
+	_klotz("hell", dm, uz, nx, -db, db, -db, db, first - 1.2, first + 0.7)
+	for e: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		_klotz("holz", dm, uz, nx, e.x * db - 0.14, e.x * db + 0.14, e.y * db - 0.14, e.y * db + 0.14, first + 0.7, first + 2.3)
+	_klotz("hell", dm, uz, nx, -db - 0.1, db + 0.1, -db - 0.1, db + 0.1, first + 2.3, first + 2.55, true)
+	_mantel("metall", dm, 0.42, 0.22, first + 1.0, first + 1.75, 12)
+	_ring("metall", dm, 0.0, 0.22, first + 1.75, 12)
+	_klotz("holz", dm, uz, nx, -db, db, -0.06, 0.06, first + 1.9, first + 2.0)
+	var top := p3.call(dm, first + 6.8)
+	var ecken_d := [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]
+	for i in 4:
+		var e0: Vector2 = ecken_d[i]
+		var e1: Vector2 = ecken_d[(i + 1) % 4]
+		var q0: Vector3 = p3.call(dm + uz * e0.x * (db + 0.25) + nx * e0.y * (db + 0.25), first + 2.55)
+		var q1: Vector3 = p3.call(dm + uz * e1.x * (db + 0.25) + nx * e1.y * (db + 0.25), first + 2.55)
+		var mitte_ := (e0 + e1) / 2.0
+		var aussen_ := uz * mitte_.x + nx * mitte_.y
+		_dreieck(dach, q0, q1, top, Vector3(aussen_.x, 0.5, aussen_.y))
+	# Kreuze: auf dem Dachreiter (Eisen) und auf dem Chorgiebel (Stein)
+	_klotz("metall", dm, uz, nx, -0.05, 0.05, -0.05, 0.05, first + 6.6, first + 8.0)
+	_klotz("metall", dm, uz, nx, -0.05, 0.05, -0.38, 0.38, first + 7.35, first + 7.45)
+	var cm := c - uz * L
+	_klotz("hell", cm, uz, nx, -0.15, 0.15, -0.12, 0.12, first - 0.2, first + 1.3)
+	_klotz("hell", cm, uz, nx, -0.15, 0.15, -0.5, 0.5, first + 0.65, first + 0.9)

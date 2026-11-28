@@ -210,6 +210,23 @@ vollen Grafik (die Software-Grafik dieser Umgebung braucht dafür zu viel Speich
 Offen: Haare der realistischen Menschen (wirken wie Kappen; bessere Haarkarten nötig), Rinde der Baumstämme,
 Mauerstöße mit großem Höhenunterschied (Zwinger des Palas).
 
+## Rückmeldung 28.11.2026
+
+- **Hund**: Stand man näher als 6 m, wurde der Ruf-Zähler jedes Bild auf null gesetzt, der Hund bellte jedes Bild
+  (schmerzhaftes Knattern). Jetzt schlägt er beim Herankommen einmal an, höchstens alle 8 s; wieder die Aufnahmen
+  (CC0) statt der Synthese.
+- **Schritte** aus echten Aufnahmen (Fantozzi, CC0): Stein, Gras (Sand gefiltert), Erde (tiefer, dumpfer), Holz.
+- **Bäume**: Detailfassung bis 30 m (`werkzeuge/baum_laden.py`, `_detail.gltf`): jedes Blatt des Fotoscans als eigene
+  kleine Karte in seiner Lage (24 000 Blätter, Atlas aus 16 echten Blättern), Holz mit 24 000 Dreiecken (Äste bleiben
+  dick genug); `bewuchs.gd` tauscht die nächsten Bäume aus. Nahfassung mit doppelt so viel Holz. Ferne Stämme nicht
+  mehr durchsichtig (Rindenfeld im Atlas immer deckend).
+- **Gras**: nicht mehr auf Pflaster (Maske Blau) und am Wegrand; schmale, kurze, gebogene Halme, dichter.
+- **Stoff**: Die Beinkapseln schoben Stoffpunkte hinaus, deren Platz am Körper schon in der Kapsel lag; Haftung und
+  Kapsel zogen gegeneinander (Zittern beim Gehen). Jetzt höchstens bis zum Platz am Körper (Modul).
+- **Drachenkapelle** neu: schmal und lang (16 × 9 m), Portal zum offenen Palashof, Chor mit Apsis nach Osten,
+  Strebepfeiler, Fensterrose, Dachreiter mit Glocke und Kreuz. Der **Gruftabgang** ist ein Anbau an ihrer Südseite
+  neben dem Portal; die Treppe führt an der Kapelle entlang hinab und von der Seite in die Krypta.
+
 ## Nächste Schritte
 
 1. Neuer Rundgang (Hoch und Episch) zur Bestätigung von M1–M3, M9, M11, M22, M25–M29.

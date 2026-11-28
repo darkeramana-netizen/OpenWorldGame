@@ -30,6 +30,9 @@ def angabe(name, vorgabe):
     return vorgabe
 BUESCHE = angabe("--buesche", 220)
 HOLZ = angabe("--holz", 3000)
+# Detailfassung (bis gut 30 m, szenen/welt/bewuchs.gd): echte Blätter als einzelne Karten, feineres Holz
+BLAETTER = angabe("--blaetter", 24000)
+HOLZ_DETAIL = angabe("--holz-detail", 24000)
 KARTEN = angabe("--karten", 2)          # gekreuzte Karten je Büschel (Nadelbäume: 3, die Zweige liegen flach)
 GROSS = angabe("--gross", 115) / 100.0  # Kartengröße im Verhältnis zur Ausdehnung des Büschels
 BUSCH = "--busch" in args               # nur die Krone, auf den Boden gesetzt (ein Busch), Ordner <name>_busch
@@ -270,6 +273,61 @@ def baue_laub(pos, nor, uv, idx, bild, anzahl, karten, zufall, kacheln, gross):
     return np.array(P), N, np.array(U), np.array(I, dtype=np.int64)
 
 
+def baue_blaetter(pos, nor, uv, idx, bild, hoechstens, zufall, krone_mitte):
+    """Detailfassung: jedes echte Blatt des Scans als eigene kleine Karte in seiner Lage und Ebene (2 Dreiecke), mit
+    dem Bild eines von 16 typischen Blättern (Atlas 4 × 4). Sind es mehr als hoechstens, wird ausgedünnt und die übrigen
+    werden größer (gleiche Deckung). Gibt (P, N, U, I) und den Atlas zurück."""
+    teil = blaetter(pos, idx)
+    ordnung = np.argsort(teil, kind="stable")
+    t_sort = teil[ordnung]
+    grenzen = np.flatnonzero(np.diff(t_sort)) + 1
+    gruppen = np.split(ordnung, grenzen)
+    # winzige Bruchstücke (Stiele) weglassen
+    gruppen = [g for g in gruppen if len(g) >= 2]
+    anzahl = len(gruppen)
+    behalten = min(anzahl, hoechstens)
+    wahl = zufall.choice(anzahl, behalten, replace=False)
+    vergroessern = float(np.sqrt(anzahl / behalten))
+    # Atlas: 16 Blätter, je eine Kachel von 256 Pixeln
+    global KACHEL
+    alt_kachel = KACHEL
+    KACHEL = 256
+    atlas = np.zeros((1024, 1024, 4), np.float32)
+    vorlagen = zufall.choice(anzahl, 16, replace=False)
+    for k, gi in enumerate(vorlagen):
+        ox, oy = k % 4, k // 4
+        atlas[oy * 256:(oy + 1) * 256, ox * 256:(ox + 1) * 256] = zeichne_bueschel(pos, uv, idx[gruppen[gi]], bild)
+    KACHEL = alt_kachel
+    # Die Blattränder der Scan-Textur sind fast schwarz: zwei Pixel vom Rand und dunkle Pixel weglassen
+    from scipy.ndimage import binary_erosion
+    maske = binary_erosion(atlas[..., 3] > 0.5, iterations=2)
+    maske &= atlas[..., :3].mean(-1) > 0.09
+    atlas[..., 3] = maske.astype(np.float32)
+    P, N, U, I = [], [], [], []
+    for j, gi in enumerate(wahl):
+        dr = idx[gruppen[gi]]
+        pk = pos[dr].reshape(-1, 3)
+        m, u, v, n = ebene(pk)
+        q = pk - m
+        h = max(np.abs(q @ u).max(), np.abs(q @ v).max()) * 1.02 * vergroessern
+        if h < 1e-4:
+            continue
+        # Blattnormale zur Außenseite der Krone, leicht nach oben
+        aussen = m - krone_mitte
+        if np.dot(n, aussen) < 0:
+            n = -n
+        kachel = zufall.integers(16)
+        kx, ky = (kachel % 4) / 4.0, (kachel // 4) / 4.0
+        basis = len(P)
+        for (su, sv), (tu, tv) in zip(((-1, 1), (1, 1), (1, -1), (-1, -1)), ((0, 0), (1, 0), (1, 1), (0, 1))):
+            P.append(m + u * su * h + v * sv * h)
+            N.append(n)
+            U.append((kx + (tu * 0.98 + 0.01) / 4.0, ky + (tv * 0.98 + 0.01) / 4.0))
+        I += [(basis, basis + 1, basis + 2), (basis, basis + 2, basis + 3)]
+    N = np.array(N); N /= np.linalg.norm(N, axis=1, keepdims=True) + 1e-9
+    return (np.array(P), N, np.array(U), np.array(I, dtype=np.int64)), atlas
+
+
 # ---------- glTF schreiben ----------
 
 def schreibe(ziel_datei, holz, laub, g_quelle, quelle_ordner, atlas_name, holz_im_atlas=False):
@@ -419,6 +477,18 @@ def verarbeite(name):
             datei = ziel / f"{ziel.name}_{fassung}.gltf"
             schreibe(datei, holz, laub, gq, quelle.parent, atlas_name, holz_im_atlas=fassung == "fern")
             ergebnis[fassung] = {"dreiecke": int(sum(len(h[3]) for h in holz.values()) + len(laub[3]))}
+        if not BUSCH and BLAETTER > 0:
+            holz_dreiecke = sum(len(teile[m][3]) for m in holz_mats)
+            holz = {}
+            for m in holz_mats:
+                p_, n_, u_, i_ = teile[m]
+                holz[m] = vereinfache(p_, n_, u_, i_, max(200, int(HOLZ_DETAIL * len(i_) / max(1, holz_dreiecke))))
+            laub, blatt_atlas = baue_blaetter(pos, nor, uv, idx, bild, BLAETTER, np.random.default_rng(57),
+                                              pos[idx].reshape(-1, 3).mean(0))
+            blatt_name = f"{ziel.name}_blatt_atlas.png"
+            Image.fromarray((np.clip(blatt_atlas, 0, 1) * 255).astype(np.uint8), "RGBA").save(ziel / blatt_name, optimize=True)
+            schreibe(ziel / f"{ziel.name}_detail.gltf", holz, laub, gq, quelle.parent, blatt_name)
+            ergebnis["detail"] = {"dreiecke": int(sum(len(h[3]) for h in holz.values()) + len(laub[3]))}
         (ziel / "baum.json").write_text(json.dumps(ergebnis, indent=1))
         print("übernommen:", ziel.name, ergebnis)
 
