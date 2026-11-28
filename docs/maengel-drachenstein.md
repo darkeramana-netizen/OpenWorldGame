@@ -226,6 +226,13 @@ Mauerstöße mit großem Höhenunterschied (Zwinger des Palas).
 - **Drachenkapelle** neu: schmal und lang (16 × 9 m), Portal zum offenen Palashof, Chor mit Apsis nach Osten,
   Strebepfeiler, Fensterrose, Dachreiter mit Glocke und Kreuz. Der **Gruftabgang** ist ein Anbau an ihrer Südseite
   neben dem Portal; die Treppe führt an der Kapelle entlang hinab und von der Seite in die Krypta.
+- **Schmugglerhöhle**: In der Bootsgrotte fehlte die Wand um den Gang zum Meer in ganzen Stücken; die Einfassung war
+  schmaler als die Lücke, man sah den Himmel unter dem Gelände. Die Einfassung steht jetzt hinter der Wand und deckt
+  die ganze Lücke.
+- **Gras** auch nicht in den gepflasterten Stadtflächen (Vielecke des Geländematerials) und auf dem Weg vor dem
+  Vorwerk (Pflasterband aus der Hofszene ohne Kollision).
+- **Schweben**: Messung aller Bäume und Büsche (`tests/_schweben_probe.gd`): am Fuß auf dem Boden, am Hang talseitig
+  höchstens 0,5 m frei bei 0,9 m Abstand, in der Mitte eingesunken. Schwebende Gegenstände bitte mit Ort melden.
 
 ## Nächste Schritte
 

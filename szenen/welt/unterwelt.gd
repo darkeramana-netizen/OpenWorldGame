@@ -1027,8 +1027,8 @@ func _gewaende_rund(c: Vector2, R: float, o: Array, mat := "hell", hinterlegt :=
 	# 28.11.2026: neben dem Gang zum Meer sah man den Himmel)
 	if hinterlegt:
 		m = c + d * (R + 0.2)
-		seite = 1.6
-		oben = y + h + 1.3
+		seite = 4.0
+		oben = y + h + 3.0
 		unten = y - 1.0
 	var innen := -Vector3(d.x, 0, d.y)
 	var p := func(x: float, yy: float) -> Vector3:
