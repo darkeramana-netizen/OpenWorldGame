@@ -1009,7 +1009,7 @@ func _wendeltreppe(w: PackedFloat32Array, oeff: Array) -> void:
 
 ## Gewände an einer Öffnung in einer runden Wand: eine Steinfläche am Ende des Gangs (er ragt 0,25 m in den Raum),
 ## die die Lücken zwischen dem Gang und dem Ausschnitt in der Rundung deckt; Rundbogen oder Sturz
-func _gewaende_rund(c: Vector2, R: float, o: Array, mat := "hell") -> void:
+func _gewaende_rund(c: Vector2, R: float, o: Array, mat := "hell", hinterlegt := false) -> void:
 	var w: float = o[1]
 	var d := Vector2(sin(w), cos(w))
 	var q := Vector2(-d.y, d.x)
@@ -1020,12 +1020,22 @@ func _gewaende_rund(c: Vector2, R: float, o: Array, mat := "hell") -> void:
 	var eckig := int(o[5]) == 3
 	var kaempfer := y + (h if eckig else h - hb)
 	var oben := y + h + 0.35
+	var seite := 0.35
+	var unten := y - 0.05
+	# Höhlen: Die Wand fehlt um den Gang herum in ganzen Stücken (breiter und höher als der Gang), dahinter liegt nur
+	# der leere Raum unter dem Gelände. Die Einfassung steht dort hinter der Wand und deckt die ganze Lücke (Rückmeldung
+	# 28.11.2026: neben dem Gang zum Meer sah man den Himmel)
+	if hinterlegt:
+		m = c + d * (R + 0.2)
+		seite = 1.6
+		oben = y + h + 1.3
+		unten = y - 1.0
 	var innen := -Vector3(d.x, 0, d.y)
 	var p := func(x: float, yy: float) -> Vector3:
 		var r := m + q * x
 		return Vector3(r.x, yy, r.y)
 	for s: float in [-1.0, 1.0]:
-		_viereck(mat, p.call(s * hb, y - 0.05), p.call(s * (hb + 0.35), y - 0.05), p.call(s * (hb + 0.35), oben), p.call(s * hb, oben), innen)
+		_viereck(mat, p.call(s * hb, unten), p.call(s * (hb + seite), unten), p.call(s * (hb + seite), oben), p.call(s * hb, oben), innen)
 	if eckig:
 		_viereck(mat, p.call(-hb, kaempfer), p.call(hb, kaempfer), p.call(hb, oben), p.call(-hb, oben), innen)
 		return
@@ -1216,7 +1226,7 @@ func _hoehlenraum(w: PackedFloat32Array, oeff: Array) -> void:
 		_dreieck("fels", letzte[k], letzte[(k + 1) % teile], spitze, Vector3.DOWN)
 	for o: Array in oeff:
 		var d := Vector2(sin(float(o[1])), cos(float(o[1])))
-		_gewaende_rund(c, _ellipse_r(d, u, n, hl, hb), o, "fels")
+		_gewaende_rund(c, _ellipse_r(d, u, n, hl, hb), o, "fels", true)
 	# Boden: eben (Erde), an der Wand Brocken
 	_klotz("erde", c, u, n, -hl - 1.0, hl + 1.0, -hb - 1.0, hb + 1.0, boden - 0.8, boden)
 	for k in 9:

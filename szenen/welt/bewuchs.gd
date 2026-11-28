@@ -124,6 +124,17 @@ func _lies_maske() -> void:
 		_flur = flur_textur.get_image()
 		if _flur and _flur.is_compressed():
 			_flur.decompress()
+	# Gepflasterte Flächen der Städte (gelaende_material.gdshaderinc, "pflaster_punkte"): dort Pflaster und festgetretene
+	# Erde, kein Gras (Rückmeldung 28.11.2026: Gras auf den gepflasterten Wegen der Stadt)
+	var punkte_: Variant = material.get_shader_parameter("pflaster_punkte")
+	var laengen_: Variant = material.get_shader_parameter("pflaster_laengen")
+	_pflaster_vielecke.clear()
+	if punkte_ is PackedVector2Array and laengen_ is PackedInt32Array:
+		var anfang := 0
+		for n_: int in laengen_:
+			if n_ >= 3:
+				_pflaster_vielecke.append((punkte_ as PackedVector2Array).slice(anfang, anfang + n_))
+			anfang += n_
 	_maske_ursprung = material.get_shader_parameter("welt_ursprung")
 	_maske_groesse = material.get_shader_parameter("welt_groesse")
 	_meer = material.get_shader_parameter("meeresspiegel")
@@ -176,6 +187,14 @@ func _einsinken(x: float, z: float, r: float) -> float:
 
 
 ## Darf hier etwas stehen? Gibt die Bodenhöhe zurück oder NAN.
+var _pflaster_vielecke: Array[PackedVector2Array] = []
+func _in_stadt(x: float, z: float) -> bool:
+	for v in _pflaster_vielecke:
+		if Geometry2D.is_point_in_polygon(Vector2(x, z), v):
+			return true
+	return false
+
+
 func _platz(x: float, z: float, steil_max: float, raum: float) -> float:
 	var h: float = _gelaende.hoehe_bei(x, z)
 	if h < _meer + 1.2 or h > schneegrenze - 5.0:
@@ -575,7 +594,7 @@ func _graszelle(zelle: Vector2i) -> Node3D:
 		if bereich.size != Vector2.ZERO and not bereich.has_point(Vector2(x, z)):
 			continue
 		var h := _platz(x, z, STEIL_GRAS, 0.0)
-		if is_nan(h):
+		if is_nan(h) or _in_stadt(x, z):
 			continue
 		# Flur (Mängelliste M6): auf dem Acker kein Gras; im Getreide hohe, goldene Halme (doppelt so dicht);
 		# auf der Weide kurz; auf der Wiese hier und da ein blühender Büschel

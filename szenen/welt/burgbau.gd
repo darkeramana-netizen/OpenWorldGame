@@ -5791,7 +5791,7 @@ func _kapelle_aussen(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, b
 			_klotz("hell", m, tang, aus, -0.3, 0.3, -0.05, 0.08, traufe_a - 1.75, traufe_a - 1.55, true)
 		# Strebepfeiler zwischen den Fenstern
 		if k in [1, 4, 7, 10]:
-			var sp := ac + richtung.call(w0) * R
+			var sp: Vector2 = ac + richtung.call(w0) * R
 			var sa: Vector2 = richtung.call(w0)
 			var st := Vector2(-sa.y, sa.x)
 			_klotz(wand, sp, st, sa, -0.4, 0.4, -0.2, 0.9, unten, boden + 4.0)
@@ -5800,7 +5800,7 @@ func _kapelle_aussen(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, b
 			_klotz("hell", sp, st, sa, -0.4, 0.4, -0.2, 0.6, traufe_a - 1.1, traufe_a - 0.9, true)
 	# Dach der Apsis: halber Kegel bis unter den Chorgiebel
 	var ue := 0.45
-	var spitze := p3.call(ac, traufe_a + (R + ue) * 0.75)
+	var spitze: Vector3 = p3.call(ac, traufe_a + (R + ue) * 0.75)
 	for k in teile:
 		var w0 := PI * k / teile
 		var w1 := PI * (k + 1) / teile
@@ -5855,7 +5855,7 @@ func _kapelle_aussen(c: Vector2, uz: Vector2, nx: Vector2, B: float, L: float, b
 	_mantel("metall", dm, 0.42, 0.22, first + 1.0, first + 1.75, 12)
 	_ring("metall", dm, 0.0, 0.22, first + 1.75, 12)
 	_klotz("holz", dm, uz, nx, -db, db, -0.06, 0.06, first + 1.9, first + 2.0)
-	var top := p3.call(dm, first + 6.8)
+	var top: Vector3 = p3.call(dm, first + 6.8)
 	var ecken_d := [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]
 	for i in 4:
 		var e0: Vector2 = ecken_d[i]
