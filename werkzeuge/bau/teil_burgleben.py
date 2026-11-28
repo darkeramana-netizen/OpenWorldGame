@@ -463,7 +463,7 @@ for _t in knoten:
         HL_TORE += [(_v[i], _v[i + 1]) for i in range(0, len(_v) - 7, 8)]
 
 
-def hl_am_tor(q, weite=8.0):
+def hl_am_tor(q, weite=10.0):   # Tore öffnen sich für Leute der Burg schon auf einige Meter
     return any(math.dist(q, t_) < weite for t_ in HL_TORE)
 
 

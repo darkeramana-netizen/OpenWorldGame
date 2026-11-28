@@ -116,10 +116,18 @@ func _initialize() -> void:
 		if art == 5:
 			i += 11
 			continue
-		if art in [0, 2, 3]:
-			c += Vector3(0.9, 0, 0.7)
-		var r := raum.intersect_ray(PhysicsRayQueryParameters3D.create(c + Vector3.UP * 1.5, c + Vector3.DOWN * 2.0, 0xFFFFFFFF, tueren))
-		if r.is_empty() or absf((r["position"] as Vector3).y - c.y) > 0.3:
+		# (neben die Mitte: dort steht in Gewölben ein Pfeiler oder der Steg; in Ruinen liegt Schutt, der sich nach dem Ort
+		# richtet: dort genügt freier Boden an einer von mehreren Stellen)
+		var stellen: Array[Vector3] = [Vector3(0.9, 0, 0.7)] if art in [0, 2] else [Vector3.ZERO]
+		if art == 3:
+			stellen = [Vector3(0.9, 0, 0.7), Vector3(-0.9, 0, -0.7), Vector3(0.9, 0, -0.7), Vector3(-0.9, 0, 0.7)]
+		var boden_da := false
+		for s: Vector3 in stellen:
+			var r := raum.intersect_ray(PhysicsRayQueryParameters3D.create(c + s + Vector3.UP * 1.5, c + s + Vector3.DOWN * 2.0, 0xFFFFFFFF, tueren))
+			if not r.is_empty() and absf((r["position"] as Vector3).y - c.y) <= 0.3:
+				boden_da = true
+				break
+		if not boden_da:
 			leer.append("Raum %d" % (i / 11))
 		i += 11
 	pruefe(leer.is_empty(), "Jeder Raum hat seinen Boden %s" % [leer])
