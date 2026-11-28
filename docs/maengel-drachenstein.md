@@ -256,6 +256,20 @@ Dreiecken je Baum, zu teuer); Haare der realistischen Menschen.
 - Die Detailmodelle der Bäume hatten Godots automatische Detailstufen an; die schmolzen dünne Stämme und Äste schon nach
   wenigen Metern weg. Abgeschaltet; `baum_laden.py` setzt das künftig selbst.
 
+## Fernsicht 28.11.2026
+
+Fernaufnahmen aus fünf Richtungen (Meer, Landstraße, Luft, Berge, Vorwerk). Gut: Burgstadt, Hafen, Höhenstaffelung,
+Dächer. Geändert:
+- **Küstenfels** unter der Burg (felssockel.gd, Maßstab über 1): fast senkrecht (Böschung 10 %), aus der Ferne ein
+  grauer Kasten. Jetzt ein Schuttfuß, der unten bis 3,5 m weiter vortritt, und große Felsrippen und Buchten entlang
+  der Wand (unter der Hofkante beginnend).
+- **Ordensvorwerk**: Der Wachturm war aus schwarzem Basalt (ein dunkler Block); jetzt aus Mauerstein. Die Holzrampe
+  zum Turm hat Handläufe und Pfosten (sie stand ohne Geländer wie ein loser Balken über der Brustwehr).
+- **Mauerfarbe**: weniger aufgehellt (Ton 1,24 statt 1,38), stärkere großflächige Schwankung und Regenspuren.
+
+Offen: Die Rampe des Vorwerks ragt weiter über die Brustwehr (besser: Eingang auf Wehrganghöhe, Treppe im Turm);
+der Felssockel unter den Hofmauern (Maßstab 1) ist aus der Ferne noch recht senkrecht.
+
 ## Nächste Schritte
 
 1. Neuer Rundgang (Hoch und Episch) zur Bestätigung von M1–M3, M9, M11, M22, M25–M29.

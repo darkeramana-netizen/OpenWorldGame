@@ -194,6 +194,13 @@ func _punkt(i: int, t: float) -> Vector3:
 	# Böschung nach unten, dann gespaltener Fels: hohe, schmale Blöcke stehen verschieden weit vor, an ihren Grenzen
 	# reißen tiefe senkrechte Klüfte ein; dazu Felsbänder mit vorstehenden Absätzen und eine feine Oberfläche
 	var vor := ABSTAND + tiefe * 0.1
+	# Hohe Küstenwände (Maßstab über 1): Der Fuß tritt weit vor (Schuttfuß einer Klippe) und entlang der Wand wechseln
+	# vorspringende Felsrippen mit Buchten, unter der Hofkante beginnend. Vorher fast senkrecht: aus der Ferne ein
+	# grauer Kasten unter der Burg (Fernsicht 28.11.2026)
+	if m > 1.0:
+		var unten_anteil := clampf(tiefe / maxf(oben - saeulen[i + 5], 1.0), 0.0, 1.0)
+		vor += tiefe * 0.16 * unten_anteil
+		vor += (_grob.get_noise_2d(rx * 0.35 + 77.0, rz * 0.35) + 0.25) * 2.2 * m * smoothstep(0.05, 0.35, t)
 	vor += (_grob.get_noise_3d(rx, ry * 0.6, rz) + 0.4) * 0.6 * m          # große Ausbuchtungen
 	vor += (_bloecke.get_noise_3d(rx, ry * 0.3, rz) + 0.3) * 1.5 * m       # Blöcke
 	var naht := _klueft.get_noise_3d(rx, ry * 0.3, rz)                      # klein an den Zellgrenzen

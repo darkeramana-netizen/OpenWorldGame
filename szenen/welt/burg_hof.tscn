@@ -120,6 +120,96 @@ use_collision = true
 size = Vector3(2, 0.4, 17.52)
 material = ExtResource("m_holz")
 
+[node name="HandlaufLinks" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.95, 0)
+size = Vector3(0.09, 0.09, 17.4)
+material = ExtResource("m_holz")
+
+[node name="PfostenLinks0" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.5, -8.40)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenLinks1" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.5, -6.00)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenLinks2" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.5, -3.60)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenLinks3" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.5, -1.20)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenLinks4" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.5, 1.20)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenLinks5" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.5, 3.60)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenLinks6" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.5, 6.00)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenLinks7" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.5, 8.40)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="HandlaufRechts" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.95, 0)
+size = Vector3(0.09, 0.09, 17.4)
+material = ExtResource("m_holz")
+
+[node name="PfostenRechts0" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.5, -8.40)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenRechts1" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.5, -6.00)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenRechts2" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.5, -3.60)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenRechts3" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.5, -1.20)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenRechts4" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.5, 1.20)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenRechts5" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.5, 3.60)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenRechts6" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.5, 6.00)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
+[node name="PfostenRechts7" type="CSGBox3D" parent="Mauern/RampeTurm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.5, 8.40)
+size = Vector3(0.1, 0.9, 0.1)
+material = ExtResource("m_holz")
+
 [node name="SchildTurm" type="Label3D" parent="Mauern"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 14.5, -27)
 billboard = 1
@@ -369,7 +459,6 @@ kollision = false
 [node name="WachturmBau" type="Node3D" parent="Mauern"]
 script = ExtResource("10_burgbau")
 torbauten = PackedFloat32Array(-27, -27, 1, 0, -1, 12, 8, 8, -1, 0)
-stein = "basalt"
 kollision = false
 
 [node name="Hofbauten" type="Node3D" parent="Gebaeude"]
