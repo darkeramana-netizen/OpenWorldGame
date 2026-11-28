@@ -344,6 +344,23 @@ def baue_blaetter(pos, nor, uv, idx, bild, hoechstens, zufall, krone_mitte):
     return (np.array(P), N, np.array(U), np.array(I, dtype=np.int64)), atlas
 
 
+def ohne_auto_lod(datei):
+    """Godots automatische Detailstufen schmelzen dünne Stämme und Äste schon nach wenigen Metern ganz weg (unsichtbare
+    Stämme, Rückmeldung 28.11.2026): für jedes erzeugte Modell abschalten (vorhandene .import anpassen, sonst eine
+    kleine anlegen, die Godot beim Import ergänzt)"""
+    imp = datei.with_name(datei.name + ".import")
+    if imp.exists():
+        text = imp.read_text()
+        if "meshes/generate_lods=" in text:
+            text = text.replace("meshes/generate_lods=true", "meshes/generate_lods=false")
+        else:
+            text = text.replace("[params]\n", "[params]\n\nmeshes/generate_lods=false\n", 1)
+        imp.write_text(text)
+    else:
+        imp.write_text('[remap]\n\nimporter="scene"\nimporter_version=1\nresource_type="PackedScene"\n\n[params]\n\n'
+                       'meshes/generate_lods=false\n')
+
+
 # ---------- glTF schreiben ----------
 
 def schreibe(ziel_datei, holz, laub, g_quelle, quelle_ordner, atlas_name, holz_im_atlas=False):
@@ -410,6 +427,7 @@ def schreibe(ziel_datei, holz, laub, g_quelle, quelle_ordner, atlas_name, holz_i
             "textures": texturen, "images": bilder, "samplers": [{"magFilter": 9729, "minFilter": 9987}],
             "buffers": [{"uri": bin_name, "byteLength": len(bin_)}], "bufferViews": views, "accessors": accs}
     ziel_datei.write_text(json.dumps(gltf))
+    ohne_auto_lod(ziel_datei)
 
 
 def verarbeite(name):

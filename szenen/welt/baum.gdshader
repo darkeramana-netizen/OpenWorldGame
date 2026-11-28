@@ -57,19 +57,24 @@ void fragment() {
 	vec2 uv = UV * uv_massstab + uv_versatz;
 	vec4 c = texture(farbe_tex, uv) * farbe;
 	ALBEDO = c.rgb;
+	// Alle Alpha-Ausgaben in beiden Zweigen setzen: Schrieb nur der Laubzweig Schwelle und Kantenglättung, blieben sie
+	// fürs Holz auf den Vorgaben, und mit Forward+ wurde das Holz nahezu durchsichtig (Rückmeldung 28.11.2026:
+	// unsichtbare Stämme; die einfache Grafik zeigte sie)
+	float alpha_ = 1.0;
 	if (laub) {
 		ALBEDO *= mix(vec3(0.92, 1.0, 0.86), vec3(1.06, 1.02, 0.9), tonung) * mix(0.62, 1.0, innen);
-		ALPHA = c.a;
+		alpha_ = c.a;
 		// Fernfassung: Ihr Holz liegt im Rindenfeld oben links im Laub-Atlas (16 Pixel). In den kleinen Mipmaps mischt
-		// sich dort die Durchsichtigkeit der Umgebung ein, die Stämme wurden in der Ferne durchsichtig: dort immer deckend
+		// sich dort die Durchsichtigkeit der Umgebung ein: dort immer deckend
 		if (uv.x < 0.0176 && uv.y < 0.0176) {
-			ALPHA = 1.0;
+			alpha_ = 1.0;
 		}
-		ALPHA_SCISSOR_THRESHOLD = alpha_schwelle;
-		ALPHA_ANTIALIASING_EDGE = 0.2;
-		ALPHA_TEXTURE_COORDINATE = uv * vec2(textureSize(farbe_tex, 0));
 		BACKLIGHT = ALBEDO * 0.6;
 	}
+	ALPHA = alpha_;
+	ALPHA_SCISSOR_THRESHOLD = laub ? alpha_schwelle : 0.0;
+	ALPHA_ANTIALIASING_EDGE = laub ? 0.2 : 0.0;
+	ALPHA_TEXTURE_COORDINATE = uv * vec2(textureSize(farbe_tex, 0));
 	if (mit_normal) {
 		NORMAL_MAP = texture(normal_tex, uv).rgb;
 		NORMAL_MAP_DEPTH = normal_staerke;

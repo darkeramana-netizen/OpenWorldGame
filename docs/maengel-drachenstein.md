@@ -248,6 +248,14 @@ Mauerstöße mit großem Höhenunterschied (Zwinger des Palas).
 Offen: Äste der Detailbäume sind aus der Nähe flache Bänder (ohne grobes Vereinfachen bleiben sie bei 57 000
 Dreiecken je Baum, zu teuer); Haare der realistischen Menschen.
 
+## Rückmeldung 28.11.2026 (dritte Runde): Stämme unsichtbar
+
+- Der Baumshader setzte Alpha-Schwelle und Kantenglättung nur für das Laub; fürs Holz blieben Godots Vorgaben, und mit
+  Forward+ wurde das Holz nahezu durchsichtig (die einfache Grafik dieser Umgebung zeigte die Stämme). Jetzt werden
+  alle Alpha-Ausgaben in beiden Zweigen gesetzt (Holz: deckend, Schwelle 0, keine Kantenglättung).
+- Die Detailmodelle der Bäume hatten Godots automatische Detailstufen an; die schmolzen dünne Stämme und Äste schon nach
+  wenigen Metern weg. Abgeschaltet; `baum_laden.py` setzt das künftig selbst.
+
 ## Nächste Schritte
 
 1. Neuer Rundgang (Hoch und Episch) zur Bestätigung von M1–M3, M9, M11, M22, M25–M29.
