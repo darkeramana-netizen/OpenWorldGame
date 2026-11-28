@@ -103,11 +103,14 @@ mat_metall = ExtResource("66_metall_mat")""")
 
 
 # ---------- Krypta unter der Drachenkapelle ----------
-# Die Krypta liegt fest (ihre Lage vor dem Umbau der Kapelle am 28.11.2026; die Gänge zu Rundkammer, Beinhaus und
-# den Ruinen von Sorrow hängen an ihr); die neue Kapelle steht schräg darüber
-KAP_C = (19.22, -93.59)
+# Krypta, Rundkammer, Beinhaus und die Ruinen von Sorrow hängen an diesem Rahmen. Seit dem Umbau der Kapelle
+# (28.11.2026) liegt die Krypta 6,5 m weiter nordwestlich als die alte Kapelle (entlang -u), damit die Treppe des
+# Gruftabgangs an der neuen Kapelle außerhalb ihres Gewölbes hinabführt
 KAP_G = 147.8
+_kv = 6.5
+KAP_C = (round(19.22 - math.sin(math.radians(KAP_G)) * _kv, 3), round(-93.59 - math.cos(math.radians(KAP_G)) * _kv, 3))
 KP = _rahmen(KAP_C, KAP_G)                      # u entlang der Krypta (+u zum Altar hin), n quer
+KP_ALT = KP                                     # (Sorrow: derselbe Rahmen)
 # Rahmen der Kapelle darüber (u zum Portal, n quer)
 KAPN_C = W(PD.DRACHENKAPELLE[0])
 KAPN_G = -PD.DRACHENKAPELLE[3] % 360.0
@@ -123,10 +126,14 @@ _ga_tuer = KAPN(6.5, -(PD.KAPELLE_BREITE / 2.0 + 1.45))
 _ga_boden = round(H(*_ga_tuer), 3)
 uw_abgang(_ga_tuer, KAPN_G + 180.0, _ga_boden, 1.6, 6.2)
 _ga_unten = KAPN(6.5 - 13.0, -(PD.KAPELLE_BREITE / 2.0 + 1.45))
-_ga_vor = KP(4.0, -KR_B / 2.0 - 1.6)
+# unten um die Ecke der Krypta herum (außen an ihrer Wand, 2,4 m dick) und durch die Längswand in das westliche Joch
+# An beiden Ecken eine kleine gewölbte Kammer (2,8 m), in der die Gänge zusammentreffen
+uw_raum(KP(12.1, -9.2), KAP_G, 2.8, 2.8, H_KRYPTA, 2.4, 1.0, 0, 2.8, 0)
+uw_raum(KP(-6.0, -9.2), KAP_G, 2.8, 2.8, H_KRYPTA, 2.4, 1.0, 0, 2.8, 0)
 uw_gang(_ga_tuer, _ga_boden, _ga_unten, H_KRYPTA)
-uw_gang(_ga_unten, H_KRYPTA, _ga_vor, H_KRYPTA)
-uw_gang(_ga_vor, H_KRYPTA, KP(4.0, -KR_B / 2.0), H_KRYPTA)
+uw_gang(_ga_unten, H_KRYPTA, KP(12.1, -7.8), H_KRYPTA)
+uw_gang(KP(10.7, -9.2), H_KRYPTA, KP(-4.6, -9.2), H_KRYPTA)
+uw_gang(KP(-6.0, -7.8), H_KRYPTA, KP(-6.0, -KR_B / 2.0), H_KRYPTA)
 schild("SchildGruft", "UnterweltDinge", *(lambda p: (p[0], _ga_boden + 4.3, p[1]))(KAPN(6.5 + 0.7, -(PD.KAPELLE_BREITE / 2.0 + 1.45))),
        "Gruft der Großmeister", 32)
 
@@ -235,10 +242,10 @@ uw_tuer("RiegeltuerHafen", (round(_uh_wand[0] - 1.6, 3), _uh_wand[1]), H_UH, -90
 # ---------- Ruinen von Burg Sorrow (hinter der Geheimtür) ----------
 H_SORROW = -1.0
 _s1_a = KP(4.0, KR_B / 2.0)
-_s1_b = KP(4.0, KR_B / 2.0 + 26.0)
+_s1_b = KP_ALT(4.0, KR_B / 2.0 + 26.0)
 uw_gang(_s1_a, H_KRYPTA, _s1_b, H_SORROW, breite=1.4, hoehe=2.4, art=2, fackeln=0)
 RH_G = KAP_G + 90.0                                   # Halle: Länge in Richtung des Gangs
-RH_C = KP(4.0, KR_B / 2.0 + 26.0 + 10.0)
+RH_C = KP_ALT(4.0, KR_B / 2.0 + 26.0 + 10.0)
 RH = uw_raum(RH_C, RH_G, 20.0, 12.0, H_SORROW, 3.0, 2.4, 3, 4.0, 16 | 8)
 # alte Kapelle von Sorrow hinter der Halle
 _s2_a = RH(10.0, 0.0)
