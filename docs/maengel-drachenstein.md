@@ -234,6 +234,20 @@ Mauerstöße mit großem Höhenunterschied (Zwinger des Palas).
 - **Schweben**: Messung aller Bäume und Büsche (`tests/_schweben_probe.gd`): am Fuß auf dem Boden, am Hang talseitig
   höchstens 0,5 m frei bei 0,9 m Abstand, in der Mitte eingesunken. Schwebende Gegenstände bitte mit Ort melden.
 
+## Rückmeldung 28.11.2026 (zweite Runde)
+
+- **Titel**: *Ordo Custodum: Der zweite Eid*; die Zeit bleibt 1750 („mittelalterlich“ als Stilmittel der Burgenwelt).
+- **Stämme durchsichtig**: Das Holzbudget eines Baums wurde nach Dreiecken des Scans verteilt, der Hauptstamm bekam
+  nur 6 % und zerfiel in der Fernfassung in Splitter. Jetzt sechsfach gewichtet, nie grob vereinfacht, die
+  Fernfassung mit doppelt so viel Holz.
+- **Mauerstummel**: Blieb nach der Öffnung an einem Abzweig nur ein kurzes Stück Brustwehr bis zur nächsten Ecke, stand
+  es wie ein loser Block; jetzt bleiben mindestens 1,8 m bis an die Ecke.
+- **Tests**: Warten und Laufen nach simulierter Zeit (Physikschritte) statt Wanduhrzeit; unter Last wackelten
+  Prüfungen wie „Mit W durch das Tor gelaufen“.
+
+Offen: Äste der Detailbäume sind aus der Nähe flache Bänder (ohne grobes Vereinfachen bleiben sie bei 57 000
+Dreiecken je Baum, zu teuer); Haare der realistischen Menschen.
+
 ## Nächste Schritte
 
 1. Neuer Rundgang (Hoch und Episch) zur Bestätigung von M1–M3, M9, M11, M22, M25–M29.

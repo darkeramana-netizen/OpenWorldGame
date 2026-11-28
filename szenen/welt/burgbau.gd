@@ -961,6 +961,14 @@ func _mauerstueck(a: Vector2, b: Vector2, unten: float, oben: float, dicke: floa
 			aussen1 = minf(aussen1, sb - t_)
 		if seiten_ & 2:
 			innen1 = minf(innen1, sb - t_)
+	# Bleibt nach der Öffnung an einem Stoß nur ein Stummel Brustwehr (kurzes Stück bis zur nächsten Ecke), stand er wie ein
+	# loser Block mit Zinnen auf dem Wehrgang (Rückmeldung 27.11.2026, Zwinger des Palas): dann die Öffnung so weit
+	# verkleinern, dass 1,8 m Brustwehr bis an die Ecke bleiben
+	if aussen1 - aussen0 > 0.0 and aussen1 - aussen0 < 1.8:
+		if stoss_a >= 2 and stoss_b < 2:
+			aussen0 = maxf(aussen1 - 1.8, sa)
+		elif stoss_b >= 2 and stoss_a < 2:
+			aussen1 = minf(aussen0 + 1.8, sb)
 	# Brustwehr und Zinnen auf der Feldseite, eine niedrige Mauer auf der Hofseite. In einem Schalenturm, durch den die
 	# Mauer läuft, ist dessen Schale die Brustwehr: dort fehlt die der Mauer (sonst stünden Zinnen mitten im Turm)
 	var schalen_luecken: Array = []
